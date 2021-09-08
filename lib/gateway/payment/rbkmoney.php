@@ -613,7 +613,7 @@ class Rbkmoney extends Base
 			'externalID'    => (string)$payment->getId(),
 			'amount'        => round($payment->getSum() * 100),
 			'currency'      => $payment->getField('CURRENCY'),
-			'reason'        => $comment
+			'reason'        => \Bitrix\Main\Text\Encoding::convertEncodingToCurrent($comment)
 		]);
 	}
 }
