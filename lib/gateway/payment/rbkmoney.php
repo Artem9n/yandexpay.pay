@@ -321,7 +321,7 @@ class Rbkmoney extends Base
 			$cart[] = [
 				'product'   => $basketItem->getField('NAME'),
 				'quantity'  => $basketItem->getQuantity(),
-				'price'     => round($basketItem->getFinalPrice() * 100),
+				'price'     => round($basketItem->getPrice() * 100),
 			];
 		}
 
