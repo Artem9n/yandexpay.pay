@@ -6,6 +6,7 @@ $jsConfig = [
 	],
 	'yandex_pay_load' => [
 		'js' => BX_ROOT . '/js/yandexpay.pay/yandexpayload.js',
+		'css' => BX_ROOT . '/css/yandexpay.pay/yandexpay.css',
 	]
 ];
 
