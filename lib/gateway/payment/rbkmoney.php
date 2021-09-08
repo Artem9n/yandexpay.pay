@@ -16,6 +16,7 @@ class Rbkmoney extends Base
 
 	protected const STATUS_PAID = 'processed';
 	protected const STATUS_FAILED = 'failed';
+	protected const STATUS_REFUNDED = 'refunded';
 
 	protected const TYPE_EVENT_3DS = 'PaymentInteractionRequested';
 	protected const TYPE_EVENT_CHANGED = 'PaymentStatusChanged';
@@ -528,7 +529,15 @@ class Rbkmoney extends Base
 				&& $change['status'] === self::STATUS_FAILED
 			)
 			{
-				throw new Main\SystemException('failed pay');
+				throw new Main\SystemException(self::getMessage('FAILED_STATUS'));
+			}
+
+			if (
+				$change['changeType'] === self::TYPE_EVENT_CHANGED
+				&& $change['status'] === self::STATUS_REFUNDED
+			)
+			{
+				throw new Main\SystemException(self::getMessage('REFUNDED_STATUS'));
 			}
 
 			if (
