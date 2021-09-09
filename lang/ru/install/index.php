@@ -1,6 +1,6 @@
 <?php
 
-$MESS['YANDEX_PAY_MODULE_NAME'] = 'Yandex.Pay';
+$MESS['YANDEX_PAY_MODULE_NAME'] = 'Официальный модуль Yandex Pay';
 $MESS['YANDEX_PAY_MODULE_DESCRIPTION'] = 'Модуль для оплаты через Yandex Pay';
 $MESS['YANDEX_PAY_PARTNER_NAME'] = 'Yandex.Pay';
 $MESS['YANDEX_PAY_PARTNER_URI'] = 'https://market.yandex.ru/partners';
