@@ -3,6 +3,7 @@
 namespace Sale\Handlers\PaySystem;
 
 use Bitrix\Main;
+use Bitrix\Sale;
 use Bitrix\Main\Loader;
 use Bitrix\Main\Request;
 use Bitrix\Sale\Payment;
@@ -25,6 +26,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	/** @var \Yandexpay\Pay\GateWay\Base|null */
 	protected $gateway;
+
+	protected $handlerMode;
 
 	protected function getPrefix(): string
 	{
@@ -53,7 +56,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'gatewayMerchantId'     => $gatewayMerchantId,
 			'externalId'            => $payment->getId(),
 			'paySystemId'           => $this->service->getField('ID'),
-			'currency'              => $payment->getField('CURRENCY')
+			'currency'              => $payment->getField('CURRENCY'),
 		];
 
         if ($this->getGateway($gatewayType) !== null)
@@ -100,7 +103,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		{
 			$result['items'][] = [
 				'label'     => $basketItem->getField('NAME'),
-				'amount'    => number_format($basketItem->getFinalPrice(), 2, '.', '')
+				'amount'    => number_format($basketItem->getFinalPrice(), 2, '.', ''),
 			];
 		}
 
@@ -108,14 +111,20 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		{
 			$result['items'][] = [
 				'label'     => 'delivery',
-				'amount'    => number_format($deliveryPrice, 2, '.', '')
+				'amount'    => number_format($deliveryPrice, 2, '.', ''),
 			];
 		}
 
 		return $result;
 	}
 
-	protected function getParamValue(Payment $payment, $code)
+	/**
+	 * @param Payment|null $payment
+	 * @param string $code
+	 *
+	 * @return mixed
+	 */
+	protected function getParamValue(Payment $payment = null, $code)
 	{
 		$prefix = $this->getPrefix();
 
@@ -157,7 +166,9 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function initPrePayment(Payment $payment = null, Request $request)
 	{
-		// TODO: Implement initPrePayment() method.
+
+
+		return true;
 	}
 
 	public function getProps()
@@ -167,7 +178,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function payOrder($orderData = array())
 	{
-		// TODO: Implement payOrder() method.
+		pr(123);
 	}
 
 	public function setOrderConfig($orderData = array())
@@ -177,7 +188,55 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function basketButtonAction($orderData)
 	{
-		// TODO: Implement basketButtonAction() method.
+		global $USER;
+
+		$gatewayType = $this->getHandlerMode();
+		$basket = [];
+		$gatewayMerchantId = $this->getParamValue(null, $gatewayType. '_PAYMENT_GATEWAY_MERCHANT_ID');
+		$basket = Sale\Basket::loadItemsForFUser(Sale\Fuser::getId(), Main\Context::getCurrent()->getSite());
+
+		$order = Sale\Order::create(Main\Context::getCurrent()->getSite(), $USER->GetID());
+        $order->setPersonTypeId(1);
+        $order->setBasket($basket);
+
+
+		pr($order->getBasket());
+		pr($basket);
+
+		/** @var \Bitrix\Sale\BasketItem $basketItem */
+		foreach ($basket as $basketItem)
+		{
+			pr($basketItem->getPrice());
+		}
+		/*foreach ($orderData['BASKET_ITEMS'] as $item)
+		{
+			$basket['items'][] = [
+				'label'     => $item['NAME'],
+				'amount'    => $item['PRICE'] *
+			];
+		}
+
+
+		$params = [
+			'order'                 => $this->getOrderData(null),
+			'env'                   => $this->isTestMode(null) ? self::YANDEX_TEST_MODE : self::YANDEX_PRODUCTION_MODE,
+			'merchantId'            => $this->getParamValue(null, 'MERCHANT_ID'),
+			'merchantName'          => $this->getParamValue(null, 'MERCHANT_NAME'),
+			'buttonTheme'           => $this->getParamValue(null, 'VARIANT_BUTTON'),
+			'buttonWidth'           => $this->getParamValue(null, 'WIDTH_BUTTON'),
+			'gateway'               => mb_strtolower($gatewayType),
+			'gatewayMerchantId'     => $gatewayMerchantId,
+			'externalId'            => 333,
+			'paySystemId'           => $this->service->getField('ID'),
+			'currency'              => 'RUB'
+		];
+
+		$this->setExtraParams($params);
+
+
+		$showTemplateResult = $this->showTemplate(null, 'template');*/
+
+
 	}
 
 	/**
@@ -218,7 +277,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			{
 				$fields = [
 					'PS_STATUS'         => 'Y',
-					'PS_RESPONSE_DATE'  => new Main\Type\DateTime()
+					'PS_RESPONSE_DATE'  => new Main\Type\DateTime(),
 				] + $resultData;
 
 				if (!$payment->isPaid())
@@ -231,7 +290,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			$result->setData([
 				'state'     => self::STEP_FINISHED,
 				'success'   => true,
-				'message'   => Main\Localization\Loc::getMessage('SUCCESS')
+				'message'   => Main\Localization\Loc::getMessage('SUCCESS'),
 			]);
 		}
 		catch (Secure3dRedirect $exception)
@@ -325,7 +384,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			$response = [
 				'state'     => self::STEP_ERRORS,
 				'success'   => false,
-				'errors'    => $errors
+				'errors'    => $errors,
 			];
 		}
 
@@ -342,12 +401,41 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	protected function getHandlerMode(): string
 	{
-		return $this->service->getField('PS_MODE');
+		if ($this->handlerMode === null)
+		{
+			$this->handlerMode = $this->service->getField('PS_MODE');
+		}
+
+		if ($this->handlerMode === null)
+		{
+			$this->handlerMode = $this->loadHandlerMode($this->service->getField('ID'));
+		}
+
+		return $this->handlerMode;
 	}
 
-	public function isNewWindow(): bool
+	protected function loadHandlerMode(int $serviceId): string
 	{
-		return $this->service->getField('NEW_WINDOW') === 'Y';
+		$result = null;
+
+		$query = Paysystem\Manager::getList([
+			'select' => [
+				'ID', 'PS_MODE',
+			],
+			'filter' => [
+				'=ID' => $serviceId,
+				'ACTIVE' => 'Y',
+				'HAVE_PREPAY' => 'Y',
+			],
+			'limit' => 1,
+		]);
+
+		if ($service = $query->fetch())
+		{
+			$result = $service['PS_MODE'];
+		}
+
+		return $result;
 	}
 
 	protected static function readFromStream(Request $request): void
