@@ -13,6 +13,8 @@ class Payture extends Base
 {
 	use HasMessage;
 
+	protected static $sort = 100;
+
 	public function getId() : string
 	{
 		return 'payture';
@@ -23,14 +25,12 @@ class Payture extends Base
 		return 'Payture';
 	}
 
-	protected function getRequestUrlMobilePay() : string
+	protected function getUrlList() : array
 	{
-		return 'https://sandbox3.payture.com/api/MobilePay';
-	}
-
-	protected function getRequestUrlRefund(): string
-	{
-		return 'https://sandbox3.payture.com/api/Refund';
+		return [
+			'pay'       => 'https://sandbox3.payture.com/api/MobilePay',
+			'refund'    => 'https://sandbox3.payture.com/api/Refund'
+		];
 	}
 
 	protected function getHeaders(): array
@@ -61,7 +61,8 @@ class Payture extends Base
 		$httpClient = new HttpClient();
 
 		$data = $this->buildData($payment, $request);
-		$requestUrl = $this->getRequestUrlMobilePay();
+
+		$requestUrl = $this->getUrl('pay');
 
 		$httpClient->setHeaders($this->getHeaders());
 
@@ -117,7 +118,7 @@ class Payture extends Base
 	public function refund(Payment $payment, $refundableSum): void
 	{
 		$httpClient = new HttpClient();
-		$url = $this->getRequestUrlRefund();
+		$url = $this->getUrl('refund');
 
 		$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
 		$password = $this->getPayParamsKey('PAYMENT_GATEWAY_PASSWORD');

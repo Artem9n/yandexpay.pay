@@ -14,6 +14,8 @@ class Rbkmoney extends Base
 {
 	use HasMessage;
 
+	protected static $sort = 200;
+
 	protected const STATUS_PAID = 'processed';
 	protected const STATUS_FAILED = 'failed';
 	protected const STATUS_REFUNDED = 'refunded';
@@ -39,44 +41,18 @@ class Rbkmoney extends Base
 		return 'Rbk money';
 	}
 
-	protected function getRequestUrlResource() : string
+	protected function getUrlList() : array
 	{
-		return 'https://api.rbk.money/v2/processing/payment-resources';
-	}
-
-	protected function getRequestUrlCreateInvoice(): string
-	{
-		return 'https://api.rbk.money/v2/processing/invoices';
-	}
-
-	protected function getRequestUrlCreateToken(string $invoiceId): string
-	{
-		return 'https://api.rbk.money/v2/processing/invoices/' . $invoiceId . '/access-tokens';
-	}
-
-	protected function getRequestUrlGetInvoice(string $externalId): string
-	{
-		return 'https://api.rbk.money/v2/processing/invoices?externalID=' . $externalId;
-	}
-
-	protected function getRequestUrlCreatePayment(string $invoiceId): string
-	{
-		return 'https://api.rbk.money/v2/processing/invoices/' . $invoiceId . '/payments';
-	}
-
-	protected function getRequestUrlInvoiceEvents(string $invoiceId): string
-	{
-		return 'https://api.rbk.money/v2/processing/invoices/' . $invoiceId . '/events?limit=100';
-	}
-
-	protected function getRequestUrlPaymentRefund(string $invoiceId, string $paymentId): string
-	{
-		return 'https://api.rbk.money/v2/processing/invoices/' . $invoiceId . '/payments/' . $paymentId . '/refunds';
-	}
-
-	protected function getRequestUrlPaymentByExternalId(string $externalId): string
-	{
-		return 'https://api.rbk.money/v2/processing/payments?externalID=' . $externalId;
+		return [
+			'createResource'    => 'https://api.rbk.money/v2/processing/payment-resources',
+			'createInvoice'     => 'https://api.rbk.money/v2/processing/invoices',
+			'createToken'       => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/access-tokens',
+			'getInvoice'        => 'https://api.rbk.money/v2/processing/invoices?externalID=#EXTERNAL_ID#',
+			'createPay'         => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/payments',
+			'invoiceEvents'     => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/events?limit=100',
+			'refund'            => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/payments/#PAYMENT_ID#/refunds',
+			'getPayment'        => 'https://api.rbk.money/v2/processing/payments?externalID=#EXTERNAL_ID#'
+		];
 	}
 
 	public function extraParams(string $code = '') : array
@@ -94,7 +70,7 @@ class Rbkmoney extends Base
 				'INPUT' => [
 					'TYPE' => 'STRING',
 					'SIZE' => null,
-				],
+				]
 			],
 			$code . '_WEBHOOK_PROCESSED_KEY' => [
 				'NAME' => static::getMessage('WEBHOOK_PROCESSED_KEY'),
@@ -106,11 +82,7 @@ class Rbkmoney extends Base
 					'MULTILINE' => 'Y',
 					'ROWS' => 15,
 					'COLS' => 65
-				],
-				/*'DEFAULT' => [
-					'PROVIDER_KEY'      => 'INPUT',
-					'PROVIDER_VALUE'    => ''
-				]*/
+				]
 			]
 		];
 	}
@@ -192,7 +164,6 @@ class Rbkmoney extends Base
 		if ($webhook !== self::WEBHOOK_TYPE_PROCESSED) { return $result; }
 
 		$shopId = $this->getPayParamsKey('PAYMENT_GATEWAY_SHOP_ID');
-		$amount = $content['payment']['amount'] / 100;
 		$orderId = $payment->getOrderId();
 
 		if (
@@ -236,7 +207,7 @@ class Rbkmoney extends Base
 
 		$httpClient = new HttpClient();
 
-		$url = $this->getRequestUrlGetInvoice($externalId);
+		$url = $this->getUrl('getInvoice', ['#EXTERNAL_ID#' => $externalId]);
 
 		$httpClient->setHeaders($this->getHeaders($apiKey));
 
@@ -261,7 +232,7 @@ class Rbkmoney extends Base
 	{
 		$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
 
-		$url = $this->getRequestUrlCreateToken($invoiceId);
+		$url = $this->getUrl('createToken', ['#INVOICE_ID#' => $invoiceId]);
 
 		$httpClient = new HttpClient();
 
@@ -293,7 +264,7 @@ class Rbkmoney extends Base
 
 		$httpClient = new HttpClient();
 
-		$url = $this->getRequestUrlCreateInvoice();
+		$url = $this->getUrl('createInvoice');
 
 		$data = $this->buildDataInvoice($payment, $request);
 
@@ -364,7 +335,7 @@ class Rbkmoney extends Base
 
 		$httpClient = new HttpClient();
 
-		$requestUrl = $this->getRequestUrlResource();
+		$requestUrl = $this->getUrl('createResource');
 
 		$httpClient->setHeaders($this->getHeaders($token));
 
@@ -401,7 +372,7 @@ class Rbkmoney extends Base
 
 	protected function createPayment(Payment $payment, Request $request, string $invoiceId, string $token, array $resourceData): void
 	{
-		$url = $this->getRequestUrlCreatePayment($invoiceId);
+		$url = $this->getUrl('createPay', ['#INVOICE_ID#' => $invoiceId]);
 
 		$data = $this->buildDataPayment($payment, $request, $resourceData);
 
@@ -465,7 +436,7 @@ class Rbkmoney extends Base
 
 			$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
 
-			$url = $this->getRequestUrlInvoiceEvents($invoiceId);
+			$url = $this->getUrl('invoiceEvents', ['#INVOICE_ID#' => $invoiceId]);
 
 			$httpClient->setHeaders($this->getHeaders($apiKey));
 
@@ -563,7 +534,7 @@ class Rbkmoney extends Base
 
 		$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
 
-		$url = $this->getRequestUrlPaymentByExternalId($id);
+		$url = $this->getUrl('getPayment', ['#EXTERNAL_ID#' => $id]);
 
 		$httpClient->setHeaders($this->getHeaders($apiKey));
 
@@ -593,7 +564,7 @@ class Rbkmoney extends Base
 
 		$httpClient = new HttpClient();
 
-		$url = $this->getRequestUrlPaymentRefund($invoiceId, $paymentId);
+		$url = $this->getUrl('refund', ['#INVOICE_ID#' => $invoiceId, '#PAYMENT_ID#' => $paymentId]);
 
 		$data = $this->buildDataRefund($payment);
 

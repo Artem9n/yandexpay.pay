@@ -2,7 +2,7 @@
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_DESCRIPTION'] = '<a target="_blank" href="https://payture.com/">Payture</a> Ч это международный процессинговый центр, который создавалс€ более 11 лет назад под задачи дружественной e-commerce компании, а затем развилс€ в самосто€тельный технологичный сервис благодар€ надежности и удобству продукта.';
 
-$MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_MERCHANT_NAME'] = '»дентификатор продавца';
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_MERCHANT_ID'] = '»дентификатор продавца';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_MERCHANT_API_KEY'] = 'API-ключ дл€ авторизации';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_MERCHANT_PASSWORD'] = 'ѕароль дл€ api';
 

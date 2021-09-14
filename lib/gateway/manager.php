@@ -14,6 +14,7 @@ class Manager
 	public static function getHandlerModeList(): array
 	{
 		$result = [];
+		$sort = [];
 
 		$classListGateWay = static::getClassList();
 
@@ -27,8 +28,13 @@ class Manager
 			$gateWayId = $gateWay->getId();
 			$gateWayName = $gateWay->getName();
 
+			$sort[$gateWayId] = $gateWay->getSort();
 			$result[$gateWayId] = $gateWayName;
 		}
+
+		uksort($result, static function($a, $b) use ($sort){
+			return $sort[$a] > $sort[$b];
+		});
 
 		return $result;
 	}
@@ -81,15 +87,16 @@ class Manager
 		if ($application !== null)
 		{
 			$request = $application->getContext()->getRequest();
-			$requestMode = $request->get('PS_MODE');
+			$handlerMode = $request->get('PS_MODE');
+			$systemId = $request->get('ID');
 
-			if ($requestMode !== null && isset($handlerModeList[$requestMode]))
+			if ($handlerMode !== null && isset($handlerModeList[$handlerMode]))
 			{
-				$type = $requestMode;
+				$type = $handlerMode;
 			}
 			else
 			{
-				$type = static::getHandlerMode();
+				$type = static::getHandlerMode($systemId);
 			}
 		}
 
@@ -107,11 +114,11 @@ class Manager
 		return $gateWay->getParams();
 	}
 
-	protected static function getHandlerMode(): string
+	protected static function getHandlerMode($systemId): string
 	{
 		if (static::$handlerMode === null)
 		{
-			static::$handlerMode = static::loadHandlerMode();
+			static::$handlerMode = static::loadHandlerMode($systemId);
 		}
 
 		return static::$handlerMode;
@@ -122,13 +129,18 @@ class Manager
 		return static::$handlerDescription;
 	}
 
-	protected static function loadHandlerMode(): string
+	protected static function loadHandlerMode($systemId): string
 	{
 		$result = '';
+		$systemId = $systemId ?? 'yandexpay';
 
 		$query = PaySystemActionTable::getList([
 			'filter' => [
-				'=ACTION_FILE' => 'yandexpay'
+				[
+					'LOGIC' => 'OR',
+					['=ID' => $systemId],
+					['=ACTION_FILE' => $systemId]
+				]
 			],
 			'select' => ['ID', 'PS_MODE'],
 			'limit' => 1

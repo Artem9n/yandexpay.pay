@@ -204,8 +204,6 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		$result = new PaySystem\ServiceResult();
 
-		//self::readFromStream($request);
-
 		$gatewayType = $this->getHandlerMode();
 
 		try
@@ -256,8 +254,6 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	public function getPaymentIdFromRequest(Request $request)
 	{
 		$result = null;
-
-		//self::readFromStream($request);
 
 		$externalId = $request->get('externalId');
 

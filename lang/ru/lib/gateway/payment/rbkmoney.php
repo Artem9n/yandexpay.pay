@@ -2,7 +2,7 @@
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_DESCRIPTION'] = '<a target="_blank" href="https://rbk.money/">RBK.money</a> – международная платежная платформа, </br>предоставляющая услуги для онлайн-компаний и частных лиц в более чем 60 странах.';
 
-$MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_MERCHANT_NAME'] = 'Идентификатор продавца';
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_MERCHANT_ID'] = 'Идентификатор продавца';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_MERCHANT_API_KEY'] = 'API-ключ для авторизации';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_MERCHANT_SHOP_ID'] = 'Ключ магазина';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_WEBHOOK_PROCESSED_KEY'] = 'Публичный ключ Webhook PaymentProcessed';
