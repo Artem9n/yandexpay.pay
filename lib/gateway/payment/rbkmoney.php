@@ -96,7 +96,7 @@ class Rbkmoney extends Base
 		];
 	}
 
-	public function isMyResponse(Request $request, int $paySystemId): bool
+	public function getPaymentIdFromRequest(Request $request) : ?int
 	{
 		$result = false;
 
@@ -117,18 +117,10 @@ class Rbkmoney extends Base
 		if ($this->isVerifySignature($content, $decodedSignature, $webhookPublicKey))
 		{
 			$content = $this->convertResultData($content);
-			$result = ((int)$content['payment']['metadata']['paySystemId'] === $paySystemId);
+			$result = (int)$content['payment']['metadata']['externalId'];
 		}
 
 		return $result;
-	}
-
-	public function getPaymentIdFromRequest(Request $request) : ?int
-	{
-		$content = $this->readFromStream();
-		$content = $this->convertResultData($content);
-
-		return (int)$content['payment']['metadata']['externalId'];
 	}
 
 	protected function getSignatureFromHeader($contentSignature): string

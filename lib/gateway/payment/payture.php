@@ -13,6 +13,10 @@ class Payture extends Base
 {
 	use HasMessage;
 
+	protected const STATUS_3DS = '3DS';
+	protected const STATUS_SUCCESS = 'True';
+	protected const STATUS_FAILED = 'False';
+
 	protected static $sort = 100;
 
 	public function getId() : string
@@ -29,7 +33,8 @@ class Payture extends Base
 	{
 		return [
 			'pay'       => 'https://sandbox3.payture.com/api/MobilePay',
-			'refund'    => 'https://sandbox3.payture.com/api/Refund'
+			'refund'    => 'https://sandbox3.payture.com/api/Refund',
+			'pay3ds'    => 'https://sandbox3.payture.com/api/Pay3DS'
 		];
 	}
 
@@ -58,6 +63,18 @@ class Payture extends Base
 
 	public function startPay(Payment $payment, Request $request) : array
 	{
+		$result = [
+			'PS_INVOICE_ID'     => $payment->getOrderId(),
+			'PS_SUM'            => $payment->getSum()
+		];
+
+		if ($this->isPaySecure3ds())
+		{
+			$this->createPaySecure($payment, $request);
+
+			return $result;
+		}
+
 		$httpClient = new HttpClient();
 
 		$data = $this->buildData($payment, $request);
@@ -72,10 +89,28 @@ class Payture extends Base
 
 		$this->checkResult($resultData, $httpClient->getStatus());
 
-		return [
-			'PS_INVOICE_ID'     => $payment->getOrderId(),
-			'PS_SUM'            => $payment->getSum()
+		return $result;
+	}
+
+	protected function createPaySecure(Payment $payment, Request $request): void
+	{
+		$httpClient = new HttpClient();
+
+		$data = [
+			'Key'       => $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY'),
+			'OrderId'   => $payment->getOrderId(),
+			'PaRes'     => $request->get('PaRes')
 		];
+
+		$url = $this->getUrl('pay3ds');
+
+		$httpClient->setHeaders($this->getHeaders());
+
+		$httpClient->post($url, $data);
+
+		$resultData = $this->convertResultData($httpClient->getResult());
+
+		$this->checkResult($resultData, $httpClient->getStatus());
 	}
 
 	protected function convertResultData($data): array
@@ -105,14 +140,14 @@ class Payture extends Base
 		];
 	}
 
-	public function isMyResponse(Request $request, int $paySystemId) : bool
-	{
-		// TODO: Implement isMyResponse() method.
-	}
 
 	public function getPaymentIdFromRequest(Request $request) : ?int
 	{
-		// TODO: Implement getPaymentIdFromRequest() method.
+		$result = ($request->get('MD') !== null && $request->get('PaRes') !== null);
+
+		$this->setPaySecure3ds($result);
+
+		return $request->get('paymentId');
 	}
 
 	public function refund(Payment $payment, $refundableSum): void
@@ -146,17 +181,17 @@ class Payture extends Base
 			throw new Main\SystemException('GOT EMPTY RESULT WITH STATUS = ' . $status);
 		}
 
-		if ($resultData['Success'] === 'False' && isset($resultData['ErrCode']))
+		if ($resultData['Success'] === self::STATUS_FAILED && isset($resultData['ErrCode']))
 		{
-			throw new Main\SystemException(static::getMessage($resultData['ErrCode'], ['#ORDER_ID#' => $resultData['OrderId']]));
+			throw new Main\SystemException(static::getMessage($resultData['ErrCode']));
 		}
 
-		if ($resultData['Success'] === '3DS')
+		if ($resultData['Success'] === self::STATUS_3DS)
 		{
 			throw new \Yandexpay\Pay\Exceptions\Secure3dRedirect(
 				$resultData['ACSUrl'],
-				$resultData['PaReq'],
-				$resultData['ThreeDSKey']
+				$resultData['ThreeDSKey'],
+				$resultData['PaReq']
 			);
 		}
 	}
