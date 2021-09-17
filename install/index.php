@@ -114,21 +114,23 @@ class yandexpay_pay extends CModule
 
 	public function InstallFiles(): void
 	{
+		$moduleSafe = str_replace('.', '', $this->MODULE_ID);
+
 		CopyDirFiles(__DIR__ . '/admin', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/admin', true, true);
 		CopyDirFiles(__DIR__ . '/components', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/components/' . $this->MODULE_ID, true, true);
 		CopyDirFiles(__DIR__ . '/images', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/images/sale/sale_payments/', true, true);
-		CopyDirFiles(__DIR__ . '/js', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/js/' . $this->MODULE_ID, true, true);
-		CopyDirFiles(__DIR__ . '/css', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/css/' . $this->MODULE_ID, true, true);
+		CopyDirFiles(__DIR__ . '/js', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/js/' . $moduleSafe, true, true);
 		CopyDirFiles(__DIR__ . '/handler', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/php_interface/include/sale_payment/' . $this->PAYSYSTEM_NAME, true, true);
 		CopyDirFiles(__DIR__ . '/tools', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/tools/', true, true);
 	}
 
 	public function UnInstallFiles(): void
 	{
+		$moduleSafe = str_replace('.', '', $this->MODULE_ID);
+
 		DeleteDirFiles(__DIR__ . '/admin', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/admin');
 		DeleteDirFilesEx(BX_ROOT . '/components/' . $this->MODULE_ID);
-		DeleteDirFilesEx(BX_ROOT . '/js/' . $this->MODULE_ID);
-		DeleteDirFilesEx(BX_ROOT . '/css/' . $this->MODULE_ID);
+		DeleteDirFilesEx(BX_ROOT . '/js/' . $moduleSafe);
 		DeleteDirFilesEx(BX_ROOT . '/php_interface/include/sale_payment/' . $this->PAYSYSTEM_NAME);
 		unlink($_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/tools/sale_ps_yandexpay_result.php');
 		unlink($_SERVER['DOCUMENT_ROOT'] . BX_ROOT  . '/images/sale/sale_payments/' . $this->PAYSYSTEM_NAME . '.png');
