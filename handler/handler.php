@@ -16,15 +16,17 @@ Loader::includeModule('yandexpay.pay');
 
 class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRefund, PaySystem\IPrePayable
 {
+	public const REQUEST_SIGN = 'yandexpay';
+
 	protected const STEP_3DS = '3ds';
 	protected const STEP_FINISHED = 'finished';
-	protected const STEP_ERRORS = 'errors';
+	protected const STEP_FAILURE = 'errors';
 
 	protected const YANDEX_TEST_MODE = 'SANDBOX';
 	protected const YANDEX_PRODUCTION_MODE = 'PRODUCTION';
 
 	/** @var \Yandexpay\Pay\GateWay\Base|null */
-	protected $gateway;
+	protected static $gateway;
 
 	protected function getPrefix(): string
 	{
@@ -43,6 +45,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		$gatewayMerchantId = $this->getParamValue($payment, $gatewayType. '_PAYMENT_GATEWAY_MERCHANT_ID');
 
 		$params = [
+			'requestSign'           => static::REQUEST_SIGN,
 			'order'                 => $this->getOrderData($payment),
 			'env'                   => $this->isTestMode($payment) ? self::YANDEX_TEST_MODE : self::YANDEX_PRODUCTION_MODE,
 			'merchantId'            => $this->getParamValue($payment, 'MERCHANT_ID'),
@@ -192,12 +195,12 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	protected function getGateway(string $type): GateWay\Base
 	{
-		if ($this->gateway === null)
+		if (self::$gateway === null)
 		{
-			$this->gateway = GateWay\Manager::getProvider($type);
+			self::$gateway = GateWay\Manager::getProvider($type);
 		}
 
-		return $this->gateway;
+		return self::$gateway;
 	}
 
 	public function processRequest(Payment $payment, Request $request): ServiceResult
@@ -231,16 +234,17 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			$result->setData([
 				'state'     => self::STEP_FINISHED,
 				'success'   => true,
-				'message'   => Main\Localization\Loc::getMessage('SUCCESS')
+				'message'   => Main\Localization\Loc::getMessage('SUCCESS'),
 			]);
 		}
 		catch (Secure3dRedirect $exception)
 		{
 			$result->setData([
 				'state'     => self::STEP_3DS,
-				'redirect'  => $exception->getUrl(),
-				'data'      => $exception->getData(),
-				'key'       => $exception->getKey(),
+				'success'   => true,
+				'action'    => $exception->getUrl(),
+				'md'        => $exception->getData(),
+				'pareq'      => $exception->getKey()
 			]);
 		}
 		catch (Main\SystemException $exception)
@@ -255,6 +259,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		$result = null;
 
+		self::readFromStream($request);
+
 		$externalId = $request->get('externalId');
 
 		if (!empty($externalId)) { return $externalId; }
@@ -265,51 +271,9 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		$gateway = $this->getGateway($gatewayType);
 
+		$gateway->setPayParams($this->getParamsBusValue());
+
 		$result = $gateway->getPaymentIdFromRequest($request);
-
-		return $result;
-	}
-
-	/**
-	 * @param Request $request
-	 * @param int     $paySystemId
-	 *
-	 * @return bool
-	 */
-	public static function isMyResponse(Request $request, $paySystemId): bool
-	{
-		$result = false;
-
-		self::readFromStream($request);
-
-		$paySystemIdRequest = $request->get('paySystemId');
-
-		if ((int)$paySystemIdRequest === (int)$paySystemId) { return true; }
-
-		$paySystem = \Bitrix\Sale\PaySystem\Manager::getObjectById($paySystemId);
-
-		if ($paySystem === null) { return $result; }
-
-		$actionFile = $paySystem->getField('ACTION_FILE');
-
-		[$className, $handlerType] = Manager::includeHandler($actionFile);
-
-		/** @var $handler $this  */
-		$handler = new $className($handlerType, $paySystem);
-
-		if (!($handler instanceof self)) { return $result; }
-
-		$params = $handler->getParamsBusValue();
-
-		$gatewayType = $handler->getHandlerMode();
-
-		if (empty($gatewayType)) { return $result; }
-
-		$gateway = $handler->getGateway($gatewayType);
-
-		$gateway->setPayParams($params);
-
-		$result = $gateway->isMyResponse($request, $paySystemId);
 
 		return $result;
 	}
@@ -317,19 +281,36 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	public function sendResponse(ServiceResult $result, Request $request): void
 	{
 		$errors = $result->getErrorMessages();
-
 		$response = $result->getData();
 
 		if (!empty($errors))
 		{
 			$response = [
-				'state'     => self::STEP_ERRORS,
+				'state'     => self::STEP_FAILURE,
 				'success'   => false,
-				'errors'    => $errors
+				'message'    => $errors
 			];
 		}
 
-		echo Main\Web\Json::encode($response);
+		if ($request->get('accept') === 'json')
+		{
+			echo Main\Web\Json::encode($response);
+		}
+		else
+		{
+			$this->renderResponseHtml($response, $request);
+		}
+	}
+
+	protected function renderResponseHtml(array $data, Request $request): void
+	{
+		if ($data['state'] === self::STEP_FINISHED && $request->get('backurl') !== null)
+		{
+			LocalRedirect($request->get('backurl'));
+			die();
+		}
+
+		ShowMessage($data['message']);
 	}
 
 	/**
@@ -352,7 +333,13 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	protected static function readFromStream(Request $request): void
 	{
-		$values = Main\Web\Json::decode(file_get_contents("php://input"));
+		if (!empty($request->getValues())) { return; }
+
+		$content = file_get_contents("php://input");
+
+		if (empty($content)) { return; }
+
+		$values = Main\Web\Json::decode($content);
 
 		if (!empty($values)) { $request->setValues($values); }
 	}
