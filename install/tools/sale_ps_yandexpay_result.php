@@ -21,7 +21,13 @@ if (
 	$context = Application::getInstance()->getContext();
 	$request = $context->getRequest();
 
-	$item = PaySystem\Manager::searchByRequest($request);
+	$item = PaySystem\Manager::getList([
+		'filter' => [
+			'=ACTION_FILE' => 'yandexpay',
+			'ACTIVE' => 'Y'
+		],
+		'select' => ['*']
+	])->fetch();
 
 	if ($item !== false)
 	{
