@@ -1,10 +1,10 @@
 <?php
 
-namespace Yandexpay\Pay\GateWay;
+namespace YandexPay\Pay\GateWay;
 
 use Bitrix\Main\Application;
 use Bitrix\Sale\Internals\PaySystemActionTable;
-use Yandexpay\Pay\Config;
+use YandexPay\Pay\Config;
 
 class Manager
 {
@@ -22,7 +22,7 @@ class Manager
 
 		foreach ($classListGateWay as $classGateWay)
 		{
-			/** @var \Yandexpay\Pay\GateWay\Base $gateWay */
+			/** @var \YandexPay\Pay\GateWay\Base $gateWay */
 			$gateWay = new $classGateWay();
 
 			$gateWayId = $gateWay->getId();

@@ -1,6 +1,6 @@
 <?php
 
-namespace Yandexpay\Pay\Utils;
+namespace YandexPay\Pay\Utils;
 
 use Bitrix\Main;
 

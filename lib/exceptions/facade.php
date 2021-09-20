@@ -1,6 +1,6 @@
 <?php
 
-namespace Yandexpay\Pay\Exceptions;
+namespace YandexPay\Pay\Exceptions;
 
 use Bitrix\Main;
 

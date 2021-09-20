@@ -1,8 +1,8 @@
 <?php
 
-namespace Yandexpay\Pay;
+namespace YandexPay\Pay;
 
-use Yandexpay\Pay\Psr;
+use YandexPay\Pay\Psr;
 
 class Logger extends Psr\Log\AbstractLogger
 {

@@ -1,7 +1,7 @@
 <?php
 
 use Bitrix\Main\Localization\Loc;
-use Yandexpay\Pay;
+use YandexPay\Pay;
 
 /** @var $this \Bitrix\Sale\PaySystem\BaseServiceHandler */
 

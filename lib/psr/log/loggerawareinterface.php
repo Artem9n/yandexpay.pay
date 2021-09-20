@@ -1,5 +1,5 @@
 <?php
-namespace Yandexpay\Pay\Psr\Log;
+namespace YandexPay\Pay\Psr\Log;
 
 /**
  * Describes a logger-aware instance

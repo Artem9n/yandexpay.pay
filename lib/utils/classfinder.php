@@ -1,9 +1,9 @@
 <?php
 
-namespace Yandexpay\Pay\Utils;
+namespace YandexPay\Pay\Utils;
 
 use Bitrix\Main;
-use Yandexpay\Pay;
+use YandexPay\Pay;
 
 class ClassFinder
 {

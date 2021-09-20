@@ -1,6 +1,6 @@
 <?php
 
-namespace Yandexpay\Pay\Psr\Log;
+namespace YandexPay\Pay\Psr\Log;
 
 /**
  * This is a simple Logger implementation that other Loggers can inherit from.

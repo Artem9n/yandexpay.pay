@@ -1,6 +1,6 @@
 <?php
 
-namespace Yandexpay\Pay;
+namespace YandexPay\Pay;
 
 use Bitrix\Main\Config\Option;
 use Bitrix\Main\Localization\Loc;

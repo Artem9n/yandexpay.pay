@@ -7,10 +7,9 @@ use Bitrix\Main\Loader;
 use Bitrix\Main\Request;
 use Bitrix\Sale\Payment;
 use Bitrix\Sale\PaySystem;
-use Bitrix\Sale\PaySystem\Manager;
 use Bitrix\Sale\PaySystem\ServiceResult;
-use Yandexpay\Pay\Exceptions\Secure3dRedirect;
-use Yandexpay\Pay\GateWay;
+use YandexPay\Pay\Exceptions\Secure3dRedirect;
+use YandexPay\Pay\GateWay;
 
 Loader::includeModule('yandexpay.pay');
 
@@ -25,7 +24,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	protected const YANDEX_TEST_MODE = 'SANDBOX';
 	protected const YANDEX_PRODUCTION_MODE = 'PRODUCTION';
 
-	/** @var \Yandexpay\Pay\GateWay\Base|null */
+	/** @var \YandexPay\Pay\GateWay\Base|null */
 	protected static $gateway;
 
 	protected function getPrefix(): string

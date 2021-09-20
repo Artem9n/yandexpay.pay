@@ -1,11 +1,11 @@
 <?php
 
-namespace Yandexpay\Pay\GateWay;
+namespace YandexPay\Pay\GateWay;
 
 use Bitrix\Main\Request;
 use Bitrix\Sale\Payment;
-use Yandexpay\Pay\Config;
-use Yandexpay\Pay\Reference\Concerns\HasMessage;
+use YandexPay\Pay\Config;
+use YandexPay\Pay\Reference\Concerns\HasMessage;
 
 abstract class Base implements IGateWay
 {

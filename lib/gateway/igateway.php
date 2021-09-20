@@ -1,6 +1,6 @@
 <?php
 
-namespace Yandexpay\Pay\GateWay;
+namespace YandexPay\Pay\GateWay;
 
 use Bitrix\Main\Request;
 use Bitrix\Sale\Payment;

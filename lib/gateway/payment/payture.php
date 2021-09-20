@@ -1,13 +1,13 @@
 <?php
 
-namespace Yandexpay\Pay\GateWay\Payment;
+namespace YandexPay\Pay\GateWay\Payment;
 
 use Bitrix\Main;
 use Bitrix\Main\Request;
 use Bitrix\Sale\Payment;
 use Bitrix\Main\Web\HttpClient;
-use Yandexpay\Pay\GateWay\Base;
-use Yandexpay\Pay\Reference\Concerns\HasMessage;
+use YandexPay\Pay\GateWay\Base;
+use YandexPay\Pay\Reference\Concerns\HasMessage;
 
 class Payture extends Base
 {
@@ -188,7 +188,7 @@ class Payture extends Base
 
 		if ($resultData['Success'] === self::STATUS_3DS)
 		{
-			throw new \Yandexpay\Pay\Exceptions\Secure3dRedirect(
+			throw new \YandexPay\Pay\Exceptions\Secure3dRedirect(
 				$resultData['ACSUrl'],
 				$resultData['ThreeDSKey'],
 				$resultData['PaReq']

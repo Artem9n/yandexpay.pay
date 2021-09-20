@@ -1,6 +1,6 @@
 <?php
 
-namespace Yandexpay\Pay\Reference;
+namespace YandexPay\Pay\Reference;
 
 use Bitrix\Main;
 

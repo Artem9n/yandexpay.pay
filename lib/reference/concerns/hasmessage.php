@@ -1,9 +1,9 @@
 <?php
 
-namespace Yandexpay\Pay\Reference\Concerns;
+namespace YandexPay\Pay\Reference\Concerns;
 
-use Yandexpay\Pay\Config;
-use Yandexpay\Pay\Utils\MessageRegistry;
+use YandexPay\Pay\Config;
+use YandexPay\Pay\Utils\MessageRegistry;
 
 trait HasMessage
 {

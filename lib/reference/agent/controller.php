@@ -1,10 +1,10 @@
 <?php
 
-namespace Yandexpay\Pay\Reference\Agent;
+namespace YandexPay\Pay\Reference\Agent;
 
 use Bitrix\Main;
 use CAgent;
-use Yandexpay\Pay\Config;
+use YandexPay\Pay\Config;
 
 class Controller
 {

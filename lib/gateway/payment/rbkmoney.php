@@ -1,14 +1,14 @@
 <?php
 
-namespace Yandexpay\Pay\GateWay\Payment;
+namespace YandexPay\Pay\GateWay\Payment;
 
 use Bitrix\Main;
 use Bitrix\Main\Request;
 use Bitrix\Main\Web\HttpClient;
 use Bitrix\Sale\Payment;
-use Yandexpay\Pay\Exceptions\Secure3dRedirect;
-use Yandexpay\Pay\GateWay\Base;
-use Yandexpay\Pay\Reference\Concerns\HasMessage;
+use YandexPay\Pay\Exceptions\Secure3dRedirect;
+use YandexPay\Pay\GateWay\Base;
+use YandexPay\Pay\Reference\Concerns\HasMessage;
 
 class Rbkmoney extends Base
 {

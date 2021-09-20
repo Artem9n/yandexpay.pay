@@ -1,9 +1,9 @@
 <?php
 
-namespace Yandexpay\Pay\Reference\Event;
+namespace YandexPay\Pay\Reference\Event;
 
 use Bitrix\Main;
-use Yandexpay\Pay\Config;
+use YandexPay\Pay\Config;
 
 class Controller
 {

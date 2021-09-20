@@ -2,7 +2,7 @@
 
 use Bitrix\Main;
 use Bitrix\Main\Localization\Loc;
-use Yandexpay\Pay;
+use YandexPay\Pay;
 
 Loc::loadMessages(__FILE__);
 
