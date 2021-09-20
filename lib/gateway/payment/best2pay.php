@@ -106,18 +106,10 @@ class Best2Pay extends Base
 			'yandexCryptogram'  => $yandexData['token'],
 			'action'            => self::ACTION_PAY
 		];
-
+		pr($data);
 		$httpClient->post($url, $data);
-		pr($httpClient);
 
-		preg_match_all('/name="(.*)" value="(.*)"/', $httpClient->getResult(), $match);
-
-		foreach ($match[1] as $key => $code)
-		{
-			$test[$code] = $match[2][$key];
-		}
-		pr($test);
-		pr($httpClient->getResult());
+		pr(Main\Text\Encoding::convertEncodingToCurrent($httpClient->getResult()));
 		pr($httpClient->getEffectiveUrl());
 
 		die;
@@ -247,8 +239,7 @@ class Best2Pay extends Base
 			'currency'      => $currency,
 			'description'   => $description,
 			'signature'     => $signature,
-			'reference'     => $reference,
-			//'url'           => 'https://yapay-1251.t-dir.com/personal/order/make/?ORDER_ID=116'
+			'reference'     => $reference
 		];
 	}
 
@@ -270,11 +261,6 @@ class Best2Pay extends Base
 		{
 			throw new Main\SystemException(self::getMessage('ERROR_' . $resultData['error']['code']));
 		}
-	}
-
-	public function isMyResponse(Request $request, int $paySystemId) : bool
-	{
-		// TODO: Implement isMyResponse() method.
 	}
 
 	public function getPaymentIdFromRequest(Request $request) : ?int

@@ -47,11 +47,11 @@ class Rbkmoney extends Base
 			'createResource'    => 'https://api.rbk.money/v2/processing/payment-resources',
 			'createInvoice'     => 'https://api.rbk.money/v2/processing/invoices',
 			'createToken'       => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/access-tokens',
-			'getInvoice'        => 'https://api.rbk.money/v2/processing/invoices?externalID=#EXTERNAL_ID#',
 			'createPay'         => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/payments',
+			'getInvoice'        => 'https://api.rbk.money/v2/processing/invoices?externalID=#EXTERNAL_ID#',
+			'getPayment'        => 'https://api.rbk.money/v2/processing/payments?externalID=#EXTERNAL_ID#',
 			'invoiceEvents'     => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/events?limit=100',
 			'refund'            => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/payments/#PAYMENT_ID#/refunds',
-			'getPayment'        => 'https://api.rbk.money/v2/processing/payments?externalID=#EXTERNAL_ID#'
 		];
 	}
 
@@ -96,7 +96,7 @@ class Rbkmoney extends Base
 		];
 	}
 
-	public function isMyResponse(Request $request, int $paySystemId): bool
+	public function getPaymentIdFromRequest(Request $request) : ?int
 	{
 		$result = false;
 
@@ -117,18 +117,10 @@ class Rbkmoney extends Base
 		if ($this->isVerifySignature($content, $decodedSignature, $webhookPublicKey))
 		{
 			$content = $this->convertResultData($content);
-			$result = ((int)$content['payment']['metadata']['paySystemId'] === $paySystemId);
+			$result = (int)$content['payment']['metadata']['externalId'];
 		}
 
 		return $result;
-	}
-
-	public function getPaymentIdFromRequest(Request $request) : ?int
-	{
-		$content = $this->readFromStream();
-		$content = $this->convertResultData($content);
-
-		return (int)$content['payment']['metadata']['externalId'];
 	}
 
 	protected function getSignatureFromHeader($contentSignature): string

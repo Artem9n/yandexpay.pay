@@ -3,7 +3,6 @@
 namespace Sale\Handlers\PaySystem;
 
 use Bitrix\Main;
-use Bitrix\Sale;
 use Bitrix\Main\Loader;
 use Bitrix\Main\Request;
 use Bitrix\Sale\Payment;
@@ -17,17 +16,17 @@ Loader::includeModule('yandexpay.pay');
 
 class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRefund, PaySystem\IPrePayable
 {
+	public const REQUEST_SIGN = 'yandexpay';
+
 	protected const STEP_3DS = '3ds';
 	protected const STEP_FINISHED = 'finished';
-	protected const STEP_ERRORS = 'errors';
+	protected const STEP_FAILURE = 'errors';
 
 	protected const YANDEX_TEST_MODE = 'SANDBOX';
 	protected const YANDEX_PRODUCTION_MODE = 'PRODUCTION';
 
 	/** @var \Yandexpay\Pay\GateWay\Base|null */
-	protected $gateway;
-
-	protected $handlerMode;
+	protected static $gateway;
 
 	protected function getPrefix(): string
 	{
@@ -46,6 +45,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		$gatewayMerchantId = $this->getParamValue($payment, $gatewayType. '_PAYMENT_GATEWAY_MERCHANT_ID');
 
 		$params = [
+			'requestSign'           => static::REQUEST_SIGN,
 			'order'                 => $this->getOrderData($payment),
 			'env'                   => $this->isTestMode($payment) ? self::YANDEX_TEST_MODE : self::YANDEX_PRODUCTION_MODE,
 			'merchantId'            => $this->getParamValue($payment, 'MERCHANT_ID'),
@@ -56,7 +56,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'gatewayMerchantId'     => $gatewayMerchantId,
 			'externalId'            => $payment->getId(),
 			'paySystemId'           => $this->service->getField('ID'),
-			'currency'              => $payment->getField('CURRENCY'),
+			'currency'              => $payment->getField('CURRENCY')
 		];
 
         if ($this->getGateway($gatewayType) !== null)
@@ -103,7 +103,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		{
 			$result['items'][] = [
 				'label'     => $basketItem->getField('NAME'),
-				'amount'    => number_format($basketItem->getFinalPrice(), 2, '.', ''),
+				'amount'    => number_format($basketItem->getFinalPrice(), 2, '.', '')
 			];
 		}
 
@@ -111,20 +111,14 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		{
 			$result['items'][] = [
 				'label'     => 'delivery',
-				'amount'    => number_format($deliveryPrice, 2, '.', ''),
+				'amount'    => number_format($deliveryPrice, 2, '.', '')
 			];
 		}
 
 		return $result;
 	}
 
-	/**
-	 * @param Payment|null $payment
-	 * @param string $code
-	 *
-	 * @return mixed
-	 */
-	protected function getParamValue(Payment $payment = null, $code)
+	protected function getParamValue(Payment $payment, $code)
 	{
 		$prefix = $this->getPrefix();
 
@@ -166,9 +160,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function initPrePayment(Payment $payment = null, Request $request)
 	{
-
-
-		return true;
+		// TODO: Implement initPrePayment() method.
 	}
 
 	public function getProps()
@@ -178,7 +170,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function payOrder($orderData = array())
 	{
-		pr(123);
+		// TODO: Implement payOrder() method.
 	}
 
 	public function setOrderConfig($orderData = array())
@@ -188,55 +180,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function basketButtonAction($orderData)
 	{
-		global $USER;
-
-		$gatewayType = $this->getHandlerMode();
-		$basket = [];
-		$gatewayMerchantId = $this->getParamValue(null, $gatewayType. '_PAYMENT_GATEWAY_MERCHANT_ID');
-		$basket = Sale\Basket::loadItemsForFUser(Sale\Fuser::getId(), Main\Context::getCurrent()->getSite());
-
-		$order = Sale\Order::create(Main\Context::getCurrent()->getSite(), $USER->GetID());
-        $order->setPersonTypeId(1);
-        $order->setBasket($basket);
-
-
-		pr($order->getBasket());
-		pr($basket);
-
-		/** @var \Bitrix\Sale\BasketItem $basketItem */
-		foreach ($basket as $basketItem)
-		{
-			pr($basketItem->getPrice());
-		}
-		/*foreach ($orderData['BASKET_ITEMS'] as $item)
-		{
-			$basket['items'][] = [
-				'label'     => $item['NAME'],
-				'amount'    => $item['PRICE'] *
-			];
-		}
-
-
-		$params = [
-			'order'                 => $this->getOrderData(null),
-			'env'                   => $this->isTestMode(null) ? self::YANDEX_TEST_MODE : self::YANDEX_PRODUCTION_MODE,
-			'merchantId'            => $this->getParamValue(null, 'MERCHANT_ID'),
-			'merchantName'          => $this->getParamValue(null, 'MERCHANT_NAME'),
-			'buttonTheme'           => $this->getParamValue(null, 'VARIANT_BUTTON'),
-			'buttonWidth'           => $this->getParamValue(null, 'WIDTH_BUTTON'),
-			'gateway'               => mb_strtolower($gatewayType),
-			'gatewayMerchantId'     => $gatewayMerchantId,
-			'externalId'            => 333,
-			'paySystemId'           => $this->service->getField('ID'),
-			'currency'              => 'RUB'
-		];
-
-		$this->setExtraParams($params);
-
-
-		$showTemplateResult = $this->showTemplate(null, 'template');*/
-
-
+		// TODO: Implement basketButtonAction() method.
 	}
 
 	/**
@@ -251,12 +195,12 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	protected function getGateway(string $type): GateWay\Base
 	{
-		if ($this->gateway === null)
+		if (self::$gateway === null)
 		{
-			$this->gateway = GateWay\Manager::getProvider($type);
+			self::$gateway = GateWay\Manager::getProvider($type);
 		}
 
-		return $this->gateway;
+		return self::$gateway;
 	}
 
 	public function processRequest(Payment $payment, Request $request): ServiceResult
@@ -277,7 +221,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			{
 				$fields = [
 					'PS_STATUS'         => 'Y',
-					'PS_RESPONSE_DATE'  => new Main\Type\DateTime(),
+					'PS_RESPONSE_DATE'  => new Main\Type\DateTime()
 				] + $resultData;
 
 				if (!$payment->isPaid())
@@ -297,9 +241,10 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		{
 			$result->setData([
 				'state'     => self::STEP_3DS,
-				'redirect'  => $exception->getUrl(),
-				'data'      => $exception->getData(),
-				'key'       => $exception->getKey(),
+				'success'   => true,
+				'action'    => $exception->getUrl(),
+				'md'        => $exception->getData(),
+				'pareq'      => $exception->getKey()
 			]);
 		}
 		catch (Main\SystemException $exception)
@@ -314,6 +259,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		$result = null;
 
+		self::readFromStream($request);
+
 		$externalId = $request->get('externalId');
 
 		if (!empty($externalId)) { return $externalId; }
@@ -324,51 +271,9 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		$gateway = $this->getGateway($gatewayType);
 
+		$gateway->setPayParams($this->getParamsBusValue());
+
 		$result = $gateway->getPaymentIdFromRequest($request);
-
-		return $result;
-	}
-
-	/**
-	 * @param Request $request
-	 * @param int     $paySystemId
-	 *
-	 * @return bool
-	 */
-	public static function isMyResponse(Request $request, $paySystemId): bool
-	{
-		$result = false;
-
-		self::readFromStream($request);
-
-		$paySystemIdRequest = $request->get('paySystemId');
-
-		if ((int)$paySystemIdRequest === (int)$paySystemId) { return true; }
-
-		$paySystem = \Bitrix\Sale\PaySystem\Manager::getObjectById($paySystemId);
-
-		if ($paySystem === null) { return $result; }
-
-		$actionFile = $paySystem->getField('ACTION_FILE');
-
-		[$className, $handlerType] = Manager::includeHandler($actionFile);
-
-		/** @var $handler $this  */
-		$handler = new $className($handlerType, $paySystem);
-
-		if (!($handler instanceof self)) { return $result; }
-
-		$params = $handler->getParamsBusValue();
-
-		$gatewayType = $handler->getHandlerMode();
-
-		if (empty($gatewayType)) { return $result; }
-
-		$gateway = $handler->getGateway($gatewayType);
-
-		$gateway->setPayParams($params);
-
-		$result = $gateway->isMyResponse($request, $paySystemId);
 
 		return $result;
 	}
@@ -376,19 +281,36 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	public function sendResponse(ServiceResult $result, Request $request): void
 	{
 		$errors = $result->getErrorMessages();
-
 		$response = $result->getData();
 
 		if (!empty($errors))
 		{
 			$response = [
-				'state'     => self::STEP_ERRORS,
+				'state'     => self::STEP_FAILURE,
 				'success'   => false,
-				'errors'    => $errors,
+				'message'    => $errors
 			];
 		}
 
-		echo Main\Web\Json::encode($response);
+		if ($request->get('accept') === 'json')
+		{
+			echo Main\Web\Json::encode($response);
+		}
+		else
+		{
+			$this->renderResponseHtml($response, $request);
+		}
+	}
+
+	protected function renderResponseHtml(array $data, Request $request): void
+	{
+		if ($data['state'] === self::STEP_FINISHED && $request->get('backurl') !== null)
+		{
+			LocalRedirect($request->get('backurl'));
+			die();
+		}
+
+		ShowMessage($data['message']);
 	}
 
 	/**
@@ -401,46 +323,23 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	protected function getHandlerMode(): string
 	{
-		if ($this->handlerMode === null)
-		{
-			$this->handlerMode = $this->service->getField('PS_MODE');
-		}
-
-		if ($this->handlerMode === null)
-		{
-			$this->handlerMode = $this->loadHandlerMode($this->service->getField('ID'));
-		}
-
-		return $this->handlerMode;
+		return $this->service->getField('PS_MODE');
 	}
 
-	protected function loadHandlerMode(int $serviceId): string
+	public function isNewWindow(): bool
 	{
-		$result = null;
-
-		$query = Paysystem\Manager::getList([
-			'select' => [
-				'ID', 'PS_MODE',
-			],
-			'filter' => [
-				'=ID' => $serviceId,
-				'ACTIVE' => 'Y',
-				'HAVE_PREPAY' => 'Y',
-			],
-			'limit' => 1,
-		]);
-
-		if ($service = $query->fetch())
-		{
-			$result = $service['PS_MODE'];
-		}
-
-		return $result;
+		return $this->service->getField('NEW_WINDOW') === 'Y';
 	}
 
 	protected static function readFromStream(Request $request): void
 	{
-		$values = Main\Web\Json::decode(file_get_contents("php://input"));
+		if (!empty($request->getValues())) { return; }
+
+		$content = file_get_contents("php://input");
+
+		if (empty($content)) { return; }
+
+		$values = Main\Web\Json::decode($content);
 
 		if (!empty($values)) { $request->setValues($values); }
 	}

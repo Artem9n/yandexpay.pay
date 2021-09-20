@@ -16,10 +16,10 @@ abstract class Base implements IGateWay
 
 	protected static $sort = 0;
 
+	protected $isPaySecure3ds = false;
+
 	/** @var array */
 	protected $params = [];
-
-	abstract public function isMyResponse(Request $request, int $paySystemId): bool;
 
 	abstract public function getPaymentIdFromRequest(Request $request): ?int;
 
@@ -68,6 +68,16 @@ abstract class Base implements IGateWay
 	public function getPayParams(): array
 	{
 		return $this->params;
+	}
+
+	public function setPaySecure3ds(bool $secure): void
+	{
+		$this->isPaySecure3ds = $secure;
+	}
+
+	public function isPaySecure3ds(): bool
+	{
+		return $this->isPaySecure3ds;
 	}
 
 	public function getPayParamsKey(string $key, $isStrict = false)
