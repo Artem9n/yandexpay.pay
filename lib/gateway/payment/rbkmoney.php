@@ -47,11 +47,11 @@ class Rbkmoney extends Base
 			'createResource'    => 'https://api.rbk.money/v2/processing/payment-resources',
 			'createInvoice'     => 'https://api.rbk.money/v2/processing/invoices',
 			'createToken'       => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/access-tokens',
-			'getInvoice'        => 'https://api.rbk.money/v2/processing/invoices?externalID=#EXTERNAL_ID#',
 			'createPay'         => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/payments',
+			'getInvoice'        => 'https://api.rbk.money/v2/processing/invoices?externalID=#EXTERNAL_ID#',
+			'getPayment'        => 'https://api.rbk.money/v2/processing/payments?externalID=#EXTERNAL_ID#',
 			'invoiceEvents'     => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/events?limit=100',
 			'refund'            => 'https://api.rbk.money/v2/processing/invoices/#INVOICE_ID#/payments/#PAYMENT_ID#/refunds',
-			'getPayment'        => 'https://api.rbk.money/v2/processing/payments?externalID=#EXTERNAL_ID#'
 		];
 	}
 
