@@ -98,15 +98,15 @@ class Rbkmoney extends Base
 
 	public function getPaymentIdFromRequest(Request $request) : ?int
 	{
-		$result = false;
+		$result = null;
 
 		$contentSignature = $request->getServer()->get('HTTP_CONTENT_SIGNATURE');
 
-		if ($contentSignature === null) { return $result; }
+		if ($contentSignature === null) { return null; }
 
 		$signature = $this->getSignatureFromHeader($contentSignature);
 
-		if (empty($signature)) { return $result; }
+		if (empty($signature)) { return null; }
 
 		$decodedSignature = $this->urlSafeBase64decode($signature);
 
@@ -381,7 +381,7 @@ class Rbkmoney extends Base
 
 	protected function buildDataPayment(Payment $payment, Request $request, array $resourceData): string
 	{
-		$externalId = $request->get('externalId');
+		$externalId = (string)$request->get('externalId');
 		$order = $payment->getOrder();
 
 		$propertyCollection = $order->getPropertyCollection();
@@ -401,7 +401,7 @@ class Rbkmoney extends Base
 		}
 
 		return Main\Web\Json::encode([
-			'externalID'    => (string)$externalId,
+			'externalID'    => $externalId,
 			'flow'          => [
 				'type' => self::PAYMENT_FLOW_TYPE,
 			],
@@ -412,7 +412,7 @@ class Rbkmoney extends Base
 				'contactInfo'       => $contactInfo,
 			],
 			'metadata'  => [
-				'externalId'    => (string)$externalId,
+				'externalId'    => $externalId,
 				'paySystemId'   => $request->get('paySystemId'),
 				'orderId'       => $payment->getOrderId()
 			],

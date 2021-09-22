@@ -45,6 +45,16 @@ class Payture extends Base
 		];
 	}
 
+	protected function getGatewayApiKey(): ?string
+	{
+		return $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
+	}
+
+	protected function getGatewayPassword(): ?string
+	{
+		return $this->getPayParamsKey('PAYMENT_GATEWAY_PASSWORD');
+	}
+
 	public function extraParams(string $code = '') : array
 	{
 		return [
@@ -64,7 +74,7 @@ class Payture extends Base
 	public function startPay(Payment $payment, Request $request) : array
 	{
 		$result = [
-			'PS_INVOICE_ID'     => $payment->getOrderId(),
+			'PS_INVOICE_ID'     => $payment->getId(),
 			'PS_SUM'            => $payment->getSum()
 		];
 
@@ -75,6 +85,13 @@ class Payture extends Base
 			return $result;
 		}
 
+		$this->createPayment($payment, $request);
+
+		return $result;
+	}
+
+	protected function createPayment(Payment $payment, Request $request): void
+	{
 		$httpClient = new HttpClient();
 
 		$data = $this->buildData($payment, $request);
@@ -88,8 +105,6 @@ class Payture extends Base
 		$resultData = $this->convertResultData($httpClient->getResult());
 
 		$this->checkResult($resultData, $httpClient->getStatus());
-
-		return $result;
 	}
 
 	protected function createPaySecure(Payment $payment, Request $request): void
@@ -97,8 +112,8 @@ class Payture extends Base
 		$httpClient = new HttpClient();
 
 		$data = [
-			'Key'       => $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY'),
-			'OrderId'   => $payment->getOrderId(),
+			'Key'       => $this->getGatewayApiKey(),
+			'OrderId'   => $payment->getId(),
 			'PaRes'     => $request->get('PaRes')
 		];
 
@@ -130,13 +145,12 @@ class Payture extends Base
 	protected function buildData(Payment $payment, Request $request): array
 	{
 		$requestData = $request->toArray();
-		$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
 
 		return [
 			'PayToken'  => $requestData['yandexData']['token'],
-			'OrderId'   => $payment->getOrderId(),
+			'OrderId'   => $payment->getId(),
 			'Amount'    => round($payment->getSum() * 100),
-			'Key'       => $apiKey
+			'Key'       => $this->getGatewayApiKey()
 		];
 	}
 
@@ -155,13 +169,10 @@ class Payture extends Base
 		$httpClient = new HttpClient();
 		$url = $this->getUrl('refund');
 
-		$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
-		$password = $this->getPayParamsKey('PAYMENT_GATEWAY_PASSWORD');
-
 		$data = [
-			'Key'       => $apiKey,
-			'Password'  => $password,
-			'OrderId'   => $payment->getOrderId(),
+			'Key'       => $this->getGatewayApiKey(),
+			'Password'  => $this->getGatewayPassword(),
+			'OrderId'   => $payment->getId(),
 			'Amount'    => round($payment->getSum() * 100)
 		];
 

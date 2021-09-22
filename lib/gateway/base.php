@@ -104,6 +104,11 @@ abstract class Base implements IGateWay
 		] + $extraParams;
 	}
 
+	public function getMerchantId(): string
+	{
+		return $this->getPayParamsKey('PAYMENT_GATEWAY_MERCHANT_ID');
+	}
+
 	protected static function getPrefix(): string
 	{
 		return Config::getLangPrefix();

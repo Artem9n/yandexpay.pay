@@ -2,7 +2,7 @@
 
 $jsConfig = [
 	'yandexpay.sdk' => [
-		'js' => 'https://pay.yandex.ru/sdk/v1/pay.js'
+		'js' => 'https://sandbox.pay.yandex.ru/sdk/v1/pay.js'//'https://pay.yandex.ru/sdk/v1/pay.js'
 	],
 ];
 
