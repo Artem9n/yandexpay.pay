@@ -40,6 +40,22 @@ class Assert
 		}
 	}
 
+	public static function isString($value, $argument): void
+	{
+		if (!is_string($value))
+		{
+			throw new Main\ArgumentException($argument, 'String');
+		}
+	}
+
+	public static function isNumber($value, $argument): void
+	{
+		if (!is_numeric($value))
+		{
+			throw new Main\ArgumentException($argument, 'Number');
+		}
+	}
+
 	public static function isSubclassOf($className, $parentName): void
 	{
 		if (!is_subclass_of($className, $parentName))
