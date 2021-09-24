@@ -1,0 +1,3 @@
+<?php
+
+$MESS['YANDEXPAY_PAY_T_GRID_ADMIN_GRID_FILTER_ANY'] = '(все)';
