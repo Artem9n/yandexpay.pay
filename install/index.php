@@ -71,25 +71,49 @@ class yandexpay_pay extends CModule
 
 	public function DoUninstall(): void
 	{
-		if (Main\Loader::includeModule($this->MODULE_ID))
-		{
-			$this->UnInstallDB();
-			$this->UnInstallEvents();
-			$this->UnInstallAgents();
-			$this->UnInstallFiles();
-		}
+		global $APPLICATION, $step;
 
-		Main\ModuleManager::unRegisterModule($this->MODULE_ID);
+		$step = (int)$step;
+
+		if ($step < 2)
+		{
+			$title = Loc::getMessage('YANDEX_PAY_UNINSTALL', [
+				'#NAME#' => Loc::getMessage('YANDEX_PAY_MODULE_NAME'),
+			]);
+
+			$APPLICATION->IncludeAdminFile($title, __DIR__ . '/unstep1.php');
+		}
+		else if ($step === 2)
+		{
+			if (Main\Loader::includeModule($this->MODULE_ID))
+			{
+				$request = Main\Context::getCurrent()->getRequest();
+				$isSaveData = $request->get('savedata') === 'Y';
+
+				if (!$isSaveData)
+				{
+					$this->UnInstallDB();
+				}
+
+				$this->UnInstallEvents();
+				$this->UnInstallAgents();
+				$this->UnInstallFiles();
+			}
+
+			Main\ModuleManager::unRegisterModule($this->MODULE_ID);
+		}
 	}
 
 	public function InstallDB()
 	{
-		// nothing
+		$controller = new Pay\Reference\Storage\Controller();
+		$controller->createTable();
 	}
 
 	public function UnInstallDB(): void
 	{
-		// nothing
+		$controller = new Pay\Reference\Storage\Controller();
+		$controller->dropTable();
 	}
 
 	public function InstallEvents(): void
