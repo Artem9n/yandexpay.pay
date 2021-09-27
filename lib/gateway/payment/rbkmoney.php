@@ -3,9 +3,7 @@
 namespace YandexPay\Pay\GateWay\Payment;
 
 use Bitrix\Main;
-use Bitrix\Main\Request;
 use Bitrix\Main\Web\HttpClient;
-use Bitrix\Sale\Payment;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\GateWay\Base;
 use YandexPay\Pay\Reference\Concerns\HasMessage;
@@ -14,7 +12,7 @@ class Rbkmoney extends Base
 {
 	use HasMessage;
 
-	protected static $sort = 200;
+	protected $sort = 200;
 
 	protected const STATUS_PAID = 'processed';
 	protected const STATUS_FAILED = 'failed';
@@ -30,6 +28,8 @@ class Rbkmoney extends Base
 	protected const RESOURCE_PAYMENT_TYPE = 'TokenizedCardData';
 
 	protected const WEBHOOK_TYPE_PROCESSED = 'PaymentProcessed';
+
+	protected const REQUEST_TYPE_POST = 'BrowserPostRequest';
 
 	public function getId() : string
 	{
@@ -96,11 +96,11 @@ class Rbkmoney extends Base
 		];
 	}
 
-	public function getPaymentIdFromRequest(Request $request) : ?int
+	public function getPaymentIdFromRequest() : ?int
 	{
 		$result = null;
 
-		$contentSignature = $request->getServer()->get('HTTP_CONTENT_SIGNATURE');
+		$contentSignature = $this->request->getServer()->get('HTTP_CONTENT_SIGNATURE');
 
 		if ($contentSignature === null) { return null; }
 
@@ -110,14 +110,14 @@ class Rbkmoney extends Base
 
 		$decodedSignature = $this->urlSafeBase64decode($signature);
 
-		$content = $this->readFromStream();
+		$content = file_get_contents('php://input');
 
-		$webhookPublicKey = $this->getPayParamsKey('WEBHOOK_PROCESSED_KEY');
+		$webhookPublicKey = $this->getParameter('WEBHOOK_PROCESSED_KEY');
 
 		if ($this->isVerifySignature($content, $decodedSignature, $webhookPublicKey))
 		{
-			$content = $this->convertResultData($content);
-			$result = (int)$content['payment']['metadata']['externalId'];
+			$payment = $this->request->get('payment');
+			$result = (int)$payment['metadata']['externalId'];
 		}
 
 		return $result;
@@ -146,45 +146,46 @@ class Rbkmoney extends Base
 		return ($verify === 1);
 	}
 
-	protected function processWebHook(Payment $payment): array
+	protected function processWebHook(): array
 	{
 		$result = [];
-		$content = $this->convertResultData($this->readFromStream());
 
-		$webhook = $content['eventType'];
+		$webhook = $this->request->get('eventType');
 
 		if ($webhook !== self::WEBHOOK_TYPE_PROCESSED) { return $result; }
 
-		$shopId = $this->getPayParamsKey('PAYMENT_GATEWAY_SHOP_ID');
-		$orderId = $payment->getOrderId();
+		$shopId = $this->getParameter('PAYMENT_GATEWAY_SHOP_ID');
+		$orderId = $this->getOrderId();
+		$payment = $this->request->get('payment');
+		$invoice = $this->request->get('invoice');
 
 		if (
-			$content['payment']['status'] === self::STATUS_PAID
-			&& (int)$orderId === (int)$content['payment']['metadata']['orderId']
-			&& $content['invoice']['shopID'] === $shopId
+			$payment['status'] === self::STATUS_PAID
+			&& $orderId === $payment['metadata']['orderId']
+			&& $invoice['shopID'] === $shopId
 		)
 		{
 			$result = [
-				'PS_INVOICE_ID'     => $content['invoice']['id'],
-				'PS_STATUS_CODE'    => $content['payment']['status'],
-				'PS_SUM'            => $payment->getSum()
+				'PS_INVOICE_ID'     => $invoice['id'],
+				'PS_STATUS_CODE'    => $payment['status'],
+				'PS_SUM'            => $this->getPaymentSum()
 			];
 		}
 
 		return $result;
 	}
 
-	public function startPay(Payment $payment, Request $request) : array
+	public function startPay() : array
 	{
-		$fields = $this->processWebHook($payment);
+		$fields = $this->processWebHook();
 
 		if (!empty($fields)) { return $fields; }
 
-		[$invoiceId, $invoiceToken] = $this->buildInvoice($payment, $request);
+		[$invoiceId, $invoiceToken] = $this->buildInvoice();
 
-		$resource = $this->createPaymentResource($payment, $request, $invoiceToken);
+		$resource = $this->createPaymentResource($invoiceToken);
 
-		$this->createPayment($payment, $request, $invoiceId, $invoiceToken, $resource);
+		$this->createPayment($invoiceId, $invoiceToken, $resource);
 
 		$this->checkInvoiceEvents($invoiceId);
 
@@ -195,7 +196,7 @@ class Rbkmoney extends Base
 	{
 		$result = [];
 
-		$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
+		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 
 		$httpClient = new HttpClient();
 
@@ -222,7 +223,7 @@ class Rbkmoney extends Base
 
 	protected function createAccessToken(string $invoiceId): string
 	{
-		$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
+		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 
 		$url = $this->getUrl('createToken', ['#INVOICE_ID#' => $invoiceId]);
 
@@ -239,26 +240,26 @@ class Rbkmoney extends Base
 		return $result['payload'];
 	}
 
-	protected function buildInvoice(Payment $payment, Request $request): array
+	protected function buildInvoice(): array
 	{
-		$externalId = (string)$payment->getId();
+		$externalId = $this->getExternalId();
 
 		$invoice = $this->getInvoiceByExternalId($externalId);
 
 		if (!empty($invoice)) { return $invoice; }
 
-		return $this->createInvoice($payment, $request);
+		return $this->createInvoice();
 	}
 
-	protected function createInvoice(Payment $payment, Request $request): array
+	protected function createInvoice(): array
 	{
-		$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
+		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 
 		$httpClient = new HttpClient();
 
 		$url = $this->getUrl('createInvoice');
 
-		$data = $this->buildDataInvoice($payment, $request);
+		$data = $this->buildDataInvoice();
 
 		$httpClient->setHeaders($this->getHeaders($apiKey));
 
@@ -271,11 +272,11 @@ class Rbkmoney extends Base
 		return [$result['invoice']['id'], $result['invoiceAccessToken']['payload']];
 	}
 
-	protected function buildDataInvoice(Payment $payment, Request $request): string
+	protected function buildDataInvoice(): string
 	{
 		$cart = [];
 
-		$order = $payment->getOrder();
+		$order = $this->payment->getOrder();
 		$basket = $order->getBasket();
 		$deliveryPrice = $order->getDeliveryPrice();
 
@@ -299,18 +300,18 @@ class Rbkmoney extends Base
 		}
 
 		return Main\Web\Json::encode([
-			'shopID'    => $this->getPayParamsKey('PAYMENT_GATEWAY_SHOP_ID'),
+			'shopID'    => $this->getParameter('PAYMENT_GATEWAY_SHOP_ID'),
 			'dueDate'   => $this->getDueDate(),
-			'currency'  => $payment->getField('CURRENCY'),
+			'currency'  => $this->getPaymentField('CURRENCY'),
 			'product'   => static::getMessage('PRODUCT_NAME', ['#ORDER_ID#' => $order->getId()]),
 			'cart'      => $cart,
 			'metadata'  => [
-				'externalId'    => $request->get('externalId'),
-				'paySystemId'   => $request->get('paySystemId'),
-				'orderId'       => $payment->getOrderId()
+				'externalId'    => $this->getPaymentId(),
+				'paySystemId'   => $this->payment->getPaymentSystemId(),
+				'orderId'       => $this->getOrderId()
 			],
-			'amount'    => round($payment->getSum() * 100),
-			'externalID'=> (string)$request->get('externalId')
+			'amount'    => $this->getPaymentAmount(),
+			'externalID'=> $this->getExternalId()
 		]);
 	}
 
@@ -321,9 +322,9 @@ class Rbkmoney extends Base
 		return $date->add('+1 day')->format('Y-m-d\TH:i:s.u\Z');
 	}
 
-	protected function createPaymentResource(Payment $payment, Request $request, string $token): array
+	protected function createPaymentResource(string $token): array
 	{
-		$data = $this->buildDataResource($payment, $request);
+		$data = $this->buildDataResource();
 
 		$httpClient = new HttpClient();
 
@@ -340,33 +341,29 @@ class Rbkmoney extends Base
 		return $result;
 	}
 
-	protected function buildDataResource(Payment $payment, Request $request): string
+	protected function buildDataResource(): string
 	{
-		$merchantId = $this->getPayParamsKey('PAYMENT_GATEWAY_MERCHANT_ID');
-		$yandexData = $request->get('yandexData');
-		$externalId = $request->get('externalId');
-
-		$userAgent = $request->getServer()->get('HTTP_USER_AGENT');
+		$userAgent = $this->request->getServer()->get('HTTP_USER_AGENT');
 
 		return Main\Web\Json::encode([
 			'paymentTool' => [
 				'provider'          => self::RESOURCE_PROVIDER,
 				'paymentToolType'   => self::RESOURCE_PAYMENT_TYPE,
-				'gatewayMerchantID' => $merchantId,
-				'paymentToken'      => $yandexData,
+				'gatewayMerchantID' => $this->getParameter('PAYMENT_GATEWAY_MERCHANT_ID'),
+				'paymentToken'      => $this->getYandexData(),
 			],
 			'clientInfo' => [
 				'fingerprint'   => $userAgent,
 			],
-			'externalID' => (string)$externalId,
+			'externalID' => $this->getExternalId()
 		]);
 	}
 
-	protected function createPayment(Payment $payment, Request $request, string $invoiceId, string $token, array $resourceData): void
+	protected function createPayment(string $invoiceId, string $token, array $resourceData): void
 	{
 		$url = $this->getUrl('createPay', ['#INVOICE_ID#' => $invoiceId]);
 
-		$data = $this->buildDataPayment($payment, $request, $resourceData);
+		$data = $this->buildDataPayment($resourceData);
 
 		$httpClient = new HttpClient();
 
@@ -379,10 +376,9 @@ class Rbkmoney extends Base
 		$this->checkResult($resultData, $httpClient->getStatus());
 	}
 
-	protected function buildDataPayment(Payment $payment, Request $request, array $resourceData): string
+	protected function buildDataPayment(array $resourceData): string
 	{
-		$externalId = (string)$request->get('externalId');
-		$order = $payment->getOrder();
+		$order = $this->payment->getOrder();
 
 		$propertyCollection = $order->getPropertyCollection();
 
@@ -401,7 +397,7 @@ class Rbkmoney extends Base
 		}
 
 		return Main\Web\Json::encode([
-			'externalID'    => $externalId,
+			'externalID'    => $this->getExternalId(),
 			'flow'          => [
 				'type' => self::PAYMENT_FLOW_TYPE,
 			],
@@ -410,38 +406,47 @@ class Rbkmoney extends Base
 				'paymentSession'    => $resourceData['paymentSession'],
 				'payerType'         => self::PAYMENT_PAYER_TYPE,
 				'contactInfo'       => $contactInfo,
+				'sessionInfo'       => [
+					'redirectUrl'   => $this->request->getServer()->get('HTTP_REFERER')
+				]
 			],
 			'metadata'  => [
-				'externalId'    => $externalId,
-				'paySystemId'   => $request->get('paySystemId'),
-				'orderId'       => $payment->getOrderId()
+				'externalId'    => $this->getPaymentId(),
+				'paySystemId'   => $this->payment->getPaymentSystemId(),
+				'orderId'       => $this->getOrderId()
 			],
-		], JSON_FORCE_OBJECT);
-
+		]);
 	}
 
 	protected function checkInvoiceEvents(string $invoiceId): void
 	{
 		for ($seconds = 0; $seconds < 5; $seconds++)
 		{
-			$httpClient = new HttpClient();
-
-			$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
-
-			$url = $this->getUrl('invoiceEvents', ['#INVOICE_ID#' => $invoiceId]);
-
-			$httpClient->setHeaders($this->getHeaders($apiKey));
-
-			$httpClient->get($url);
-
-			$resultData = $this->convertResultData($httpClient->getResult());
-
-			$this->checkResult($resultData, $httpClient->getStatus());
+			$resultData = $this->getInvoiceDataEvents($invoiceId);
 
 			if ($this->checkStatusPay($resultData)) { break; }
 
 			sleep(1);
 		}
+	}
+
+	protected function getInvoiceDataEvents(string $invoiceId) : array
+	{
+		$httpClient = new HttpClient();
+
+		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
+
+		$url = $this->getUrl('invoiceEvents', ['#INVOICE_ID#' => $invoiceId]);
+
+		$httpClient->setHeaders($this->getHeaders($apiKey));
+
+		$httpClient->get($url);
+
+		$resultData = $this->convertResultData($httpClient->getResult());
+
+		$this->checkResult($resultData, $httpClient->getStatus());
+
+		return $resultData;
 	}
 
 	protected function checkResult(array $resultData, int $status): void
@@ -484,7 +489,18 @@ class Rbkmoney extends Base
 		{
 			if ($change['changeType'] === self::TYPE_EVENT_3DS)
 			{
-				throw new Secure3dRedirect($change['userInteraction']['uriTemplate'], $change['userInteraction'], $change['paymentID']);
+				$requestType = $change['userInteraction']['request']['requestType'];
+
+				$method = ($requestType === self::REQUEST_TYPE_POST ? 'POST' : 'GET');
+
+				$params = [];
+
+				foreach ($change['userInteraction']['request']['form'] as $param)
+				{
+					$params[$param['key']] = $param['template'];
+				}
+
+				throw new Secure3dRedirect($change['userInteraction']['request']['uriTemplate'], $params, false, $method);
 			}
 
 			if (
@@ -524,7 +540,7 @@ class Rbkmoney extends Base
 	{
 		$httpClient = new HttpClient();
 
-		$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
+		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 
 		$url = $this->getUrl('getPayment', ['#EXTERNAL_ID#' => $id]);
 
@@ -544,21 +560,19 @@ class Rbkmoney extends Base
 		return (string)$result['id'];
 	}
 
-	public function refund(Payment $payment, $refundableSum): void
+	public function refund(): void
 	{
-		$externalId = (string)$payment->getId();
+		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 
-		$apiKey = $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
+		$invoiceId = $this->getPaymentField('PS_INVOICE_ID');
 
-		$invoiceId = $payment->getField('PS_INVOICE_ID');
-
-		$paymentId = $this->getPaymentIdByExternalId($externalId);
+		$paymentId = $this->getPaymentIdByExternalId($this->getExternalId());
 
 		$httpClient = new HttpClient();
 
 		$url = $this->getUrl('refund', ['#INVOICE_ID#' => $invoiceId, '#PAYMENT_ID#' => $paymentId]);
 
-		$data = $this->buildDataRefund($payment);
+		$data = $this->buildDataRefund();
 
 		$httpClient->setHeaders($this->getHeaders($apiKey));
 
@@ -569,23 +583,17 @@ class Rbkmoney extends Base
 		$this->checkResult($result, $httpClient->getStatus());
 	}
 
-	protected function buildDataRefund(Payment $payment)
+	protected function buildDataRefund()
 	{
-		$application = Main\Application::getInstance();
-		$index = $payment->getInternalIndex();
-		$comment = '';
-
-		if ($application !== null)
-		{
-			$request = $application->getContext()->getRequest()->toArray();
-			$comment = $request['data']['PAY_RETURN_COMMENT_' . $index];
-		}
+		$index = $this->payment->getInternalIndex();
+		$data = $this->request->get('data');
+		$comment = $data['PAY_RETURN_COMMENT_' . $index] ?? '';
 
 		return Main\Web\Json::encode([
-			'externalID'    => (string)$payment->getId(),
-			'amount'        => round($payment->getSum() * 100),
-			'currency'      => $payment->getField('CURRENCY'),
-			'reason'        => \Bitrix\Main\Text\Encoding::convertEncodingToCurrent($comment)
+			'externalID'    => $this->getExternalId(),
+			'amount'        => $this->getPaymentAmount(),
+			'currency'      => $this->getPaymentField('CURRENCY'),
+			'reason'        => Main\Text\Encoding::convertEncodingToCurrent($comment)
 		]);
 	}
 }

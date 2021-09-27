@@ -2,6 +2,8 @@
 
 namespace YandexPay\Pay\GateWay;
 
+use Bitrix\Main;
+use Bitrix\Sale;
 use Bitrix\Main\Application;
 use Bitrix\Sale\Internals\PaySystemActionTable;
 use YandexPay\Pay\Config;
@@ -41,7 +43,7 @@ class Manager
 
 	protected static function getClassList(): array
 	{
-		$baseClassName = Base::getClassName();
+		$baseClassName = Base::class;
 
 		$baseDir = Config::getModulePath();
 		$baseNamespace = Config::getNamespace();
@@ -155,7 +157,7 @@ class Manager
 	}
 
 
-	public static function getProvider(string $type): Base
+	public static function getProvider(string $type, Sale\Payment $payment = null, Main\Request $request = null): Base
 	{
 		$className = '\\' . __NAMESPACE__ . '\\Payment\\' . ucfirst($type);
 
@@ -164,6 +166,6 @@ class Manager
 			throw new \Bitrix\Main\ObjectNotFoundException('gateway not found');
 		}
 
-		return new $className();
+		return new $className($payment, $request);
 	}
 }

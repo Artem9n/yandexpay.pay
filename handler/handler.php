@@ -13,7 +13,7 @@ use YandexPay\Pay\GateWay;
 
 Loader::includeModule('yandexpay.pay');
 
-class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRefund, PaySystem\IPrePayable
+class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRefund, PaySystem\IPrePayable, Main\Type\IRequestFilter
 {
 	public const REQUEST_SIGN = 'yandexpay';
 
@@ -25,7 +25,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	protected const YANDEX_PRODUCTION_MODE = 'PRODUCTION';
 
 	/** @var \YandexPay\Pay\GateWay\Base|null */
-	protected static $gateway;
+	protected $gateway;
 
 	protected function getPrefix(): string
 	{
@@ -142,10 +142,10 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		{
 			$gatewayType = $this->getHandlerMode();
 
-			$gatewayProvider = $this->getGateway($gatewayType);
-			$gatewayProvider->setPayParams($this->getParamsBusValue($payment));
+			$gatewayProvider = $this->getGateway($gatewayType, $payment);
+			$gatewayProvider->setParameters($this->getParamsBusValue($payment));
 
-			$gatewayProvider->refund($payment, $refundableSum);
+			$gatewayProvider->refund();
 
 			$result->setOperationType(PaySystem\ServiceResult::MONEY_LEAVING);
 		}
@@ -192,14 +192,9 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return ($this->getBusinessValue($payment, $this->getPrefix() . 'TEST_MODE') === 'Y');
 	}
 
-	protected function getGateway(string $type): GateWay\Base
+	protected function getGateway(string $type, Payment $payment = null, Request $request = null): GateWay\Base
 	{
-		if (self::$gateway === null)
-		{
-			self::$gateway = GateWay\Manager::getProvider($type);
-		}
-
-		return self::$gateway;
+		return GateWay\Manager::getProvider($type, $payment, $request);
 	}
 
 	public function processRequest(Payment $payment, Request $request): ServiceResult
@@ -210,11 +205,11 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		try
 		{
-			$gatewayProvider = $this->getGateway($gatewayType);
+			$gatewayProvider = $this->getGateway($gatewayType, $payment, $request);
 
-			$gatewayProvider->setPayParams($this->getParamsBusValue($payment));
+			$gatewayProvider->setParameters($this->getParamsBusValue($payment));
 
-			$resultData = $gatewayProvider->startPay($payment, $request);
+			$resultData = $gatewayProvider->startPay();
 
 			if (!empty($resultData))
 			{
@@ -242,8 +237,9 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 				'state'     => self::STEP_3DS,
 				'success'   => true,
 				'action'    => $exception->getUrl(),
-				'md'        => $exception->getData(),
-				'pareq'      => $exception->getKey()
+				'params'    => $exception->getParams(),
+				'method'    => $exception->getMethod(),
+				'termUrl'   => $exception->getTermUrl()
 			]);
 		}
 		catch (Main\SystemException $exception)
@@ -258,7 +254,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		$result = null;
 
-		self::readFromStream($request);
+		$this->readFromStream($request);
 
 		$externalId = $request->get('externalId');
 
@@ -268,11 +264,11 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		if (empty($gatewayType)) { return null; }
 
-		$gateway = $this->getGateway($gatewayType);
+		$gateway = $this->getGateway($gatewayType, null, $request);
 
-		$gateway->setPayParams($this->getParamsBusValue());
+		$gateway->setParameters($this->getParamsBusValue());
 
-		$result = $gateway->getPaymentIdFromRequest($request);
+		$result = $gateway->getPaymentIdFromRequest();
 
 		return $result;
 	}
@@ -330,16 +326,27 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return $this->service->getField('NEW_WINDOW') === 'Y';
 	}
 
-	protected static function readFromStream(Request $request): void
+	protected function readFromStream(Request $request): void
 	{
-		if (!empty($request->getValues())) { return; }
+		$request->addFilter($this);
+	}
 
-		$content = file_get_contents("php://input");
+	public function filter(array $values): array
+	{
+		try
+		{
+			$rawInput = file_get_contents('php://input');
+			$postData = Main\Web\Json::decode($rawInput);
 
-		if (empty($content)) { return; }
+			$result = [
+				'post' => $postData,
+			];
+		}
+		catch (\Exception $exception)
+		{
+			$result = [];
+		}
 
-		$values = Main\Web\Json::decode($content);
-
-		if (!empty($values)) { $request->setValues($values); }
+		return $result;
 	}
 }

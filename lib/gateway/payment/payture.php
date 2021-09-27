@@ -17,7 +17,8 @@ class Payture extends Base
 	protected const STATUS_SUCCESS = 'True';
 	protected const STATUS_FAILED = 'False';
 
-	protected static $sort = 100;
+	/** @var int  */
+	protected $sort = 100;
 
 	public function getId() : string
 	{
@@ -47,12 +48,12 @@ class Payture extends Base
 
 	protected function getGatewayApiKey(): ?string
 	{
-		return $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
+		return $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 	}
 
 	protected function getGatewayPassword(): ?string
 	{
-		return $this->getPayParamsKey('PAYMENT_GATEWAY_PASSWORD');
+		return $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
 	}
 
 	public function extraParams(string $code = '') : array
@@ -71,30 +72,30 @@ class Payture extends Base
 		];
 	}
 
-	public function startPay(Payment $payment, Request $request) : array
+	public function startPay() : array
 	{
 		$result = [
-			'PS_INVOICE_ID'     => $payment->getId(),
-			'PS_SUM'            => $payment->getSum()
+			'PS_INVOICE_ID'     => $this->getExternalId(),
+			'PS_SUM'            => $this->getPaymentSum()
 		];
 
-		if ($this->isPaySecure3ds())
+		if ($this->isSecure3ds())
 		{
-			$this->createPaySecure($payment, $request);
+			$this->createPaySecure();
 
 			return $result;
 		}
 
-		$this->createPayment($payment, $request);
+		$this->createPayment();
 
 		return $result;
 	}
 
-	protected function createPayment(Payment $payment, Request $request): void
+	protected function createPayment(): void
 	{
 		$httpClient = new HttpClient();
 
-		$data = $this->buildData($payment, $request);
+		$data = $this->buildData();
 
 		$requestUrl = $this->getUrl('pay');
 
@@ -107,14 +108,14 @@ class Payture extends Base
 		$this->checkResult($resultData, $httpClient->getStatus());
 	}
 
-	protected function createPaySecure(Payment $payment, Request $request): void
+	protected function createPaySecure(): void
 	{
 		$httpClient = new HttpClient();
 
 		$data = [
 			'Key'       => $this->getGatewayApiKey(),
-			'OrderId'   => $payment->getId(),
-			'PaRes'     => $request->get('PaRes')
+			'OrderId'   => $this->getExternalId(),
+			'PaRes'     => $this->request->get('PaRes')
 		];
 
 		$url = $this->getUrl('pay3ds');
@@ -142,29 +143,29 @@ class Payture extends Base
 		return $result;
 	}
 
-	protected function buildData(Payment $payment, Request $request): array
+	protected function buildData(): array
 	{
-		$requestData = $request->toArray();
+		$metaData = [
+			'externalId'    => $this->getPaymentId(),
+			'orderId'       => $this->getOrderId()
+		];
 
 		return [
-			'PayToken'  => $requestData['yandexData']['token'],
-			'OrderId'   => $payment->getId(),
-			'Amount'    => round($payment->getSum() * 100),
-			'Key'       => $this->getGatewayApiKey()
+			'PayToken'      => $this->getYandexToken(),
+			'OrderId'       => $this->getExternalId(),
+			'Amount'        => $this->getPaymentAmount(),
+			'Key'           => $this->getGatewayApiKey(),
+			'CustomFields'  => http_build_query($metaData, '', ';')
 		];
 	}
 
 
-	public function getPaymentIdFromRequest(Request $request) : ?int
+	public function getPaymentIdFromRequest() : ?int
 	{
-		$result = ($request->get('MD') !== null && $request->get('PaRes') !== null);
-
-		$this->setPaySecure3ds($result);
-
-		return $request->get('paymentId');
+		return $this->request->get('paymentId');
 	}
 
-	public function refund(Payment $payment, $refundableSum): void
+	public function refund(): void
 	{
 		$httpClient = new HttpClient();
 		$url = $this->getUrl('refund');
@@ -172,8 +173,8 @@ class Payture extends Base
 		$data = [
 			'Key'       => $this->getGatewayApiKey(),
 			'Password'  => $this->getGatewayPassword(),
-			'OrderId'   => $payment->getId(),
-			'Amount'    => round($payment->getSum() * 100)
+			'OrderId'   => $this->getPaymentField('PS_INVOICE_ID'),
+			'Amount'    => $this->getPaymentAmount()
 		];
 
 		$httpClient->setHeaders($this->getHeaders());
@@ -200,10 +201,16 @@ class Payture extends Base
 		if ($resultData['Success'] === self::STATUS_3DS)
 		{
 			throw new \YandexPay\Pay\Exceptions\Secure3dRedirect(
-				$resultData['ACSUrl'],
-				$resultData['ThreeDSKey'],
-				$resultData['PaReq']
+				$resultData['ACSUrl'], [
+					'MD'    => $resultData['ThreeDSKey'],
+					'PaReq' => $resultData['PaReq']
+				], true
 			);
 		}
+	}
+
+	protected function isSecure3ds() : bool
+	{
+		return ($this->request->get('MD') !== null && $this->request->get('PaRes') !== null);
 	}
 }

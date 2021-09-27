@@ -19,7 +19,7 @@ class Best2Pay extends Base
 
 	protected const ACTION_PAY = 'pay';
 
-	protected static $sort = 300;
+	protected $sort = 300;
 
 	public function getId() : string
 	{
@@ -73,18 +73,18 @@ class Best2Pay extends Base
 		];
 	}
 
-	public function startPay(Payment $payment, Request $request) : array
+	public function startPay() : array
 	{
 		$result = [];
 
-		$orderData = $this->buildRegisterOrder($payment);
+		$orderData = $this->buildRegisterOrder();
 
-		$this->createPurchase($orderData['order']['id'], $request);
+		$this->createPurchase($orderData['order']['id']);
 
 		return [];
 	}
 
-	protected function createPurchase(int $orderId, Request $request)
+	protected function createPurchase(int $orderId)
 	{
 		$result = [];
 
@@ -94,10 +94,10 @@ class Best2Pay extends Base
 
 		$url = $this->getUrl('purchase');
 
-		$sector = (int)$this->getPayParamsKey('PAYMENT_GATEWAY_SECTOR_ID');
-		$password = $this->getPayParamsKey('PAYMENT_GATEWAY_PASSWORD');
+		$sector = (int)$this->getParameter('PAYMENT_GATEWAY_SECTOR_ID');
+		$password = $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
 		$signature = $this->getSignature([$sector, $orderId, $password]);
-		$yandexData = $request->get('yandexData');
+		$yandexData = $this->request->get('yandexData');
 
 		$data = [
 			'sector'            => $sector,
@@ -115,16 +115,16 @@ class Best2Pay extends Base
 		die;
 	}
 
-	protected function buildRegisterOrder(Payment $payment): array
+	protected function buildRegisterOrder(): array
 	{
-		$registredOrder = $this->getRegistredOrder($payment);
+		$registredOrder = $this->getRegistredOrder();
 
 		if (!empty($registredOrder)) { return $registredOrder; }
 
-		return $this->registerOrder($payment);
+		return $this->registerOrder();
 	}
 
-	protected function registerOrder(Payment $payment): array
+	protected function registerOrder(): array
 	{
 		$httpClient = new HttpClient();
 
@@ -132,7 +132,7 @@ class Best2Pay extends Base
 
 		$url = $this->getUrl('register');
 
-		$data = $this->buildDataRegister($payment);
+		$data = $this->buildDataRegister();
 
 		$httpClient->post($url, $data);
 
@@ -143,7 +143,7 @@ class Best2Pay extends Base
 		return $result;
 	}
 
-	protected function getRegistredOrder(Payment $payment): array
+	protected function getRegistredOrder(): array
 	{
 		$httpClient = new HttpClient();
 
@@ -151,9 +151,9 @@ class Best2Pay extends Base
 
 		$url = $this->getUrl('order');
 
-		$sector = (int)$this->getPayParamsKey('PAYMENT_GATEWAY_SECTOR_ID');
-		$orderId = (string)$payment->getOrderId();
-		$password = $this->getPayParamsKey('PAYMENT_GATEWAY_PASSWORD');
+		$sector = (int)$this->getParameter('PAYMENT_GATEWAY_SECTOR_ID');
+		$orderId = $this->getOrderId();
+		$password = $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
 
 		$data = [
 			'sector'    => $sector,
@@ -219,18 +219,18 @@ class Best2Pay extends Base
 		return [$parentName => $result];
 	}
 
-	protected function buildDataRegister(Payment $payment): array
+	protected function buildDataRegister(): array
 	{
-		$sector = $this->getPayParamsKey('PAYMENT_GATEWAY_SECTOR_ID');
-		$password = $this->getPayParamsKey('PAYMENT_GATEWAY_PASSWORD');
-		$amount = round($payment->getSum() * 100);
-		$currency = $this->getCurrencyFormatted($payment->getField('CURRENCY'));
+		$sector = $this->getParameter('PAYMENT_GATEWAY_SECTOR_ID');
+		$password = $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
+		$amount = $this->getPaymentAmount();
+		$currency = $this->getCurrencyFormatted($this->getPaymentField('CURRENCY'));
 		$description =  Main\Text\Encoding::convertEncoding(
-			static::getMessage('REGISTER_DESCRIPTION', ['#ORDER_ID#' => $payment->getOrderId()]),
+			static::getMessage('REGISTER_DESCRIPTION', ['#ORDER_ID#' => $this->getOrderId()]),
 			'WINDOWS-1251',
 			'UTF-8'
 		);
-		$reference = $payment->getOrderId();
+		$reference = $this->getOrderId();
 		$signature = $this->getSignature([$sector, $amount, $currency, $password]);
 
 		return [
@@ -243,7 +243,7 @@ class Best2Pay extends Base
 		];
 	}
 
-	public function refund(Payment $payment, $refundableSum): void
+	public function refund(): void
 	{
 
 	}
@@ -263,7 +263,7 @@ class Best2Pay extends Base
 		}
 	}
 
-	public function getPaymentIdFromRequest(Request $request) : ?int
+	public function getPaymentIdFromRequest() : ?int
 	{
 		// TODO: Implement getPaymentIdFromRequest() method.
 	}

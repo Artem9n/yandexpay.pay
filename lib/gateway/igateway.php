@@ -2,9 +2,6 @@
 
 namespace YandexPay\Pay\GateWay;
 
-use Bitrix\Main\Request;
-use Bitrix\Sale\Payment;
-
 interface IGateWay
 {
 	public function getId(): string;
@@ -13,5 +10,5 @@ interface IGateWay
 
 	public function getParams(): array;
 
-	public function startPay(Payment $payment, Request $request) : array;
+	public function startPay() : array;
 }

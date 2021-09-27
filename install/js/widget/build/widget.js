@@ -148,9 +148,34 @@ this.BX = this.BX || {};
 	    value: function compile(data) {
 	      var template = this.options.template;
 	      var vars = Object.assign(data, {
-	        'TermUrl': this.makeTermUrl()
+	        'inputs': this.makeInputs(data)
 	      });
 	      return Template.compile(template, vars);
+	    }
+	  }, {
+	    key: "makeInputs",
+	    value: function makeInputs(data) {
+	      var key;
+	      var vars = data.params;
+	      var value;
+	      var template;
+
+	      if (Object.keys(vars).length === 0) {
+	        return '';
+	      }
+
+	      template = data.termUrl ? '<input type="hidden" name="TermUrl" value="' + this.makeTermUrl() + '">' : '';
+
+	      for (key in vars) {
+	        if (!vars.hasOwnProperty(key)) {
+	          continue;
+	        }
+
+	        value = vars[key];
+	        template += '<input type="hidden" name="' + key + '" value="' + value + '">';
+	      }
+
+	      return template;
 	    }
 	  }, {
 	    key: "makeTermUrl",
@@ -172,7 +197,7 @@ this.BX = this.BX || {};
 
 	babelHelpers.defineProperty(Step3ds, "defaults", {
 	  url: '/yandex_pay.php',
-	  template: '<form name="form" action="#ACTION#" method="post">' + '<input type="hidden" name="TermUrl" value="#TERMURL#" >' + '<input type="hidden" name="MD" value="#MD#" >' + '<input type="hidden" name="PaReq" value="#PAREQ#" >' + '</form>'
+	  template: '<form name="form" action="#ACTION#" method="#METHOD#">' + '#INPUTS#' + '</form>'
 	});
 
 	var Finish = /*#__PURE__*/function (_AbstractStep) {
@@ -283,9 +308,9 @@ this.BX = this.BX || {};
 
 	          _this.notify(payment, event);
 	          /*alert('Payment token — ' + event.token);
-	          	// Опционально (если выполнить шаг 7).
+	          		// Опционально (если выполнить шаг 7).
 	          alert('Billing email — ' + event.billingContact.email);
-	          	// Закрыть форму Yandex Pay.
+	          		// Закрыть форму Yandex Pay.
 	          */
 	          //payment.complete(YaPay.CompleteReason.Success);
 
