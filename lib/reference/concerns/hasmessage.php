@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Reference\Concerns;
 
+use Bitrix\Main\Localization\Loc;
 use YandexPay\Pay\Config;
 use YandexPay\Pay\Utils\MessageRegistry;
 
@@ -21,10 +22,15 @@ trait HasMessage
 	{
 		self::includeSelfMessages();
 
-		$fullCode = self::getMessagePrefix() . '_' . $code;
+		$fullCode = Config::getLangPrefix() . self::getMessagePrefix() . '_' . $code;
 
-		if ($fallback === null) { $fallback = $code; }
+		$result = (string)Loc::getMessage($fullCode, $replaces);
 
-		return Config::getLang($fullCode, $replaces, $fallback);
+		if ($result === '')
+		{
+			$result = $fallback ?? $code;
+		}
+
+		return $result;
 	}
 }

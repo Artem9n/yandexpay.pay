@@ -51,4 +51,16 @@ class Assert
 			));
 		}
 	}
+
+	public static function methodExists($classOrObject, $method): void
+	{
+		if (!method_exists($classOrObject, $method))
+		{
+			throw new Main\InvalidOperationException(sprintf(
+				'%s missing method %s',
+				is_object($classOrObject) ? get_class($classOrObject) : $classOrObject,
+				$method
+			));
+		}
+	}
 }

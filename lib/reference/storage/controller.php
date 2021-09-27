@@ -29,15 +29,8 @@ class Controller
 		foreach ($classList as $className)
 		{
 			$entity = $className::getEntity();
-			$connection = $entity->getConnection();
-			$tableName = $entity->getDBTableName();
 
-			$this->assertTableName($tableName);
-
-			if (!$connection->isTableExists($tableName))
-			{
-				$entity->createDbTable();
-			}
+			$this->createOneTable($entity);
 		}
 	}
 
@@ -53,8 +46,7 @@ class Controller
 		{
 			$entity = $className::getEntity();
 
-			$this->assertTableName($entity->getDBTableName());
-			$this->internalDropTable($entity);
+			$this->dropOneTable($entity);
 		}
 	}
 
@@ -78,7 +70,7 @@ class Controller
 				$namespace = $baseNamespace . str_replace('/', '\\', $relativePath) . '\\';
 				$className = $entry->getBasename('.php');
 
-				if ($className !== 'table')
+				if (!preg_match('/table$/i', $className))
 				{
 					$className .= 'Table';
 				}
@@ -98,10 +90,25 @@ class Controller
 		return $result;
 	}
 
-	protected function internalDropTable(Main\Entity\Base $entity) : void
+	protected function createOneTable(Main\Entity\Base $entity) : void
 	{
 		$connection = $entity->getConnection();
 		$tableName = $entity->getDBTableName();
+
+		$this->assertTableName($tableName);
+
+		if (!$connection->isTableExists($tableName))
+		{
+			$entity->createDbTable();
+		}
+	}
+
+	protected function dropOneTable(Main\Entity\Base $entity) : void
+	{
+		$connection = $entity->getConnection();
+		$tableName = $entity->getDBTableName();
+
+		$this->assertTableName($tableName);
 
 		if ($connection->isTableExists($tableName))
 		{

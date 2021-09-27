@@ -11,7 +11,7 @@ class AdminGrid extends \CBitrixComponent
 {
     protected static $langPrefix = 'YANDEXPAY_PAY_COMPONENT_GRID_';
 
-    /** @var Pay\Component\Base\Grid */
+    /** @var Pay\Component\Reference\Grid */
     protected $provider;
     protected $viewList;
     protected $viewFilter;
@@ -211,13 +211,6 @@ class AdminGrid extends \CBitrixComponent
 				|| ($this->request->isAjaxRequest() && $requestMode !== null)
 			)
 		);
-    }
-
-    protected function deleteItem($id) : void
-    {
-        $provider = $this->getProvider();
-
-        $provider->deleteItem($id);
     }
 
     protected function initResult() : void
@@ -1398,7 +1391,7 @@ class AdminGrid extends \CBitrixComponent
 	        $className = $this->arParams['PROVIDER_CLASS_NAME'];
 
 			Pay\Reference\Assert::notNull($className, 'params[PROVIDER_CLASS_NAME]');
-			Pay\Reference\Assert::isSubclassOf($className, Pay\Component\Base\Grid::class);
+			Pay\Reference\Assert::isSubclassOf($className, Pay\Component\Reference\Grid::class);
 
             $this->provider = new $className($this);
         }

@@ -14,20 +14,6 @@ class Config
 		return 'yandexpay.pay';
 	}
 
-	public static function getLang($code, $replaces = null, $fallback = null)
-	{
-		$prefix = static::getLangPrefix();
-
-		$result = Loc::getMessage($prefix . $code, $replaces) ?: $fallback;
-
-		if ($result === null)
-		{
-			$result = $code;
-		}
-
-		return $result;
-	}
-
 	public static function getLangPrefix(): string
 	{
 		return 'YANDEX_PAY_';

@@ -88,9 +88,8 @@ class yandexpay_pay extends CModule
 			if (Main\Loader::includeModule($this->MODULE_ID))
 			{
 				$request = Main\Context::getCurrent()->getRequest();
-				$isSaveData = $request->get('savedata') === 'Y';
 
-				if (!$isSaveData)
+				if ($request->get('savedata') !== 'Y')
 				{
 					$this->UnInstallDB();
 				}

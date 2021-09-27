@@ -1,6 +1,6 @@
 <?php
 
-namespace YandexPay\Pay\Component\Base;
+namespace YandexPay\Pay\Component\Reference;
 
 use Bitrix\Main;
 
@@ -45,7 +45,7 @@ abstract class AbstractProvider
 		$this->component->arParams[$key] = $value;
 	}
 
-	public function processAjaxAction(string $action, array $data) : array
+	public function processAjaxAction(string $action, array $data) : void
 	{
 		throw new Main\SystemException('ACTION_NOT_FOUND');
 	}
