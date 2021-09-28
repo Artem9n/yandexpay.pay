@@ -242,11 +242,11 @@ class Rbkmoney extends Base
 
 	protected function buildInvoice(): array
 	{
-		$externalId = $this->getExternalId();
+		/*$externalId = $this->getExternalId();
 
 		$invoice = $this->getInvoiceByExternalId($externalId);
 
-		if (!empty($invoice)) { return $invoice; }
+		if (!empty($invoice)) { return $invoice; }*/
 
 		return $this->createInvoice();
 	}
@@ -317,7 +317,10 @@ class Rbkmoney extends Base
 
 	protected function getDueDate(): string
 	{
-		$date = new Main\Type\DateTime();
+		$order = $this->payment->getOrder();
+		$date = $order->getDateInsert();
+
+		$date = new Main\Type\DateTime($date);
 
 		return $date->add('+1 day')->format('Y-m-d\TH:i:s.u\Z');
 	}

@@ -207,6 +207,7 @@ abstract class Base implements IGateWay, Main\Type\IRequestFilter
 		return md5(serialize([
 			$this->request->getServer()->getServerName(),
 			$this->payment->getOrder()->getUserId(),
+			$this->payment->getOrder()->getDateInsert(),
 			$this->getPaymentSum(),
 			$this->getOrderId(),
 			$this->getPaymentId()
