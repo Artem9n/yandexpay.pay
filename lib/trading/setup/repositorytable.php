@@ -43,7 +43,7 @@ class RepositoryTable extends ORM\Data\DataManager
 				'required' => true,
 				'validation' => [static::class, 'validatePersonTypeId'],
 			]),
-			new ORM\Fields\BooleanField('ACTIVE', Pay\Ui\Userfield\BooleanType::getTableFieldDescription() + [
+			new ORM\Fields\BooleanField('ACTIVE', Pay\Ui\Userfield\BooleanType::getTableFieldDescription(false) + [
 				'required' => true,
 			]),
 		];

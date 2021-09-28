@@ -29,6 +29,7 @@ class SetupGrid extends Pay\Ui\Reference\Page
 				'ID',
 				'SITE_ID',
 				'PERSON_TYPE_ID',
+				'ACTIVE',
 			],
 			'CONTEXT_MENU' => [
 				[

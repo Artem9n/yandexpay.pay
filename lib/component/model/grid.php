@@ -97,13 +97,6 @@ class Grid extends Component\Reference\Grid
 		return $result;
 	}
 
-	public function deleteItem($id) : void
-	{
-		$dataClass = $this->getDataClass();
-
-		$dataClass::delete($id);
-	}
-
 	public function processAjaxAction(string $action, array $data) : void
 	{
 		$dataClass = $this->getDataClass();

@@ -21,7 +21,7 @@ abstract class View
 		return $this->getTableFields();
 	}
 
-	protected function getTableFields(array $include = null, array $exclude = null) : array
+	protected function getTableFields(array $config = []) : array
 	{
 		$result = [];
 
@@ -31,10 +31,17 @@ abstract class View
 
 			$name = $field->getName();
 
-			if ($include !== null && !in_array($name, $include, true)) { continue; }
-			if ($exclude !== null && in_array($name, $exclude, true)) { continue; }
+			if (isset($config['INCLUDE']) && !in_array($name, $config['INCLUDE'], true)) { continue; }
+			if (isset($config['EXCLUDE']) && in_array($name, $config['EXCLUDE'], true)) { continue; }
 
-			$result[$name] = $this->describeTableField($field);
+			$description = $this->describeTableField($field);
+
+			if (isset($config['OVERRIDES'][$name]))
+			{
+				$description = $config['OVERRIDES'][$name] + $description;
+			}
+
+			$result[$name] = $description;
 		}
 
 		return $result;

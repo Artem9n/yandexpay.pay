@@ -12,13 +12,16 @@ abstract class Form extends AbstractProvider
 
 	abstract public function load($primary, array $select = [], bool $isCopy = false) : array;
 
-	abstract public function extend(array $data, array $select = []) : array;
-
 	abstract public function validate(array $data, array $fields = null) : Main\Entity\Result;
 
 	abstract public function add(array $fields) : Main\Entity\AddResult;
 
 	abstract public function update($primary, array $fields) : Main\Entity\UpdateResult;
+
+	public function extend(array $data, array $select = []) : array
+	{
+		return $data;
+	}
 
 	public function processPostAction(string $action, array $data) : void
 	{

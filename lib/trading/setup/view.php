@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Trading\Setup;
 
 use YandexPay\Pay\Reference\Storage;
 use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Ui\Userfield;
 
 class View extends Storage\View
 {
@@ -11,20 +12,35 @@ class View extends Storage\View
 
 	public function getFields() : array
 	{
-		return
-			$this->getTableFields(['ID'])
-			+ $this->getEnvironmentFields();
-	}
-
-	protected function getEnvironmentFields() : array
-	{
-		return [
-			'SITE_ID' => $this->getFieldDefaults('SITE_ID', 'enumeration') + [
-				'VALUES' => [], // todo
+		return $this->getTableFields([
+			'OVERRIDES' => [
+				'SITE_ID' => [
+					'USER_TYPE' => Userfield\Registry::getUserType('enumeration'),
+					'VALUES' => [
+						[
+							'ID' => 's1',
+							'VALUE' => 's1',
+						],
+						[
+							'ID' => 's2',
+							'VALUE' => 's2',
+						],
+					], // todo
+				],
+				'PERSON_TYPE_ID' => [
+					'USER_TYPE' => Userfield\Registry::getUserType('enumeration'),
+					'VALUES' => [
+						[
+							'ID' => '1',
+							'VALUE' => 'Individual',
+						],
+						[
+							'ID' => '2',
+							'VALUE' => 'Legal',
+						],
+					], // todo
+				],
 			],
-			'PERSON_TYPE_ID' => $this->getFieldDefaults('PERSON_TYPE_ID', 'enumeration') + [
-				'VALUES' => [], // todo
-			],
-		];
+		]);
 	}
 }

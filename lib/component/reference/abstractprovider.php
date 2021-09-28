@@ -45,6 +45,11 @@ abstract class AbstractProvider
 		$this->component->arParams[$key] = $value;
 	}
 
+	public function getComponentLang($key, $replaces = null)
+	{
+		return $this->component->getLang($key, $replaces);
+	}
+
 	public function processAjaxAction(string $action, array $data) : void
 	{
 		throw new Main\SystemException('ACTION_NOT_FOUND');
