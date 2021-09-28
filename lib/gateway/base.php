@@ -28,7 +28,7 @@ abstract class Base implements IGateWay, Main\Type\IRequestFilter
 	public function __construct(Sale\Payment  $payment = null, Main\Request $request = null)
 	{
 		$this->payment = $payment;
-		$this->request = $request ?? $this->getRequest();
+		$this->request = $request ?? Main\Context::getCurrent()->getRequest();
 	}
 
 	abstract public function getPaymentIdFromRequest(): ?int;
@@ -36,20 +36,6 @@ abstract class Base implements IGateWay, Main\Type\IRequestFilter
 	abstract public function refund(): void;
 
 	abstract protected function getUrlList(): array;
-
-	protected function getRequest() : ?Main\Request
-	{
-		$result = null;
-
-		$application = Main\Application::getInstance();
-
-		if ($application !== null)
-		{
-			$result = $application->getContext()->getRequest();
-		}
-
-		return $result;
-	}
 
 	public function getId() : string
 	{
