@@ -13,7 +13,7 @@ class Delivery extends Fieldset
 	{
 		return parent::getFieldDescription($environment, $siteId) + [
 			'SETTINGS' => [
-				'SUMMARY' => self::getMessage('SUMMARY', null, '#TYPE# &laquo;#ID#&raquo;, #DAYS#'),
+				'SUMMARY' => '#TYPE# &laquo;#ID#&raquo;',
 				'LAYOUT' => 'summary',
 				'MODAL_WIDTH' => 600,
 				'MODAL_HEIGHT' => 450,

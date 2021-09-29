@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Ui\Trading;
 
+use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay;
 
@@ -11,6 +12,8 @@ class Settings extends Pay\Ui\Reference\Page
 	public function show() : void
 	{
 		global $APPLICATION;
+
+		Main\UI\Extension::load('yandexpaypay.admin.ui');
 
 		$primary = $this->request->get('id') ?: null;
 		$baseQuery = [

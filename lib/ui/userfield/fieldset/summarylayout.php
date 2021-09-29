@@ -9,11 +9,10 @@ use YandexPay\Pay\Ui\Userfield;
 class SummaryLayout extends AbstractLayout
 {
 	use Pay\Reference\Concerns\HasMessage;
-	use Pay\Reference\Concerns\HasOnceStatic;
 
 	public function edit($value) : string
 	{
-		static::onceStatic('loadRowAssets');
+		Main\UI\Extension::load('yandexpaypay.admin.field.fieldset');
 
 		$pluginAttributes = $this->getPluginAttributes($this->name);
 
@@ -22,8 +21,7 @@ class SummaryLayout extends AbstractLayout
 
 	public function editMultiple($values) : string
 	{
-		static::onceStatic('loadCollectionAssets');
-		static::onceStatic('loadRowAssets');
+		Main\UI\Extension::load('yandexpaypay.admin.field.fieldset');
 
 		$valueIndex = 0;
 		$inputName = preg_replace('/\[]$/', '', $this->name);
@@ -68,26 +66,6 @@ class SummaryLayout extends AbstractLayout
 		$result .= '</div>';
 
 		return $result;
-	}
-
-	protected static function loadCollectionAssets()
-	{
-		/*Pay\Ui\Assets::loadPluginCore();
-		Pay\Ui\Assets::loadFieldsCore();
-		Pay\Ui\Assets::loadPlugins([
-			'Field.Fieldset.Collection',
-			'Field.Fieldset.SummaryCollection',
-		]);*/
-	}
-
-	protected static function loadRowAssets()
-	{
-		/*Pay\Ui\Assets::loadPluginCore();
-		Pay\Ui\Assets::loadFieldsCore();
-		Pay\Ui\Assets::loadPlugins([
-			'Field.Fieldset.Summary',
-			'Field.Fieldset.Row',
-		]);*/
 	}
 
 	protected function editRow(string $name, $value, array $attributes = []) : string
