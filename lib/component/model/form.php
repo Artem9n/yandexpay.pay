@@ -23,7 +23,7 @@ class Form extends Component\Reference\Form
 		];
 	}
 
-	public function modifyRequest($request, $fields) : array
+	public function modifyRequest(array $request, $fields) : array
 	{
 		$result = $request;
 
@@ -52,16 +52,16 @@ class Form extends Component\Reference\Form
 	public function processPostAction(string $action, array $data) : void
 	{
 		$dataClass = $this->getDataClass();
-		$modelClass = $dataClass::getObjectClass();
-		$id = $data['ID'] ?? null;
+		$primary = $data['PRIMARY'] ?? null;
 
-		Assert::notNull($id, 'data[ID]');
+		Assert::notNull($primary, 'data[PRIMARY]');
 
-		$model = $modelClass::wakeUp($id);
+		$model = $dataClass::wakeUpObject($primary);
+		$method = $action . 'Action';
 
-		Assert::methodExists($model, $action);
+		Assert::methodExists($model, $method);
 
-		$model->{$action}();
+		$model->{$method}();
 	}
 
 	public function getFields(array $select = [], array $item = null) : array
@@ -129,13 +129,13 @@ class Form extends Component\Reference\Form
 		return $result;
 	}
 
-	public function add(array $fields) : Main\Entity\AddResult
+	public function add(array $values) : Main\Entity\AddResult
 	{
 		$dataClass = $this->getDataClass();
 		$modelClass = $dataClass::getObjectClass();
 		$model = new $modelClass();
 
-		foreach ($fields as $name => $value)
+		foreach ($values as $name => $value)
 		{
 			if ($name === 'ID') { continue; }
 
@@ -145,13 +145,13 @@ class Form extends Component\Reference\Form
 		return $model->save();
 	}
 
-	public function update($primary, array $fields) : Main\Entity\UpdateResult
+	public function update($primary, array $values) : Main\Entity\UpdateResult
 	{
 		$dataClass = $this->getDataClass();
 		$modelClass = $dataClass::getObjectClass();
 		$model = $modelClass::wakeUp($primary);
 
-		foreach ($fields as $name => $value)
+		foreach ($values as $name => $value)
 		{
 			if ($name === 'ID') { continue; }
 

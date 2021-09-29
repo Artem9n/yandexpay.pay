@@ -106,12 +106,13 @@ class Grid extends Component\Reference\Grid
 
 		$collectionClass = $dataClass::getCollectionClass();
 		$collection = $collectionClass::wakeUp($selectedIds);
+		$method = $action . 'Action';
 
 		foreach ($collection as $model)
 		{
-			Assert::methodExists($model, $action);
+			Assert::methodExists($model, $method);
 
-			$model->{$action}();
+			$model->{$method}();
 		}
 	}
 

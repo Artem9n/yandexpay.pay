@@ -21,7 +21,7 @@ class SetupGrid extends Pay\Ui\Reference\Page
 			'ALLOW_SAVE' => Pay\Ui\Access::hasRights($this->getReadRights()),
 			'PROVIDER_CLASS_NAME' => Pay\Component\Model\Grid::class,
 			'DATA_CLASS_NAME' => Pay\Trading\Setup\RepositoryTable::class,
-			'EDIT_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_edit', $baseQuery) . '&id=#ID#',
+			'EDIT_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_setup', $baseQuery) . '&id=#ID#',
 			'ADD_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_edit', $baseQuery),
 			'TITLE' => self::getMessage('TITLE'),
 			'NAV_TITLE' => self::getMessage('NAVIGATION'),
@@ -43,12 +43,12 @@ class SetupGrid extends Pay\Ui\Reference\Page
 					'URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_setup', $baseQuery) . '&id=#ID#',
 					'ICON' => 'setting',
 					'TEXT' => self::getMessage('ACTION_SETUP'),
+					'DEFAULT' => true,
 				],
 				'EDIT' => [
 					'URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_edit', $baseQuery) . '&id=#ID#',
 					'ICON' => 'edit',
-					'TEXT' => self::getMessage('ACTION_EDIT'),
-					'DEFAULT' => true
+					'TEXT' => self::getMessage('ACTION_EDIT')
 				],
 				'COPY' => [
 					'URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_edit', $baseQuery) . '&id=#ID#&copy=Y',

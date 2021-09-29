@@ -24,7 +24,7 @@ class AdminForm extends \CBitrixComponent
         $arParams['LIST_URL'] = trim($arParams['LIST_URL']);
         $arParams['SAVE_URL'] = trim($arParams['SAVE_URL']);
         $arParams['CONTEXT_MENU'] = (array)$arParams['CONTEXT_MENU'];
-        $arParams['TABS'] = (array)$arParams['TABS'];
+        $arParams['TABS'] = (array)($arParams['TABS'] ?? []);
         $arParams['FORM_BEHAVIOR'] = ($arParams['FORM_BEHAVIOR'] === 'steps' ? 'steps' : 'tabs');
         $arParams['COPY'] = (bool)$arParams['COPY'];
 	    $arParams['ALLOW_SAVE'] = !isset($arParams['ALLOW_SAVE']) || $arParams['ALLOW_SAVE'];
@@ -217,7 +217,10 @@ class AdminForm extends \CBitrixComponent
 
     protected function getRequiredModules() : array
     {
-        return $this->getProvider()->getRequiredModules();
+        return array_merge(
+			$this->getProvider()->getRequiredModules(),
+	        [ 'yandexpay.pay' ]
+        );
     }
 
     protected function loadModules() : void
@@ -468,10 +471,7 @@ class AdminForm extends \CBitrixComponent
     {
 	    $keyChain = $this->splitFieldNameToChain($key);
 
-	    if (count($keyChain) > 1)
-	    {
-	    	throw new Main\NotImplementedException();
-	    }
+	    if (count($keyChain) > 1) { throw new Main\NotImplementedException(); }
 
         $requestKey = reset($keyChain);
         $deleteRequestKey = $requestKey . '_del';
@@ -761,8 +761,42 @@ class AdminForm extends \CBitrixComponent
 
     protected function loadFields(array $select) : array
     {
-	    return $this->getProvider()->getFields($select, $this->arResult['ITEM']);
+	    $fields = $this->getProvider()->getFields($select, $this->arResult['ITEM']);
+
+	    $fields = $this->extendFields($fields);
+		$fields = $this->sortFields($fields);
+
+		return $fields;
     }
+
+	protected function extendFields(array $fields) : array
+	{
+		foreach ($fields as $name => &$field)
+		{
+			$field = Pay\Ui\Userfield\Helper\Field::extend($field, $name);
+		}
+		unset($field);
+
+		return $fields;
+	}
+
+	protected function sortFields(array $fields) : array
+	{
+		$fieldsWithSort = array_filter($fields, static function(array $field) { return isset($tab['SORT']); });
+
+		if (count($fieldsWithSort) === 0) { return $fields; }
+
+		uasort($fields, static function(array $fieldA, array $fieldB) {
+			$sortA = $fieldA['SORT'] ?? 5000;
+			$sortB = $fieldB['SORT'] ?? 5000;
+
+			if ($sortA === $sortB) { return 0; }
+
+			return $sortA < $sortB ? -1 : 1;
+		});
+
+		return $fields;
+	}
 
     protected function registerFields($fields) : void
     {

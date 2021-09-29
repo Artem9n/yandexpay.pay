@@ -25,6 +25,7 @@ return [
 				'url' => 'yapay_trading_grid.php?lang=' . LANGUAGE_ID,
 				'more_url' => [
 					'yapay_trading_edit.php?lang=' . LANGUAGE_ID,
+					'yapay_trading_setup.php?lang=' . LANGUAGE_ID,
 				],
 			],
 		],

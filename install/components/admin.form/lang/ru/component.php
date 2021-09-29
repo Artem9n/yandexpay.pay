@@ -1,7 +1,6 @@
 <?php
 
 $MESS['YANDEX_PAY_FORM_EDIT_DEFAULT_TAB_NAME'] = 'Основные';
-$MESS['YANDEX_PAY_FORM_EDIT_REQUIRE_SELF_MODULE'] = 'Необходим модуль yandex.market';
 $MESS['YANDEX_PAY_FORM_EDIT_INVALID_PROVIDER'] = 'Неправильный тип провайдера';
 $MESS['YANDEX_PAY_FORM_EDIT_PARAM_REQUIRE'] = 'Необходим параметр #PARAM#';
 $MESS['YANDEX_PAY_FORM_EDIT_MODULE_REQUIRE'] = 'Необходим модуль #MODULE#';

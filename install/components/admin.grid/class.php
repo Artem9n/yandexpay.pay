@@ -256,7 +256,7 @@ class AdminGrid extends \CBitrixComponent
 
     protected function loadModules() : void
     {
-        foreach ($this->getProvider()->getRequiredModules() as $module)
+        foreach ($this->getRequiredModules() as $module)
         {
 	        $this->loadModule($module);
         }
@@ -273,6 +273,14 @@ class AdminGrid extends \CBitrixComponent
             throw new Main\SystemException($message);
         }
     }
+
+	protected function getRequiredModules() : array
+	{
+		return array_merge(
+			$this->getProvider()->getRequiredModules(),
+			[ 'yandexpay.pay' ]
+		);
+	}
 
     public function setRedirectUrl(string $url) : void
 	{

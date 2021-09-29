@@ -3,7 +3,7 @@ namespace YandexPay\Pay\Ui\Userfield;
 
 class Registry
 {
-	public static function getUserType($type) : array
+	public static function getUserType(string $type) : array
 	{
 		global $USER_FIELD_MANAGER;
 
