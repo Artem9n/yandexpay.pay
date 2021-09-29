@@ -183,7 +183,7 @@ class SummaryLayout extends AbstractLayout
 
 			if (isset($field['DEPEND']))
 			{
-				//Pay\Ui\Assets::loadPlugin('Ui.Input.DependField');
+				Main\UI\Extension::load('yandexpaypay.admin.ui.input.dependfield');
 
 				$rowAttributes['class'] =
 					(isset($rowAttributes['class']) ? $rowAttributes['class'] . ' ' : '')

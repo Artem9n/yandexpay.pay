@@ -15,7 +15,7 @@ $hasAdditionalRow = ($hasDescription || $hasNote);
 
 if (isset($field['DEPEND']))
 {
-	//Pay\Ui\Assets::loadPlugin('Ui.Input.DependField'); todo
+	Main\UI\Extension::load('yandexpaypay.admin.ui.input.dependfield');
 
 	$rowAttributes['class'] = 'js-plugin';
 	$rowAttributes['data-plugin'] = 'Ui.Input.DependField';

@@ -2,17 +2,17 @@
 
 namespace YandexPay\Pay\Ui\Userfield\Fieldset;
 
+use Bitrix\Main;
 use YandexPay\Pay;
 use YandexPay\Pay\Ui\Userfield;
 
 class TableLayout extends AbstractLayout
 {
 	use Pay\Reference\Concerns\HasMessage;
-	use Pay\Reference\Concerns\HasOnceStatic;
 
 	public function edit($value) : string
 	{
-		static::onceStatic('loadRowAssets');
+		Main\UI\Extension::load('yandexpaypay.admin.field.fieldset');
 
 		$attributes = $this->getPluginAttributes($this->name);
 
@@ -25,8 +25,7 @@ class TableLayout extends AbstractLayout
 
 	public function editMultiple($values) : string
 	{
-		static::onceStatic('loadCollectionAssets');
-		static::onceStatic('loadRowAssets');
+		Main\UI\Extension::load('yandexpaypay.admin.field.fieldset');
 
 		$valueIndex = 0;
 		$inputName = preg_replace('/\[]$/', '', $this->name);
@@ -80,25 +79,6 @@ class TableLayout extends AbstractLayout
 		]) . ' />';
 
 		return $result;
-	}
-
-	protected static function loadCollectionAssets()
-	{
-		/*Pay\Ui\Assets::loadPluginCore();
-		Pay\Ui\Assets::loadFieldsCore();
-		Pay\Ui\Assets::loadPlugins([
-			'Field.Fieldset.Collection',
-		]);*/
-	}
-
-	protected static function loadRowAssets()
-	{
-		/*Pay\Ui\Assets::loadPluginCore();
-		Pay\Ui\Assets::loadFieldsCore();
-		Pay\Ui\Assets::loadPlugins([
-			'Field.Fieldset.Summary',
-			'Field.Fieldset.Row',
-		]);*/
 	}
 
 	protected function useTableHeader() : bool
