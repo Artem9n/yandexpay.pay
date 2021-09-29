@@ -1,6 +1,6 @@
 <?php
 
 return [
-	'rel' => [ 'jquery3' ],
+	'rel' => [ 'yandexpaypay.admin.plugin.base' ],
 	'js' => 'index.js',
 ];
