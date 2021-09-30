@@ -3,22 +3,34 @@
 namespace YandexPay\Pay\GateWay\Payment;
 
 use Bitrix\Main;
-use Bitrix\Main\Request;
-use Bitrix\Sale\Payment;
 use Bitrix\Main\Web\HttpClient;
 use YandexPay\Pay\GateWay\Base;
-use YandexPay\Pay\Reference\Concerns\HasMessage;
+use YandexPay\Pay\Reference\Concerns;
 
 class Payture extends Base
 {
-	use HasMessage;
+	use Concerns\HasMessage;
+
+	/** @var int  */
+	protected $sort = 100;
 
 	protected const STATUS_3DS = '3DS';
 	protected const STATUS_SUCCESS = 'True';
 	protected const STATUS_FAILED = 'False';
 
-	/** @var int  */
-	protected $sort = 100;
+	protected const THREE_DS_VARSION_1 = '1.0';
+	protected const THREE_DS_VARSION_2 = '2.1';
+
+	protected $threeDsData = [
+		self::THREE_DS_VARSION_1 => [
+			'ThreeDSKey' => 'MD',
+			'PaReq' => 'PaReq'
+		],
+		self::THREE_DS_VARSION_2 => [
+			'CReq' => 'creq',
+			'ThreeDSSessionData' => 'threeDSSessionData'
+		]
+	];
 
 	public function getId() : string
 	{
@@ -34,6 +46,7 @@ class Payture extends Base
 	{
 		return [
 			'pay'       => 'https://sandbox3.payture.com/api/MobilePay',
+			'block'     => 'https://sandbox3.payture.com/api/MobileBlock',
 			'refund'    => 'https://sandbox3.payture.com/api/Refund',
 			'pay3ds'    => 'https://sandbox3.payture.com/api/Pay3DS'
 		];
@@ -115,7 +128,7 @@ class Payture extends Base
 		$data = [
 			'Key'       => $this->getGatewayApiKey(),
 			'OrderId'   => $this->getExternalId(),
-			'PaRes'     => $this->request->get('PaRes')
+			'PaRes'     => $this->request->get('PaRes') ?? $this->request->get('CRes')
 		];
 
 		$url = $this->getUrl('pay3ds');
@@ -145,9 +158,9 @@ class Payture extends Base
 
 	protected function buildData(): array
 	{
-		$metaData = [
-			'externalId'    => $this->getPaymentId(),
-			'orderId'       => $this->getOrderId()
+		$customFields = [
+			'ChallengeNotificationUrl'  => $this->getBackUrl(),
+			'BrowserData'               => $this->getBrowserData()
 		];
 
 		return [
@@ -155,10 +168,38 @@ class Payture extends Base
 			'OrderId'       => $this->getExternalId(),
 			'Amount'        => $this->getPaymentAmount(),
 			'Key'           => $this->getGatewayApiKey(),
-			'CustomFields'  => http_build_query($metaData, '', ';')
+			'CustomFields'  => $this->buildCustomFields($customFields)
 		];
 	}
 
+	protected function getBrowserData() : string
+	{
+		return base64_encode(Main\Web\Json::encode([
+			'AcceptHeader'              => 'application/x-www-form-urlencoded',
+			'ColorDepth'                => 'TWENTY_FOUR_BITS',
+			'Ip'                        => $this->request->getServer()->getRemoteAddr(),
+			'Language'                  => 'RU',
+			'ScreenHeight'              => 1080,
+			'ScreenWidth'               => 1920,
+			'WindowHeight'              => 1050,
+			'WindowWidth'               => 1920,
+			'Timezone'                  => '180',
+			'UserAgent'                 => $this->request->getServer()->getUserAgent(),
+			'JavaEnabled'               => true
+		]));
+	}
+
+	protected function buildCustomFields(array $params, string $separator = ';') : string
+	{
+		$paramsJoined = [];
+
+		foreach($params as $param => $value)
+		{
+			$paramsJoined[] = $param . '=' . $value;
+		}
+
+		return implode($separator, $paramsJoined);
+	}
 
 	public function getPaymentIdFromRequest() : ?int
 	{
@@ -200,17 +241,41 @@ class Payture extends Base
 
 		if ($resultData['Success'] === self::STATUS_3DS)
 		{
+			$params = $this->buildParamsForSecture($resultData);
+			$isTermUrl = ($resultData['ThreeDSVersion'] === self::THREE_DS_VARSION_1);
+
 			throw new \YandexPay\Pay\Exceptions\Secure3dRedirect(
-				$resultData['ACSUrl'], [
-					'MD'    => $resultData['ThreeDSKey'],
-					'PaReq' => $resultData['PaReq']
-				], true
+				$resultData['ACSUrl'], $params, $isTermUrl
 			);
 		}
 	}
 
+	protected function buildParamsForSecture(array $data) : array
+	{
+		$result = [];
+
+		$mapOptions = $this->threeDsData[$data['ThreeDSVersion']];
+
+		if ($mapOptions !== null)
+		{
+			$options = array_intersect_key($data, $mapOptions);
+
+			foreach ($mapOptions as $code => $name)
+			{
+				if (!isset($options[$code])) { continue; }
+
+				$result[$name] = $options[$code];
+			}
+		}
+
+		return $result;
+	}
+
 	protected function isSecure3ds() : bool
 	{
-		return ($this->request->get('MD') !== null && $this->request->get('PaRes') !== null);
+		return (
+			($this->request->get('MD') !== null && $this->request->get('PaRes') !== null)
+			|| ($this->request->get('threeDSSessionData') !== null && $this->request->get('CRes') !== null)
+		);
 	}
 }

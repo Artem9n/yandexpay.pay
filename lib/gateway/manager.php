@@ -82,24 +82,17 @@ class Manager
 
 		if (empty($handlerModeList)) { return []; }
 
-		$type = '';
+		$request = Main\Context::getCurrent()->getRequest();
+		$handlerMode = $request->get('PS_MODE');
+		$systemId = $request->get('ID');
 
-		$application = Application::getInstance();
-
-		if ($application !== null)
+		if (isset($handlerModeList[$handlerMode]))
 		{
-			$request = $application->getContext()->getRequest();
-			$handlerMode = $request->get('PS_MODE');
-			$systemId = $request->get('ID');
-
-			if ($handlerMode !== null && isset($handlerModeList[$handlerMode]))
-			{
-				$type = $handlerMode;
-			}
-			else
-			{
-				$type = static::getHandlerMode($systemId);
-			}
+			$type = $handlerMode;
+		}
+		else
+		{
+			$type = static::getHandlerMode($systemId);
 		}
 
 		if ($type === '')
