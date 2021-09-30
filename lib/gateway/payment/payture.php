@@ -3,21 +3,34 @@
 namespace YandexPay\Pay\GateWay\Payment;
 
 use Bitrix\Main;
-use Bitrix\Main\Request;
-use Bitrix\Sale\Payment;
 use Bitrix\Main\Web\HttpClient;
 use YandexPay\Pay\GateWay\Base;
-use YandexPay\Pay\Reference\Concerns\HasMessage;
+use YandexPay\Pay\Reference\Concerns;
 
 class Payture extends Base
 {
-	use HasMessage;
+	use Concerns\HasMessage;
+
+	/** @var int  */
+	protected $sort = 100;
 
 	protected const STATUS_3DS = '3DS';
 	protected const STATUS_SUCCESS = 'True';
 	protected const STATUS_FAILED = 'False';
 
-	protected static $sort = 100;
+	protected const THREE_DS_VARSION_1 = '1.0';
+	protected const THREE_DS_VARSION_2 = '2.1';
+
+	protected $threeDsData = [
+		self::THREE_DS_VARSION_1 => [
+			'ThreeDSKey' => 'MD',
+			'PaReq' => 'PaReq'
+		],
+		self::THREE_DS_VARSION_2 => [
+			'CReq' => 'creq',
+			'ThreeDSSessionData' => 'threeDSSessionData'
+		]
+	];
 
 	public function getId() : string
 	{
@@ -33,6 +46,7 @@ class Payture extends Base
 	{
 		return [
 			'pay'       => 'https://sandbox3.payture.com/api/MobilePay',
+			'block'     => 'https://sandbox3.payture.com/api/MobileBlock',
 			'refund'    => 'https://sandbox3.payture.com/api/Refund',
 			'pay3ds'    => 'https://sandbox3.payture.com/api/Pay3DS'
 		];
@@ -47,12 +61,12 @@ class Payture extends Base
 
 	protected function getGatewayApiKey(): ?string
 	{
-		return $this->getPayParamsKey('PAYMENT_GATEWAY_API_KEY');
+		return $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 	}
 
 	protected function getGatewayPassword(): ?string
 	{
-		return $this->getPayParamsKey('PAYMENT_GATEWAY_PASSWORD');
+		return $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
 	}
 
 	public function extraParams(string $code = '') : array
@@ -71,30 +85,30 @@ class Payture extends Base
 		];
 	}
 
-	public function startPay(Payment $payment, Request $request) : array
+	public function startPay() : array
 	{
 		$result = [
-			'PS_INVOICE_ID'     => $payment->getId(),
-			'PS_SUM'            => $payment->getSum()
+			'PS_INVOICE_ID'     => $this->getExternalId(),
+			'PS_SUM'            => $this->getPaymentSum()
 		];
 
-		if ($this->isPaySecure3ds())
+		if ($this->isSecure3ds())
 		{
-			$this->createPaySecure($payment, $request);
+			$this->createPaySecure();
 
 			return $result;
 		}
 
-		$this->createPayment($payment, $request);
+		$this->createPayment();
 
 		return $result;
 	}
 
-	protected function createPayment(Payment $payment, Request $request): void
+	protected function createPayment(): void
 	{
 		$httpClient = new HttpClient();
 
-		$data = $this->buildData($payment, $request);
+		$data = $this->buildData();
 
 		$requestUrl = $this->getUrl('pay');
 
@@ -107,14 +121,14 @@ class Payture extends Base
 		$this->checkResult($resultData, $httpClient->getStatus());
 	}
 
-	protected function createPaySecure(Payment $payment, Request $request): void
+	protected function createPaySecure(): void
 	{
 		$httpClient = new HttpClient();
 
 		$data = [
 			'Key'       => $this->getGatewayApiKey(),
-			'OrderId'   => $payment->getId(),
-			'PaRes'     => $request->get('PaRes')
+			'OrderId'   => $this->getExternalId(),
+			'PaRes'     => $this->request->get('PaRes') ?? $this->request->get('CRes')
 		];
 
 		$url = $this->getUrl('pay3ds');
@@ -142,29 +156,57 @@ class Payture extends Base
 		return $result;
 	}
 
-	protected function buildData(Payment $payment, Request $request): array
+	protected function buildData(): array
 	{
-		$requestData = $request->toArray();
+		$customFields = [
+			'ChallengeNotificationUrl'  => $this->getBackUrl(),
+			'BrowserData'               => $this->getBrowserData()
+		];
 
 		return [
-			'PayToken'  => $requestData['yandexData']['token'],
-			'OrderId'   => $payment->getId(),
-			'Amount'    => round($payment->getSum() * 100),
-			'Key'       => $this->getGatewayApiKey()
+			'PayToken'      => $this->getYandexToken(),
+			'OrderId'       => $this->getExternalId(),
+			'Amount'        => $this->getPaymentAmount(),
+			'Key'           => $this->getGatewayApiKey(),
+			'CustomFields'  => $this->buildCustomFields($customFields)
 		];
 	}
 
-
-	public function getPaymentIdFromRequest(Request $request) : ?int
+	protected function getBrowserData() : string
 	{
-		$result = ($request->get('MD') !== null && $request->get('PaRes') !== null);
-
-		$this->setPaySecure3ds($result);
-
-		return $request->get('paymentId');
+		return base64_encode(Main\Web\Json::encode([
+			'AcceptHeader'              => 'application/x-www-form-urlencoded',
+			'ColorDepth'                => 'TWENTY_FOUR_BITS',
+			'Ip'                        => $this->request->getServer()->getRemoteAddr(),
+			'Language'                  => 'RU',
+			'ScreenHeight'              => 1080,
+			'ScreenWidth'               => 1920,
+			'WindowHeight'              => 1050,
+			'WindowWidth'               => 1920,
+			'Timezone'                  => '180',
+			'UserAgent'                 => $this->request->getServer()->getUserAgent(),
+			'JavaEnabled'               => true
+		]));
 	}
 
-	public function refund(Payment $payment, $refundableSum): void
+	protected function buildCustomFields(array $params, string $separator = ';') : string
+	{
+		$paramsJoined = [];
+
+		foreach($params as $param => $value)
+		{
+			$paramsJoined[] = $param . '=' . $value;
+		}
+
+		return implode($separator, $paramsJoined);
+	}
+
+	public function getPaymentIdFromRequest() : ?int
+	{
+		return $this->request->get('paymentId');
+	}
+
+	public function refund(): void
 	{
 		$httpClient = new HttpClient();
 		$url = $this->getUrl('refund');
@@ -172,8 +214,8 @@ class Payture extends Base
 		$data = [
 			'Key'       => $this->getGatewayApiKey(),
 			'Password'  => $this->getGatewayPassword(),
-			'OrderId'   => $payment->getId(),
-			'Amount'    => round($payment->getSum() * 100)
+			'OrderId'   => $this->getPaymentField('PS_INVOICE_ID'),
+			'Amount'    => $this->getPaymentAmount()
 		];
 
 		$httpClient->setHeaders($this->getHeaders());
@@ -199,11 +241,41 @@ class Payture extends Base
 
 		if ($resultData['Success'] === self::STATUS_3DS)
 		{
+			$params = $this->buildParamsForSecture($resultData);
+			$isTermUrl = ($resultData['ThreeDSVersion'] === self::THREE_DS_VARSION_1);
+
 			throw new \YandexPay\Pay\Exceptions\Secure3dRedirect(
-				$resultData['ACSUrl'],
-				$resultData['ThreeDSKey'],
-				$resultData['PaReq']
+				$resultData['ACSUrl'], $params, $isTermUrl
 			);
 		}
+	}
+
+	protected function buildParamsForSecture(array $data) : array
+	{
+		$result = [];
+
+		$mapOptions = $this->threeDsData[$data['ThreeDSVersion']];
+
+		if ($mapOptions !== null)
+		{
+			$options = array_intersect_key($data, $mapOptions);
+
+			foreach ($mapOptions as $code => $name)
+			{
+				if (!isset($options[$code])) { continue; }
+
+				$result[$name] = $options[$code];
+			}
+		}
+
+		return $result;
+	}
+
+	protected function isSecure3ds() : bool
+	{
+		return (
+			($this->request->get('MD') !== null && $this->request->get('PaRes') !== null)
+			|| ($this->request->get('threeDSSessionData') !== null && $this->request->get('CRes') !== null)
+		);
 	}
 }

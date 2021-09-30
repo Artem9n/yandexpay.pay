@@ -44,7 +44,7 @@ if (
 		{
 			$debugInfo = file_get_contents('php://input');
 		}
-		PaySystem\Logger::addDebugInfo('Pay system not found. Request: '.($debugInfo ? $debugInfo : "empty"));
+		PaySystem\Logger::addDebugInfo('Pay system not found. Request: '.($debugInfo ?: "empty"));
 	}
 }
 
