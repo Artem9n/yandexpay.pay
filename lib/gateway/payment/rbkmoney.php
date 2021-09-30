@@ -181,7 +181,7 @@ class Rbkmoney extends Base
 
 		if (!empty($fields)) { return $fields; }
 
-		[$invoiceId, $invoiceToken] = $this->buildInvoice();
+		[$invoiceId, $invoiceToken] = $this->createInvoice();
 
 		$resource = $this->createPaymentResource($invoiceToken);
 
@@ -190,35 +190,6 @@ class Rbkmoney extends Base
 		$this->checkInvoiceEvents($invoiceId);
 
 		return $fields;
-	}
-
-	protected function getInvoiceByExternalId(string $externalId): array
-	{
-		$result = [];
-
-		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
-
-		$httpClient = new HttpClient();
-
-		$url = $this->getUrl('getInvoice', ['#EXTERNAL_ID#' => $externalId]);
-
-		$httpClient->setHeaders($this->getHeaders($apiKey));
-
-		$httpClient->get($url);
-
-		$resultData = $this->convertResultData($httpClient->getResult());
-
-		$this->checkResult($resultData, $httpClient->getStatus());
-
-		if ($httpClient->getStatus() === 200)
-		{
-			$invoiceId = (string)$resultData['id'];
-			$token = $this->createAccessToken($invoiceId);
-
-			$result = [$invoiceId, $token];
-		}
-
-		return $result;
 	}
 
 	protected function createAccessToken(string $invoiceId): string
@@ -238,17 +209,6 @@ class Rbkmoney extends Base
 		$this->checkResult($result, $httpClient->getStatus());
 
 		return $result['payload'];
-	}
-
-	protected function buildInvoice(): array
-	{
-		/*$externalId = $this->getExternalId();
-
-		$invoice = $this->getInvoiceByExternalId($externalId);
-
-		if (!empty($invoice)) { return $invoice; }*/
-
-		return $this->createInvoice();
 	}
 
 	protected function createInvoice(): array
@@ -346,8 +306,6 @@ class Rbkmoney extends Base
 
 	protected function buildDataResource(): string
 	{
-		$userAgent = $this->request->getServer()->get('HTTP_USER_AGENT');
-
 		return Main\Web\Json::encode([
 			'paymentTool' => [
 				'provider'          => self::RESOURCE_PROVIDER,
@@ -356,9 +314,8 @@ class Rbkmoney extends Base
 				'paymentToken'      => $this->getYandexData(),
 			],
 			'clientInfo' => [
-				'fingerprint'   => $userAgent,
+				'fingerprint'   => $this->request->getServer()->getUserAgent(),
 			],
-			'externalID' => $this->getExternalId()
 		]);
 	}
 
@@ -400,7 +357,6 @@ class Rbkmoney extends Base
 		}
 
 		return Main\Web\Json::encode([
-			'externalID'    => $this->getExternalId(),
 			'flow'          => [
 				'type' => self::PAYMENT_FLOW_TYPE,
 			],
@@ -461,7 +417,7 @@ class Rbkmoney extends Base
 
 		if ($status === 400)
 		{
-			throw new Main\SystemException(static::getMessage($resultData['code']) . ' - ' . $resultData['message']);
+			throw new Main\SystemException(static::getMessage($resultData['code']));
 		}
 
 		if ($status === 401)
@@ -485,47 +441,43 @@ class Rbkmoney extends Base
 		$result = false;
 
 		$changes = array_merge(... array_column($resultData, 'changes'));
+		$mapType = array_flip(array_column($changes, 'changeType'));
 
-		if (empty($changes)) { return $result; }
+		$payment = $changes[$mapType[self::TYPE_EVENT_CHANGED]] ?? [];
+		$secure = $changes[$mapType[self::TYPE_EVENT_3DS]] ?? [];
 
-		foreach ($changes as $change)
+		if (
+			!empty($secure)
+			&& (empty($payment) || (string)$payment['paymentID'] !== (string)$secure['paymentID'])
+		)
 		{
-			if ($change['changeType'] === self::TYPE_EVENT_3DS)
+			$requestType = $secure['userInteraction']['request']['requestType'];
+
+			$method = ($requestType === self::REQUEST_TYPE_POST ? 'POST' : 'GET');
+
+			$params = [];
+
+			foreach ($secure['userInteraction']['request']['form'] as $param)
 			{
-				$requestType = $change['userInteraction']['request']['requestType'];
-
-				$method = ($requestType === self::REQUEST_TYPE_POST ? 'POST' : 'GET');
-
-				$params = [];
-
-				foreach ($change['userInteraction']['request']['form'] as $param)
-				{
-					$params[$param['key']] = $param['template'];
-				}
-
-				throw new Secure3dRedirect($change['userInteraction']['request']['uriTemplate'], $params, false, $method);
+				$params[$param['key']] = $param['template'];
 			}
 
-			if (
-				$change['changeType'] === self::TYPE_EVENT_CHANGED
-				&& $change['status'] === self::STATUS_FAILED
-			)
+			throw new Secure3dRedirect($secure['userInteraction']['request']['uriTemplate'], $params, false, $method);
+		}
+
+		if (!empty($payment))
+		{
+			if ($payment['status'] === self::STATUS_FAILED && empty($secure))
 			{
 				throw new Main\SystemException(self::getMessage('FAILED_STATUS'));
 			}
 
-			if (
-				$change['changeType'] === self::TYPE_EVENT_CHANGED
-				&& $change['status'] === self::STATUS_REFUNDED
-			)
+			if ($payment['status'] === self::STATUS_REFUNDED)
 			{
 				throw new Main\SystemException(self::getMessage('REFUNDED_STATUS'));
 			}
 
-			if (
-				$change['changeType'] === self::TYPE_EVENT_CHANGED
-				&& $change['status'] === self::STATUS_PAID
-			)
+			if ($payment['status'] === self::STATUS_PAID)
 			{
 				$result = true;
 			}
