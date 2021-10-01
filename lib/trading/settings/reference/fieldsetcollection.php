@@ -2,7 +2,9 @@
 
 namespace YandexPay\Pay\Trading\Settings\Reference;
 
+use Bitrix\Main;
 use YandexPay\Pay;
+use YandexPay\Pay\Trading\Entity;
 
 /** @method Fieldset current() */
 abstract class FieldsetCollection
@@ -15,7 +17,23 @@ abstract class FieldsetCollection
 	/** @return Fieldset */
 	abstract public function getItemReference() : string;
 
-	public function getFieldDescription($environment, string $siteId) : array
+	public function validate() : Main\Result
+	{
+		$result = new Main\Result();
+
+		foreach ($this->collection as $model)
+		{
+			$modelResult = $model->validate();
+
+			if ($modelResult->isSuccess()) { continue; }
+
+			$result->addErrors($modelResult->getErrors());
+		}
+
+		return $result;
+	}
+
+	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return
 			[ 'MULTIPLE' => 'Y' ]

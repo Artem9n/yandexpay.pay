@@ -2,9 +2,11 @@
 
 namespace YandexPay\Pay\Trading\Settings\Reference;
 
+use YandexPay\Pay\Trading\Entity;
+
 abstract class Fieldset extends Skeleton
 {
-	public function getFieldDescription($environment, string $siteId) : array
+	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return [
 			'MULTIPLE' => 'N',

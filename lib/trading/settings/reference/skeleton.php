@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Trading\Settings\Reference;
 
 use Bitrix\Main;
 use YandexPay\Pay;
+use YandexPay\Pay\Trading\Entity;
 
 abstract class Skeleton
 {
@@ -11,7 +12,55 @@ abstract class Skeleton
 	protected $fieldset = [];
 	protected $fieldsetCollection = [];
 
-	abstract public function getFields($environment, string $siteId) : array;
+	abstract public function getFields(Entity\Reference\Environment $environment, string $siteId) : array;
+
+	public function validate() : Main\Result
+	{
+		return Pay\Result\Facade::merge(
+			$this->validateSelf(),
+			$this->validateFieldset(),
+			$this->validateFieldsetCollection()
+		);
+	}
+
+	protected function validateSelf() : Main\Result
+	{
+		return new Main\Result();
+	}
+
+	protected function validateFieldset() : Main\Result
+	{
+		$map = $this->getFieldsetMap();
+		$result = new Main\Entity\Result();
+
+		foreach ($map as $key => $dummy)
+		{
+			$fiedlsetValidation = $this->getFieldset($key)->validate();
+
+			if (!isset($fiedlsetValidation)) { continue; }
+
+			$result = Pay\Result\Facade::merge($result, $fiedlsetValidation);
+		}
+
+		return $result;
+	}
+
+	protected function validateFieldsetCollection() : Main\Result
+	{
+		$map = $this->getFieldsetCollectionMap();
+		$result = new Main\Entity\Result();
+
+		foreach ($map as $key => $dummy)
+		{
+			$fiedlsetValidation = $this->getFieldsetCollection($key)->validate();
+
+			if (!isset($fiedlsetValidation)) { continue; }
+
+			$result = Pay\Result\Facade::merge($result, $fiedlsetValidation);
+		}
+
+		return $result;
+	}
 
 	public function setValues(array $values) : void
 	{
@@ -68,7 +117,7 @@ abstract class Skeleton
 		return $this->values[$key] ?? $default;
 	}
 
-	public function getRequiredValue($key, $default = null)
+	public function requireValue($key, $default = null)
 	{
 		$result = $this->getValue($key, $default);
 
@@ -80,6 +129,7 @@ abstract class Skeleton
 		return $result;
 	}
 
+	/** @noinspection AdditionOperationOnArraysInspection */
 	public function getValues() : array
 	{
 		$result = $this->values;

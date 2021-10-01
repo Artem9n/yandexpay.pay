@@ -3,13 +3,24 @@
 namespace YandexPay\Pay\Trading\Settings\Options;
 
 use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Trading\Entity;
 use YandexPay\Pay\Trading\Settings\Reference\Fieldset;
 
 class Delivery extends Fieldset
 {
 	use Concerns\HasMessage;
 
-	public function getFieldDescription($environment, string $siteId) : array
+	public function getServiceId() : int
+	{
+		return (int)$this->requireValue('ID');
+	}
+
+	public function getType() : string
+	{
+		return $this->requireValue('TYPE');
+	}
+
+	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return parent::getFieldDescription($environment, $siteId) + [
 			'SETTINGS' => [
@@ -21,7 +32,7 @@ class Delivery extends Fieldset
 		];
 	}
 
-	public function getFields($environment, string $siteId) : array
+	public function getFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return [
 			'ID' => [

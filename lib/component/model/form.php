@@ -102,7 +102,7 @@ class Form extends Component\Reference\Form
 		return $result;
 	}
 
-	public function validate(array $data, array $fields = null) : Main\Entity\Result
+	public function validate(array $data, array $fields = null) : Main\Result
 	{
 		$primary = $data['PRIMARY'] ?? null;
 		$sanitizedData = array_diff_key($data, [ 'PRIMARY' => true ]);

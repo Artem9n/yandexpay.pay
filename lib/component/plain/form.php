@@ -199,7 +199,7 @@ abstract class Form extends Pay\Component\Reference\Form
 		return $result;
 	}
 
-	public function validate(array $data, array $fields = null) : Main\Entity\Result
+	public function validate(array $data, array $fields = null) : Main\Result
 	{
 		if ($fields === null) { return new Main\Entity\Result(); }
 

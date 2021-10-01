@@ -4,7 +4,6 @@ namespace YandexPay\Pay\Trading\Setup;
 
 use YandexPay\Pay\Reference\Storage;
 use YandexPay\Pay\Reference\Concerns;
-use YandexPay\Pay\Ui\Userfield;
 
 class View extends Storage\View
 {
@@ -15,7 +14,7 @@ class View extends Storage\View
 		return $this->getTableFields([
 			'OVERRIDES' => [
 				'SITE_ID' => [
-					'USER_TYPE' => Userfield\Registry::getUserType('enumeration'),
+					'TYPE' => 'enumeration',
 					'VALUES' => [
 						[
 							'ID' => 's1',
@@ -28,7 +27,7 @@ class View extends Storage\View
 					], // todo
 				],
 				'PERSON_TYPE_ID' => [
-					'USER_TYPE' => Userfield\Registry::getUserType('enumeration'),
+					'TYPE' => 'enumeration',
 					'VALUES' => [
 						[
 							'ID' => '1',

@@ -2,11 +2,13 @@
 
 namespace YandexPay\Pay\Trading\Setup;
 
+use YandexPay\Pay\Trading\Entity;
 use YandexPay\Pay\Trading\Settings;
 
 class Model extends EO_Repository
 {
 	protected $options;
+	protected $environment;
 	protected $isOptionsReady = false;
 
 	public function wakeupOptions() : Settings\Options
@@ -16,6 +18,8 @@ class Model extends EO_Repository
 		if ($this->isOptionsReady) { return $options; }
 
 		$values = $this->fillSettings()->getValues();
+		/** @noinspection AdditionOperationOnArraysInspection */
+		$values += $this->getOptionDefaults();
 		$options->setValues($values);
 		$this->isOptionsReady = true;
 
@@ -27,14 +31,27 @@ class Model extends EO_Repository
 		if ($this->options === null)
 		{
 			$this->options = new Settings\Options();
+			$this->options->setValues($this->getOptionDefaults());
 		}
 
 		return $this->options;
 	}
 
-	public function getEnvironment()
+	protected function getOptionDefaults() : array
 	{
-		return null; //todo
+		return [
+			'PERSON_TYPE_ID' => $this->getPersonTypeId(),
+		];
+	}
+
+	public function getEnvironment() : Entity\Reference\Environment
+	{
+		if ($this->environment === null)
+		{
+			$this->environment = Entity\Registry::getEnvironment();
+		}
+
+		return $this->environment;
 	}
 
 	/** @noinspection PhpUnused */
@@ -87,10 +104,6 @@ class Model extends EO_Repository
 		}
 	}
 
-	/**
-	 * @param array<string, Model> $models
-	 * @param array<string, mixed> $values
-	 */
 	protected function applySettingsUpdate(array $models, array $values) : void
 	{
 		foreach ($values as $name => $value)

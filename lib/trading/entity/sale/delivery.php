@@ -6,6 +6,7 @@ use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Sale\Delivery\Restrictions\BySite;
 use Sale\Handlers as SaleHandlers;
+use YandexPay\Pay;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 
@@ -169,6 +170,10 @@ class Delivery extends EntityReference\Delivery
 				$serviceClassName = $serviceParameters['CLASS_NAME'];
 				$serviceId = (int)$serviceParameters['ID'];
 
+				echo '<pre>';
+				print_r($serviceParameters);
+				echo '</pre>';
+
 				if (
 					$serviceId <= 0
 					|| !class_exists($serviceClassName)
@@ -261,7 +266,7 @@ class Delivery extends EntityReference\Delivery
 
 	public function calculate($deliveryId, EntityReference\Order $order)
 	{
-		$result = new TradingEntity\Reference\Delivery\CalculationResult();
+		$result = new EntityReference\Delivery\CalculationResult();
 
 		try
 		{
@@ -297,7 +302,7 @@ class Delivery extends EntityReference\Delivery
 		}
 		catch (Main\SystemException $exception)
 		{
-			$result->addError(new Market\Error\Base(
+			$result->addError(new Pay\Error\Base(
 				$exception->getMessage(),
 				$exception->getCode()
 			));
@@ -331,9 +336,9 @@ class Delivery extends EntityReference\Delivery
 
 		if ($deliveryService === null)
 		{
-			$message = static::getLang('TRADING_ENTITY_SALE_DELIVERY_SERVICE_NOT_FOUND', [
+			$message = 'not found';/*static::getLang('TRADING_ENTITY_SALE_DELIVERY_SERVICE_NOT_FOUND', [
 				'#ID#' => $deliveryId,
-			]);
+			]);*/
 			throw new Main\SystemException($message);
 		}
 
@@ -382,7 +387,7 @@ class Delivery extends EntityReference\Delivery
 	protected function hasDeliveryDiscount(Sale\Order $order)
 	{
 		$siteId = $order->getSiteId();
-		$userGroups = Market\Data\UserGroup::getUserGroups($order->getUserId());
+		$userGroups = Pay\Data\UserGroup::getUserGroups($order->getUserId());
 		$cacheKey = $siteId . '|' . implode('.', $userGroups);
 
 		if (!isset($this->existsDeliveryDiscount[$cacheKey]))
@@ -517,7 +522,7 @@ class Delivery extends EntityReference\Delivery
 
 		return (
 			isset($parentConfig['MAIN']['SERVICE_TYPE'])
-			&& Market\Data\TextString::getPositionCaseInsensitive($parentConfig['MAIN']['SERVICE_TYPE'], 'post') !== false
+			&& Pay\Data\TextString::getPositionCaseInsensitive($parentConfig['MAIN']['SERVICE_TYPE'], 'post') !== false
 		);
 	}
 
@@ -525,7 +530,7 @@ class Delivery extends EntityReference\Delivery
 	{
 		$serviceCode = $deliveryService->getCode();
 
-		return (Market\Data\TextString::getPositionCaseInsensitive($serviceCode, 'post') !== false);
+		return (Pay\Data\TextString::getPositionCaseInsensitive($serviceCode, 'post') !== false);
 	}
 
 	protected function getSuggestImplementedDeliveryTypes()

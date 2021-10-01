@@ -43,6 +43,21 @@ class Form extends Pay\Component\Plain\Form
 		$model->{$method}();
 	}
 
+	public function validate(array $data, array $fields = null) : Main\Result
+	{
+		/** @var Pay\Trading\Setup\Model $model */
+		$result = parent::validate($data, $fields);
+
+		if (!$result->isSuccess()) { return $result; }
+
+		$dataClass = $this->getDataClass();
+		$model = $dataClass::createObject(false);
+		$options = $model->getOptions();
+		$options->setValues($data);
+
+		return $options->validate();
+	}
+
 	public function load($primary, array $select = [], bool $isCopy = false) : array
 	{
 		$result = $this->loadSetupSettings($primary);
@@ -53,7 +68,7 @@ class Form extends Pay\Component\Plain\Form
 		}
 		else
 		{
-			$result += $this->fillFieldsValueEmpty($select);
+			$result = $this->fillFieldsValueEmpty($result, $select);
 		}
 
 		return $result;
@@ -85,24 +100,21 @@ class Form extends Pay\Component\Plain\Form
 		return $result;
 	}
 
-	protected function fillFieldsValueEmpty(array $select = []) : array
+	protected function fillFieldsValueEmpty(array $values, array $select = []) : array
 	{
-		$result = [];
-
 		foreach ($this->getFields($select) as $fieldName => $field)
 		{
 			if (!empty($field['SETTINGS']['READONLY'])) { continue; }
+			if (!isset($field['SETTINGS']['DEFAULT_VALUE'])) { continue; }
 
-			$isHidden = isset($field['HIDDEN']) && $field['HIDDEN'] === 'Y';
-			$hasDefaultValue = isset($field['SETTINGS']['DEFAULT_VALUE']);
-			$value = ($isHidden && $hasDefaultValue)
-				? $field['SETTINGS']['DEFAULT_VALUE']
-				: false;
+			$currentValue = Pay\Utils\BracketChain::get($values, $fieldName);
 
-			Pay\Utils\BracketChain::set($result, $fieldName, $value);
+			if ($currentValue !== null) { continue; }
+
+			Pay\Utils\BracketChain::set($values, $fieldName, $field['SETTINGS']['DEFAULT_VALUE']);
 		}
 
-		return $result;
+		return $values;
 	}
 
 	public function add(array $values) : Main\ORM\Data\AddResult
