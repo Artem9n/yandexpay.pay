@@ -2,38 +2,40 @@
 
 namespace YandexPay\Pay\GateWay;
 
-use Bitrix\Main\Request;
-use Bitrix\Sale\Payment;
+use Bitrix\Main;
+use Bitrix\Sale;
 use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference\Concerns\HasMessage;
 
-abstract class Base implements IGateWay
+abstract class Base implements IGateWay, Main\Type\IRequestFilter
 {
 	use HasMessage;
 
 	public const TEST_URL = 'test';
 	public const ACTIVE_URL = 'active';
 
-	protected static $sort = 0;
-
-	protected $isPaySecure3ds = false;
-
+	/** @var int */
+	protected $sort;
 	/** @var array */
 	protected $params = [];
+	/** @var Sale\Payment */
+	protected $payment;
+	/** @var Main\Request */
+	protected $request;
+	/** @var string */
+	protected $externalId;
 
-	abstract public function getPaymentIdFromRequest(Request $request): ?int;
-
-	abstract public function refund(Payment $payment, int $refundableSum): void;
-
-	/**
-	 * @return array
-	 */
-	abstract protected function getUrlList(): array;
-
-	public static function getClassName(): string
+	public function __construct(Sale\Payment  $payment = null, Main\Request $request = null)
 	{
-		return '\\' . static::class;
+		$this->payment = $payment;
+		$this->request = $request ?? Main\Context::getCurrent()->getRequest();
 	}
+
+	abstract public function getPaymentIdFromRequest(): ?int;
+
+	abstract public function refund(): void;
+
+	abstract protected function getUrlList(): array;
 
 	public function getId() : string
 	{
@@ -47,7 +49,7 @@ abstract class Base implements IGateWay
 
 	public function getSort(): int
 	{
-		return static::$sort;
+		return $this->sort;
 	}
 
 	public function getDescription(): string
@@ -60,32 +62,22 @@ abstract class Base implements IGateWay
 		return [];
 	}
 
-	public function setPayParams(array $params = []): void
+	public function setParameters(array $params = []): void
 	{
 		$this->params = $params;
 	}
 
-	public function getPayParams(): array
+	public function getParameters(): array
 	{
 		return $this->params;
 	}
 
-	public function setPaySecure3ds(bool $secure): void
-	{
-		$this->isPaySecure3ds = $secure;
-	}
-
-	public function isPaySecure3ds(): bool
-	{
-		return $this->isPaySecure3ds;
-	}
-
-	public function getPayParamsKey(string $key, $isStrict = false)
+	public function getParameter(string $name, $isStrict = false)
 	{
 		$prefix = static::getPrefix();
-		$key = !$isStrict ? $prefix . $this->getId() . '_' . $key : $key;
+		$name = !$isStrict ? $prefix . $this->getId() . '_' . $name : $name;
 
-		return $this->params[$key] ?? null;
+		return $this->params[$name] ?? null;
 	}
 
 	public function getParams() : array
@@ -106,7 +98,7 @@ abstract class Base implements IGateWay
 
 	public function getMerchantId(): string
 	{
-		return $this->getPayParamsKey('PAYMENT_GATEWAY_MERCHANT_ID');
+		return $this->getParameter('PAYMENT_GATEWAY_MERCHANT_ID');
 	}
 
 	protected static function getPrefix(): string
@@ -114,22 +106,19 @@ abstract class Base implements IGateWay
 		return Config::getLangPrefix();
 	}
 
-	public function startPay(Payment $payment, Request $request) : array
+	public function startPay() : array
 	{
 		return [];
 	}
 
-	/**
-	 * @return bool|string
-	 */
-	protected function readFromStream()
+	protected function readFromStream(): void
 	{
-		return file_get_contents("php://input");
+		$this->request->addFilter($this);
 	}
 
 	/**
-	 * @param string     $action
-	 * @param null $replace
+	 * @param string $action
+	 * @param array|null   $replace
 	 *
 	 * @return string
 	 */
@@ -171,6 +160,94 @@ abstract class Base implements IGateWay
 
 	protected function isTestHandlerMode(): bool
 	{
-		return ($this->getPayParamsKey('YANDEX_PAY_TEST_MODE', true) === 'Y');
+		return ($this->getParameter('YANDEX_PAY_TEST_MODE', true) === 'Y');
+	}
+
+	protected function getPaymentId() : string
+	{
+		return (string)$this->payment->getId();
+	}
+
+	protected function getOrderId() : string
+	{
+		return (string)$this->payment->getOrderId();
+	}
+
+	protected function getPaymentSum() : float
+	{
+		return (float)$this->payment->getSum();
+	}
+
+	protected function getPaymentAmount() : float
+	{
+		return round($this->getPaymentSum() * 100);
+	}
+
+	protected function getPaymentField(string $name) : ?string
+	{
+		return $this->payment->getField($name);
+	}
+
+	protected function createExternalId() : string
+	{
+		return md5(serialize([
+			$this->request->getServer()->getServerName(),
+			$this->payment->getOrder()->getUserId(),
+			$this->payment->getOrder()->getDateInsert(),
+			$this->getPaymentSum(),
+			$this->getOrderId(),
+			$this->getPaymentId()
+		]));
+	}
+
+	protected function getExternalId() : ?string
+	{
+		if ($this->externalId === null)
+		{
+			$this->externalId = $this->createExternalId();
+		}
+
+		return $this->externalId;
+	}
+
+	protected function getYandexData() : array
+	{
+		return $this->request->get('yandexData') ?? [];
+	}
+
+	protected function getYandexToken() : string
+	{
+		$yandexData = $this->getYandexData();
+
+		return $yandexData['token'] ?? '';
+	}
+
+	public function filter(array $values): array
+	{
+		try
+		{
+			$rawInput = file_get_contents('php://input');
+			$postData = Main\Web\Json::decode($rawInput);
+
+			$result = [
+				'post' => $postData,
+			];
+		}
+		catch (\Exception $exception)
+		{
+			$result = [];
+		}
+
+		return $result;
+	}
+
+	protected function getBackUrl() : string
+	{
+		$params = [
+			'paymentId' => $this->getPaymentId(),
+			'backurl'   => $this->request->getServer()->get('HTTP_REFERER')
+		];
+
+		return $this->getParameter('YANDEX_PAY_NOTIFY_URL', true) . '?' . http_build_query($params);
 	}
 }

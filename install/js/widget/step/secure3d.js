@@ -6,10 +6,8 @@ export default class Step3ds extends AbstractStep {
 	static defaults = {
 		url: '/yandex_pay.php',
 
-		template: '<form name="form" action="#ACTION#" method="post">'
-			+ '<input type="hidden" name="TermUrl" value="#TERMURL#" >'
-			+ '<input type="hidden" name="MD" value="#MD#" >'
-			+ '<input type="hidden" name="PaReq" value="#PAREQ#" >'
+		template: '<form name="form" action="#ACTION#" method="#METHOD#">'
+			+ '#INPUTS#'
 			+ '</form>',
 	}
 
@@ -19,12 +17,35 @@ export default class Step3ds extends AbstractStep {
 	}
 
 	compile(data) {
+
 		const template = this.options.template;
 		const vars = Object.assign(data, {
-			'TermUrl': this.makeTermUrl(),
+			'inputs': this.makeInputs(data)
 		});
 
 		return Template.compile(template, vars);
+	}
+
+	makeInputs(data) {
+		let key;
+		let vars = data.params;
+		let value;
+		let template;
+
+		if (Object.keys(vars).length === 0) { return ''; }
+
+		template = data.termUrl ? '<input type="hidden" name="TermUrl" value="' + this.makeTermUrl() + '">' : '';
+
+		for (key in vars)
+		{
+			if (!vars.hasOwnProperty(key)) { continue; }
+
+			value = vars[key];
+
+			template += '<input type="hidden" name="' + key + '" value="' + value + '">';
+		}
+
+		return template;
 	}
 
 	makeTermUrl() {

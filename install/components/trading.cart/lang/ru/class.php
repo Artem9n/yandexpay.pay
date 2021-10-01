@@ -1,0 +1,3 @@
+<?php
+
+$MESS['YANDEX_PAY_TRADING_CART_MODULE_NOT_INSTALLED'] = 'Модуль #MODULE_ID# не установлен';
