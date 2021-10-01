@@ -166,7 +166,7 @@ class Rbkmoney extends Base
 		)
 		{
 			$result = [
-				'PS_INVOICE_ID'     => $invoice['id'],
+				'PS_INVOICE_ID'     => $invoice['id'] . '#' . $payment['id'],
 				'PS_STATUS_CODE'    => $payment['status'],
 				'PS_SUM'            => $this->getPaymentSum()
 			];
@@ -491,37 +491,11 @@ class Rbkmoney extends Base
 		return Main\Web\Json::decode($data);
 	}
 
-	protected function getPaymentIdByExternalId(string $id): string
-	{
-		$httpClient = new HttpClient();
-
-		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
-
-		$url = $this->getUrl('getPayment', ['#EXTERNAL_ID#' => $id]);
-
-		$httpClient->setHeaders($this->getHeaders($apiKey));
-
-		$httpClient->get($url);
-
-		if ($httpClient->getStatus() === 500)
-		{
-			throw new Main\SystemException('Internal Server Error');
-		}
-
-		$result = $this->convertResultData($httpClient->getResult());
-
-		$this->checkResult($result, $httpClient->getStatus());
-
-		return (string)$result['id'];
-	}
-
 	public function refund(): void
 	{
 		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 
-		$invoiceId = $this->getPaymentField('PS_INVOICE_ID');
-
-		$paymentId = $this->getPaymentIdByExternalId($this->getExternalId());
+		[$invoiceId, $paymentId] = explode('#', $this->getPaymentField('PS_INVOICE_ID'));
 
 		$httpClient = new HttpClient();
 
