@@ -192,25 +192,6 @@ class Rbkmoney extends Base
 		return $fields;
 	}
 
-	protected function createAccessToken(string $invoiceId): string
-	{
-		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
-
-		$url = $this->getUrl('createToken', ['#INVOICE_ID#' => $invoiceId]);
-
-		$httpClient = new HttpClient();
-
-		$httpClient->setHeaders($this->getHeaders($apiKey));
-
-		$httpClient->post($url);
-
-		$result = $this->convertResultData($httpClient->getResult());
-
-		$this->checkResult($result, $httpClient->getStatus());
-
-		return $result['payload'];
-	}
-
 	protected function createInvoice(): array
 	{
 		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
