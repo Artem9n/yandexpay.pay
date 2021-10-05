@@ -170,10 +170,6 @@ class Delivery extends EntityReference\Delivery
 				$serviceClassName = $serviceParameters['CLASS_NAME'];
 				$serviceId = (int)$serviceParameters['ID'];
 
-				echo '<pre>';
-				print_r($serviceParameters);
-				echo '</pre>';
-
 				if (
 					$serviceId <= 0
 					|| !class_exists($serviceClassName)
@@ -264,7 +260,7 @@ class Delivery extends EntityReference\Delivery
 		return $result;
 	}
 
-	public function calculate($deliveryId, EntityReference\Order $order)
+	public function calculate($deliveryId, EntityReference\Order $order) : EntityReference\Delivery\CalculationResult
 	{
 		$result = new EntityReference\Delivery\CalculationResult();
 
@@ -470,7 +466,7 @@ class Delivery extends EntityReference\Delivery
 		return $result;
 	}
 
-	protected function matchDeliveryType(Sale\Delivery\Services\Base $deliveryService, $type)
+	protected function matchDeliveryType(Sale\Delivery\Services\Base $deliveryService, $type) : bool
 	{
 		$methodName = 'matchDeliveryType' . ucfirst($type);
 		$result = false;
@@ -483,7 +479,7 @@ class Delivery extends EntityReference\Delivery
 		return $result;
 	}
 
-	protected function matchDeliveryTypePickup(Sale\Delivery\Services\Base $deliveryService)
+	protected function matchDeliveryTypePickup(Sale\Delivery\Services\Base $deliveryService) : bool
 	{
 		$deliveryId = $deliveryService->getId();
 		$stores = Sale\Delivery\ExtraServices\Manager::getStoresList($deliveryId);
@@ -491,9 +487,9 @@ class Delivery extends EntityReference\Delivery
 		return !empty($stores);
 	}
 
-	protected function matchDeliveryTypePost(Sale\Delivery\Services\Base $deliveryService)
+	protected function matchDeliveryTypeDelivery(Sale\Delivery\Services\Base $deliveryService)
 	{
-		$result = false;
+		/*$result = false;
 		$conditions = [
 			'code',
 			'serviceType',
@@ -508,9 +504,9 @@ class Delivery extends EntityReference\Delivery
 				$result = true;
 				break;
 			}
-		}
+		}*/
 
-		return $result;
+		return true;
 	}
 
 	protected function testDeliveryTypePostByCode(Sale\Delivery\Services\Base $deliveryService)
@@ -522,7 +518,7 @@ class Delivery extends EntityReference\Delivery
 
 		return (
 			isset($parentConfig['MAIN']['SERVICE_TYPE'])
-			&& Pay\Data\TextString::getPositionCaseInsensitive($parentConfig['MAIN']['SERVICE_TYPE'], 'post') !== false
+			&& mb_stripos($parentConfig['MAIN']['SERVICE_TYPE'], 'post') !== false
 		);
 	}
 
@@ -530,14 +526,14 @@ class Delivery extends EntityReference\Delivery
 	{
 		$serviceCode = $deliveryService->getCode();
 
-		return (Pay\Data\TextString::getPositionCaseInsensitive($serviceCode, 'post') !== false);
+		return (mb_stripos($serviceCode, 'post') !== false);
 	}
 
-	protected function getSuggestImplementedDeliveryTypes()
+	protected function getSuggestImplementedDeliveryTypes() : array
 	{
 		return [
 			'PICKUP',
-			'POST',
+			'DELIVERY'
 		];
 	}
 }

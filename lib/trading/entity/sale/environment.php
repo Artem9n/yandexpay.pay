@@ -2,8 +2,9 @@
 namespace YandexPay\Pay\Trading\Entity\Sale;
 
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
+use YandexPay\Pay\Trading\Entity\Common as EntityCommon;
 
-class Environment extends EntityReference\Environment
+class Environment extends EntityCommon\Environment
 {
 	protected function createOrderRegistry() : EntityReference\OrderRegistry
 	{
@@ -23,5 +24,15 @@ class Environment extends EntityReference\Environment
 	protected function createPaySystem() : EntityReference\PaySystem
 	{
 		return new PaySystem($this);
+	}
+
+	protected function createPersonType() : EntityReference\PersonType
+	{
+		return new PersonType($this);
+	}
+
+	protected function createProperty() : EntityReference\Property
+	{
+		return new Property($this);
 	}
 }

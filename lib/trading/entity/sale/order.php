@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Trading\Entity\Sale;
 
+use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use Bitrix\Main;
 use Bitrix\Sale;
@@ -17,16 +18,16 @@ class Order extends EntityReference\Order
 		parent::__construct($environment, $internalOrder);
 	}
 
-	public function loadUserBasket() : void
+	public function loadUserBasket(Sale\OrderBase $order) : Sale\BasketBase
 	{
 		$fuserId = \CSaleBasket::GetBasketUserID(true);
 		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		/** @var Sale\BasketBase $basketClassName */
 		$basketClassName = $registry->getBasketClassName();
 
 		Assert::notNull($fuserId, 'fUserId');
 
-		$basket = $basketClassName::loadItemsForFUser($fuserId, $this->internalOrder->getSiteId());
-		$this->internalOrder->setBasket($basket);
+		return $basketClassName::loadItemsForFUser($fuserId, $order->getSiteId());
 	}
 
 	public function setLocation($locationId) : Main\Result
@@ -142,9 +143,9 @@ class Order extends EntityReference\Order
 		$order = $this->internalOrder;
 		$basket = $order->getBasket();
 
-		if ($basket === null || $basket === false)
+		if ($basket === null)
 		{
-			$basket = $this->createBasket($order);
+			$basket = $this->loadUserBasket($order);
 			$order->setBasket($basket);
 		}
 
@@ -170,22 +171,253 @@ class Order extends EntityReference\Order
 		return $basket;
 	}
 
-	public function addProduct($productId) : void
+	public function addProduct($productId, $count = 1, array $data = null) : Main\Result
 	{
-		/*$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
-		$basketClassName = $registry->getBasketClassName();
-		$basket = $basketClassName::create($siteId);
+		$basket = $this->getBasket();
+		$basketFields = $this->getProductBasketFields($productId, $count, $data);
 
-		if ($userId !== null)
+		$result = $this->createBasketItem($basket, $basketFields);
+		$addData = $result->getData();
+
+		if (isset($addData['BASKET_ITEM']))
 		{
-			$fUserId = Sale\Fuser::getIdByUserId($userId);
-			$basket->setFUserId($fUserId);
+			/** @var Sale\BasketItemBase $basketItem */
+			$basketItem = $addData['BASKET_ITEM'];
+			$basketCode = $basketItem->getBasketCode();
+			$addData['BASKET_CODE'] = $basketCode;
+
+			$result->setData($addData);
 		}
 
-		Catalog\Product\Basket::addProductToBasket($basket, [
-			'PRODUCT_ID' => $this->getProductId(),
+		return $result;
+	}
+
+	protected function createBasketItem(Sale\BasketBase $basket, $basketFields)
+	{
+		/** @var Sale\BasketItemBase $basketItem */
+		$result = new Main\Result();
+		$basketItem = $basket->createItem($basketFields['MODULE'], $basketFields['PRODUCT_ID']);
+		$settableFieldsMap = array_flip($basketItem::getSettableFields());
+		$alreadySetFields = [
+			'MODULE' => true,
+			'PRODUCT_ID' => true,
+		];
+
+		// apply limits
+
+		if (isset($basketFields['AVAILABLE_QUANTITY']))
+		{
+			$siblingsQuantity = $this->getBasketProductSiblingsFilledQuantity($basketItem);
+
+			if ($siblingsQuantity > 0)
+			{
+				$basketFields['AVAILABLE_QUANTITY'] -= $siblingsQuantity;
+			}
+
+			if ($basketFields['AVAILABLE_QUANTITY'] < $basketFields['QUANTITY'])
+			{
+				$basketFields['QUANTITY'] = $basketFields['AVAILABLE_QUANTITY'];
+			}
+		}
+
+		// properties
+
+		$propertyCollection = $basketItem->getPropertyCollection();
+
+		if (!empty($basketFields['PROPS']) && $propertyCollection)
+		{
+			$propertyCollection->setProperty($basketFields['PROPS']);
+		}
+
+		$alreadySetFields += [
+			'PROPS' => true,
+		];
+
+		// set presets
+
+		$presetsFields = [
+			'PRODUCT_PROVIDER_CLASS' => true,
+			'CALLBACK_FUNC' => true,
+			'PAY_CALLBACK_FUNC' => true,
+			'SUBSCRIBE' => true,
+		];
+		$presets = array_intersect_key($basketFields, $presetsFields);
+		$presets = array_intersect_key($presets, $settableFieldsMap);
+
+		$basketItem->setFields($presets);
+		$alreadySetFields += $presetsFields;
+
+		// get provider data
+
+		$providerResult = $this->getBasketItemProviderData($basket, $basketItem, $basketFields);
+
+		if ($result->isSuccess())
+		{
+			$providerData = (array)$providerResult->getData();
+
+			if (
+				isset($providerData['AVAILABLE_QUANTITY'], $basketFields['AVAILABLE_QUANTITY'])
+				&& $providerData['AVAILABLE_QUANTITY'] < $basketFields['AVAILABLE_QUANTITY']
+			)
+			{
+				$basketFields['AVAILABLE_QUANTITY'] = $providerData['AVAILABLE_QUANTITY'];
+			}
+
+			$basketFields += $providerData;
+		}
+		else
+		{
+			$result->addErrors($providerResult->getErrors());
+		}
+
+		// set name
+
+		if (isset($basketFields['NAME']))
+		{
+			$basketItem->setField('NAME', $basketFields['NAME']);
+			$alreadySetFields += [
+				'NAME' => true,
+			];
+		}
+
+		// set quantity
+
+		$setQuantityResult = $basketItem->setField('QUANTITY', $basketFields['QUANTITY']);
+
+		if (!$setQuantityResult->isSuccess())
+		{
+			$this->fillBasketItemAvailableQuantity($basketItem, $basketFields);
+
+			$result->addErrors($setQuantityResult->getErrors());
+		}
+
+		$alreadySetFields += [
+			'QUANTITY' => true,
+		];
+
+		// set left fields
+
+		$leftFields = array_diff_key($basketFields, $alreadySetFields);
+		$leftFields = array_intersect_key($leftFields, $settableFieldsMap);
+
+		$setLeftFields = $basketItem->setFields($leftFields);
+
+		if (!$setLeftFields->isSuccess())
+		{
+			$result->addErrors($setLeftFields->getErrors());
+		}
+
+		$result->setData([
+			'BASKET_ITEM' => $basketItem,
 		]);
 
-		$order->setBasket($basket);*/
+		return $result;
 	}
+
+	protected function fillBasketItemAvailableQuantity(Sale\BasketItemBase $basketItem, $fields)
+	{
+		$currentQuantity = (float)$basketItem->getQuantity();
+		$requestedQuantity = (float)$fields['QUANTITY'];
+
+		if ($currentQuantity < $requestedQuantity && isset($fields['AVAILABLE_QUANTITY']))
+		{
+			$siblingsQuantity = $this->getBasketProductSiblingsFilledQuantity($basketItem);
+			$availableQuantity = (float)$fields['AVAILABLE_QUANTITY'] - $siblingsQuantity;
+
+			if ($availableQuantity > $currentQuantity && $availableQuantity < $requestedQuantity)
+			{
+				$basketItem->setField('QUANTITY', $availableQuantity);
+			}
+		}
+	}
+
+	protected function getBasketProductSiblingsFilledQuantity(Sale\BasketItemBase $basketItem)
+	{
+		$result = 0;
+		$searchProductId = (string)$basketItem->getProductId();
+
+		if ($searchProductId !== '')
+		{
+			$basket = $basketItem->getCollection();
+
+			/** @var Sale\BasketItemBase $basketItem*/
+			foreach ($basket as $siblingItem)
+			{
+				if (
+					$siblingItem !== $basketItem
+					&& (string)$siblingItem->getProductId() === $searchProductId
+					&& $siblingItem->canBuy()
+				)
+				{
+					$result += $siblingItem->getQuantity();
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	protected function getBasketItemProviderData(Sale\BasketBase $basket, Sale\BasketItemBase $basketItem, $basketFields)
+	{
+		$result = new Main\Result();
+		$initialQuantity = $basketItem->getField('QUANTITY');
+
+		$basketItem->setFieldNoDemand('QUANTITY', $basketFields['QUANTITY']); // required for get available quantity
+
+		$providerData = Sale\Provider::getProductData($basket, ['PRICE', 'AVAILABLE_QUANTITY'], $basketItem);
+		$basketCode = $basketItem->getBasketCode();
+
+		if (empty($providerData[$basketCode]))
+		{
+			$errorMessage = 'TRADING_ENTITY_SALE_ORDER_PRODUCT_NO_PROVIDER_DATA';//static::getLang('TRADING_ENTITY_SALE_ORDER_PRODUCT_NO_PROVIDER_DATA');
+			$result->addError(new Main\Error($errorMessage));
+		}
+		else
+		{
+			// -- cache provider data to discount
+
+			$discount = $basket->getOrder()->getDiscount();
+
+			if ($discount instanceof Sale\Discount)
+			{
+				$basketFieldsDiscountData = array_intersect_key($basketFields, [
+					'BASE_PRICE' => true,
+					'DISCOUNT_PRICE' => true,
+					'PRICE' => true,
+					'CURRENCY' => true,
+					'DISCOUNT_LIST' => true,
+				]);
+				$discountBasketData = $basketFieldsDiscountData + $providerData[$basketCode];
+
+				$discount->setBasketItemData($basketCode, $discountBasketData);
+			}
+
+			// -- export data
+
+			$result->setData($providerData[$basketCode]);
+		}
+
+		$basketItem->setFieldNoDemand('QUANTITY', $initialQuantity); // reset initial quantity
+
+		return $result;
+	}
+
+	protected function getProductBasketFields($productId, $count = 1, array $data = null)
+	{
+		$result = [
+			'PRODUCT_ID' => $productId,
+			'QUANTITY' => $count,
+			'CURRENCY' => $this->internalOrder->getCurrency(),
+			'MODULE' => 'catalog',
+			'PRODUCT_PROVIDER_CLASS' => Catalog\Product\Basket::getDefaultProviderName()
+		];
+
+		if ($data !== null)
+		{
+			$result = $data + $result; // user data priority
+		}
+
+		return $result;
+	}
+
 }

@@ -65,9 +65,9 @@ class Delivery
 	 * @param int $deliveryId
 	 * @param Order $order
 	 *
-	 * @return //Delivery\CalculationResult
+	 * @return Delivery\CalculationResult
 	 */
-	public function calculate($deliveryId, Order $order)
+	public function calculate(int $deliveryId, Order $order) : Delivery\CalculationResult
 	{
 		throw new NotImplementedException('calculate is missing');
 	}

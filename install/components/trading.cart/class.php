@@ -64,6 +64,7 @@ class TradingCart extends \CBitrixComponent
 	protected function deliveryOptionsAction() : void
 	{
 		$order = $this->getOrder();
+		$this->fillBasket($order);
 
 		//$this->fillAddress($order);
 
@@ -73,25 +74,41 @@ class TradingCart extends \CBitrixComponent
 	protected function pickupOptionsAction() : void
 	{
 		$order = $this->getOrder();
+		$this->fillBasket($order);
 
-		$this->fillAddress($order);
+		//$this->fillAddress($order);
 
 		$calculatedDeliveries = $this->calculateDeliveries($order, 'PICKUP');
 
 
 	}
 
+	protected function fillBasket(EntityReference\Order $order)
+	{
+		$addProductResult = $order->addProduct(21);
+
+		if (!$addProductResult->isSuccess())
+		{
+			throw new Main\SystemException($addProductResult->getErrorMessages());
+		}
+	}
+
 	protected function couponAction() : float
 	{
 		$order = $this->getOrder();
 
-		$this->fillLocation($order);
-		$this->fillAddress($order);
+		//$this->fillLocation($order);
+		//$this->fillAddress($order);
 		$this->fillCoupon($order);
 
 		$order->doFinalAction(true);
 
 		return $order->getPrice();
+	}
+
+	protected function fillCoupon(EntityReference\Order $order)
+	{
+
 	}
 
 	protected function orderAcceptAction()
@@ -155,7 +172,7 @@ class TradingCart extends \CBitrixComponent
 	 *
 	 * @return Calcul[]
 	 */
-	protected function calculateDeliveries(EntityReference\Order $order, $targetType) : array
+	protected function calculateDeliveries(EntityReference\Order $order, string $targetType) : array
 	{
 		$result = [];
 		$deliveryService = $this->environment->getDelivery();
@@ -163,22 +180,30 @@ class TradingCart extends \CBitrixComponent
 		echo '<pre>';
 		print_r($deliveryService->getRestricted($order));
 		echo '</pre>';
-		die;
+		/*die;*/
 
 		foreach ($deliveryService->getRestricted($order) as $deliveryId)
 		{
-			/*$type = $deliveryService->getType($deliveryId);
+			$type = $deliveryService->suggestDeliveryType($deliveryId);
 
 			if ($type !== $targetType) { continue; }
 
-			if (!$deliveryService->isCompatible($order)) { continue; }
+			if (!$deliveryService->isCompatible($deliveryId, $order)) { continue; }
 
-			$calculationResult = $deliveryService->calculateConcrete();
+			$calculationResult = $deliveryService->calculate($deliveryId, $order);
+			echo '<pre>';
+			print_r($deliveryId);
+			print_r($calculationResult);
+			echo '</pre>';
+			/*if (!$calculationResult->isSuccess()) { continue; }*/
 
-			if (!$calculationResult->isSuccess()) { continue; }
-
-			$result[] = $calculationResult;*/
+			$result[] = $deliveryId;
 		}
+
+		echo '<pre>';
+		print_r($result);
+		echo '</pre>';
+		die;
 
 		return $result;
 	}
