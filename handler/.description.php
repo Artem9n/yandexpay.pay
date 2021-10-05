@@ -112,7 +112,7 @@ $data = [
 				]
 			]
 		],*/
-	] + Pay\GateWay\Manager::getParams()
+	] + Pay\Gateway\Manager::getParams()
 ];
 
-$psDescription = Pay\GateWay\Manager::getModeDescription();
+$psDescription = Pay\Gateway\Manager::getModeDescription();

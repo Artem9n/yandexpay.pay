@@ -1,10 +1,9 @@
 <?php
 
-namespace YandexPay\Pay\GateWay;
+namespace YandexPay\Pay\Gateway;
 
 use Bitrix\Main;
 use Bitrix\Sale;
-use Bitrix\Main\Application;
 use Bitrix\Sale\Internals\PaySystemActionTable;
 use YandexPay\Pay\Config;
 
@@ -18,14 +17,14 @@ class Manager
 		$result = [];
 		$sort = [];
 
-		$classListGateWay = static::getClassList();
+		$classListGateway = static::getClassList();
 
-		if (empty($classListGateWay)) { return $result; }
+		if (empty($classListGateway)) { return $result; }
 
-		foreach ($classListGateWay as $classGateWay)
+		foreach ($classListGateway as $classGateway)
 		{
-			/** @var \YandexPay\Pay\GateWay\Base $gateWay */
-			$gateWay = new $classGateWay();
+			/** @var \YandexPay\Pay\Gateway\Base $gateWay */
+			$gateWay = new $classGateway();
 
 			$gateWayId = $gateWay->getId();
 			$gateWayName = $gateWay->getName();
@@ -95,7 +94,7 @@ class Manager
 			$type = static::getHandlerMode($systemId);
 		}
 
-		if ($type === '')
+		if ($type === null)
 		{
 			reset($handlerModeList);
 
@@ -109,7 +108,7 @@ class Manager
 		return $gateWay->getParams();
 	}
 
-	protected static function getHandlerMode($systemId): string
+	protected static function getHandlerMode($systemId): ?string
 	{
 		if (static::$handlerMode === null)
 		{
@@ -124,9 +123,9 @@ class Manager
 		return static::$handlerDescription;
 	}
 
-	protected static function loadHandlerMode($systemId): string
+	protected static function loadHandlerMode($systemId): ?string
 	{
-		$result = '';
+		$result = null;
 		$systemId = $systemId ?? 'yandexpay';
 
 		$query = PaySystemActionTable::getList([
@@ -137,13 +136,13 @@ class Manager
 					['=ACTION_FILE' => $systemId]
 				]
 			],
-			'select' => ['ID', 'PS_MODE'],
+			'select' => ['ID', 'PS_MODE', 'ACTION_FILE'],
 			'limit' => 1
 		]);
 
 		if ($paySystem = $query->fetch())
 		{
-			$result = $paySystem['PS_MODE'];
+			$result = $paySystem['ACTION_FILE'] === 'yandexpay' ? $paySystem['PS_MODE'] : null;
 		}
 
 		return $result;

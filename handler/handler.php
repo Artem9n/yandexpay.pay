@@ -9,7 +9,7 @@ use Bitrix\Sale\Payment;
 use Bitrix\Sale\PaySystem;
 use Bitrix\Sale\PaySystem\ServiceResult;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
-use YandexPay\Pay\GateWay;
+use YandexPay\Pay\Gateway;
 
 Loader::includeModule('yandexpay.pay');
 
@@ -24,7 +24,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	protected const YANDEX_TEST_MODE = 'SANDBOX';
 	protected const YANDEX_PRODUCTION_MODE = 'PRODUCTION';
 
-	/** @var \YandexPay\Pay\GateWay\Base|null */
+	/** @var \YandexPay\Pay\Gateway\Base|null */
 	protected $gateway;
 
 	protected function getPrefix(): string
@@ -192,9 +192,9 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return ($this->getBusinessValue($payment, $this->getPrefix() . 'TEST_MODE') === 'Y');
 	}
 
-	protected function getGateway(string $type, Payment $payment = null, Request $request = null): GateWay\Base
+	protected function getGateway(string $type, Payment $payment = null, Request $request = null): Gateway\Base
 	{
-		return GateWay\Manager::getProvider($type, $payment, $request);
+		return Gateway\Manager::getProvider($type, $payment, $request);
 	}
 
 	public function processRequest(Payment $payment, Request $request): ServiceResult
@@ -313,7 +313,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	 */
 	public static function getHandlerModeList(): array
 	{
-		return GateWay\Manager::getHandlerModeList();
+		return Gateway\Manager::getHandlerModeList();
 	}
 
 	protected function getHandlerMode(): string

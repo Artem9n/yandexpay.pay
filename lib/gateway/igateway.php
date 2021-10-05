@@ -1,8 +1,8 @@
 <?php
 
-namespace YandexPay\Pay\GateWay;
+namespace YandexPay\Pay\Gateway;
 
-interface IGateWay
+interface IGateway
 {
 	public function getId(): string;
 
