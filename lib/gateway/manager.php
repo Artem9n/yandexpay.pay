@@ -109,7 +109,7 @@ class Manager
 		return $gateWay->getParams();
 	}
 
-	protected static function getHandlerMode($systemId): string
+	protected static function getHandlerMode($systemId): ?string
 	{
 		if (static::$handlerMode === null)
 		{
