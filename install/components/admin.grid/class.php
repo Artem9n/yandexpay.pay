@@ -350,8 +350,22 @@ class AdminGrid extends \CBitrixComponent
     	$provider = $this->getProvider();
         $select = $this->arParams['LIST_FIELDS'];
 
-        $this->arResult['FIELDS'] = $provider->getFields($select);
-    }
+        $fields = $provider->getFields($select);
+		$fields = $this->extendFields($fields);
+
+		$this->arResult['FIELDS'] = $fields;
+	}
+
+	protected function extendFields(array $fields) : array
+	{
+		foreach ($fields as $name => &$field)
+		{
+			$field = Pay\Ui\Userfield\Helper\Field::extend($field, $name);
+		}
+		unset($field);
+
+		return $fields;
+	}
 
     protected function initFilter() : array
     {
