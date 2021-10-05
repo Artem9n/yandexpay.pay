@@ -55,6 +55,9 @@ class MessageRegistry
 	{
 		$relativeName = $this->classFinder->getRelativeName($className);
 		$prefix = str_replace('\\', '_', $relativeName);
+		$prefix = preg_replace('/([A-Z]+)/', '_$1', $prefix);
+		$prefix = preg_replace('/__+/', '_', $prefix);
+		$prefix = ltrim($prefix, '_');
 		$prefix = mb_strtoupper($prefix);
 
 		return $this->prefix . $prefix;
