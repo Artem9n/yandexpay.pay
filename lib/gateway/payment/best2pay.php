@@ -1,13 +1,13 @@
 <?php
 
-namespace YandexPay\Pay\GateWay\Payment;
+namespace YandexPay\Pay\Gateway\Payment;
 
 use Bitrix\Currency\CurrencyClassifier;
 use Bitrix\Main;
 use Bitrix\Main\Request;
 use Bitrix\Sale\Payment;
 use Bitrix\Main\Web\HttpClient;
-use YandexPay\Pay\GateWay\Base;
+use YandexPay\Pay\Gateway\Base;
 use YandexPay\Pay\Reference\Concerns\HasMessage;
 
 class Best2Pay extends Base

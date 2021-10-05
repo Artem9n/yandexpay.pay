@@ -1,10 +1,9 @@
 <?php
 
-namespace YandexPay\Pay\GateWay;
+namespace YandexPay\Pay\Gateway;
 
 use Bitrix\Main;
 use Bitrix\Sale;
-use Bitrix\Main\Application;
 use Bitrix\Sale\Internals\PaySystemActionTable;
 use YandexPay\Pay\Config;
 
@@ -18,14 +17,14 @@ class Manager
 		$result = [];
 		$sort = [];
 
-		$classListGateWay = static::getClassList();
+		$classListGateway = static::getClassList();
 
-		if (empty($classListGateWay)) { return $result; }
+		if (empty($classListGateway)) { return $result; }
 
-		foreach ($classListGateWay as $classGateWay)
+		foreach ($classListGateway as $classGateway)
 		{
-			/** @var \YandexPay\Pay\GateWay\Base $gateWay */
-			$gateWay = new $classGateWay();
+			/** @var \YandexPay\Pay\Gateway\Base $gateWay */
+			$gateWay = new $classGateway();
 
 			$gateWayId = $gateWay->getId();
 			$gateWayName = $gateWay->getName();

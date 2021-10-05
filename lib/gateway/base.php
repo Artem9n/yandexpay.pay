@@ -1,13 +1,13 @@
 <?php
 
-namespace YandexPay\Pay\GateWay;
+namespace YandexPay\Pay\Gateway;
 
 use Bitrix\Main;
 use Bitrix\Sale;
 use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference\Concerns\HasMessage;
 
-abstract class Base implements IGateWay, Main\Type\IRequestFilter
+abstract class Base implements IGateway, Main\Type\IRequestFilter
 {
 	use HasMessage;
 
