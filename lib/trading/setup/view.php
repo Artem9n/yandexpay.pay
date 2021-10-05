@@ -11,33 +11,17 @@ class View extends Storage\View
 
 	public function getFields() : array
 	{
+		$environment = $this->getEnvironment();
+
 		return $this->getTableFields([
 			'OVERRIDES' => [
 				'SITE_ID' => [
 					'TYPE' => 'enumeration',
-					'VALUES' => [
-						[
-							'ID' => 's1',
-							'VALUE' => 's1',
-						],
-						[
-							'ID' => 's2',
-							'VALUE' => 's2',
-						],
-					], // todo
+					'VALUES' => $environment->getSite()->getOptions(), // todo
 				],
 				'PERSON_TYPE_ID' => [
 					'TYPE' => 'enumeration',
-					'VALUES' => [
-						[
-							'ID' => '1',
-							'VALUE' => 'Individual',
-						],
-						[
-							'ID' => '2',
-							'VALUE' => 'Legal',
-						],
-					], // todo
+					'VALUES' => $environment->getPersonType()->getEnum(), // todo
 				],
 			],
 		]);

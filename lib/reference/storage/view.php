@@ -5,11 +5,14 @@ namespace YandexPay\Pay\Reference\Storage;
 use Bitrix\Main\ORM;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Ui;
+use YandexPay\Pay\Trading\Entity;
 
 abstract class View
 {
 	/** @var ORM\Data\DataManager */
 	protected $dataClass;
+	protected $environment;
+
 
 	public function __construct(string $dataClass)
 	{
@@ -104,7 +107,7 @@ abstract class View
 	protected function getFieldDefaults(string $name, string $type = 'string') : array
 	{
 		return [
-			'USER_TYPE' => Ui\Userfield\Registry::getUserType($type),
+			'TYPE' => $type,
 			'FIELD_NAME' => $name,
 			'LIST_COLUMN_LABEL' => $this->getFieldTitle($name),
 			'MANDATORY' => 'N',
@@ -143,5 +146,15 @@ abstract class View
 		}
 
 		return $result;
+	}
+
+	public function getEnvironment() : Entity\Reference\Environment
+	{
+		if ($this->environment === null)
+		{
+			$this->environment = Entity\Registry::getEnvironment();
+		}
+
+		return $this->environment;
 	}
 }

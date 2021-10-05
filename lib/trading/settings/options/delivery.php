@@ -39,16 +39,7 @@ class Delivery extends Fieldset
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
 				'NAME' => self::getMessage('ID'),
-				'VALUES' => [
-					[
-						'ID' => 1,
-						'VALUE' => 'Pickup',
-					],
-					[
-						'ID' => 2,
-						'VALUE' => 'Delivery',
-					],
-				], // todo $this->getDeliveryEnum($environment, $siteId),
+				'VALUES' => $environment->getDelivery()->getEnum($siteId)
 			],
 			'TYPE' => [
 				'TYPE' => 'enumeration',
@@ -58,11 +49,11 @@ class Delivery extends Fieldset
 				'VALUES' => [
 					[
 						'ID' => 'PICKUP',
-						'VALUE' => 'PICKUP',
+						'VALUE' => self::getMessage('TYPE_PICKUP'),
 					],
 					[
 						'ID' => 'DELIVERY',
-						'VALUE' => 'DELIVERY',
+						'VALUE' => self::getMessage('TYPE_DELIVERY'),
 					],
 				], // todo
 			],

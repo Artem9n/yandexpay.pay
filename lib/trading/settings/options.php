@@ -18,7 +18,6 @@ class Options extends Reference\Skeleton
 	
 	public function getDeliveryOptions() : Options\DeliveryCollection
 	{
-		/** @noinspection PhpIncompatibleReturnTypeInspection */
 		return $this->getFieldsetCollection('DELIVERY_OPTIONS');
 	}
 
@@ -36,7 +35,7 @@ class Options extends Reference\Skeleton
 			&& (int)$this->getValue('PROPERTY_EMAIL') <= 0
 		)
 		{
-			$result->addError(new Main\Error(self::getMessage('VALIDATE_ONE_OF_EMAIL_PHONE')));
+			//$result->addError(new Main\Error(self::getMessage('VALIDATE_ONE_OF_EMAIL_PHONE')));
 		}
 
 		return $result;
@@ -105,25 +104,73 @@ class Options extends Reference\Skeleton
 
 	protected function getBuyerProperties(Entity\Reference\Environment $environment, string $siteId) : array
 	{
+		$propertyEnum = $environment->getProperty()->getEnum($this->getPersonTypeId());
+
 		return [
-			'USE_BUYER_NAME' => [
-				'TYPE' => 'boolean',
-				'GROUP' => self::getMessage('BUYER'),
-				'NAME' => self::getMessage('USE_BUYER_NAME'),
-				'SORT' => 3000,
-			],
-			'PROPERTY_NAME' => [
-				'TYPE' => 'enumeration',
-				'NAME' => self::getMessage('PROPERTY_NAME'),
+			'PROPERTY_FIRST_NAME' => [
+				'TYPE' => 'orderProperty',
+				'NAME' => self::getMessage('PROPERTY_FIRST_NAME'),
 				'SORT' => 3010,
-				'VALUES' => $environment->getPaySystem()->getEnum($siteId),
-				'DEPEND' => [
-					'USE_BUYER_NAME' => [
+				'VALUES' => $propertyEnum,
+				/*'DEPEND' => [
+					'SPLIT_BUYER_NAME' => [
 						'RULE' => DependField::RULE_EMPTY,
 						'VALUE' => false,
 					],
+				],*/
+				'SETTINGS' => [
+					'TYPE' => 'FIRST_NAME',
 				],
-			]
+			],
+			'PROPERTY_LAST_NAME' => [
+				'TYPE' => 'orderProperty',
+				'NAME' => self::getMessage('PROPERTY_LAST_NAME'),
+				'SORT' => 3010,
+				'VALUES' => $propertyEnum,
+				/*'DEPEND' => [
+					'SPLIT_BUYER_NAME' => [
+						'RULE' => DependField::RULE_EMPTY,
+						'VALUE' => false,
+					],
+				],*/
+				'SETTINGS' => [
+					'TYPE' => 'LAST_NAME',
+					'CAPTION_NO_VALUE' => 'NO_',
+				],
+			],
+			'PROPERTY_MIDDLE_NAME' => [
+				'TYPE' => 'orderProperty',
+				'NAME' => self::getMessage('PROPERTY_MIDDLE_NAME'),
+				'SORT' => 3010,
+				'VALUES' => $propertyEnum,
+				/*'DEPEND' => [
+					'SPLIT_BUYER_NAME' => [
+						'RULE' => DependField::RULE_EMPTY,
+						'VALUE' => false,
+					],
+				],*/
+				'SETTINGS' => [
+					'TYPE' => 'MIDDLE_NAME',
+				],
+			],
+			'PROPERTY_EMAIL' => [
+				'TYPE' => 'orderProperty',
+				'NAME' => self::getMessage('PROPERTY_EMAIL'),
+				'SORT' => 3010,
+				'VALUES' => $propertyEnum,
+				'SETTINGS' => [
+					'TYPE' => 'EMAIL',
+				],
+			],
+			'PROPERTY_PHONE' => [
+				'TYPE' => 'orderProperty',
+				'NAME' => self::getMessage('PROPERTY_PHONE'),
+				'SORT' => 3010,
+				'VALUES' => $propertyEnum,
+				'SETTINGS' => [
+					'TYPE' => 'PHONE',
+				],
+			],
 		];
 	}
 

@@ -7,3 +7,6 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_OPTIONS'] = 'Варианты достав
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_OPTIONS_NOTE'] = 'На то чтобы вернуть ответ при запросе информации о товарах, магазину отводится не более 5,5 секунд. Расчет стоимости доставки будет прерван при приближении таймаута и получения первого успешного результата.';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_PICKUP'] = 'Параметры заказа, если оплата при получении';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_PICKUP_PAYSYSTEM'] = 'Платежная система';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_BUYER'] = 'Настройки окна оплаты Yandex Pay';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_USE_BUYER_NAME'] = 'Запрашивать ФИО покупателя';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_PROPERTY_NAME'] = 'Значение из свойства';
