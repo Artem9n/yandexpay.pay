@@ -137,13 +137,13 @@ class Manager
 					['=ACTION_FILE' => $systemId]
 				]
 			],
-			'select' => ['ID', 'PS_MODE'],
+			'select' => ['ID', 'PS_MODE', 'ACTION_FILE'],
 			'limit' => 1
 		]);
 
 		if ($paySystem = $query->fetch())
 		{
-			$result = $paySystem['PS_MODE'];
+			$result = $paySystem['ACTION_FILE'] === 'yandexpay' ? $paySystem['PS_MODE'] : '';
 		}
 
 		return $result;
