@@ -95,7 +95,7 @@ class Manager
 			$type = static::getHandlerMode($systemId);
 		}
 
-		if ($type === '')
+		if ($type === null)
 		{
 			reset($handlerModeList);
 
@@ -124,9 +124,9 @@ class Manager
 		return static::$handlerDescription;
 	}
 
-	protected static function loadHandlerMode($systemId): string
+	protected static function loadHandlerMode($systemId): ?string
 	{
-		$result = '';
+		$result = null;
 		$systemId = $systemId ?? 'yandexpay';
 
 		$query = PaySystemActionTable::getList([
@@ -143,7 +143,7 @@ class Manager
 
 		if ($paySystem = $query->fetch())
 		{
-			$result = $paySystem['ACTION_FILE'] === 'yandexpay' ? $paySystem['PS_MODE'] : '';
+			$result = $paySystem['ACTION_FILE'] === 'yandexpay' ? $paySystem['PS_MODE'] : null;
 		}
 
 		return $result;
