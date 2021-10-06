@@ -3,6 +3,7 @@
 namespace YandexPay\Pay\Components;
 
 use Bitrix\Main;
+use Bitrix\Sale;
 use Bitrix\Main\Localization\Loc;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Action as TradingAction;
@@ -69,16 +70,53 @@ class TradingCart extends \CBitrixComponent
 		//$this->fillAddress($order);
 
 		$calculatedDeliveries = $this->calculateDeliveries($order, 'DELIVERY');
+
+		echo '<pre>';
+		print_r($calculatedDeliveries);
+		echo '</pre>';
+		die;
 	}
 
 	protected function pickupOptionsAction() : void
 	{
+		$result = [];
+
 		$order = $this->getOrder();
 		$this->fillBasket($order);
 
 		//$this->fillAddress($order);
 
 		$calculatedDeliveries = $this->calculateDeliveries($order, 'PICKUP');
+		echo '<pre>';
+		print_r($calculatedDeliveries);
+		echo '</pre>';
+
+		foreach ($calculatedDeliveries as $pickup)
+		{
+			foreach ($pickup['stores'] as $store)
+			{
+				$result[] = [
+					'id'        => $store['ID'],
+					'label'     => $store['TITLE'],
+					'provider'  => 'custom',
+					'address'   => $store['ADDRESS'],
+					'date'      => '', //todo
+					'amount'    => $pickup['amount'],
+					'info'      => [
+						'schedule'      => $store['SCHEDULE'],
+						'contacts'      => $store['PHONE'],
+						'description'   => $store['DESCRIPTION']
+					]
+				];
+			}
+		}
+
+
+		echo '<pre>';
+		print_r($result);
+		echo '</pre>';
+		die;
+		//$this->environment->getDelivery()->
 
 
 	}
@@ -93,22 +131,22 @@ class TradingCart extends \CBitrixComponent
 		}
 	}
 
-	protected function couponAction() : float
+	protected function couponAction() : void
 	{
 		$order = $this->getOrder();
-
-		//$this->fillLocation($order);
-		//$this->fillAddress($order);
+		$this->fillBasket($order);
 		$this->fillCoupon($order);
-
-		$order->doFinalAction(true);
-
-		return $order->getPrice();
 	}
 
-	protected function fillCoupon(EntityReference\Order $order)
+	protected function fillCoupon(EntityReference\Order $order) : void
 	{
+		$coupon = 'SL-RD9AI-AQTJINM';
+		$couponResult = $order->applyCoupon($coupon);
 
+		echo '<pre>';
+		print_r($order->getOrderPrice());
+		echo '</pre>';
+		die;
 	}
 
 	protected function orderAcceptAction()
@@ -141,8 +179,6 @@ class TradingCart extends \CBitrixComponent
 		{
 			throw new Main\SystemException($orderResult->getErrorMessages());
 		}
-
-		die;
 	}
 
 	protected function fillAddress(EntityReference\Order $order) : void
@@ -177,11 +213,6 @@ class TradingCart extends \CBitrixComponent
 		$result = [];
 		$deliveryService = $this->environment->getDelivery();
 
-		echo '<pre>';
-		print_r($deliveryService->getRestricted($order));
-		echo '</pre>';
-		/*die;*/
-
 		foreach ($deliveryService->getRestricted($order) as $deliveryId)
 		{
 			$type = $deliveryService->suggestDeliveryType($deliveryId);
@@ -191,19 +222,18 @@ class TradingCart extends \CBitrixComponent
 			if (!$deliveryService->isCompatible($deliveryId, $order)) { continue; }
 
 			$calculationResult = $deliveryService->calculate($deliveryId, $order);
-			echo '<pre>';
-			print_r($deliveryId);
-			print_r($calculationResult);
-			echo '</pre>';
-			/*if (!$calculationResult->isSuccess()) { continue; }*/
 
-			$result[] = $deliveryId;
+			if (!$calculationResult->isSuccess()) { continue; }
+
+			$result[] = [
+				'id'        => $calculationResult->getDeliveryId(),
+				'label'     => $calculationResult->getServiceName(),
+				'amount'    => $calculationResult->getPrice(),
+				'category'  => '', //todo
+				'datetimeOptions'   => '', //todo
+				'stores'    => $calculationResult->getStores()
+			];
 		}
-
-		echo '<pre>';
-		print_r($result);
-		echo '</pre>';
-		die;
 
 		return $result;
 	}

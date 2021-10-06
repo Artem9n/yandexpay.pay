@@ -7,6 +7,7 @@ use YandexPay\Pay;
 
 class CalculationResult extends Pay\Result\Base
 {
+	protected $deliveryId;
 	protected $deliveryType;
 	protected $serviceName;
 	protected $price;
@@ -15,6 +16,16 @@ class CalculationResult extends Pay\Result\Base
 	protected $dateIntervals;
 	protected $outlets; /** Пункты выдачи сервиса */
 	protected $stores; /** Склады Битрикс */
+
+	public function setDeliveryId(int $deliveryId) : void
+	{
+		$this->deliveryId = $deliveryId;
+	}
+
+	public function getDeliveryId() : ?int
+	{
+		return $this->deliveryId;
+	}
 
 	/** @param string $name */
 	public function setServiceName($name)

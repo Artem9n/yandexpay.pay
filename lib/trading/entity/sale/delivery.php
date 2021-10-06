@@ -316,7 +316,7 @@ class Delivery extends EntityReference\Delivery
 		$shipment->setDeliveryService($deliveryService);
 	}
 
-	protected function getDeliveryService($deliveryId)
+	protected function getDeliveryService($deliveryId) : Sale\Delivery\Services\Base
 	{
 		if (!isset($this->deliveryServices[$deliveryId]))
 		{
@@ -326,13 +326,13 @@ class Delivery extends EntityReference\Delivery
 		return $this->deliveryServices[$deliveryId];
 	}
 
-	protected function loadDeliveryService($deliveryId)
+	protected function loadDeliveryService($deliveryId) : Sale\Delivery\Services\Base
 	{
 		$deliveryService = Sale\Delivery\Services\Manager::getObjectById($deliveryId);
 
 		if ($deliveryService === null)
 		{
-			$message = 'not found';/*static::getLang('TRADING_ENTITY_SALE_DELIVERY_SERVICE_NOT_FOUND', [
+			$message = 'TRADING_ENTITY_SALE_DELIVERY_SERVICE_NOT_FOUND';/*static::getLang('TRADING_ENTITY_SALE_DELIVERY_SERVICE_NOT_FOUND', [
 				'#ID#' => $deliveryId,
 			]);*/
 			throw new Main\SystemException($message);
@@ -349,11 +349,6 @@ class Delivery extends EntityReference\Delivery
 	 */
 	protected function getOrderCalculatable(EntityReference\Order $order) : Sale\OrderBase
 	{
-		if (!($order instanceof Order))
-		{
-			throw new Main\NotSupportedException('only Sale\Order calculation supported');
-		}
-
 		return $order->getCalculatable();
 	}
 

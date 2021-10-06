@@ -420,4 +420,29 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
+	public function applyCoupon(string $coupon) : Main\Result
+	{
+		$result = new Main\Result();
+
+		$order = $this->getCalculatable();
+
+		Sale\DiscountCouponsManager::init(Sale\DiscountCouponsManager::MODE_CLIENT, ['userId' => $order->getUserId()]);
+
+		if(!Sale\DiscountCouponsManager::add($coupon))
+		{
+			$message = 'TRADING_ENTITY_SALE_ORDER_PRODUCT_NO_APPLY_COUPON';
+			$result->addError(new Main\Error($message));
+		}
+		else
+		{
+			$order->doFinalAction(true);
+		}
+
+		return $result;
+	}
+
+	public function getOrderPrice() : float
+	{
+		return $this->getCalculatable()->getPrice();
+	}
 }

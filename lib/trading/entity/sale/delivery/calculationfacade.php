@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Trading\Entity\Sale\Delivery;
 
+use Bitrix\Catalog\StoreTable;
 use YandexPay\Pay;
 use Bitrix\Main;
 use Bitrix\Sale;
@@ -37,9 +38,29 @@ class CalculationFacade
 	public static function mergeDeliveryService(EntityReference\Delivery\CalculationResult $result, Sale\Delivery\Services\Base $service)
 	{
 		$stores = Sale\Delivery\ExtraServices\Manager::getStoresList($service->getId());
+		$stores = static::getStores($stores);
 
+		$result->setDeliveryId($service->getId());
 		$result->setServiceName($service->getNameWithParent());
 		$result->setStores($stores);
+	}
+
+	protected static function getStores(array $stores) : array
+	{
+		$result = [];
+
+		$query = StoreTable::getList([
+			'filter' => [
+				'=ID' => $stores
+			]
+		]);
+
+		while ($store = $query->fetch())
+		{
+			$result[] = $store;
+		}
+
+		return $result;
 	}
 
 	protected static function getDateFrom(Sale\Delivery\CalculationResult $saleResult)
