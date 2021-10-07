@@ -150,8 +150,7 @@ class yandexpay_pay extends CModule
 		// required modules
 
 		$requireModules = [
-			'main' => '19.5.0',
-			'iblock' => '19.5.0'
+			'main' => '19.0.0'
 		];
 
 		if (class_exists(Main\ModuleManager::class))

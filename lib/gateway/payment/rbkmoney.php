@@ -87,10 +87,10 @@ class Rbkmoney extends Base
 		];
 	}
 
-	protected function getHeaders(string $apiKey): array
+	protected function getHeaders(string $key = ''): array
 	{
 		return [
-			'Authorization' => 'Bearer ' . $apiKey,
+			'Authorization' => 'Bearer ' . $key,
 			'Content-type'  => 'application/json; charset=utf-8',
 			'X-Request-ID'  =>  uniqid('', true),
 		];
@@ -100,7 +100,7 @@ class Rbkmoney extends Base
 	{
 		$result = null;
 
-		$contentSignature = $this->request->getServer()->get('HTTP_CONTENT_SIGNATURE');
+		$contentSignature = $this->server->get('HTTP_CONTENT_SIGNATURE');
 
 		if ($contentSignature === null) { return null; }
 
@@ -202,7 +202,7 @@ class Rbkmoney extends Base
 
 		$data = $this->buildDataInvoice();
 
-		$httpClient->setHeaders($this->getHeaders($apiKey));
+		$this->setHeaders($httpClient, $apiKey);
 
 		$httpClient->post($url, $data);
 
@@ -274,7 +274,7 @@ class Rbkmoney extends Base
 
 		$requestUrl = $this->getUrl('createResource');
 
-		$httpClient->setHeaders($this->getHeaders($token));
+		$this->setHeaders($httpClient, $token);
 
 		$httpClient->post($requestUrl, $data);
 
@@ -295,7 +295,7 @@ class Rbkmoney extends Base
 				'paymentToken'      => $this->getYandexData(),
 			],
 			'clientInfo' => [
-				'fingerprint'   => $this->request->getServer()->getUserAgent(),
+				'fingerprint'   => $this->server->get('HTTP_USER_AGENT'),
 			],
 		]);
 	}
@@ -308,7 +308,7 @@ class Rbkmoney extends Base
 
 		$httpClient = new HttpClient();
 
-		$httpClient->setHeaders($this->getHeaders($token));
+		$this->setHeaders($httpClient, $token);
 
 		$httpClient->post($url, $data);
 
@@ -347,7 +347,7 @@ class Rbkmoney extends Base
 				'payerType'         => self::PAYMENT_PAYER_TYPE,
 				'contactInfo'       => $contactInfo,
 				'sessionInfo'       => [
-					'redirectUrl'   => $this->request->getServer()->get('HTTP_REFERER')
+					'redirectUrl'   => $this->server->get('HTTP_REFERER')
 				]
 			],
 			'metadata'  => [
@@ -378,7 +378,7 @@ class Rbkmoney extends Base
 
 		$url = $this->getUrl('invoiceEvents', ['#INVOICE_ID#' => $invoiceId]);
 
-		$httpClient->setHeaders($this->getHeaders($apiKey));
+		$this->setHeaders($httpClient, $apiKey);
 
 		$httpClient->get($url);
 
@@ -484,7 +484,7 @@ class Rbkmoney extends Base
 
 		$data = $this->buildDataRefund();
 
-		$httpClient->setHeaders($this->getHeaders($apiKey));
+		$this->setHeaders($httpClient, $apiKey);
 
 		$httpClient->post($url, $data);
 

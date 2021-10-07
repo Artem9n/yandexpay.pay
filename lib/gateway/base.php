@@ -22,12 +22,15 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 	protected $payment;
 	/** @var Main\Request */
 	protected $request;
+	/** @var Main\Server */
+	protected $server;
 	/** @var string */
 	protected $externalId;
 
 	public function __construct(Sale\Payment  $payment = null, Main\Request $request = null)
 	{
 		$this->payment = $payment;
+		$this->server = Main\Context::getCurrent()->getServer();
 		$this->request = $request ?? Main\Context::getCurrent()->getRequest();
 	}
 
@@ -191,7 +194,7 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 	protected function createExternalId() : string
 	{
 		return md5(serialize([
-			$this->request->getServer()->getServerName(),
+			$this->server->getServerName(),
 			$this->payment->getOrder()->getUserId(),
 			$this->payment->getOrder()->getDateInsert(),
 			$this->getPaymentSum(),
@@ -245,9 +248,22 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 	{
 		$params = [
 			'paymentId' => $this->getPaymentId(),
-			'backurl'   => $this->request->getServer()->get('HTTP_REFERER')
+			'backurl'   => $this->server->get('HTTP_REFERER')
 		];
 
 		return $this->getParameter('YANDEX_PAY_NOTIFY_URL', true) . '?' . http_build_query($params);
+	}
+
+	protected function getHeaders(string $key = '') : array
+	{
+		return [];
+	}
+
+	protected function setHeaders(Main\Web\HttpClient $httpClient, string $key = '') : void
+	{
+		foreach ($this->getHeaders($key) as $name => $value)
+		{
+			$httpClient->setHeader($name, $value);
+		}
 	}
 }
