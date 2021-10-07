@@ -226,7 +226,7 @@ class Order extends EntityReference\Order
 
 		if (!empty($basketFields['PROPS']) && $propertyCollection)
 		{
-			$propertyCollection->setProperty($basketFields['PROPS']);
+			$propertyCollection->redefine($basketFields['PROPS']);
 		}
 
 		$alreadySetFields += [
@@ -424,7 +424,7 @@ class Order extends EntityReference\Order
 	{
 		$result = new Main\Result();
 
-		$order = $this->getCalculatable();
+		$order = $this->internalOrder;
 
 		Sale\DiscountCouponsManager::init(Sale\DiscountCouponsManager::MODE_CLIENT, ['userId' => $order->getUserId()]);
 
@@ -443,6 +443,6 @@ class Order extends EntityReference\Order
 
 	public function getOrderPrice() : float
 	{
-		return $this->getCalculatable()->getPrice();
+		return $this->internalOrder->getPrice();
 	}
 }

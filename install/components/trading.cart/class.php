@@ -140,8 +140,9 @@ class TradingCart extends \CBitrixComponent
 
 	protected function fillCoupon(EntityReference\Order $order) : void
 	{
-		$coupon = 'SL-RD9AI-AQTJINM';
-		$couponResult = $order->applyCoupon($coupon);
+		/** @var \YandexPay\Pay\Trading\Action\Request\Coupon $coupon */
+		$coupon = $this->getRequestCoupon();
+		$couponResult = $order->applyCoupon($coupon->getCoupon());
 
 		echo '<pre>';
 		print_r($order->getOrderPrice());
@@ -190,6 +191,13 @@ class TradingCart extends \CBitrixComponent
 		$order->setProperties([
 			'ID' => $address->getRegion(),
 		]);
+	}
+
+	protected function getRequestCoupon() : \YandexPay\Pay\Reference\Common\Model
+	{
+		$coupon = $this->request->get('coupon');
+
+		return TradingAction\Request\Coupon::initialize(['coupon' => $coupon]);
 	}
 
 	protected function getRequestAddress() : \YandexPay\Pay\Reference\Common\Model

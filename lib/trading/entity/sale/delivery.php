@@ -345,7 +345,6 @@ class Delivery extends EntityReference\Delivery
 	 * @param \YandexPay\Pay\Trading\Entity\Reference\Order $order
 	 *
 	 * @return \Bitrix\Sale\Order
-	 * @throws \Bitrix\Main\NotSupportedException
 	 */
 	protected function getOrderCalculatable(EntityReference\Order $order) : Sale\OrderBase
 	{
