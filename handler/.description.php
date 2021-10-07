@@ -80,7 +80,7 @@ $data = [
 			'SORT' => 350,
 			'DEFAULT' => [
 				'PROVIDER_KEY'      => 'VALUE',
-				'PROVIDER_VALUE'    => $host.'://'.$request->getHttpHost().'/bitrix/tools/sale_ps_yandexpay_result.php'
+				'PROVIDER_VALUE'    => $host.'://'.$request->getHttpHost().'/bitrix/tools/yandexpay.pay/sale_ps_yandexpay_result.php'
 			]
 		],
 		/*'YANDEX_CARD_NETWORK' => [
