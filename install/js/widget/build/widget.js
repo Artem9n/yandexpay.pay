@@ -277,7 +277,7 @@ this.BX = this.BX || {};
 	          gateway: this.getOption('gateway'),
 	          gatewayMerchantId: this.getOption('gatewayMerchantId'),
 	          allowedAuthMethods: [YaPay.AllowedAuthMethod.PanOnly],
-	          allowedCardNetworks: [YaPay.AllowedCardNetwork.UnionPay, YaPay.AllowedCardNetwork.Uzcard, YaPay.AllowedCardNetwork.Discover, YaPay.AllowedCardNetwork.AmericanExpress, YaPay.AllowedCardNetwork.Visa, YaPay.AllowedCardNetwork.Mastercard, YaPay.AllowedCardNetwork.Mir, YaPay.AllowedCardNetwork.Maestro, YaPay.AllowedCardNetwork.VisaElectron]
+	          allowedCardNetworks: this.getOption('cardNetworks') || [YaPay.AllowedCardNetwork.UnionPay, YaPay.AllowedCardNetwork.Uzcard, YaPay.AllowedCardNetwork.Discover, YaPay.AllowedCardNetwork.AmericanExpress, YaPay.AllowedCardNetwork.Visa, YaPay.AllowedCardNetwork.Mastercard, YaPay.AllowedCardNetwork.Mir, YaPay.AllowedCardNetwork.Maestro, YaPay.AllowedCardNetwork.VisaElectron]
 	        }]
 	      };
 	    }

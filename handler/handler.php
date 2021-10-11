@@ -51,6 +51,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'merchantName'          => $this->getParamValue($payment, 'MERCHANT_NAME'),
 			'buttonTheme'           => $this->getParamValue($payment, 'VARIANT_BUTTON'),
 			'buttonWidth'           => $this->getParamValue($payment, 'WIDTH_BUTTON'),
+			'cardNetworks'          => $this->getCardNetworks($payment),
 			'gateway'               => mb_strtolower($gatewayType),
 			'gatewayMerchantId'     => $gatewayMerchantId,
 			'externalId'            => $payment->getId(),
@@ -79,6 +80,28 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
         }
 
         return $result;
+	}
+
+	protected function getCardNetworks(Payment $payment) : array
+	{
+		$result = [];
+
+		$parameters = $this->getParamsBusValue($payment);
+		$str = 'YANDEX_CARD_NETWORK_';
+		$strLength = mb_strlen($str);
+
+		foreach ($parameters as $code => $value)
+		{
+			$position = mb_strpos($code, $str);
+
+			if ($position !== false && $value === 'Y')
+			{
+				$cardName = mb_substr($code, $strLength);
+				$result[] = $cardName;
+			}
+		}
+
+		return $result;
 	}
 
 	protected function getOrderData(Payment $payment): array

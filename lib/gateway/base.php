@@ -27,7 +27,7 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 	/** @var string */
 	protected $externalId;
 
-	public function __construct(Sale\Payment  $payment = null, Main\Request $request = null)
+	public function __construct(Sale\Payment $payment = null, Main\Request $request = null)
 	{
 		$this->payment = $payment;
 		$this->server = Main\Context::getCurrent()->getServer();
@@ -120,12 +120,12 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 	}
 
 	/**
-	 * @param string $action
-	 * @param array|null   $replace
+	 * @param string     $action
+	 * @param array|null $replace
 	 *
 	 * @return string
 	 */
-	protected function getUrl(string $action, $replace = null): string
+	protected function getUrl(string $action, array $replace = null): string
 	{
 		$urlList = $this->getUrlList();
 
@@ -150,7 +150,7 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 			}
 		}
 
-		if($replace !== null && is_array($replace))
+		if(is_array($replace))
 		{
 			foreach($replace as $search => $repl)
 			{

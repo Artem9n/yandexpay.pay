@@ -43,7 +43,7 @@ export default class Payment extends AbstractStep {
 					gateway: this.getOption('gateway'),
 					gatewayMerchantId: this.getOption('gatewayMerchantId'),
 					allowedAuthMethods: [YaPay.AllowedAuthMethod.PanOnly],
-					allowedCardNetworks: [
+					allowedCardNetworks: this.getOption('cardNetworks') || [
 						YaPay.AllowedCardNetwork.UnionPay,
 						YaPay.AllowedCardNetwork.Uzcard,
 						YaPay.AllowedCardNetwork.Discover,

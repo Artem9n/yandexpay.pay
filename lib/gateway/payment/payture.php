@@ -18,15 +18,15 @@ class Payture extends Base
 	protected const STATUS_SUCCESS = 'True';
 	protected const STATUS_FAILED = 'False';
 
-	protected const THREE_DS_VARSION_1 = '1.0';
-	protected const THREE_DS_VARSION_2 = '2.1';
+	protected const THREE_DS_VERSION_1 = '1.0';
+	protected const THREE_DS_VERSION_2 = '2.1';
 
 	protected $threeDsData = [
-		self::THREE_DS_VARSION_1 => [
+		self::THREE_DS_VERSION_1 => [
 			'ThreeDSKey' => 'MD',
 			'PaReq' => 'PaReq'
 		],
-		self::THREE_DS_VARSION_2 => [
+		self::THREE_DS_VERSION_2 => [
 			'CReq' => 'creq',
 			'ThreeDSSessionData' => 'threeDSSessionData'
 		]
@@ -242,7 +242,7 @@ class Payture extends Base
 		if ($resultData['Success'] === self::STATUS_3DS)
 		{
 			$params = $this->buildParamsForSecture($resultData);
-			$isTermUrl = ($resultData['ThreeDSVersion'] === self::THREE_DS_VARSION_1);
+			$isTermUrl = ($resultData['ThreeDSVersion'] === self::THREE_DS_VERSION_1);
 
 			throw new \YandexPay\Pay\Exceptions\Secure3dRedirect(
 				$resultData['ACSUrl'], $params, $isTermUrl

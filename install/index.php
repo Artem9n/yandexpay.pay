@@ -150,7 +150,8 @@ class yandexpay_pay extends CModule
 		// required modules
 
 		$requireModules = [
-			'main' => '19.0.0'
+			'main'  => '19.0.0',
+			'sale'  => '18.6'
 		];
 
 		if (class_exists(Main\ModuleManager::class))
