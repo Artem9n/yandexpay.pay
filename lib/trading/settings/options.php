@@ -31,11 +31,11 @@ class Options extends Reference\Skeleton
 		$result = new Main\Result();
 
 		if (
-			(int)$this->getValue('PROPERTY_PHONE') <= 0
-			&& (int)$this->getValue('PROPERTY_EMAIL') <= 0
+			(int)$this->getValue('USE_BUYER_PHONE') <= 0
+			&& (int)$this->getValue('USE_BUYER_EMAIL') <= 0
 		)
 		{
-			//$result->addError(new Main\Error(self::getMessage('VALIDATE_ONE_OF_EMAIL_PHONE')));
+			$result->addError(new Main\Error(self::getMessage('VALIDATE_ONE_OF_EMAIL_PHONE')));
 		}
 
 		return $result;
@@ -107,68 +107,89 @@ class Options extends Reference\Skeleton
 		$propertyEnum = $environment->getProperty()->getEnum($this->getPersonTypeId());
 
 		return [
-			'PROPERTY_FIRST_NAME' => [
-				'TYPE' => 'orderProperty',
-				'NAME' => self::getMessage('PROPERTY_FIRST_NAME'),
-				'SORT' => 3010,
-				'VALUES' => $propertyEnum,
-				/*'DEPEND' => [
-					'SPLIT_BUYER_NAME' => [
-						'RULE' => DependField::RULE_EMPTY,
-						'VALUE' => false,
-					],
-				],*/
-				'SETTINGS' => [
-					'TYPE' => 'FIRST_NAME',
-				],
+			'ALLOW_ENTER_COMMENT' => [
+				'TYPE' => 'boolean',
+				'GROUP' => self::getMessage('YANDEX'),
+				'NAME' => self::getMessage('ALLOW_ENTER_COMMENT'),
+				'SORT' => 3000,
+			],
+			'ALLOW_ENTER_COUPON' => [
+				'TYPE' => 'boolean',
+				'GROUP' => self::getMessage('YANDEX'),
+				'NAME' => self::getMessage('ALLOW_ENTER_COUPON'),
+				'SORT' => 3005,
+			],
+			'USE_BUYER_NAME' => [
+				'TYPE' => 'boolean',
+				'GROUP' => self::getMessage('YANDEX'),
+				'NAME' => self::getMessage('USE_BUYER_NAME'),
+				'SORT' => 3005,
+			],
+			'USE_BUYER_EMAIL' => [
+				'TYPE' => 'boolean',
+				'GROUP' => self::getMessage('YANDEX'),
+				'NAME' => self::getMessage('USE_BUYER_EMAIL'),
+				'SORT' => 3005
+			],
+			'USE_BUYER_PHONE' => [
+				'TYPE' => 'boolean',
+				'GROUP' => self::getMessage('YANDEX'),
+				'NAME' => self::getMessage('USE_BUYER_PHONE'),
+				'SORT' => 3007
 			],
 			'PROPERTY_LAST_NAME' => [
 				'TYPE' => 'orderProperty',
+				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_LAST_NAME'),
 				'SORT' => 3010,
 				'VALUES' => $propertyEnum,
-				/*'DEPEND' => [
-					'SPLIT_BUYER_NAME' => [
-						'RULE' => DependField::RULE_EMPTY,
-						'VALUE' => false,
-					],
-				],*/
 				'SETTINGS' => [
 					'TYPE' => 'LAST_NAME',
-					'CAPTION_NO_VALUE' => 'NO_',
+					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
+				],
+			],
+			'PROPERTY_FIRST_NAME' => [
+				'TYPE' => 'orderProperty',
+				'GROUP' => self::getMessage('BUYER'),
+				'NAME' => self::getMessage('PROPERTY_FIRST_NAME'),
+				'SORT' => 3010,
+				'VALUES' => $propertyEnum,
+				'SETTINGS' => [
+					'TYPE' => 'FIRST_NAME',
+					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
 				],
 			],
 			'PROPERTY_MIDDLE_NAME' => [
 				'TYPE' => 'orderProperty',
+				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_MIDDLE_NAME'),
 				'SORT' => 3010,
 				'VALUES' => $propertyEnum,
-				/*'DEPEND' => [
-					'SPLIT_BUYER_NAME' => [
-						'RULE' => DependField::RULE_EMPTY,
-						'VALUE' => false,
-					],
-				],*/
 				'SETTINGS' => [
 					'TYPE' => 'MIDDLE_NAME',
+					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
 				],
 			],
 			'PROPERTY_EMAIL' => [
 				'TYPE' => 'orderProperty',
+				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_EMAIL'),
 				'SORT' => 3010,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'EMAIL',
+					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
 				],
 			],
 			'PROPERTY_PHONE' => [
 				'TYPE' => 'orderProperty',
+				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_PHONE'),
 				'SORT' => 3010,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'PHONE',
+					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
 				],
 			],
 		];

@@ -17,6 +17,10 @@ export class Widget {
 		this.go('payment', data);
 	}
 
+	cart(data){
+		this.go('cart', data);
+	}
+
 	go(type, data) {
 		const step = this.makeStep(type);
 

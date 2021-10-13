@@ -953,6 +953,10 @@ class AdminForm extends \CBitrixComponent
 	    {
 			$result = [ $value ];
 	    }
+	    else if ($field['TYPE'] === 'boolean' && is_array($value))
+	    {
+		    $result = $value[0];
+	    }
     	else
 	    {
 	    	$result = $value;
