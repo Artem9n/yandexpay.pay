@@ -244,11 +244,11 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 		return $result;
 	}
 
-	protected function getBackUrl() : string
+	protected function getRedirectUrl() : string
 	{
 		$params = [
 			'paymentId' => $this->getPaymentId(),
-			'backurl'   => $this->server->get('HTTP_REFERER')
+			'backurl'   => $_SESSION['yabackurl']
 		];
 
 		return $this->getParameter('YANDEX_PAY_NOTIFY_URL', true) . '?' . http_build_query($params);
