@@ -21,6 +21,7 @@ $widgetOptions = array_intersect_key($params, [
 	'merchantName' => true,
 	'buttonTheme' => true,
 	'buttonWidth' => true,
+	'cardNetworks' => true,
 	'gateway' => true,
 	'gatewayMerchantId' => true,
 	'externalId' => true,

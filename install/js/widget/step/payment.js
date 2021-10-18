@@ -43,7 +43,7 @@ export default class Payment extends AbstractStep {
 					gateway: this.getOption('gateway'),
 					gatewayMerchantId: this.getOption('gatewayMerchantId'),
 					allowedAuthMethods: [YaPay.AllowedAuthMethod.PanOnly],
-					allowedCardNetworks: [
+					allowedCardNetworks: this.getOption('cardNetworks') || [
 						YaPay.AllowedCardNetwork.UnionPay,
 						YaPay.AllowedCardNetwork.Uzcard,
 						YaPay.AllowedCardNetwork.Discover,
@@ -82,9 +82,14 @@ export default class Payment extends AbstractStep {
 				// Подписаться на событие process.
 				payment.on(YaPay.PaymentEventType.Process, (event) => {
 					// Получить платежный токен.
-					console.log(event);
+					//alert({'Process': event});
 
-					this.notify(payment, event);
+					//alert(event);
+					this.notify(payment, event).then((resolve) => {
+						//payment.complete(YaPay.CompleteReason.Success);
+					});
+
+
 
 					/*alert('Payment token — ' + event.token);
 
@@ -93,7 +98,7 @@ export default class Payment extends AbstractStep {
 
 					// Закрыть форму Yandex Pay.
 					*/
-					//payment.complete(YaPay.CompleteReason.Success);
+					payment.complete(YaPay.CompleteReason.Success);
 				});
 
 				// Подписаться на событие error.
@@ -119,28 +124,31 @@ export default class Payment extends AbstractStep {
 	}
 
 	notify(payment, yandexPayData) {
-		fetch(this.getOption('YANDEX_PAY_NOTIFY_URL'), {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				service: this.getOption('requestSign'),
-				accept: 'json',
-				yandexData: yandexPayData,
-				externalId: this.getOption('externalId'),
-				paySystemId: this.getOption('paySystemId')
+		return new Promise((resolve) => {
+			fetch(this.getOption('YANDEX_PAY_NOTIFY_URL'), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					service: this.getOption('requestSign'),
+					accept: 'json',
+					yandexData: yandexPayData,
+					externalId: this.getOption('externalId'),
+					paySystemId: this.getOption('paySystemId')
+				})
 			})
-		})
-			.then(response => response.json())
-			.then(result => {
-				payment.complete(YaPay.CompleteReason.Success);
-
-				if (result.success === true) {
-					this.widget.go(result.state, result);
-				} else {
-					this.widget.go('error', result);
-				}
-			});
+				.then(response => response.json())
+				.then(result => {
+					//payment.complete(YaPay.CompleteReason.Success);
+					resolve();
+					if (result.success === true) {
+						this.widget.go(result.state, result);
+					} else {
+						this.widget.go('error', result);
+					}
+				})
+				.catch(error => alert(error) );
+		});
 	}
 }

@@ -24,7 +24,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	protected const YANDEX_TEST_MODE = 'SANDBOX';
 	protected const YANDEX_PRODUCTION_MODE = 'PRODUCTION';
 
-	/** @var \YandexPay\Pay\Gateway\Base|null */
+	/** @var Gateway\Base|null */
 	protected $gateway;
 
 	protected function getPrefix(): string
@@ -37,6 +37,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	 */
 	public function initiatePay(Payment $payment, Request $request = null) : PaySystem\ServiceResult
 	{
+		global $APPLICATION;
+
 		$result = new PaySystem\ServiceResult();
 
 		$gatewayType = $this->getHandlerMode();
@@ -51,6 +53,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'merchantName'          => $this->getParamValue($payment, 'MERCHANT_NAME'),
 			'buttonTheme'           => $this->getParamValue($payment, 'VARIANT_BUTTON'),
 			'buttonWidth'           => $this->getParamValue($payment, 'WIDTH_BUTTON'),
+			'cardNetworks'          => $this->getCardNetworks($payment),
 			'gateway'               => mb_strtolower($gatewayType),
 			'gatewayMerchantId'     => $gatewayMerchantId,
 			'externalId'            => $payment->getId(),
@@ -67,6 +70,12 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	        if ($showTemplateResult->isSuccess())
 	        {
 		        $result->setTemplate($showTemplateResult->getTemplate());
+
+				$server = Main\Context::getCurrent()->getServer();
+		        $request = Main\Context::getCurrent()->getRequest();
+		        $host = $request->isHttps() ? 'https' : 'http';
+				$url = $host . '://' . $server->get('SERVER_NAME') . $APPLICATION->GetCurPage() . '?ORDER_ID=' . $payment->getOrderId();
+		        $_SESSION['yabackurl'] = $url;
 	        }
 	        else
             {
@@ -79,6 +88,28 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
         }
 
         return $result;
+	}
+
+	protected function getCardNetworks(Payment $payment) : array
+	{
+		$result = [];
+
+		$parameters = $this->getParamsBusValue($payment);
+		$str = 'YANDEX_CARD_NETWORK_';
+		$strLength = mb_strlen($str);
+
+		foreach ($parameters as $code => $value)
+		{
+			$position = mb_strpos($code, $str);
+
+			if ($position !== false && $value === 'Y')
+			{
+				$cardName = mb_substr($code, $strLength);
+				$result[] = $cardName;
+			}
+		}
+
+		return $result;
 	}
 
 	protected function getOrderData(Payment $payment): array

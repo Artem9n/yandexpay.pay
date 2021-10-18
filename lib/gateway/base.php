@@ -22,12 +22,15 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 	protected $payment;
 	/** @var Main\Request */
 	protected $request;
+	/** @var Main\Server */
+	protected $server;
 	/** @var string */
 	protected $externalId;
 
-	public function __construct(Sale\Payment  $payment = null, Main\Request $request = null)
+	public function __construct(Sale\Payment $payment = null, Main\Request $request = null)
 	{
 		$this->payment = $payment;
+		$this->server = Main\Context::getCurrent()->getServer();
 		$this->request = $request ?? Main\Context::getCurrent()->getRequest();
 	}
 
@@ -117,12 +120,12 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 	}
 
 	/**
-	 * @param string $action
-	 * @param array|null   $replace
+	 * @param string     $action
+	 * @param array|null $replace
 	 *
 	 * @return string
 	 */
-	protected function getUrl(string $action, $replace = null): string
+	protected function getUrl(string $action, array $replace = null): string
 	{
 		$urlList = $this->getUrlList();
 
@@ -147,7 +150,7 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 			}
 		}
 
-		if($replace !== null && is_array($replace))
+		if(is_array($replace))
 		{
 			foreach($replace as $search => $repl)
 			{
@@ -191,7 +194,7 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 	protected function createExternalId() : string
 	{
 		return md5(serialize([
-			$this->request->getServer()->getServerName(),
+			$this->server->getServerName(),
 			$this->payment->getOrder()->getUserId(),
 			$this->payment->getOrder()->getDateInsert(),
 			$this->getPaymentSum(),
@@ -241,13 +244,26 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 		return $result;
 	}
 
-	protected function getBackUrl() : string
+	protected function getRedirectUrl() : string
 	{
 		$params = [
 			'paymentId' => $this->getPaymentId(),
-			'backurl'   => $this->request->getServer()->get('HTTP_REFERER')
+			'backurl'   => $_SESSION['yabackurl']
 		];
 
 		return $this->getParameter('YANDEX_PAY_NOTIFY_URL', true) . '?' . http_build_query($params);
+	}
+
+	protected function getHeaders(string $key = '') : array
+	{
+		return [];
+	}
+
+	protected function setHeaders(Main\Web\HttpClient $httpClient, string $key = '') : void
+	{
+		foreach ($this->getHeaders($key) as $name => $value)
+		{
+			$httpClient->setHeader($name, $value);
+		}
 	}
 }

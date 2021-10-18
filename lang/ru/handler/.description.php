@@ -33,7 +33,7 @@ $MESS['YANDEX_PAY_GROUP_GATEWAY'] = 'Параметры подключения платежных шлюзов';
 
 $MESS['YANDEX_PAY_CARD_NETWORK_NAME'] = 'Разрешенные платежные системы для проведения платежа';
 $MESS['YANDEX_PAY_CARD_NETWORK_TYPE_UNIONPAY'] = 'UnionPay';
-$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_UUZCARD'] = 'Uzcard';
+$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_UZCARD'] = 'Uzcard';
 $MESS['YANDEX_PAY_CARD_NETWORK_TYPE_DISCOVER'] = 'Discover';
 $MESS['YANDEX_PAY_CARD_NETWORK_TYPE_AMEX'] = 'AmericanExpress';
 $MESS['YANDEX_PAY_CARD_NETWORK_TYPE_VISA'] = 'Visa';

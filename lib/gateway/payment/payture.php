@@ -18,15 +18,15 @@ class Payture extends Base
 	protected const STATUS_SUCCESS = 'True';
 	protected const STATUS_FAILED = 'False';
 
-	protected const THREE_DS_VARSION_1 = '1.0';
-	protected const THREE_DS_VARSION_2 = '2.1';
+	protected const THREE_DS_VERSION_1 = '1.0';
+	protected const THREE_DS_VERSION_2 = '2.1';
 
 	protected $threeDsData = [
-		self::THREE_DS_VARSION_1 => [
+		self::THREE_DS_VERSION_1 => [
 			'ThreeDSKey' => 'MD',
 			'PaReq' => 'PaReq'
 		],
-		self::THREE_DS_VARSION_2 => [
+		self::THREE_DS_VERSION_2 => [
 			'CReq' => 'creq',
 			'ThreeDSSessionData' => 'threeDSSessionData'
 		]
@@ -52,7 +52,7 @@ class Payture extends Base
 		];
 	}
 
-	protected function getHeaders(): array
+	protected function getHeaders(string $key = ''): array
 	{
 		return [
 			'Content-type' => 'application/x-www-form-urlencoded'
@@ -112,7 +112,7 @@ class Payture extends Base
 
 		$requestUrl = $this->getUrl('pay');
 
-		$httpClient->setHeaders($this->getHeaders());
+		$this->setHeaders($httpClient);
 
 		$httpClient->post($requestUrl, $data);
 
@@ -133,7 +133,7 @@ class Payture extends Base
 
 		$url = $this->getUrl('pay3ds');
 
-		$httpClient->setHeaders($this->getHeaders());
+		$this->setHeaders($httpClient);
 
 		$httpClient->post($url, $data);
 
@@ -159,7 +159,7 @@ class Payture extends Base
 	protected function buildData(): array
 	{
 		$customFields = [
-			'ChallengeNotificationUrl'  => $this->getBackUrl(),
+			'ChallengeNotificationUrl'  => $this->getRedirectUrl(),
 			'BrowserData'               => $this->getBrowserData()
 		];
 
@@ -177,14 +177,14 @@ class Payture extends Base
 		return base64_encode(Main\Web\Json::encode([
 			'AcceptHeader'              => 'application/x-www-form-urlencoded',
 			'ColorDepth'                => 'TWENTY_FOUR_BITS',
-			'Ip'                        => $this->request->getServer()->getRemoteAddr(),
+			'Ip'                        => $this->server->get('REMOTE_ADDR'),
 			'Language'                  => 'RU',
 			'ScreenHeight'              => 1080,
 			'ScreenWidth'               => 1920,
 			'WindowHeight'              => 1050,
 			'WindowWidth'               => 1920,
 			'Timezone'                  => '180',
-			'UserAgent'                 => $this->request->getServer()->getUserAgent(),
+			'UserAgent'                 => $this->server->get('HTTP_USER_AGENT'),
 			'JavaEnabled'               => true
 		]));
 	}
@@ -218,7 +218,7 @@ class Payture extends Base
 			'Amount'    => $this->getPaymentAmount()
 		];
 
-		$httpClient->setHeaders($this->getHeaders());
+		$this->setHeaders($httpClient);
 
 		$httpClient->post($url, $data);
 
@@ -242,7 +242,7 @@ class Payture extends Base
 		if ($resultData['Success'] === self::STATUS_3DS)
 		{
 			$params = $this->buildParamsForSecture($resultData);
-			$isTermUrl = ($resultData['ThreeDSVersion'] === self::THREE_DS_VARSION_1);
+			$isTermUrl = ($resultData['ThreeDSVersion'] === self::THREE_DS_VERSION_1);
 
 			throw new \YandexPay\Pay\Exceptions\Secure3dRedirect(
 				$resultData['ACSUrl'], $params, $isTermUrl

@@ -144,7 +144,7 @@ class yandexpay_pay extends CModule
 		CopyDirFiles(__DIR__ . '/images', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/images/sale/sale_payments/', true, true);
 		CopyDirFiles(__DIR__ . '/js', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/js/' . $moduleSafe, true, true);
 		CopyDirFiles(__DIR__ . '/handler', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/php_interface/include/sale_payment/' . $this->PAYSYSTEM_NAME, true, true);
-		CopyDirFiles(__DIR__ . '/tools', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/tools/', true, true);
+		CopyDirFiles(__DIR__ . '/tools', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/tools/' . $this->MODULE_ID , true, true);
 	}
 
 	public function UnInstallFiles(): void
@@ -155,7 +155,7 @@ class yandexpay_pay extends CModule
 		DeleteDirFilesEx(BX_ROOT . '/components/' . $this->MODULE_ID);
 		DeleteDirFilesEx(BX_ROOT . '/js/' . $moduleSafe);
 		DeleteDirFilesEx(BX_ROOT . '/php_interface/include/sale_payment/' . $this->PAYSYSTEM_NAME);
-		unlink($_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/tools/sale_ps_yandexpay_result.php');
+		DeleteDirFilesEx(BX_ROOT . '/tools/' . $this->MODULE_ID);
 		unlink($_SERVER['DOCUMENT_ROOT'] . BX_ROOT  . '/images/sale/sale_payments/' . $this->PAYSYSTEM_NAME . '.png');
 	}
 
@@ -173,8 +173,8 @@ class yandexpay_pay extends CModule
 		// required modules
 
 		$requireModules = [
-			'main' => '19.5.0',
-			'iblock' => '19.5.0'
+			'main'  => '19.0.0',
+			'sale'  => '18.6'
 		];
 
 		if (class_exists(Main\ModuleManager::class))

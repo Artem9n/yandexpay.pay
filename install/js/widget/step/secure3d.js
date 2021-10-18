@@ -62,7 +62,7 @@ export default class Step3ds extends AbstractStep {
 	}
 
 	autosubmit(node) {
-		const form = node.querySelector('form')
+		const form = node.querySelector('form');
 
 		form.submit();
 	}
