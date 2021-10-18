@@ -347,7 +347,7 @@ class Rbkmoney extends Base
 				'payerType'         => self::PAYMENT_PAYER_TYPE,
 				'contactInfo'       => $contactInfo,
 				'sessionInfo'       => [
-					'redirectUrl'   => $this->server->get('HTTP_REFERER')
+					'redirectUrl'   => $_SESSION['yabackurl']
 				]
 			],
 			'metadata'  => [
