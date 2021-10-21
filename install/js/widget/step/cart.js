@@ -6,9 +6,9 @@ const YaPay = window.YaPay;
 export default class Cart extends AbstractStep {
 
 	render(node, data) {
-		const paymentData = this.getPaymentData(data);
-
-		this.createPayment(node, paymentData);
+		this.paymentData = this.getPaymentData(data);
+		console.log(this.paymentData);
+		this.createPayment(node, this.paymentData);
 	}
 
 	compile(data) {
@@ -23,7 +23,8 @@ export default class Cart extends AbstractStep {
 			currencyCode: YaPay.CurrencyCode.Rub,
 			merchant: {
 				id: this.getOption('merchantId'),
-				name: this.getOption('merchantName')
+				name: this.getOption('merchantName'),
+				url: this.getOption('siteUrl')
 			},
 			order: {
 				id: data.id,
@@ -36,7 +37,7 @@ export default class Cart extends AbstractStep {
 					gateway: this.getOption('gateway'),
 					gatewayMerchantId: this.getOption('gatewayMerchantId'),
 					allowedAuthMethods: [YaPay.AllowedAuthMethod.PanOnly],
-					allowedCardNetworks: [
+					allowedCardNetworks: this.getOption('cardNetworks') || [
 						YaPay.AllowedCardNetwork.UnionPay,
 						YaPay.AllowedCardNetwork.Uzcard,
 						YaPay.AllowedCardNetwork.Discover,
@@ -49,6 +50,24 @@ export default class Cart extends AbstractStep {
 					]
 				}
 			],
+
+			requiredFields: {
+
+				billingContact: {
+					email: this.getOption('useEmail') || false
+				},
+
+				shippingContact: {
+					name: this.getOption('useName') || false,
+					email: this.getOption('useEmail') || false,
+					phone: this.getOption('usePhone') || false,
+				},
+
+				shippingTypes: {
+					direct: true,
+					pickup: true,
+				},
+			}
 		}
 	}
 
@@ -77,15 +96,12 @@ export default class Cart extends AbstractStep {
 					// Получить платежный токен.
 					console.log(event);
 
-					this.notify(payment, event);
+					this.orderAccept('orderAccept', event).then((result) => {
+						//payment.update({shippingOptions: result})
+					});
 
-					/*alert('Payment token — ' + event.token);
+					//this.notify(payment, event);
 
-					// Опционально (если выполнить шаг 7).
-					alert('Billing email — ' + event.billingContact.email);
-
-					// Закрыть форму Yandex Pay.
-					*/
 					//payment.complete(YaPay.CompleteReason.Success);
 				});
 
@@ -101,8 +117,36 @@ export default class Cart extends AbstractStep {
 
 				// Подписаться на событие abort.
 				// Это когда пользователь закрыл форму Yandex Pay.
-				payment.on(YaPay.PaymentEventType.Abort, function onPaymentAbort(event) {
+				payment.on(YaPay.PaymentEventType.Abort, (event) => {
 					// Предложить пользователю другой способ оплаты.
+				});
+
+				payment.on(YaPay.PaymentEventType.Change, (event) => {
+
+					if (event.shippingAddress) {
+						this.exampleDeliveryOptions('deliveryOptions', event.shippingAddress).then((result) => {
+							payment.update({shippingOptions: result})
+						});
+					}
+
+					if (event.shippingOption){
+						payment.update({
+							order: this.exampleOrderWithDirectShipping(event.shippingOption),
+						});
+					}
+
+					if (event.pickupAddress) {
+						this.exampleDeliveryOptions('pickupOptions', event.pickupAddress).then((result) => {
+							payment.update({pickupOptions: result})
+						});
+					}
+
+					if (event.pickupOption) {
+						payment.update({
+							order: this.exampleOrderWithPickupShipping(event.pickupOption),
+						});
+					}
+
 				});
 			})
 			.catch(function (err) {
@@ -112,7 +156,7 @@ export default class Cart extends AbstractStep {
 	}
 
 	notify(payment, yandexPayData) {
-		fetch(this.getOption('YANDEX_PAY_NOTIFY_URL'), {
+		fetch(this.getOption('notifyUrl'), {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -135,5 +179,85 @@ export default class Cart extends AbstractStep {
 					this.widget.go('error', result);
 				}
 			});
+	}
+
+	orderAccept(action, event){
+		return fetch(this.getOption('purchaseUrl'), {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				siteId: this.getOption('siteId'),
+				productId: this.getOption('productId') || null,
+				fUserId: this.getOption('fUserId'),
+				userId: this.getOption('userId') || null,
+				yapayAction: action,
+				address: event.shippingMethodInfo.shippingAddress,
+				contact: event.shippingContact,
+				delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions
+			})
+		})
+		.then(response => {return response.json()})
+	}
+
+	exampleDeliveryOptions(action, address){
+		return fetch(this.getOption('purchaseUrl'), {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				siteId: this.getOption('siteId'),
+				productId: this.getOption('productId') || null,
+				fUserId: this.getOption('fUserId'),
+				userId: this.getOption('userId') || null,
+				address: address,
+				yapayAction: action
+			})
+		})
+		.then(response => {return response.json()})
+	}
+
+	exampleOrderWithDirectShipping(shippingOption) {
+		const { order } = this.paymentData;
+
+		console.log(shippingOption);
+
+		return {
+			...order,
+			items: [
+				...order.items,
+				{
+					type: 'SHIPPING',
+					label: shippingOption.label,
+					amount: shippingOption.amount,
+				},
+			],
+			total: {
+				...order.total,
+				amount: this.amountSum(order.total.amount, shippingOption.amount),
+			},
+		};
+	}
+
+	exampleOrderWithPickupShipping(pickupOption) {
+		const { order } = this.paymentData;
+
+		return {
+			...order,
+			items: [
+				...order.items,
+				{
+					type: 'SHIPPING',
+					label: pickupOption.label,
+					amount: pickupOption.amount,
+				},
+			],
+			total: {
+				...order.total,
+				amount: this.amountSum(order.total.amount, pickupOption.amount),
+			},
+		};
+	}
+
+	amountSum(amountA, amountB) {
+		return (Number(amountA) + Number(amountB)).toFixed(2);
 	}
 }

@@ -381,6 +381,262 @@ this.BX = this.BX || {};
 	  template: '<div class="alert alert-success" role="alert"><strong>#MESSAGE#</strong></div>'
 	});
 
+	var YaPay$1 = window.YaPay;
+
+	var Cart = /*#__PURE__*/function (_AbstractStep) {
+	  babelHelpers.inherits(Cart, _AbstractStep);
+
+	  function Cart() {
+	    babelHelpers.classCallCheck(this, Cart);
+	    return babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(Cart).apply(this, arguments));
+	  }
+
+	  babelHelpers.createClass(Cart, [{
+	    key: "render",
+	    value: function render(node, data) {
+	      this.paymentData = this.getPaymentData(data);
+	      console.log(this.paymentData);
+	      this.createPayment(node, this.paymentData);
+	    }
+	  }, {
+	    key: "compile",
+	    value: function compile(data) {
+	      return Template.compile(this.options.template, data);
+	    }
+	  }, {
+	    key: "getPaymentData",
+	    value: function getPaymentData(data) {
+	      return {
+	        env: this.getOption('env'),
+	        version: 2,
+	        countryCode: YaPay$1.CountryCode.Ru,
+	        currencyCode: YaPay$1.CurrencyCode.Rub,
+	        merchant: {
+	          id: this.getOption('merchantId'),
+	          name: this.getOption('merchantName'),
+	          url: this.getOption('siteUrl')
+	        },
+	        order: {
+	          id: data.id,
+	          total: {
+	            amount: data.total
+	          },
+	          items: data.items
+	        },
+	        paymentMethods: [{
+	          type: YaPay$1.PaymentMethodType.Card,
+	          gateway: this.getOption('gateway'),
+	          gatewayMerchantId: this.getOption('gatewayMerchantId'),
+	          allowedAuthMethods: [YaPay$1.AllowedAuthMethod.PanOnly],
+	          allowedCardNetworks: this.getOption('cardNetworks') || [YaPay$1.AllowedCardNetwork.UnionPay, YaPay$1.AllowedCardNetwork.Uzcard, YaPay$1.AllowedCardNetwork.Discover, YaPay$1.AllowedCardNetwork.AmericanExpress, YaPay$1.AllowedCardNetwork.Visa, YaPay$1.AllowedCardNetwork.Mastercard, YaPay$1.AllowedCardNetwork.Mir, YaPay$1.AllowedCardNetwork.Maestro, YaPay$1.AllowedCardNetwork.VisaElectron]
+	        }],
+	        requiredFields: {
+	          billingContact: {
+	            email: this.getOption('useEmail') || false
+	          },
+	          shippingContact: {
+	            name: this.getOption('useName') || false,
+	            email: this.getOption('useEmail') || false,
+	            phone: this.getOption('usePhone') || false
+	          },
+	          shippingTypes: {
+	            direct: true,
+	            pickup: true
+	          }
+	        }
+	      };
+	    }
+	  }, {
+	    key: "createPayment",
+	    value: function createPayment(node, paymentData) {
+	      var _this = this;
+
+	      // Создать платеж.
+	      YaPay$1.createPayment(paymentData).then(function (payment) {
+	        // Создать экземпляр кнопки.
+	        var button = payment.createButton({
+	          type: YaPay$1.ButtonType.Pay,
+	          theme: _this.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
+	          width: _this.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
+	        }); // Смонтировать кнопку в DOM.
+
+	        button.mount(node); // Подписаться на событие click.
+
+	        button.on(YaPay$1.ButtonEventType.Click, function onPaymentButtonClick() {
+	          // Запустить оплату после клика на кнопку.
+	          payment.checkout();
+	        }); // Подписаться на событие process.
+
+	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
+	          // Получить платежный токен.
+	          console.log(event);
+
+	          _this.orderAccept('orderAccept', event).then(function (result) {//payment.update({shippingOptions: result})
+	          }); //this.notify(payment, event);
+	          //payment.complete(YaPay.CompleteReason.Success);
+
+	        }); // Подписаться на событие error.
+
+	        payment.on(YaPay$1.PaymentEventType.Error, function onPaymentError(event) {
+	          // Вывести информацию о недоступности оплаты в данный момент
+	          // и предложить пользователю другой способ оплаты.
+	          // Закрыть форму Yandex.Pay.
+	          console.log({
+	            'errors': event
+	          });
+	          payment.complete(YaPay$1.CompleteReason.Error);
+	        }); // Подписаться на событие abort.
+	        // Это когда пользователь закрыл форму Yandex Pay.
+
+	        payment.on(YaPay$1.PaymentEventType.Abort, function (event) {// Предложить пользователю другой способ оплаты.
+	        });
+	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
+	          if (event.shippingAddress) {
+	            _this.exampleDeliveryOptions('deliveryOptions', event.shippingAddress).then(function (result) {
+	              payment.update({
+	                shippingOptions: result
+	              });
+	            });
+	          }
+
+	          if (event.shippingOption) {
+	            payment.update({
+	              order: _this.exampleOrderWithDirectShipping(event.shippingOption)
+	            });
+	          }
+
+	          if (event.pickupAddress) {
+	            _this.exampleDeliveryOptions('pickupOptions', event.pickupAddress).then(function (result) {
+	              payment.update({
+	                pickupOptions: result
+	              });
+	            });
+	          }
+
+	          if (event.pickupOption) {
+	            payment.update({
+	              order: _this.exampleOrderWithPickupShipping(event.pickupOption)
+	            });
+	          }
+	        });
+	      }).catch(function (err) {
+	        // Платеж не создан.
+	        console.log({
+	          'payment not create': err
+	        });
+	      });
+	    }
+	  }, {
+	    key: "notify",
+	    value: function notify(payment, yandexPayData) {
+	      var _this2 = this;
+
+	      fetch(this.getOption('notifyUrl'), {
+	        method: 'POST',
+	        headers: {
+	          'Content-Type': 'application/json'
+	        },
+	        body: JSON.stringify({
+	          service: this.getOption('requestSign'),
+	          accept: 'json',
+	          yandexData: yandexPayData,
+	          externalId: this.getOption('externalId'),
+	          paySystemId: this.getOption('paySystemId')
+	        })
+	      }).then(function (response) {
+	        return response.json();
+	      }).then(function (result) {
+	        payment.complete(YaPay$1.CompleteReason.Success);
+
+	        if (result.success === true) {
+	          _this2.widget.go(result.state, result);
+	        } else {
+	          _this2.widget.go('error', result);
+	        }
+	      });
+	    }
+	  }, {
+	    key: "orderAccept",
+	    value: function orderAccept(action, event) {
+	      return fetch(this.getOption('purchaseUrl'), {
+	        method: 'POST',
+	        headers: {
+	          'Content-Type': 'application/json'
+	        },
+	        body: JSON.stringify({
+	          siteId: this.getOption('siteId'),
+	          productId: this.getOption('productId') || null,
+	          fUserId: this.getOption('fUserId'),
+	          userId: this.getOption('userId') || null,
+	          yapayAction: action,
+	          address: event.shippingMethodInfo.shippingAddress,
+	          contact: event.shippingContact,
+	          delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions
+	        })
+	      }).then(function (response) {
+	        return response.json();
+	      });
+	    }
+	  }, {
+	    key: "exampleDeliveryOptions",
+	    value: function exampleDeliveryOptions(action, address) {
+	      return fetch(this.getOption('purchaseUrl'), {
+	        method: 'POST',
+	        headers: {
+	          'Content-Type': 'application/json'
+	        },
+	        body: JSON.stringify({
+	          siteId: this.getOption('siteId'),
+	          productId: this.getOption('productId') || null,
+	          fUserId: this.getOption('fUserId'),
+	          userId: this.getOption('userId') || null,
+	          address: address,
+	          yapayAction: action
+	        })
+	      }).then(function (response) {
+	        return response.json();
+	      });
+	    }
+	  }, {
+	    key: "exampleOrderWithDirectShipping",
+	    value: function exampleOrderWithDirectShipping(shippingOption) {
+	      var order = this.paymentData.order;
+	      console.log(shippingOption);
+	      return babelHelpers.objectSpread({}, order, {
+	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
+	          type: 'SHIPPING',
+	          label: shippingOption.label,
+	          amount: shippingOption.amount
+	        }]),
+	        total: babelHelpers.objectSpread({}, order.total, {
+	          amount: this.amountSum(order.total.amount, shippingOption.amount)
+	        })
+	      });
+	    }
+	  }, {
+	    key: "exampleOrderWithPickupShipping",
+	    value: function exampleOrderWithPickupShipping(pickupOption) {
+	      var order = this.paymentData.order;
+	      return babelHelpers.objectSpread({}, order, {
+	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
+	          type: 'SHIPPING',
+	          label: pickupOption.label,
+	          amount: pickupOption.amount
+	        }]),
+	        total: babelHelpers.objectSpread({}, order.total, {
+	          amount: this.amountSum(order.total.amount, pickupOption.amount)
+	        })
+	      });
+	    }
+	  }, {
+	    key: "amountSum",
+	    value: function amountSum(amountA, amountB) {
+	      return (Number(amountA) + Number(amountB)).toFixed(2);
+	    }
+	  }]);
+	  return Cart;
+	}(AbstractStep);
+
 	var Factory = /*#__PURE__*/function () {
 	  function Factory() {
 	    babelHelpers.classCallCheck(this, Factory);
@@ -397,6 +653,8 @@ this.BX = this.BX || {};
 	        return new Failure();
 	      } else if (type === 'payment') {
 	        return new Payment();
+	      } else if (type === 'cart') {
+	        return new Cart();
 	      }
 
 	      throw new Error('unknown step ' + type);
@@ -422,6 +680,11 @@ this.BX = this.BX || {};
 	    key: "payment",
 	    value: function payment(data) {
 	      this.go('payment', data);
+	    }
+	  }, {
+	    key: "cart",
+	    value: function cart(data) {
+	      this.go('cart', data);
 	    }
 	  }, {
 	    key: "go",
