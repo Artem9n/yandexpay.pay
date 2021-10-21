@@ -5,7 +5,7 @@ namespace YandexPay\Pay\Trading\Settings;
 use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity;
-use YandexPay\Pay\Utils\Userfield\DependField;
+use YandexPay\Pay\Utils;
 
 class Options extends Reference\Skeleton
 {
@@ -56,6 +56,7 @@ class Options extends Reference\Skeleton
 		/** @noinspection AdditionOperationOnArraysInspection */
 		return
 			$this->getHandlerFields($environment, $siteId)
+			+ $this->getPurchaseUrl($environment, $siteId)
 			+ $this->getDeliveryFields($environment, $siteId)
 			+ $this->getPickupFields($environment, $siteId)
 			+ $this->getBuyerProperties($environment, $siteId);
@@ -65,6 +66,20 @@ class Options extends Reference\Skeleton
 	{
 		return [
 			// todo
+		];
+	}
+
+	protected function getPurchaseUrl(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return [
+			'PURCHASE_URL' => [
+				'TYPE' => 'string',
+				'MANDATORY' => 'Y',
+				'NAME' => self::getMessage('PURCHASE_URL'),
+				'GROUP' => self::getMessage('COMMON'),
+				'SORT' => 2000,
+				'VALUE' => Utils\Url::absolutizePath(BX_ROOT . '/tools/purchase.php')
+			]
 		];
 	}
 
