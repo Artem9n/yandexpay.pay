@@ -44,3 +44,8 @@
 
 	cursor: not-allowed;
 }
+
+.adm-workarea .adm-btn.adm-btn-save:active, .adm-workarea button.adm-btn.adm-btn-save:active {
+	height: 29px!important;
+	padding: 1px 13px 2px!important;
+}
