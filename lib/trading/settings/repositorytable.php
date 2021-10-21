@@ -34,7 +34,7 @@ class RepositoryTable extends ORM\Data\DataManager
 				'primary' => true,
 				'validation' => [static::class, 'validateName'],
 			]),
-			(new ORM\Fields\ArrayField('VALUE'))
+			(new Pay\Reference\Storage\Field\FuzzyField('VALUE'))
 				->configureRequired(true)
 				->configureSerializationPhp(),
 			new ORM\Fields\Relations\Reference(
