@@ -18,16 +18,33 @@ class Order extends EntityReference\Order
 		parent::__construct($environment, $internalOrder);
 	}
 
-	public function loadUserBasket(Sale\OrderBase $order) : Sale\BasketBase
+	public function loadUserBasket() : Main\Result
 	{
-		$fuserId = \CSaleBasket::GetBasketUserID(true);
-		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
-		/** @var Sale\BasketBase $basketClassName */
-		$basketClassName = $registry->getBasketClassName();
+		try
+		{
+			$fuserId = \CSaleBasket::GetBasketUserID(true); // $this->internalOrder->getUserId();
+			$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+			/** @var Sale\BasketBase $basketClassName */
+			$basketClassName = $registry->getBasketClassName();
 
-		Assert::notNull($fuserId, 'fUserId');
+			Assert::notNull($fuserId, 'fUserId');
 
-		return $basketClassName::loadItemsForFUser($fuserId, $order->getSiteId());
+			$basket = $basketClassName::loadItemsForFUser($fuserId, $this->internalOrder->getSiteId());
+
+			if ($basket->count() === 0)
+			{
+				throw new Main\SystemException('todo message'); // todo
+			}
+
+			$result = $this->internalOrder->setBasket($basket);
+		}
+		catch (Main\SystemException $exception)
+		{
+			$result = new Main\Result();
+			$result->addError(new Main\Error($exception->getMessage(), $exception->getCode()));
+		}
+
+		return $result;
 	}
 
 	public function setLocation($locationId) : Main\Result
@@ -145,7 +162,7 @@ class Order extends EntityReference\Order
 
 		if ($basket === null)
 		{
-			$basket = $this->loadUserBasket($order);
+			$basket = $this->createBasket($order);
 			$order->setBasket($basket);
 		}
 
@@ -444,5 +461,26 @@ class Order extends EntityReference\Order
 	public function getOrderPrice() : float
 	{
 		return $this->internalOrder->getPrice();
+	}
+
+	public function getUserId() : ?int
+	{
+		$userId = (int)$this->internalOrder->getUserId();
+
+		return $userId > 0 ? $userId : null;
+	}
+
+	public function setStatus($status, $payload = null) : Main\Result
+	{
+		$result = new Main\Result();
+
+		$saleResult = $this->internalOrder->setField('STATUS_ID', $status);
+
+		if (!$saleResult->isSuccess())
+		{
+			$result->addError($saleResult->getErrors());
+		}
+
+		return $result;
 	}
 }

@@ -35,4 +35,9 @@ class Environment extends EntityCommon\Environment
 	{
 		return new Property($this);
 	}
+
+	protected function createUserRegistry() : EntityReference\UserRegistry
+	{
+		return new UserRegistry($this);
+	}
 }

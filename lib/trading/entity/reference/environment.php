@@ -1,12 +1,13 @@
 <?php
 namespace YandexPay\Pay\Trading\Entity\Reference;
 
-use Bitrix\Main\NotImplementedException;
+use Bitrix\Main;
 
 abstract class Environment
 {
 	protected $site;
 	protected $orderRegisty;
+	protected $userRegistry;
 	protected $location;
 	protected $delivery;
 	protected $paySystem;
@@ -25,7 +26,7 @@ abstract class Environment
 
 	protected function createOrderRegistry() : OrderRegistry
 	{
-		throw new NotImplementedException('createOrderRegistry is missing');
+		throw new Main\NotImplementedException('createOrderRegistry is missing');
 	}
 
 	public function getLocation() : Location
@@ -40,7 +41,7 @@ abstract class Environment
 
 	protected function createLocation() : Location
 	{
-		throw new NotImplementedException('getLocation is missing');
+		throw new Main\NotImplementedException('getLocation is missing');
 	}
 
 	public function getDelivery() : Delivery
@@ -55,7 +56,7 @@ abstract class Environment
 
 	protected function createDelivery() : Delivery
 	{
-		throw new NotImplementedException('getDelivery is missing');
+		throw new Main\NotImplementedException('getDelivery is missing');
 	}
 
 	public function getPaySystem() : PaySystem
@@ -70,7 +71,7 @@ abstract class Environment
 
 	protected function createPaySystem() : PaySystem
 	{
-		throw new NotImplementedException('createPaySystem is missing');
+		throw new Main\NotImplementedException('createPaySystem is missing');
 	}
 
 	public function getSite() : Site
@@ -85,7 +86,7 @@ abstract class Environment
 
 	protected function createSite() : Site
 	{
-		throw new NotImplementedException('createSite is missing');
+		throw new Main\NotImplementedException('createSite is missing');
 	}
 
 	public function getPersonType() : PersonType
@@ -103,7 +104,7 @@ abstract class Environment
 	 */
 	protected function createPersonType() : PersonType
 	{
-		throw new NotImplementedException('PersonType is missing');
+		throw new Main\NotImplementedException('PersonType is missing');
 	}
 
 	public function getProperty() : Property
@@ -121,6 +122,24 @@ abstract class Environment
 	 */
 	protected function createProperty() : Property
 	{
-		throw new NotImplementedException('Property is missing');
+		throw new Main\NotImplementedException('Property is missing');
+	}
+
+	public function getUserRegistry() : UserRegistry
+	{
+		if ($this->userRegistry === null)
+		{
+			$this->userRegistry = $this->createUserRegistry();
+		}
+
+		return $this->userRegistry;
+	}
+
+	/**
+	 * @return UserRegistry
+	 */
+	protected function createUserRegistry() : UserRegistry
+	{
+		throw new Main\NotImplementedEntity('UserRegistry is missing');
 	}
 }

@@ -18,6 +18,11 @@ abstract class Order
 		$this->internalOrder = $internalOrder;
 	}
 
+	public function loadUserBasket() : Main\Result
+	{
+		throw new Main\NotImplementedException('loadUserBasket is missing');
+	}
+
 	/**
 	 * @param int|string $productId
 	 * @param int        $count
@@ -47,5 +52,24 @@ abstract class Order
 	public function getOrderPrice() : float
 	{
 		throw new Main\NotImplementedException('getOrderPrice is missing');
+	}
+
+	/**
+	 * @return int|null
+	 */
+	public function getUserId() : ?int
+	{
+		throw new Main\NotImplementedException('getUserId is missing');
+	}
+
+	/**
+	 * @param string $status
+	 * @param mixed $payload
+	 *
+	 * @return Main\Result
+	 */
+	public function setStatus(string $status, $payload = null) : Main\Result
+	{
+		throw new Main\NotImplementedException('setStatus is missing');
 	}
 }
