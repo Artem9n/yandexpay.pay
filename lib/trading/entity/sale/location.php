@@ -25,40 +25,89 @@ class Location extends EntityReference\Location
 	{
 		$result = null;
 
+		$regions = $this->normalizedRegion($address);
+
 		$searchMethods = [
-			'Name' => true,
-			'City' => true
+			'Name' => [
+				'fields' => [
+					'locality',
+					'country'
+				]
+			],
+			'City' => [
+				'fields' => [
+					'locality'
+				]
+			]
 		];
 
 		foreach ($searchMethods as $searchMethod => $searchArgument)
 		{
 			$method = 'searchLocationBy' . $searchMethod;
+			$payload = $this->makeSearchLocationPayload($regions, $searchArgument);
 
-			$map = $this->{$method}($address, $result);
+			if (empty($payload)) { continue; }
 
-			foreach ($address as $regionIndex => $region)
+			$map = $this->{$method}($payload, $result);
+
+			foreach ($regions as $regionIndex => $region)
 			{
-				if (!isset($map[$regionIndex])) { continue; }
+				if (!isset($map[$region['code']])) { continue; }
 
-				$result = $map[$regionIndex];
+				$result = $map[$region['code']];
+				array_splice($regions, $regionIndex);
+				break;
 			}
 
-			$address = array_diff_key($address, $map);
-
-			if (empty($address)) { break; }
+			if (empty($regions)) { break; }
 		}
 
 		return $result;
 	}
 
-	protected function searchLocationByName($names, $parentLocation = null) : array
+	protected function makeSearchLocationPayload($regions, $argument) : array
+	{
+		$fields = array_flip($argument['fields']);
+		$result = [];
+
+		foreach ($regions as $region)
+		{
+			if (!isset($fields[$region['code']])) { continue; }
+
+			$result[$region['code']] = $region['name'];
+		}
+
+		return $result;
+	}
+
+	protected function normalizedRegion($address) : array
+	{
+		$result = [];
+
+		$regions = array_intersect_key($address, [
+			'locality' => true,
+			'country' => true
+		]);
+
+		foreach ($regions as $code => $value)
+		{
+			$result[] = [
+				'code' => $code,
+				'name' => $value
+			];
+		}
+
+		return $result;
+	}
+
+	protected function searchLocationByName(array $names, $parentLocation = null) : array
 	{
 		$result = [];
 		$levelParents = [
 			$parentLocation,
 		];
 
-		foreach ($names as $nameKey => $name)
+		foreach (array_reverse($names, true) as $nameKey => $name)
 		{
 			$levelMatches = [];
 			$parentFilter = $this->getFewParentsLocationFilter($levelParents);
@@ -90,7 +139,7 @@ class Location extends EntityReference\Location
 		return $result;
 	}
 
-	protected function searchLocationByCity($names, $parentLocation = null) : array
+	protected function searchLocationByCity(array $names, $parentLocation = null) : array
 	{
 		$result = [];
 		$loopParent = null; // ignore previous location
@@ -121,7 +170,7 @@ class Location extends EntityReference\Location
 		return $result;
 	}
 
-	protected function splitMergedName($name) : array
+	protected function splitMergedName(string $name) : array
 	{
 		$glue = (string)static::getMessage('MERGED_GLUE', null, '');
 
@@ -143,7 +192,7 @@ class Location extends EntityReference\Location
 		];
 	}
 
-	protected function isMergedNameRegionPart($name) : bool
+	protected function isMergedNameRegionPart(string $name) : bool
 	{
 		$typeName = (string)self::getMessage('MERGED_REGION');
 
