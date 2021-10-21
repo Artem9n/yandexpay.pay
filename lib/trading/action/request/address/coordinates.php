@@ -8,20 +8,20 @@ class Coordinates extends Model
 {
 	public function getLat()
 	{
-		$result = $this->getField('lat');
+		$result = $this->getField('latitude');
 
-		Assert::notNull($result, 'lat');
-		Assert::isNumber($result, 'lat');
+		Assert::notNull($result, 'latitude');
+		Assert::isNumber($result, 'latitude');
 
 		return $result;
 	}
 
 	public function getLon()
 	{
-		$result = $this->getField('lon');
+		$result = $this->getField('longitude');
 
-		Assert::notNull($result, 'lon');
-		Assert::isNumber($result, 'lon');
+		Assert::notNull($result, 'longitude');
+		Assert::isNumber($result, 'longitude');
 
 		return $result;
 	}
