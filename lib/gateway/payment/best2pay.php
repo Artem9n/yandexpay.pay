@@ -47,6 +47,10 @@ class Best2pay extends Gateway\Base
 			'refund' => [
 				static::TEST_URL    => 'https://test.best2pay.net/webapi/Reverse',
 				static::ACTIVE_URL  => 'https://pay.best2pay.net/webapi/Reverse',
+			],
+			'operation' => [
+				static::TEST_URL    => 'https://test.best2pay.net/webapi/Operation',
+				static::ACTIVE_URL  => 'https://pay.best2pay.net/webapi/Operation',
 			]
 		];
 	}
@@ -77,22 +81,21 @@ class Best2pay extends Gateway\Base
 
 	public function startPay() : array
 	{
-		$result = [];
-
 		$orderData = $this->buildRegisterOrder();
 
-		$this->createPurchase($orderData['order']['id']);
+		[$operation, $id, $reference] = $this->createPurchase($orderData['order']['id']);
 
-		return [];
+		return [
+			'PS_INVOICE_ID'     => $id . '#' . $reference . '#' . $operation,
+			'PS_SUM'            => $this->getPaymentSum()
+		];
 	}
 
-	protected function createPurchase(int $orderId)
+	protected function createPurchase(int $orderId) : array
 	{
-		$result = [];
-
 		$httpClient = new HttpClient();
 
-		$httpClient->setHeaders($this->getHeaders());
+		$this->setHeaders($httpClient);
 
 		$url = $this->getUrl('purchase');
 
@@ -107,13 +110,53 @@ class Best2pay extends Gateway\Base
 			'yandexCryptogram'  => $this->getYandexToken(),
 			'action'            => self::ACTION_PAY,
 		];
-		pr($data);
-		$httpClient->post($url, $data);
-		pr($httpClient->getResult());
-		pr(Main\Text\Encoding::convertEncodingToCurrent($httpClient->getResult()));
-		pr($httpClient->getEffectiveUrl());
 
+		$httpClient->post($url, $data);
+		//$this->getStatusPerchase($operation, $id);
+		return $this->checkEffectiveUrl($httpClient->getEffectiveUrl());
+	}
+
+	protected function getStatusPerchase(int $operation, int $orderId)
+	{
+		$httpClient = new HttpClient();
+
+		$this->setHeaders($httpClient);
+
+		$url = $this->getUrl('operation');
+
+		$sector = (int)$this->getParameter('PAYMENT_GATEWAY_SECTOR_ID');
+		$password = $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
+		$signature = $this->getSignature([$sector, $orderId, $operation, $password]);
+
+		$data = [
+			'sector'    => $sector,
+			'id'        => $orderId,
+			'operation' => $operation,
+			'signature' => $signature
+		];
+
+		$httpClient->post($url, $data);
+
+		pr($httpClient->getResult());
 		die;
+	}
+
+	protected function checkEffectiveUrl(string $url) : array
+	{
+		$parseUrl = parse_url($url, PHP_URL_QUERY);
+		parse_str($parseUrl, $result);
+
+		if (isset($result['code']))
+		{
+			throw new Main\SystemException(self::getMessage('ERROR_' . $result['code']));
+		}
+
+		if (isset($result['error']))
+		{
+			throw new Main\SystemException(self::getMessage('ERROR_' . $result['error']));
+		}
+
+		return [$result['operation'], $result['id'], $result['reference']];
 	}
 
 	protected function buildRegisterOrder(): array
@@ -245,7 +288,7 @@ class Best2pay extends Gateway\Base
 			'description'   => $description,
 			'signature'     => $signature,
 			'reference'     => $reference,
-			'url'           => 'https://yapay-1251.t-dir.com/personal/order/make/?ORDER_ID=218'
+			'url'           => $this->getRedirectUrl()
 		];
 	}
 
@@ -253,9 +296,11 @@ class Best2pay extends Gateway\Base
 	{
 		$httpClient = new HttpClient();
 
+		$invoiceId = $this->getPaymentField('PS_INVOICE_ID');
+		[$orderId, $reference, $operation] = explode('#', $invoiceId);
+
 		$sector = $this->getParameter('PAYMENT_GATEWAY_SECTOR_ID');
 		$password = $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
-		$orderId = '';
 		$amount = $this->getPaymentAmount();
 		$currency = $this->getCurrencyFormatted($this->getPaymentField('CURRENCY'));
 		$signature = $this->getSignature([$sector, $orderId, $amount, $currency, $password]);

@@ -159,7 +159,7 @@ class Payture extends Base
 	protected function buildData(): array
 	{
 		$customFields = [
-			'ChallengeNotificationUrl'  => $this->getBackUrl(),
+			'ChallengeNotificationUrl'  => $this->getRedirectUrl(),
 			'BrowserData'               => $this->getBrowserData()
 		];
 
