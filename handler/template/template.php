@@ -6,9 +6,14 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
  * @var $this \Sale\Handlers\PaySystem\YandexPayHandler
  */
 
+use Bitrix\Currency\CurrencyClassifier;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Web\HttpClient;
 use Bitrix\Main\Web\Json;
 use Bitrix\Main\UI\Extension;
+use Bitrix\Main;
+
+
 
 Loc::loadMessages(__FILE__);
 
@@ -29,8 +34,8 @@ $widgetOptions = array_intersect_key($params, [
     'currency' => true,
 	'YANDEX_PAY_NOTIFY_URL' => true,
 ]);
-
 ?>
+
 <div>
 	<?= Loc::getMessage('YANDEX_MARKET_SALE_SUM_DESCRIPTION', ['#SUM#' => CurrencyFormat($params['order']['total'], $params['currency'])])?>
 </div>
@@ -39,7 +44,6 @@ $widgetOptions = array_intersect_key($params, [
 	(function() {
 		const element = document.getElementById('yandexpay');
 		const widget = new BX.YandexPay.Widget(element, <?= Json::encode($widgetOptions) ?>);
-
 		widget.payment(<?= Json::encode($params['order']) ?>);
 	})();
 </script>

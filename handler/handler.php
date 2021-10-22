@@ -322,7 +322,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	protected function renderResponseHtml(array $data, Request $request): void
 	{
-		if ($data['state'] === self::STEP_FINISHED && $request->get('backurl') !== null)
+		if ($request->get('backurl') !== null)
 		{
 			LocalRedirect($request->get('backurl'));
 			die();
