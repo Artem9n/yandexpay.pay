@@ -395,7 +395,6 @@ this.BX = this.BX || {};
 	    key: "render",
 	    value: function render(node, data) {
 	      this.paymentData = this.getPaymentData(data);
-	      console.log(this.paymentData);
 	      this.createPayment(node, this.paymentData);
 	    }
 	  }, {
@@ -420,8 +419,7 @@ this.BX = this.BX || {};
 	          id: data.id,
 	          total: {
 	            amount: data.total
-	          },
-	          items: data.items
+	          }
 	        },
 	        paymentMethods: [{
 	          type: YaPay$1.PaymentMethodType.Card,
@@ -462,15 +460,19 @@ this.BX = this.BX || {};
 
 	        button.mount(node); // Подписаться на событие click.
 
-	        button.on(YaPay$1.ButtonEventType.Click, function onPaymentButtonClick() {
-	          // Запустить оплату после клика на кнопку.
-	          payment.checkout();
+	        button.on(YaPay$1.ButtonEventType.Click, function () {
+	          // Заполенение товаров
+	          _this.fillProducts().then(function (result) {
+	            payment.update({
+	              order: _this.exampleOrderWithProducts(result)
+	            }); // Запустить оплату после клика на кнопку.
+
+	            payment.checkout();
+	          });
 	        }); // Подписаться на событие process.
 
 	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
-	          console.log(event);
-
 	          _this.orderAccept('orderAccept', event).then(function (result) {//payment.update({shippingOptions: result})
 	          }); //this.notify(payment, event);
 	          //payment.complete(YaPay.CompleteReason.Success);
@@ -491,6 +493,8 @@ this.BX = this.BX || {};
 	        payment.on(YaPay$1.PaymentEventType.Abort, function (event) {// Предложить пользователю другой способ оплаты.
 	        });
 	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
+	          console.log(222);
+
 	          if (event.shippingAddress) {
 	            _this.exampleDeliveryOptions('deliveryOptions', event.shippingAddress).then(function (result) {
 	              payment.update({
@@ -501,7 +505,7 @@ this.BX = this.BX || {};
 
 	          if (event.shippingOption) {
 	            payment.update({
-	              order: _this.exampleOrderWithDirectShipping(event.shippingOption)
+	              order: _this.exampleOrderWithDirectShipping(event.shippingOption, payment)
 	            });
 	          }
 
@@ -524,6 +528,27 @@ this.BX = this.BX || {};
 	        console.log({
 	          'payment not create': err
 	        });
+	      });
+	    }
+	  }, {
+	    key: "fillProducts",
+	    value: function fillProducts() {
+	      return fetch(this.getOption('purchaseUrl'), {
+	        method: 'POST',
+	        headers: {
+	          'Content-Type': 'application/json'
+	        },
+	        body: JSON.stringify({
+	          siteId: this.getOption('siteId'),
+	          productId: this.getOption('productId') || null,
+	          fUserId: this.getOption('fUserId'),
+	          userId: this.getOption('userId') || null,
+	          setupId: this.getOption('setupId') || null,
+	          yapayAction: 'getProducts',
+	          mode: this.getOption('mode')
+	        })
+	      }).then(function (response) {
+	        return response.json();
 	      });
 	    }
 	  }, {
@@ -566,11 +591,15 @@ this.BX = this.BX || {};
 	        body: JSON.stringify({
 	          siteId: this.getOption('siteId'),
 	          productId: this.getOption('productId') || null,
+	          order: this.paymentData.order,
 	          fUserId: this.getOption('fUserId'),
 	          userId: this.getOption('userId') || null,
+	          setupId: this.getOption('setupId') || null,
 	          yapayAction: action,
 	          address: event.shippingMethodInfo.shippingAddress,
 	          contact: event.shippingContact,
+	          paySystemId: this.getOption('paySystemId') || null,
+	          mode: this.getOption('mode'),
 	          delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions
 	        })
 	      }).then(function (response) {
@@ -590,6 +619,8 @@ this.BX = this.BX || {};
 	          productId: this.getOption('productId') || null,
 	          fUserId: this.getOption('fUserId'),
 	          userId: this.getOption('userId') || null,
+	          setupId: this.getOption('setupId') || null,
+	          mode: this.getOption('mode'),
 	          address: address,
 	          yapayAction: action
 	        })
@@ -627,6 +658,19 @@ this.BX = this.BX || {};
 	          amount: this.amountSum(order.total.amount, pickupOption.amount)
 	        })
 	      });
+	    }
+	  }, {
+	    key: "exampleOrderWithProducts",
+	    value: function exampleOrderWithProducts(products) {
+	      var order = this.paymentData.order;
+	      var exampleOrder = babelHelpers.objectSpread({}, order, {
+	        items: products.items,
+	        total: babelHelpers.objectSpread({}, order.total, {
+	          amount: this.amountSum(0, products.amount)
+	        })
+	      });
+	      Object.assign(this.paymentData.order, exampleOrder);
+	      return exampleOrder;
 	    }
 	  }, {
 	    key: "amountSum",
