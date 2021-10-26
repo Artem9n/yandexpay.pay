@@ -6,14 +6,9 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
  * @var $this \Sale\Handlers\PaySystem\YandexPayHandler
  */
 
-use Bitrix\Currency\CurrencyClassifier;
 use Bitrix\Main\Localization\Loc;
-use Bitrix\Main\Web\HttpClient;
 use Bitrix\Main\Web\Json;
 use Bitrix\Main\UI\Extension;
-use Bitrix\Main;
-
-
 
 Loc::loadMessages(__FILE__);
 

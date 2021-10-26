@@ -1,19 +1,16 @@
 <?php
 
-namespace Yandexpay\Pay\GateWay\Payment;
+namespace Yandexpay\Pay\Gateway\Payment;
 
-use Bitrix\Currency\CurrencyClassifier;
 use Bitrix\Main;
-use Bitrix\Main\Request;
+use Bitrix\Currency;
 use Bitrix\Main\Web\HttpClient;
-use Bitrix\Sale\Payment;
-use Yandexpay\Pay\GateWay\Base;
-use Yandexpay\Pay\Reference\Concerns\HasMessage;
+use Yandexpay\Pay\Gateway;
+use Yandexpay\Pay\Reference\Concerns;
 
-class alfabank extends Base
+class alfabank extends Gateway\Base
 {
-    use HasMessage;
-
+    use Concerns\HasMessage;
 
     protected $sort = 400;
     protected const STATUS_FAILED = false;
@@ -93,11 +90,14 @@ class alfabank extends Base
                 'PS_SUM' => $this->getPaymentSum()
             ];
 
-            if ($orderStatus['orderStatus'] === self::STATUS_SUCCSES) {
+            if ($orderStatus['orderStatus'] === self::STATUS_SUCCSES)
+			{
                 return $result;
             }
 
-        } else {
+        }
+		else
+		{
             $regOrder = $this->registerOrder();
             $orderId = $regOrder['orderId'];
             $result = [
@@ -112,51 +112,57 @@ class alfabank extends Base
         return $result;
     }
 
-    protected function registerOrder()
+    protected function registerOrder() : array
     {
         $httpClient = new HttpClient();
-        $httpClient->setHeaders($this->getHeader(""));
+        $this->setHeaders($httpClient);
         $url = $this->getUrl('registration');
-        $data =
-            [
-                'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
-                'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
-                'amount' => $this->getPaymentAmount(),
-                'currency' => $this->getCurrencyFormatted($this->getPaymentField('CURRENCY')),
-                'orderNumber' => $this->getExternalId(),
-                'returnUrl' => $this->getBackUrl(),
 
-            ];
+        $data = [
+            'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
+            'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
+            'amount' => $this->getPaymentAmount(),
+            'currency' => $this->getCurrencyFormatted($this->getPaymentField('CURRENCY')),
+            'orderNumber' => $this->getExternalId(),
+            'returnUrl' => $this->getRedirectUrl(),
+        ];
+
         $httpClient->post($url, $data);
-        return Main\Web\Json::decode($httpClient->getResult());
 
+        return Main\Web\Json::decode($httpClient->getResult());
     }
 
-    protected function buildDataResource($orderID)
+    protected function buildDataResource($orderID) : string
     {
         $buildData = [
-            "username" => $this->getParameter("PAYMENT_GATEWAY_USERNAME"),
-            "password" => $this->getParameter("PAYMENT_GATEWAY_PASSWORD"),
-            "orderId" => $orderID,
-            "paymentToken" => $this->getYandexToken()
+            'username' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
+            'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
+            'orderId' => $orderID,
+            'paymentToken' => $this->getYandexToken()
         ];
+		
         return Main\Web\Json::encode($buildData);
     }
 
-    protected function yandexPayment($data)
+    protected function yandexPayment($data) : void
     {
         $httpClient = new HttpClient();
-        $httpClient->setHeaders($this->getHeader('json'));
+        $this->setHeaders($httpClient, 'json');
         $urlYandex = $this->getUrl('yandexpayment');
         $httpClient->post($urlYandex, $data);
         $resultPay = Main\Web\Json::decode($httpClient->getResult());
         $this->checkResult($resultPay, $httpClient->getStatus());
-
     }
 
-    protected function checkResult(array $resultData, int $status): void
+    protected function checkResult(array $resultData, int $status) : void
     {
-        if (!empty($resultData['data']['paReq'])) {
+	    if ($status !== 200)
+	    {
+		    throw new Main\SystemException('Error status code: ' . $status);
+	    }
+
+        if (!empty($resultData['data']['paReq']))
+		{
             throw new \Yandexpay\Pay\Exceptions\Secure3dRedirect(
                 $resultData['data']['acsUrl'],
                 [
@@ -167,21 +173,25 @@ class alfabank extends Base
             );
         }
 
-        if ($resultData['success'] === self::STATUS_FAILED) {
+        if (
+			isset($resultData['success'])
+			&& $resultData['success'] === self::STATUS_FAILED
+        )
+		{
             $message = $resultData['errorCode'] ? $resultData['errorMessage'] : $resultData['error']['message'];
             throw new Main\SystemException('' . $message);
         }
 
-        if ($resultData['orderStatus'] != self::STATUS_SUCCSES) {
+        if (
+			isset($resultData['orderStatus'])
+			&& $resultData['orderStatus'] !== self::STATUS_SUCCSES
+        )
+		{
             throw new Main\SystemException(self::getMessage('ERROR_' . $resultData['orderStatus']));
-        }
-
-        if ($status != 200) {
-            throw new Main\SystemException('Error status code: ' . $status);
         }
     }
 
-    public function refund(): void
+    public function refund() : void
     {
         $dataRefund =
             [
@@ -192,25 +202,24 @@ class alfabank extends Base
             ];
 
         $httpClient = new HttpClient();
-        $httpClient->setHeaders($this->getHeader(""));
+        $this->setHeaders($httpClient);
         $url = $this->getUrl('refund');
         $httpClient->post($url, $dataRefund);
         $requestSecurity = Main\Web\Json::decode($httpClient->getResult());
 
         $this->checkResult($requestSecurity, $httpClient->getStatus());
-
     }
 
-    protected function statusExtend()
+    protected function statusExtend() : array
     {
         $httpClient = new HttpClient();
         $data = [
-            "userName" => $this->getParameter("PAYMENT_GATEWAY_USERNAME"),
-            "password" => $this->getParameter("PAYMENT_GATEWAY_PASSWORD"),
-            "orderNumber" => $this->getExternalId(),
+            'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
+            'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
+            'orderNumber' => $this->getExternalId(),
         ];
         $url = $this->getUrl('statusExtend');
-        $httpClient->setHeaders($this->getHeader());
+        $this->setHeaders($httpClient);
         $httpClient->post($url, $data);
         $resultStatus = Main\Web\Json::decode($httpClient->getResult());
         $this->checkResult($resultStatus, $httpClient->getStatus());
@@ -218,17 +227,19 @@ class alfabank extends Base
         return $resultStatus;
     }
 
-    protected function getHeader($params = ''): array
+    protected function getHeaders(string $key = '') : array
     {
-        if ($params == "json") {
-            return ['Content-type' => 'application/json'];
-        }
-        return ['Content-type' => 'application/x-www-form-urlencoded'];
+	    if ($key === 'json')
+	    {
+		    return ['Content-type' => 'application/json'];
+	    }
+
+	    return ['Content-type' => 'application/x-www-form-urlencoded'];
     }
 
-    protected function getCurrencyFormatted(string $code): int
+	protected function getCurrencyFormatted(string $code) : int
     {
-        $currency = CurrencyClassifier::getCurrency($code, []);
+        $currency = Currency\CurrencyClassifier::getCurrency($code, []);
         return self::$currencyMap[$code] ?? $currency['NUM_CODE'];
     }
 
