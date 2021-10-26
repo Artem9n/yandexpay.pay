@@ -14,6 +14,7 @@ class CalculationResult extends Pay\Result\Base
 	protected $dateFrom;
 	protected $dateTo;
 	protected $dateIntervals;
+	protected $category;
 	protected $outlets; /** Пункты выдачи сервиса */
 	protected $stores; /** Склады Битрикс */
 
@@ -54,6 +55,16 @@ class CalculationResult extends Pay\Result\Base
 	public function setDateFrom(Main\Type\Date $date = null)
 	{
 		$this->dateFrom = $date;
+	}
+
+	public function setCategory($category) : void
+	{
+		$this->category = $category;
+	}
+
+	public function getCategory() : string
+	{
+		return $this->category;
 	}
 
 	/** @return Main\Type\Date|null */

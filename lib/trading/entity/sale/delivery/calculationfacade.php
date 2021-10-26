@@ -7,14 +7,19 @@ use YandexPay\Pay;
 use Bitrix\Main;
 use Bitrix\Sale;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
+use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
 class CalculationFacade
 {
 	public static function mergeCalculationResult(EntityReference\Delivery\CalculationResult $result, Sale\Delivery\CalculationResult $saleResult)
 	{
-		$result->setDateFrom(static::getDateFrom($saleResult));
-		$result->setDateTo(static::getDateTo($saleResult));
+		$dateFrom = static::getDateFrom($saleResult);
+		$dateTo = static::getDateTo($saleResult);
+
+		$result->setDateFrom($dateFrom);
+		$result->setDateTo($dateTo);
 		$result->setDateIntervals(static::getDateIntervals($saleResult));
+		$result->setCategory(static::getCategory($dateFrom));
 		$result->setData($saleResult->getData());
 
 		$errors = static::convertErrors($saleResult);
@@ -61,6 +66,28 @@ class CalculationFacade
 		}
 
 		return $result;
+	}
+
+	protected static function getCategory(Main\Type\DateTime $dateFrom = null) : ?string
+	{
+		if ($dateFrom === null) { return EntitySale\Delivery::CATEGORY_TODAY; }
+
+		$category = EntitySale\Delivery::CATEGORY_STANDART;
+
+		$nowDate = new Main\Type\DateTime();
+
+		$interval = $nowDate->getDiff($dateFrom)->format('%a');
+
+		if ($interval >= 0 && $interval <= 1)
+		{
+			$category = EntitySale\Delivery::CATEGORY_TODAY;
+		}
+		elseif ($interval >= 2 && $interval <= 7)
+		{
+			$category = EntitySale\Delivery::CATEGORY_EXPRESS;
+		}
+
+		return $category;
 	}
 
 	protected static function getDateFrom(Sale\Delivery\CalculationResult $saleResult)
