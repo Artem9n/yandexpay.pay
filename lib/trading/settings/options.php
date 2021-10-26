@@ -59,7 +59,8 @@ class Options extends Reference\Skeleton
 			+ $this->getPurchaseUrl($environment, $siteId)
 			+ $this->getDeliveryFields($environment, $siteId)
 			+ $this->getPickupFields($environment, $siteId)
-			+ $this->getBuyerProperties($environment, $siteId);
+			+ $this->getBuyerProperties($environment, $siteId)
+			+ $this->getAddressCommonFields($environment, $siteId);
 	}
 
 	protected function getHandlerFields(Entity\Reference\Environment $environment, string $siteId) : array
@@ -215,5 +216,38 @@ class Options extends Reference\Skeleton
 		return [
 			'DELIVERY_OPTIONS' => Options\DeliveryCollection::class,
 		];
+	}
+
+	protected function getAddressCommonFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		$propertyEnum = $environment->getProperty()->getEnum($this->getPersonTypeId());
+
+		$propertyFields = [];
+		$keys = [
+			'ZIP',
+			'CITY',
+			'ADDRESS',
+		];
+
+		foreach ($keys as $key)
+		{
+			$propertyFields['PROPERTY_' . $key] = [
+				'NAME' => static::getMessage('ADDRESS_' . $key, null, $key),
+				'TYPE' => 'orderProperty',
+				'GROUP' => static::getMessage('ADDRESS_GROUP'),
+				'VALUES' => $propertyEnum,
+				'SETTINGS' => [
+					'TYPE' => $key,
+					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
+				],
+			];
+		}
+
+		return  $propertyFields;
+	}
+
+	public function getProperty(string $fieldName)
+	{
+		return $this->getValue('PROPERTY_' . $fieldName);
 	}
 }

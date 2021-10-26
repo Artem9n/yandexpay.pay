@@ -103,4 +103,52 @@ class Property extends Pay\Trading\Entity\Reference\Property
 
 		return $result;
 	}
+
+	public function joinPropertyMultipleValue(Sale\PropertyValue $property, $value)
+	{
+		$propertyRow = $property->getProperty();
+		$propertyType = $propertyRow['TYPE'] ?? 'STRING';
+		$supportsGlue = [
+			'STRING' => true,
+			'ADDRESS' => ', ',
+		];
+
+		if (!isset($supportsGlue[$propertyType]))
+		{
+			$result = reset($value);
+		}
+		else
+		{
+			if (is_string($supportsGlue[$propertyType]))
+			{
+				$glue = $supportsGlue[$propertyType];
+			}
+			else
+			{
+				$propertyType = $this->getPropertyType($propertyRow);
+
+				$glue = $this->resolvePropertyTypeValueGlue($propertyType) ?:  ', ';
+			}
+
+			$result = implode($glue, $value);
+		}
+
+		return $result;
+	}
+
+	protected function resolvePropertyTypeValueGlue($propertyType): ?string
+	{
+		switch ($propertyType)
+		{
+			case 'NAME':
+				$result = ' ';
+				break;
+
+			default:
+				$result = null;
+				break;
+		}
+
+		return $result;
+	}
 }
