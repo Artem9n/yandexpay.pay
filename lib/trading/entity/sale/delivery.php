@@ -23,6 +23,10 @@ class Delivery extends EntityReference\Delivery
 
 	public const EMPTY_DELIVERY = 'emptyDelivery';
 
+	public const CATEGORY_STANDART = 'standart';
+	public const CATEGORY_EXPRESS = 'express';
+	public const CATEGORY_TODAY = 'today';
+
 	protected static function includeMessages()
 	{
 		Main\Localization\Loc::loadMessages(__FILE__);
