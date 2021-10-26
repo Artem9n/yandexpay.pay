@@ -9,6 +9,7 @@ use YandexPay\Pay\Exceptions;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Action as TradingAction;
 use YandexPay\Pay\Trading\Settings as TradingSettings;
+use YandexPay\Pay\Trading\Setup as TradingSetup;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 use YandexPay\Pay\Utils\JsonBodyFilter;
@@ -23,6 +24,8 @@ class Purchase extends \CBitrixComponent
 	protected $environment;
 	/** @var TradingSettings\Options */
 	protected $options;
+	/** @var TradingSetup\Model */
+	protected $setup;
 	/** @var int */
 	protected $userId;
 
@@ -39,6 +42,14 @@ class Purchase extends \CBitrixComponent
 		}
 		catch (Main\SystemException $exception)
 		{
+			echo Main\Web\Json::encode([
+				'code' => (string)$exception->getCode(),
+				'message' => $exception->getMessage()
+			]);
+
+			/*pr($exception->getMessage(), 1);
+			die;*/
+
 			// todo show error
 		}
 	}
@@ -74,9 +85,6 @@ class Purchase extends \CBitrixComponent
 		$this->fillBasket($order);
 		$this->fillLocation($order);
 
-
-		$this->fillAddress($order);
-
 		$calculatedDeliveries = $this->calculateDeliveries($order, 'DELIVERY');
 
 		echo Main\Web\Json::encode($calculatedDeliveries);
@@ -111,8 +119,8 @@ class Purchase extends \CBitrixComponent
 					'info'      => [
 						'schedule'      => $store['SCHEDULE'],
 						'contacts'      => $store['PHONE'],
-						'description'   => $store['DESCRIPTION']
-					]
+						'description'   => $store['DESCRIPTION'],
+					],
 				];
 			}
 		}
@@ -127,11 +135,61 @@ class Purchase extends \CBitrixComponent
 
 	}
 
-	protected function fillBasket(EntityReference\Order $order)
+	protected function fillBasket(EntityReference\Order $order, bool $isStrict = false) : void
 	{
-		$addProductResult = $order->addProduct($this->request->get('productId'));
+		/** @var TradingAction\Request\Mode $modeRequest */
+		$modeRequest = $this->getRequestMode();
+
+		if ($modeRequest->isProduct())
+		{
+			$addProductResult = $order->addProduct($this->request->get('productId'));
+		}
+		elseif ($modeRequest->isCart())
+		{
+			$addProductResult = $order->loadUserBasket();
+
+			if ($isStrict)
+			{
+				$this->excludeProducts($order);
+			}
+		}
+		else
+		{
+			throw new Main\ArgumentException('not found mode');
+		}
 
 		Exceptions\Facade::handleResult($addProductResult);
+	}
+
+	protected function excludeProducts(EntityReference\Order $order) : void
+	{
+		/** @var TradingAction\Request\Order $orderRequest */
+		$orderRequest = $this->getRequestOrder();
+		$basket = $order->getBasket();
+
+		/** @var TradingAction\Request\Order\Items $itemsRequest */
+		$itemsRequest = $orderRequest->getItems();
+		$products = $itemsRequest->getProducts();
+
+		/** @var \Bitrix\Sale\BasketItemBase $basketItem */
+		foreach ($basket as $basketItem)
+		{
+			$productId = $basketItem->getProductId();
+
+			if (!isset($products[$productId]))
+			{
+				$basketItem->delete();
+			}
+			else
+			{
+				if ($products[$productId] > 0
+					&& $products[$productId]!== $basketItem->getQuantity()
+				)
+				{
+					$basketItem->setFieldNoDemand('QUANTITY', $products[$productId]);
+				}
+			}
+		}
 	}
 
 	protected function couponAction() : void
@@ -150,16 +208,22 @@ class Purchase extends \CBitrixComponent
 		Exceptions\Facade::handleResult($couponResult);
 	}
 
-	protected function orderAcceptAction()
+	protected function orderAcceptAction() : void
 	{
 		$userId = $this->createUser();
 		$order = $this->getOrder($userId);
 
 		$this->fillStatus($order);
+		$this->fillPersonType($order);
+		$this->fillProperties($order);
 		$this->fillLocation($order);
+		$this->fillBasket($order, true);
+		$this->fillDelivery($order);
+		$this->fillPaySystem($order);
 
-		pr($userId, 1);
-		die;
+		$this->addOrder($order);
+
+
 		//
 
 
@@ -171,6 +235,63 @@ class Purchase extends \CBitrixComponent
 
 
 
+	}
+
+	protected function addOrder(EntityReference\Order $order)
+	{
+		$externalId = $order->getId();
+		$saveResult = $order->add($externalId);
+
+		Exceptions\Facade::handleResult($saveResult);
+
+		$saveData = $saveResult->getData();
+
+		if (!isset($saveData['ID']))
+		{
+			$errorMessage = 'TRADING_ACTION_ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET';//static::getLang('TRADING_ACTION_ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET');
+			throw new Main\SystemException($errorMessage);
+		}
+	}
+
+	protected function fillPaySystem(EntityReference\Order $order) : void
+	{
+		//$paySystemId = $this->resolvePaySystem();
+
+		$paySystemId = $this->request->get('paySystemId');
+
+		if ($paySystemId !== null)
+		{
+			$order->createPayment($paySystemId);
+		}
+	}
+
+	protected function fillDelivery(EntityReference\Order $order) : void
+	{
+		[$deliveryId, $price] = $this->resolveDelivery();
+
+		if ((string)$deliveryId !== '')
+		{
+			$order->createShipment($deliveryId, $price);
+		}
+	}
+
+	protected function resolveDelivery() : array
+	{
+		/** @var TradingAction\Request\Delivery $deliveryRequest */
+		$deliveryRequest = $this->getRequestDelivery();
+		$price = null;
+
+		if ($deliveryRequest->getId() !== null)
+		{
+			$deliveryId = $deliveryRequest->getId();
+			$price = $deliveryRequest->getAmount();
+		}
+		else
+		{
+			$deliveryId = $this->environment->getDelivery()->getEmptyDeliveryId();
+		}
+
+		return [$deliveryId, $price];
 	}
 
 	protected function fillStatus(EntityReference\Order $order) : void
@@ -203,7 +324,7 @@ class Purchase extends \CBitrixComponent
 			'FIRST_NAME' => $userData->getFirstName(),
 			'LAST_NAME' => $userData->getLastName(),
 			'SECOND_NAME' => $userData->getSecondName(),
-			'SITE_ID' => $this->request->get('siteId')
+			'SITE_ID' => $this->request->get('siteId'),
 		]);
 
 		if ($allowAppendOrder)
@@ -253,19 +374,109 @@ class Purchase extends \CBitrixComponent
 		Exceptions\Facade::handleResult($orderResult);
 	}
 
+	protected function fillProperties(EntityReference\Order $order) : void
+	{
+		$this->fillBuyerProperties($order);
+		$this->fillAddress($order);
+		$this->fillComment($order);
+	}
+
+	protected function fillComment(EntityReference\Order $order): void
+	{
+		/** @var TradingAction\Request\Address $address */
+		$address = $this->getRequestAddress();
+		$comment = (string)$address->getComment();
+
+		if ($comment !== '')
+		{
+			$order->setComment($address->getComment());
+		}
+	}
+
+	protected function fillBuyerProperties(EntityReference\Order $order) : void
+	{
+		/** @var TradingAction\Request\User $buyer */
+		$buyer = $this->getRequestContact();
+		$values = $buyer->getMeaningfulValues();
+		$this->setMeaningfulPropertyValues($order, $values);
+	}
+
 	protected function fillAddress(EntityReference\Order $order) : void
 	{
-		/** @var \YandexPay\Pay\Trading\Action\Request\Address $address */
+		/** @var TradingAction\Request\Address $address */
 		$address = $this->getRequestAddress();
-		$addressString = $address->getMeaningfulAddress();
+		$propertyValues = $this->getAddressProperties($address);
+		$this->setMeaningfulPropertyValues($order, $propertyValues);
+	}
 
-		pr($addressString);
-		die;
+	protected function fillPersonType(EntityReference\Order $order) : void
+	{
+		$personTypeResult = $order->setPersonType($this->setup->getPersonTypeId());
 
-		$order->setAddress($addressString);
-		$order->setProperties([
-			'ID' => $address->getRegion(),
-		]);
+		Exceptions\Facade::handleResult($personTypeResult);
+	}
+
+	protected function setMeaningfulPropertyValues(EntityReference\Order $order, $values) : void
+	{
+		$propertyValues = $this->combineMeaningfulPropertyValues($values);
+
+		if (!empty($propertyValues))
+		{
+			$fillResult = $order->fillProperties($propertyValues);
+			Exceptions\Facade::handleResult($fillResult);
+		}
+	}
+
+	protected function combineMeaningfulPropertyValues($values) : array
+	{
+		$options = $this->options;
+		$propertyValues = [];
+
+		foreach ($values as $name => $value)
+		{
+			$propertyId = (string)$options->getProperty($name);
+
+			if ($propertyId === '') { continue; }
+
+			if (!isset($propertyValues[$propertyId]))
+			{
+				$propertyValues[$propertyId] = $value;
+			}
+			else
+			{
+				if (!is_array($propertyValues[$propertyId]))
+				{
+					$propertyValues[$propertyId] = [
+						$propertyValues[$propertyId],
+					];
+				}
+
+				if (is_array($value))
+				{
+					$propertyValues[$propertyId] = array_merge($propertyValues[$propertyId], $value);
+				}
+				else
+				{
+					$propertyValues[$propertyId][] = $value;
+				}
+			}
+		}
+
+		return $propertyValues;
+	}
+
+	public function getAddressProperties(TradingAction\Request\Address $address) : array
+	{
+		/** @var TradingAction\Request\Address\Coordinates $coordinates */
+		$coordinates = $address->getCoordinates();
+
+		return [
+			'ZIP' => $address->getMeaningfulZip(),
+			'CITY' => $address->getMeaningfulCity(),
+			'ADDRESS' => $address->getMeaningfulAddress(),
+			'LAT' => $coordinates->getLat(),
+			'LON' => $coordinates->getLon(),
+		];
 	}
 
 	protected function getRequestCoupon() : \YandexPay\Pay\Reference\Common\Model
@@ -293,6 +504,36 @@ class Purchase extends \CBitrixComponent
 		Assert::isArray($address, 'address');
 
 		return TradingAction\Request\Address::initialize($address);
+	}
+
+	protected function getRequestMode() : \YandexPay\Pay\Reference\Common\Model
+	{
+		$mode = $this->request->get('mode');
+
+		Assert::notNull($mode, 'mode');
+		Assert::isString($mode, 'mode');
+
+		return TradingAction\Request\Mode::initialize(['mode' => $mode]);
+	}
+
+	protected function getRequestOrder() : \YandexPay\Pay\Reference\Common\Model
+	{
+		$order = $this->request->get('order');
+
+		Assert::notNull($order, 'order');
+		Assert::isArray($order, 'order');
+
+		return TradingAction\Request\Order::initialize($order);
+	}
+
+	protected function getRequestDelivery() : \YandexPay\Pay\Reference\Common\Model
+	{
+		$delivery = $this->request->get('delivery');
+
+		Assert::notNull($delivery, 'delivery');
+		Assert::isArray($delivery, 'delivery');
+
+		return TradingAction\Request\Delivery::initialize($delivery);
 	}
 
 	/**
@@ -323,9 +564,9 @@ class Purchase extends \CBitrixComponent
 				'label'     => $calculationResult->getServiceName(),
 				'amount'    => (string)$calculationResult->getPrice(),
 				'provider'  => 'custom', //todo
-				'category'  => 'standart', //todo
-				'date'      => 1632517200, //todo
-				'stores'    => $calculationResult->getStores()
+				'category'  => $calculationResult->getCategory(), //todo
+				'date'      => $calculationResult->getDateFrom()->getTimestamp(), //todo
+				'stores'    => $calculationResult->getStores(),
 			];
 		}
 
@@ -351,18 +592,41 @@ class Purchase extends \CBitrixComponent
 	{
 		return [
 			'yandexpay.pay',
-			'sale'
+			'sale',
 		];
 	}
 
 	protected function bootstrap() : void
 	{
 		$this->environment = EntityRegistry::getEnvironment();
-		/*$this->options = */
+
+		$this->setup = $this->loadSetup();
+		$this->setup->wakeupOptions();
+		$this->setup->fillPersonTypeId();
+		$this->setup->fillSiteId();
+
+		$this->options = $this->setup->getOptions();
+	}
+
+	protected function loadSetup() : TradingSetup\Model
+	{
+		return TradingSetup\Model::wakeUp(['ID' => $this->request->get('setupId')]);
 	}
 
 	protected function getLang(string $code, $replace = null, $language = null): string
 	{
 		return Main\Localization\Loc::getMessage('YANDEX_PAY_TRADING_CART_' . $code, $replace, $language);
+	}
+
+	protected function getProductsAction() : void
+	{
+		$order = $this->getOrder();
+		$this->fillBasket($order);
+
+		$basketItems = $order->getBasketItemsData();
+
+		Exceptions\Facade::handleResult($basketItems);
+
+		echo Main\Web\Json::encode($basketItems->getData());
 	}
 }
