@@ -32,6 +32,7 @@ class TradingCart extends \CBitrixComponent
 		$arParams['PRODUCT_ID'] = !empty($arParams['PRODUCT_ID']) ? (int)$arParams['PRODUCT_ID'] : null;
 		$arParams['PAY_SYSTEM_ID'] = !empty($arParams['PAY_SYSTEM_ID']) ? (int)$arParams['PAY_SYSTEM_ID'] : null;
 		$arParams['SETUP_ID'] = !empty($arParams['SETUP_ID']) ? (int)$arParams['SETUP_ID'] : null;
+		$arParams['MODE'] = !empty($arParams['MODE']) ? (string)$arParams['MODE'] : 'PRODUCT';
 
 		return $arParams;
 	}
@@ -47,7 +48,6 @@ class TradingCart extends \CBitrixComponent
 			if ($handler === null) { return; }
 
 			$this->setParameters($handler);
-			pr($handler->getParamsBusValue());
 
 			$this->includeComponentTemplate();
 		}
@@ -68,8 +68,6 @@ class TradingCart extends \CBitrixComponent
 		$setup->fillSiteId();
 		$options = $setup->getOptions();
 
-		$product = $this->getProduct();
-
 		$gataway = $this->service->getField('PS_MODE');
 
 		$this->arResult['PARAMS'] = [
@@ -86,49 +84,18 @@ class TradingCart extends \CBitrixComponent
 			'usePhone'          => (bool)$options->getValue('USE_BUYER_PHONE'),
 			'purchaseUrl'       => $options->getValue('PURCHASE_URL'),
 			'siteUrl'           => Utils\Url::absolutizePath(),
-			'productId'         => $product['ID'],
+			'productId'         => $this->arParams['PRODUCT_ID'],
 			'siteId'            => $setup->getSiteId(),
 			'userId'            => $USER->GetID(),
+			'setupId'           => $setup->getId(),
 			'fUserId'           => Sale\Fuser::getId(true),
+			'paySystemId'       => $this->arParams['PAY_SYSTEM_ID'],
+			'mode'              => $this->arParams['MODE'],
 			'order'             => [
 				'id' => '0',
-				'total' => number_format($product['PRICE'], 2, '.', ''),
-				'items' => [
-					[
-						'label' => $product['NAME'],
-						'amount' => number_format($product['PRICE'], 2, '.', '')
-					]
-				]
+				'total' => '0'
 			]
 		];
-	}
-
-	protected function getProduct() : array
-	{
-		$result = [];
-
-		if ($this->arParams['PRODUCT_ID'] === null || $this->arParams['PRODUCT_ID'] <= 0 ) { return $result; }
-
-		$query = ElementTable::getList([
-			'filter' => [
-				'=ID' => $this->arParams['PRODUCT_ID']
-			],
-			'select' => ['ID', 'IBLOCK_ID', 'NAME'],
-			'limit' => 1
-		]);
-
-		if ($row = $query->fetch())
-		{
-			$price = \CCatalogProduct::GetOptimalPrice($row['ID']);
-
-			$result = [
-				'ID' => $row['ID'],
-				'NAME' => $row['NAME'],
-				'PRICE' => $price['DISCOUNT_PRICE']
-			];
-		}
-
-		return $result;
 	}
 
 	protected function getSetup() : Setup\Model
