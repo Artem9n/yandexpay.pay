@@ -82,15 +82,8 @@ export default class Payment extends AbstractStep {
 				// Подписаться на событие process.
 				payment.on(YaPay.PaymentEventType.Process, (event) => {
 					// Получить платежный токен.
-					//alert({'Process': event});
-
-					//alert(event);
-					this.notify(payment, event).then((resolve) => {
-						//payment.complete(YaPay.CompleteReason.Success);
+					this.notify(payment, event).then((result) => {
 					});
-
-
-
 					/*alert('Payment token — ' + event.token);
 
 					// Опционально (если выполнить шаг 7).
@@ -124,31 +117,27 @@ export default class Payment extends AbstractStep {
 	}
 
 	notify(payment, yandexPayData) {
-		return new Promise((resolve) => {
-			fetch(this.getOption('YANDEX_PAY_NOTIFY_URL'), {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					service: this.getOption('requestSign'),
-					accept: 'json',
-					yandexData: yandexPayData,
-					externalId: this.getOption('externalId'),
-					paySystemId: this.getOption('paySystemId')
-				})
+		return fetch(this.getOption('YANDEX_PAY_NOTIFY_URL'), {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				service: this.getOption('requestSign'),
+				accept: 'json',
+				yandexData: yandexPayData,
+				externalId: this.getOption('externalId'),
+				paySystemId: this.getOption('paySystemId')
 			})
-				.then(response => response.json())
-				.then(result => {
-					//payment.complete(YaPay.CompleteReason.Success);
-					resolve();
-					if (result.success === true) {
-						this.widget.go(result.state, result);
-					} else {
-						this.widget.go('error', result);
-					}
-				})
-				.catch(error => alert(error) );
-		});
+		})
+			.then(response => response.json())
+			.then(result => {
+				if (result.success === true) {
+					this.widget.go(result.state, result);
+				} else {
+					this.widget.go('error', result);
+				}
+			})
+			.catch(error => console.log(error) );
 	}
 }
