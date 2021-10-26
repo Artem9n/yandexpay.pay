@@ -54,4 +54,14 @@ class User extends Model
 
 		return $this->getField('secondName');
 	}
+
+	public function getMeaningfulValues() : array
+	{
+		return array_filter([
+			'LAST_NAME' => $this->getLastName(),
+			'FIRST_NAME' => $this->getFirstName(),
+			'MIDDLE_NAME' => $this->getSecondName(),
+			'PHONE' => $this->getPhone(),
+		]);
+	}
 }

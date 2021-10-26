@@ -31,6 +31,20 @@ class Address extends Model
 		return $this->combineValues($values);
 	}
 
+	public function getMeaningfulZip() : string
+	{
+		$values = $this->getZipValues();
+
+		return $this->combineValues($values);
+	}
+
+	public function getZipValues() : array
+	{
+		return [
+			'POSTCODE' => $this->getField('zip'),
+		];
+	}
+
 	public function getCityValues() : array
 	{
 		return [
@@ -62,7 +76,7 @@ class Address extends Model
 	{
 		$commonFields = [
 			'STREET' => true,
-			'HOUSE' => true,
+			'BUILDING' => true,
 			'ROOM' => true
 		];
 		$commonValues = [];
@@ -209,7 +223,18 @@ class Address extends Model
 		return $result;
 	}
 
-	public function getCoodinates() : ?Model
+	public function getComment() : ?string
+	{
+		$result = $this->getField('comment');
+
+		if ($result === null) { return null; }
+
+		Assert::isString($result, 'comment');
+
+		return $result;
+	}
+
+	public function getCoordinates() : ?Model
 	{
 		$result = $this->getField('location');
 
