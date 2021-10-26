@@ -33,7 +33,7 @@ class Order extends EntityReference\Order
 
 			if ($basket->count() === 0)
 			{
-				throw new Main\SystemException('todo message'); // todo
+				throw new Main\SystemException('empty basket'); // todo
 			}
 
 			$result = $this->internalOrder->setBasket($basket);
@@ -155,7 +155,7 @@ class Order extends EntityReference\Order
 		}
 	}
 
-	protected function getBasket() : Sale\BasketBase
+	public function getBasket() : Sale\BasketBase
 	{
 		$order = $this->internalOrder;
 		$basket = $order->getBasket();
@@ -426,7 +426,7 @@ class Order extends EntityReference\Order
 			'QUANTITY' => $count,
 			'CURRENCY' => $this->internalOrder->getCurrency(),
 			'MODULE' => 'catalog',
-			'PRODUCT_PROVIDER_CLASS' => Catalog\Product\Basket::getDefaultProviderName()
+			'PRODUCT_PROVIDER_CLASS' => Catalog\Product\Basket::getDefaultProviderName(),
 		];
 
 		if ($data !== null)
@@ -480,6 +480,269 @@ class Order extends EntityReference\Order
 		{
 			$result->addError($saleResult->getErrors());
 		}
+
+		return $result;
+	}
+
+	public function fillProperties(array $values) : Main\Result
+	{
+		$propertyCollection = $this->internalOrder->getPropertyCollection();
+		$result = new Main\Result();
+		$changes = [];
+		$filled = [];
+
+		/** @var Sale\PropertyValue $property*/
+		foreach ($propertyCollection as $property)
+		{
+			$propertyId = $property->getPropertyId();
+
+			if ($propertyId === null || !array_key_exists($propertyId, $values)) { continue; }
+
+			$value = $values[$propertyId];
+			$sanitizedValue = $this->sanitizePropertyValue($property, $value);
+
+			$property->setValue($sanitizedValue);
+
+			if ($property->isChanged())
+			{
+				$changes[] = $propertyId;
+			}
+
+			$filled[] = $propertyId;
+		}
+
+		$result->setData([
+			'CHANGES' => $changes,
+			'FILLED' => $filled,
+		]);
+
+		return $result;
+	}
+
+	protected function sanitizePropertyValue(Sale\PropertyValue $property, $value)
+	{
+		//$value = $this->sanitizePropertyValueByType($property, $value);
+		$value = $this->sanitizePropertyValueMultiple($property, $value);
+		//$value = $this->sanitizePropertyValueOptions($property, $value);
+
+		return $value;
+	}
+
+	protected function sanitizePropertyValueMultiple(Sale\PropertyValue $property, $value)
+	{
+		$propertyRow = $property->getProperty();
+		$isPropertyMultiple = (isset($propertyRow['MULTIPLE']) && $propertyRow['MULTIPLE'] === 'Y');
+		$isValueMultiple = is_array($value);
+
+		if ($isPropertyMultiple === $isValueMultiple)
+		{
+			$result = $value;
+		}
+		else if ($isValueMultiple)
+		{
+			$result = $this->environment->getProperty()->joinPropertyMultipleValue($property, $value);
+		}
+		else if (!empty($value))
+		{
+			$result = [ $value ];
+		}
+		else
+		{
+			$result = null;
+		}
+
+		return $result;
+	}
+
+	public function setPersonType(int $personType) : Main\Result
+	{
+		return $this->internalOrder->setPersonTypeId($personType);
+	}
+
+	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
+	{
+		$shipmentCollection = $this->internalOrder->getShipmentCollection();
+
+		$this->clearOrderShipment($shipmentCollection);
+		$shipment = $this->buildOrderShipment($shipmentCollection, $deliveryId, $data);
+
+		$this->fillShipmentPrice($shipment, $price);
+		$this->fillShipmentBasket($shipment);
+
+		return new Main\Result();
+	}
+
+	protected function clearOrderShipment(Sale\ShipmentCollection $shipmentCollection) : void
+	{
+		/** @var Sale\Shipment $shipment */
+		foreach ($shipmentCollection as $shipment)
+		{
+			if (!$shipment->isSystem())
+			{
+				$shipment->delete();
+			}
+		}
+	}
+
+	protected function buildOrderShipment(Sale\ShipmentCollection $shipmentCollection, $deliveryId, array $data = null)
+	{
+		$shipment = $shipmentCollection->createItem();
+
+		if ((int)$deliveryId > 0)
+		{
+			$delivery = Sale\Delivery\Services\Manager::getObjectById($deliveryId);
+
+			if ($delivery !== null)
+			{
+				$deliveryName = $delivery->getNameWithParent();
+			}
+			else
+			{
+				$deliveryName = 'Not found (' . $deliveryId . ')';
+			}
+
+			$shipment->setField('DELIVERY_ID', $deliveryId);
+			$shipment->setField('DELIVERY_NAME', $deliveryName);
+		}
+
+		if (!empty($data))
+		{
+			$settableFields = array_flip($shipment::getAvailableFields());
+			$settableData = array_intersect_key($data, $settableFields);
+
+			$shipment->setFields($settableData);
+		}
+
+		return $shipment;
+	}
+
+	protected function fillShipmentPrice(Sale\Shipment $shipment, $price = null) : Sale\Result
+	{
+		if ($price !== null)
+		{
+			$result = $shipment->setFields([
+				'CUSTOM_PRICE_DELIVERY' => 'Y',
+				'BASE_PRICE_DELIVERY' => $price,
+				'PRICE_DELIVERY' => $price,
+			]);
+		}
+		else
+		{
+			$result = new Sale\Result();
+		}
+
+		return $result;
+	}
+
+	public function createPayment($paySystemId, $price = null, array $data = null) : Main\Result
+	{
+		$paymentCollection = $this->internalOrder->getPaymentCollection();
+
+		$payment = $this->buildOrderPayment($paymentCollection, $paySystemId, $data);
+		$this->fillPaymentPrice($payment, $price);
+
+		return new Main\Result();
+	}
+
+	protected function buildOrderPayment(Sale\PaymentCollection $paymentCollection, $paySystemId, array $data = null) : Sale\Payment
+	{
+		$payment = $paymentCollection->createItem();
+
+		if ((int)$paySystemId > 0)
+		{
+			$paySystem = Sale\PaySystem\Manager::getById($paySystemId);
+
+			if ($paySystem !== false)
+			{
+				$paySystemName = $paySystem['NAME'];
+			}
+			else
+			{
+				$paySystemName = 'Not found (' . $paySystemId . ')';
+			}
+
+			$payment->setField('PAY_SYSTEM_ID', $paySystemId);
+			$payment->setField('PAY_SYSTEM_NAME', $paySystemName);
+		}
+
+		if (!empty($data))
+		{
+			$settableFields = array_flip($payment::getAvailableFields());
+			$settableData = array_intersect_key($data, $settableFields);
+
+			$payment->setFields($settableData);
+		}
+
+		return $payment;
+	}
+
+	protected function fillPaymentPrice(Sale\Payment $payment, $price = null) : void
+	{
+		if ($price === null)
+		{
+			$orderPrice = $this->internalOrder->getPrice();
+			$paymentsSum = $this->internalOrder->getPaymentCollection()->getSum();
+			$selfSum = $payment->getSum();
+
+			$price = $orderPrice - ($paymentsSum - $selfSum);
+		}
+
+		$payment->setField('SUM', $price);
+	}
+
+	public function add($externalId) : Main\Result
+	{
+		$result = new Main\Result();
+
+		/*$this->syncOrderPrice();
+		$this->syncOrderPaymentSum();*/
+
+		$orderResult = $this->internalOrder->save();
+
+		if (!$orderResult->isSuccess())
+		{
+			$result->addErrors($orderResult->getErrors());
+		}
+
+		return $result;
+	}
+
+	public function getId()
+	{
+		return $this->internalOrder->getId();
+	}
+
+	public function setComment(string $value) : void
+	{
+		$this->internalOrder->setField('USER_DESCRIPTION', $value);
+	}
+
+	public function getBasketItemsData() : Main\Result
+	{
+		$result = new Main\Result();
+		$basket = $this->getBasket();
+
+		if ($basket->isEmpty())
+		{
+			$result->addError(new Main\Error('empty basket'));
+		}
+
+		$items = [];
+
+		/** @var \Bitrix\Sale\BasketItemBase $basketItem */
+		foreach ($basket as $basketItem)
+		{
+			$items['items'][] = [
+				'id' => $basketItem->getProductId(),
+				'count' => (string)$basketItem->getQuantity(),
+				'label' => $basketItem->getField('NAME'),
+				'amount' => (string)$basketItem->getFinalPrice() //number_format($basketItem->getFinalPrice(), 2, '.', '')
+			];
+		}
+
+		$items['amount'] = (string)$basket->getPrice();//number_format($basket->getPrice(), 2, '.', '');
+
+		$result->setData($items);
 
 		return $result;
 	}

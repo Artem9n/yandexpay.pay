@@ -72,4 +72,82 @@ abstract class Order
 	{
 		throw new Main\NotImplementedException('setStatus is missing');
 	}
+
+	/**
+	 * @param int $personType
+	 *
+	 * @return Main\Result
+	 */
+	public function setPersonType(int $personType) : Main\Result
+	{
+		throw new Main\NotImplementedException('setPersonType is missing');
+	}
+
+	/**
+	 * @param array $values
+	 *
+	 * @return Main\Result
+	 */
+	public function fillProperties(array $values) : Main\Result
+	{
+		throw new Main\NotImplementedException('fillProperties is missing');
+	}
+
+	/**
+	 * @param int        $deliveryId
+	 * @param float|null $price
+	 * @param array|null $data
+	 *
+	 * @return Main\Result
+	 */
+	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
+	{
+		throw new Main\NotImplementedException('createShipment is missing');
+	}
+
+	/**
+	 * @param int        $paySystemId
+	 * @param float|null $price
+	 * @param array|null $data
+	 *
+	 * @return Main\Result
+	 */
+	public function createPayment(int $paySystemId, float $price = null, array $data = null) : Main\Result
+	{
+		throw new Main\NotImplementedException('createPayment is missing');
+	}
+
+	/**
+	 * @param string $externalId
+	 *
+	 * @return Main\Result
+	 */
+	public function add(string $externalId) : Main\Result
+	{
+		throw new Main\NotImplementedException('add is missing');
+	}
+
+	/**
+	 * @return string|int
+	 */
+	public function getId()
+	{
+		throw new Main\NotImplementedException('add is missing');
+	}
+
+	/**
+	 * @return Main\Result
+	 */
+	public function getBasketItemsData() : Main\Result
+	{
+		throw new Main\NotImplementedException('getBasketItemsData is missing');
+	}
+
+	/**
+	 * @return Main\Result
+	 */
+	public function getBasket() : Sale\BasketBase
+	{
+		throw new Main\NotImplementedException('getBasket is missing');
+	}
 }
