@@ -6,6 +6,9 @@ use Bitrix\Main;
 
 class BooleanType
 {
+	public const VALUE_TRUE = 1;
+	public const VALUE_FALSE = 0;
+
 	use Concerns\HasCompatibleExtends;
 
 	public static function getCommonExtends() : string
@@ -46,5 +49,22 @@ class BooleanType
 	public static function getEditFormHTML($userField, $htmlControl) : string
 	{
 		return static::callParent('getEditFormHTML', [$userField, $htmlControl]);
+	}
+
+	public static function getTableFieldDescription(bool $default = null) : array
+	{
+		$result = [
+			'values' => [
+				static::VALUE_FALSE,
+				static::VALUE_TRUE,
+			],
+		];
+
+		if ($default !== null)
+		{
+			$result['default_value'] = $default ? static::VALUE_TRUE : static::VALUE_FALSE;
+		}
+
+		return $result;
 	}
 }
