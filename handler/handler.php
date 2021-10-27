@@ -8,6 +8,7 @@ use Bitrix\Main\Request;
 use Bitrix\Sale\Payment;
 use Bitrix\Sale\PaySystem;
 use Bitrix\Sale\PaySystem\ServiceResult;
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway;
 
@@ -29,7 +30,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	protected function getPrefix(): string
 	{
-		return 'YANDEX_PAY_';
+		return Config::getLangPrefix();
 	}
 
 	/**
@@ -90,7 +91,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
         return $result;
 	}
 
-	protected function getCardNetworks(Payment $payment) : array
+	public function getCardNetworks(Payment $payment = null) : array
 	{
 		$result = [];
 
@@ -283,8 +284,6 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function getPaymentIdFromRequest(Request $request)
 	{
-		$result = null;
-
 		$this->readFromStream($request);
 
 		$externalId = $request->get('externalId');
@@ -299,9 +298,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		$gateway->setParameters($this->getParamsBusValue());
 
-		$result = $gateway->getPaymentIdFromRequest();
-
-		return $result;
+		return $gateway->getPaymentIdFromRequest();
 	}
 
 	public function sendResponse(ServiceResult $result, Request $request): void
