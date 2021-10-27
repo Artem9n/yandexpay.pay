@@ -2,7 +2,6 @@
 
 namespace YandexPay\Pay\Trading\Entity\Reference;
 
-use Bitrix\Main;
 use Bitrix\Main\NotImplementedException;
 
 class Delivery

@@ -270,7 +270,7 @@ class Order extends EntityReference\Order
 
 		if ($result->isSuccess())
 		{
-			$providerData = (array)$providerResult->getData();
+			$providerData = $providerResult->getData();
 
 			if (
 				isset($providerData['AVAILABLE_QUANTITY'], $basketFields['AVAILABLE_QUANTITY'])
@@ -333,7 +333,7 @@ class Order extends EntityReference\Order
 
 	protected function fillBasketItemAvailableQuantity(Sale\BasketItemBase $basketItem, $fields)
 	{
-		$currentQuantity = (float)$basketItem->getQuantity();
+		$currentQuantity = $basketItem->getQuantity();
 		$requestedQuantity = (float)$fields['QUANTITY'];
 
 		if ($currentQuantity < $requestedQuantity && isset($fields['AVAILABLE_QUANTITY']))
@@ -751,25 +751,6 @@ class Order extends EntityReference\Order
 		$items['amount'] = (string)$basket->getPrice();//number_format($basket->getPrice(), 2, '.', '');
 
 		$result->setData($items);
-
-		return $result;
-	}
-
-	public function getPaymentId() : ?int
-	{
-		$result = null;
-
-		/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
-		$paymentCollection = $this->internalOrder->getPaymentCollection()->getPayment;
-		pr($paymentCollection);
-		die;
-		/** @var \Bitrix\Sale\Payment $payment */
-		foreach ($paymentCollection as $payment)
-		{
-			if ($payment->isInner()) { continue; }
-
-			$result = $payment->getId();
-		}
 
 		return $result;
 	}

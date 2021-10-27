@@ -15,7 +15,7 @@ trait HasCollection
 	}
 
 	/**
-	 * Whether a offset exists
+	 * Whether offset exists
 	 */
 	public function offsetExists($offset)
 	{

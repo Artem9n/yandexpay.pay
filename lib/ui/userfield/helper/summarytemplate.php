@@ -10,9 +10,8 @@ class SummaryTemplate
 		[$replaces, $removes] = static::splitValidVariables($vars, $usedKeys);
 
 		$result = static::applyRemoveVariables($template, $removes);
-		$result = static::applyReplaceVariables($result, $replaces);
 
-		return $result;
+		return static::applyReplaceVariables($result, $replaces);
 	}
 
 	protected static function applyRemoveVariables(string $template, array $keys) : string

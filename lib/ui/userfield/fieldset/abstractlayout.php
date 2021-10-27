@@ -142,8 +142,7 @@ abstract class AbstractLayout
 				|| mb_strpos($existsAttributes['class'], AbstractLayout::NAME_BASE) === false
 			);
 		});
-		$control = UserField\Helper\Attributes::insertDataName($control, $dataName, $field['FIELD_NAME']);
 
-		return $control;
+		return UserField\Helper\Attributes::insertDataName($control, $dataName, $field['FIELD_NAME']);
 	}
 }

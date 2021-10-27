@@ -223,7 +223,7 @@ class Controller
 				|| is_subclass_of($handlerClassName, $baseClassName)
 			)
 			{
-				$handlerKey = static::getHandlerKey($handlerRow, false);
+				$handlerKey = static::getHandlerKey($handlerRow);
 				$registeredList[$handlerKey] = $handlerRow;
 			}
 		}

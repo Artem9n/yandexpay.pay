@@ -2,7 +2,6 @@
 
 namespace YandexPay\Pay\Data;
 
-use YandexPay\Pay;
 use Bitrix\Main;
 
 class Site

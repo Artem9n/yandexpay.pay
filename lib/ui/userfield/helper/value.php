@@ -52,18 +52,7 @@ class Value
 		{
 			$result = $userField['SETTINGS']['DEFAULT_VALUE'];
 		}
-		else if (isset($userField['VALUE']))
-		{
-			$result = $userField['VALUE'];
-		}
-		else if (isset($htmlControl['VALUE']))
-		{
-			$result = $htmlControl['VALUE'];
-		}
-		else
-		{
-			$result = null;
-		}
+		else $result = $userField['VALUE'] ?? $htmlControl['VALUE'] ?? null;
 
 		return $result;
 	}

@@ -13,6 +13,3 @@ $MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_ERROR_3'] ='3DS Авторизация отменена'
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_ERROR_4'] ='По транзакции была проведена операция возврата';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_ERROR_5'] ='Инициирована авторизация через ACS банка-эмитента';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_ERROR_6'] ='3DS Авторизация отклонена';
-
-
-?>

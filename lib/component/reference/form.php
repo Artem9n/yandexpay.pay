@@ -18,13 +18,11 @@ abstract class Form extends AbstractProvider
 
 	abstract public function update($primary, array $values) : Main\Entity\UpdateResult;
 
-	/** @noinspection PhpUnusedParameterInspection */
 	public function extend(array $data, array $select = []) : array
 	{
 		return $data;
 	}
 
-	/** @noinspection PhpUnusedParameterInspection */
 	public function processPostAction(string $action, array $data) : void
 	{
 		throw new Main\SystemException('ACTION_NOT_FOUND');

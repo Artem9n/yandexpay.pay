@@ -764,9 +764,8 @@ class AdminForm extends \CBitrixComponent
 	    $fields = $this->getProvider()->getFields($select, $this->arResult['ITEM']);
 
 	    $fields = $this->extendFields($fields);
-		$fields = $this->sortFields($fields);
 
-		return $fields;
+	    return $this->sortFields($fields);
     }
 
 	protected function extendFields(array $fields) : array

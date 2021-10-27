@@ -14,7 +14,7 @@ use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 use YandexPay\Pay\Utils\JsonBodyFilter;
 
-if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); };
+if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
 
 Loc::loadMessages(__FILE__);
 
@@ -180,14 +180,11 @@ class Purchase extends \CBitrixComponent
 			{
 				$basketItem->delete();
 			}
-			else
+			else if ($products[$productId] > 0
+				&& $products[$productId]!== $basketItem->getQuantity()
+			)
 			{
-				if ($products[$productId] > 0
-					&& $products[$productId]!== $basketItem->getQuantity()
-				)
-				{
-					$basketItem->setFieldNoDemand('QUANTITY', $products[$productId]);
-				}
+				$basketItem->setFieldNoDemand('QUANTITY', $products[$productId]);
 			}
 		}
 	}
@@ -252,24 +249,11 @@ class Purchase extends \CBitrixComponent
 			throw new Main\SystemException($errorMessage);
 		}
 
-		$this->setRedirectUrl($externalId);
-
 		$result = [
 			'externalId' => $this->getPaymentId($saveData['ID']),
 		];
 
 		echo Main\Web\Json::encode($result);
-	}
-
-	protected function setRedirectUrl(int $orderId) : void
-	{
-		global $APPLICATION;
-
-		$server = Main\Context::getCurrent()->getServer();
-		$request = Main\Context::getCurrent()->getRequest();
-		$host = $request->isHttps() ? 'https' : 'http';
-		$url = $host . '://' . $server->get('SERVER_NAME') . $APPLICATION->GetCurPage();
-		$_SESSION['yabackurl'] = $url;
 	}
 
 	protected function getPaymentId(int $orderId) : ?int
@@ -610,6 +594,8 @@ class Purchase extends \CBitrixComponent
 	 */
 	protected function calculateDeliveries(EntityReference\Order $order, string $targetType) : array
 	{
+		$result = [];
+
 		$deliveryService = $this->environment->getDelivery();
 		$compatibleIds = $this->getCalculationDeliveries($order);
 

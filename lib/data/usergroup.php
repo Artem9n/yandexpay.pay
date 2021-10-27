@@ -3,7 +3,6 @@
 namespace YandexPay\Pay\Data;
 
 use Bitrix\Main;
-use YandexPay\Pay;
 
 class UserGroup
 {

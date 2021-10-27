@@ -1,7 +1,12 @@
 <?php
 if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) { die(); }
 
-/** @var $component \YandexPay\Pay\Components\AdminGrid */
+/**
+ * @var $component \YandexPay\Pay\Components\AdminGrid
+ * @var array $arParams
+ * @var array $arResult
+ * @var string $templateFolder
+ */
 
 use Bitrix\Main\Localization\Loc;
 

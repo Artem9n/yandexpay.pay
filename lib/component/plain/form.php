@@ -24,9 +24,8 @@ abstract class Form extends Pay\Component\Reference\Form
 	protected function prepareTabs(array $tabs, array $fields) : array
 	{
 		$tabs = $this->extendTabs($tabs, $fields);
-		$tabs = $this->sortTabs($tabs);
 
-		return $tabs;
+		return $this->sortTabs($tabs);
 	}
 
 	protected function extendTabs(array $tabs, array $fields) : array

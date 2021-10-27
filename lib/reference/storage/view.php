@@ -4,7 +4,6 @@ namespace YandexPay\Pay\Reference\Storage;
 
 use Bitrix\Main\ORM;
 use YandexPay\Pay\Reference\Assert;
-use YandexPay\Pay\Ui;
 use YandexPay\Pay\Trading\Entity;
 
 abstract class View

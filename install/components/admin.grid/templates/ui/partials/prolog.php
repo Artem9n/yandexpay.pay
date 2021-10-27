@@ -5,7 +5,10 @@ use Bitrix\Main;
 
 /** @var \CBitrixComponentTemplate $this */
 /** @var \YandexPay\Pay\Components\AdminGrid $component */
-/** @var \CAdminUiList $adminList */
+/** @var \CAdminUiList $adminList
+ * @var array $arResult
+ * @var string $templateFolder
+ */
 
 $adminList->BeginPrologContent();
 

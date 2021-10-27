@@ -47,9 +47,8 @@ class Delivery extends EntityReference\Delivery
 	public function getEnum($siteId = null) : array
 	{
 		$deliveries = $this->loadActiveList();
-		$deliveries = $this->filterBySite($deliveries, $siteId);
 
-		return $deliveries;
+		return $this->filterBySite($deliveries, $siteId);
 	}
 
 	protected function loadActiveList() : array
@@ -83,7 +82,7 @@ class Delivery extends EntityReference\Delivery
 
 	protected function getDeliveryServiceType(Sale\Delivery\Services\Base $deliveryService) : ?string
 	{
-		if ((int)$deliveryService->getId() === $this->getEmptyDeliveryId())
+		if ($deliveryService->getId() === $this->getEmptyDeliveryId())
 		{
 			$result = self::EMPTY_DELIVERY;
 		}
@@ -153,7 +152,7 @@ class Delivery extends EntityReference\Delivery
 
 	public function getEmptyDeliveryId() : ?int
 	{
-		return (int)Sale\Delivery\Services\Manager::getEmptyDeliveryServiceId();
+		return Sale\Delivery\Services\Manager::getEmptyDeliveryServiceId();
 	}
 
 	public function getRestricted(EntityReference\Order $order) : array

@@ -13,7 +13,7 @@ class Date
 	{
 		$timestamp = $date->getTimestamp();
 
-		return ConvertTimeStamp($timestamp, 'SHORT');
+		return ConvertTimeStamp($timestamp);
 	}
 
 	public static function sanitize($date)

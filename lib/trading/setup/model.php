@@ -54,28 +54,24 @@ class Model extends EO_Repository
 		return $this->environment;
 	}
 
-	/** @noinspection PhpUnused */
 	public function activateAction() : void
 	{
 		$this->setActive(true);
 		$this->save();
 	}
 
-	/** @noinspection PhpUnused */
 	public function deactivateAction() : void
 	{
 		$this->setActive(false);
 		$this->save();
 	}
 
-	/** @noinspection PhpUnused */
 	public function resetAction() : void
 	{
 		$this->removeAllSettings();
 		$this->save();
 	}
 
-	/** @noinspection PhpUnused */
 	public function deleteAction() : void
 	{
 		$this->delete();

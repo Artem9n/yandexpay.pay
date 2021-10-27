@@ -3,7 +3,6 @@
 namespace YandexPay\Pay\Reference\Common;
 
 use Bitrix\Main;
-use YandexPay\Pay;
 
 abstract class Collection implements \ArrayAccess, \Countable, \IteratorAggregate
 {
@@ -104,7 +103,7 @@ abstract class Collection implements \ArrayAccess, \Countable, \IteratorAggregat
 			$fieldValue = (string)$setup->getField($filter);
 
 			$result = (
-				$fieldValue === Market\Reference\Storage\Table::BOOLEAN_Y
+				$fieldValue === '1'
 				|| $fieldValue === 'Y'
 			);
 		}
@@ -129,7 +128,7 @@ abstract class Collection implements \ArrayAccess, \Countable, \IteratorAggregat
 	}
 
 	/**
-	 * Whether a offset exists
+	 * Whether offset exists
 	 */
 	public function offsetExists($offset)
 	{

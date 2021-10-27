@@ -2,14 +2,12 @@
 
 namespace YandexPay\Pay\Reference\Common;
 
-use Bitrix\Main;
-
 abstract class Model
 {
 	protected static $internalIndex = 0;
 
 	/** @var string */
-	protected $internalId = null;
+	protected $internalId;
 	/** @var array */
 	protected $fields;
 	/** @var Model */

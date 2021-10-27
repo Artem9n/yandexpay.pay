@@ -32,10 +32,7 @@ if (
 	if ($item !== false)
 	{
 		$service = new PaySystem\Service($item);
-		if ($service instanceof PaySystem\Service)
-		{
-			$result = $service->processRequest($request);
-		}
+		$result = $service->processRequest($request);
 	}
 	else
 	{

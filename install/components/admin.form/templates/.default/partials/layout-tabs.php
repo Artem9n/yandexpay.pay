@@ -1,7 +1,13 @@
 <?php
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
 
-/** @var $component \YandexPay\Pay\Components\AdminForm */
+/**
+ * @global $APPLICATION
+ * @var $component \YandexPay\Pay\Components\AdminForm
+ * @var array $arParams
+ * @var array $arResult
+ * @var string $templateFolder
+ */
 
 if (!empty($arResult['CONTEXT_MENU']))
 {

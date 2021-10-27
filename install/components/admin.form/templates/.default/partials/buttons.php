@@ -4,6 +4,12 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
 use YandexPay\Pay;
 use Bitrix\Main\Localization\Loc;
 
+/**
+ * @var array $arParams
+ * @var array $arResult
+ * @var string $templateFolder
+ */
+
 foreach ($arResult['BUTTONS'] as $button)
 {
 	$behavior = $button['BEHAVIOR'] ?? null;

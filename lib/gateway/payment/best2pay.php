@@ -339,7 +339,7 @@ class Best2pay extends Gateway\Base
 
 	public function getPaymentIdFromRequest() : ?int
 	{
-		// TODO: Implement getPaymentIdFromRequest() method.
+		return null;
 	}
 
 	protected function getSignature(array $params): string

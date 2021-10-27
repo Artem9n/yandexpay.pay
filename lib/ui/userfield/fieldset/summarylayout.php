@@ -87,8 +87,8 @@ class SummaryLayout extends AbstractLayout
 					'MODAL_TITLE' => $this->userField['NAME'],
 				]),
 				'data-summary' => $summaryTemplate,
-				'data-modal-width' => isset($this->userField['SETTINGS']['MODAL_WIDTH']) ? $this->userField['SETTINGS']['MODAL_WIDTH'] : null,
-				'data-modal-height' => isset($this->userField['SETTINGS']['MODAL_HEIGHT']) ? $this->userField['SETTINGS']['MODAL_HEIGHT'] : null,
+				'data-modal-width' => $this->userField['SETTINGS']['MODAL_WIDTH'] ?? null,
+				'data-modal-height' => $this->userField['SETTINGS']['MODAL_HEIGHT'] ?? null,
 				'data-lang-placeholder' => $placeholder,
 			])
 			+ $this->collectFieldsSummaryAttributes($fields);

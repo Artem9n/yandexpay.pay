@@ -178,7 +178,7 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 
 	protected function getPaymentSum() : float
 	{
-		return (float)$this->payment->getSum();
+		return $this->payment->getSum();
 	}
 
 	protected function getPaymentAmount() : float

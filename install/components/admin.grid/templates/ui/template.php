@@ -1,8 +1,10 @@
 <?php
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
 
-
-/** @var YandexPay\Pay\Components\AdminGrid $component */
+/**
+ * @var YandexPay\Pay\Components\AdminGrid $component
+ * @var array $arParams
+ */
 
 $adminList = $component->getViewList();
 

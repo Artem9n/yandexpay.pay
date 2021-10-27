@@ -4,7 +4,10 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
 use Bitrix\Main;
 use YandexPay\Pay;
 
-/** @var Pay\Components\AdminGrid $component */
+/** @var Pay\Components\AdminGrid $component
+ * @var array $arResult
+ * @var array $arParams
+ */
 
 $adminList = $component->getViewList();
 

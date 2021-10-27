@@ -359,11 +359,11 @@ class User extends EntityReference\User
 		else if (!empty($data['EMAIL']))
 		{
 			$result = $data['EMAIL'];
-			$delimiterPosition = Market\Data\TextString::getPosition($result, '@');
+			$delimiterPosition = mb_strpos($result, '@');
 
 			if ($delimiterPosition !== false)
 			{
-				$result = Market\Data\TextString::getSubstring($result, 0, $delimiterPosition);
+				$result = mb_substr($result, 0, $delimiterPosition);
 			}
 
 			$result = $this->sanitizeLogin($result);
@@ -378,14 +378,14 @@ class User extends EntityReference\User
 
 	protected function sanitizeLogin($login)
 	{
-		$loginLength = Market\Data\TextString::getLength($login);
+		$loginLength = mb_strlen($login);
 		$bottomLengthLimit = 3;
 		$topLengthLimit = 47;
 
-		if ($topLengthLimit > 47)
+		if ($loginLength > $topLengthLimit)
 		{
 			$loginLength = $topLengthLimit;
-			$login = Market\Data\TextString::getSubstring($login, 0, $topLengthLimit);
+			$login = mb_substr($login, 0, $topLengthLimit);
 		}
 
 		if ($bottomLengthLimit > $loginLength)
@@ -505,7 +505,7 @@ class User extends EntityReference\User
 
 			if ($result === '')
 			{
-				$result = (string)Main\Config\Option::get('main', 'server_name');
+				$result = Main\Config\Option::get('main', 'server_name');
 			}
 		}
 

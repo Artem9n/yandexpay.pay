@@ -24,7 +24,7 @@ trait HasMessage
 
 		$fullCode = Config::getLangPrefix() . self::getMessagePrefix() . '_' . $code;
 
-		$result = (string)Loc::getMessage($fullCode, $replaces);
+		$result = Loc::getMessage($fullCode, $replaces);
 
 		if ($result === '')
 		{

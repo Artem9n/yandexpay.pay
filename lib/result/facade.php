@@ -40,7 +40,7 @@ class Facade
 
 			// data
 
-			$data = (array)$result->getData();
+			$data = $result->getData();
 
 			if (!empty($data))
 			{
