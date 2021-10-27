@@ -101,6 +101,9 @@ export default class Cart extends AbstractStep {
 					// Получить платежный токен.
 
 					this.orderAccept('orderAccept', event).then((result) => {
+						payment.complete(YaPay.CompleteReason.Success);
+						this.notify(result, event);
+
 						//payment.update({shippingOptions: result})
 					});
 
@@ -186,14 +189,12 @@ export default class Cart extends AbstractStep {
 				service: this.getOption('requestSign'),
 				accept: 'json',
 				yandexData: yandexPayData,
-				externalId: this.getOption('externalId'),
-				paySystemId: this.getOption('paySystemId')
+				externalId: payment.externalId,
+				//paySystemId: this.getOption('paySystemId')
 			})
 		})
 			.then(response => response.json())
 			.then(result => {
-				payment.complete(YaPay.CompleteReason.Success);
-
 				if (result.success === true) {
 					this.widget.go(result.state, result);
 				} else {

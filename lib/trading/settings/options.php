@@ -11,7 +11,7 @@ class Options extends Reference\Skeleton
 {
 	use Concerns\HasMessage;
 
-	public function strictDeliveryOptions() : bool
+	public function isDeliveryStrict() : bool
 	{
 		return $this->getValue('DELIVERY_STRICT', false);
 	}

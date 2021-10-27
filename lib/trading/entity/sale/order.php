@@ -703,6 +703,14 @@ class Order extends EntityReference\Order
 		{
 			$result->addErrors($orderResult->getErrors());
 		}
+		else
+		{
+			$orderId = $orderResult->getId();
+
+			$result->setData([
+				'ID' => $orderId
+			]);
+		}
 
 		return $result;
 	}
@@ -743,6 +751,25 @@ class Order extends EntityReference\Order
 		$items['amount'] = (string)$basket->getPrice();//number_format($basket->getPrice(), 2, '.', '');
 
 		$result->setData($items);
+
+		return $result;
+	}
+
+	public function getPaymentId() : ?int
+	{
+		$result = null;
+
+		/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
+		$paymentCollection = $this->internalOrder->getPaymentCollection()->getPayment;
+		pr($paymentCollection);
+		die;
+		/** @var \Bitrix\Sale\Payment $payment */
+		foreach ($paymentCollection as $payment)
+		{
+			if ($payment->isInner()) { continue; }
+
+			$result = $payment->getId();
+		}
 
 		return $result;
 	}

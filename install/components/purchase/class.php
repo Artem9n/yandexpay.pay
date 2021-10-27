@@ -44,7 +44,7 @@ class Purchase extends \CBitrixComponent
 		{
 			echo Main\Web\Json::encode([
 				'code' => (string)$exception->getCode(),
-				'message' => $exception->getMessage()
+				'message' => $exception->getMessage(),
 			]);
 
 			/*pr($exception->getMessage(), 1);
@@ -237,7 +237,7 @@ class Purchase extends \CBitrixComponent
 
 	}
 
-	protected function addOrder(EntityReference\Order $order)
+	protected function addOrder(EntityReference\Order $order) : void
 	{
 		$externalId = $order->getId();
 		$saveResult = $order->add($externalId);
@@ -251,6 +251,46 @@ class Purchase extends \CBitrixComponent
 			$errorMessage = 'TRADING_ACTION_ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET';//static::getLang('TRADING_ACTION_ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET');
 			throw new Main\SystemException($errorMessage);
 		}
+
+		$this->setRedirectUrl($externalId);
+
+		$result = [
+			'externalId' => $this->getPaymentId($saveData['ID']),
+		];
+
+		echo Main\Web\Json::encode($result);
+	}
+
+	protected function setRedirectUrl(int $orderId) : void
+	{
+		global $APPLICATION;
+
+		$server = Main\Context::getCurrent()->getServer();
+		$request = Main\Context::getCurrent()->getRequest();
+		$host = $request->isHttps() ? 'https' : 'http';
+		$url = $host . '://' . $server->get('SERVER_NAME') . $APPLICATION->GetCurPage();
+		$_SESSION['yabackurl'] = $url;
+	}
+
+	protected function getPaymentId(int $orderId) : ?int
+	{
+		$result = null;
+
+		$order = \Bitrix\Sale\Order::load($orderId);
+
+		if ($order === null) { return null; }
+
+		$paymentCollection = $order->getPaymentCollection();
+
+		/** @var \Bitrix\Sale\Payment $payment */
+		foreach ($paymentCollection as $payment)
+		{
+			if ($payment->isInner()) { continue; }
+
+			$result = $payment->getId();
+		}
+
+		return $result;
 	}
 
 	protected function fillPaySystem(EntityReference\Order $order) : void
@@ -536,6 +576,32 @@ class Purchase extends \CBitrixComponent
 		return TradingAction\Request\Delivery::initialize($delivery);
 	}
 
+	protected function getCalculationDeliveries(EntityReference\Order $order) : array
+	{
+		$result = [];
+		$deliveryService = $this->environment->getDelivery();
+		$compatibleIds = $deliveryService->getRestricted($order);
+
+		if (empty($compatibleIds))
+		{
+			return $result;
+		}
+
+		if ($this->options->isDeliveryStrict())
+		{
+			$deliveryOptions = $this->options->getDeliveryOptions();
+			$configuredIds = $deliveryOptions->getServiceIds();
+
+			$result = array_intersect($compatibleIds, $configuredIds);
+		}
+		else
+		{
+			$result = $compatibleIds;
+		}
+
+		return $result;
+	}
+
 	/**
 	 * @param EntityReference\Order $order
 	 * @param string $targetType
@@ -544,10 +610,10 @@ class Purchase extends \CBitrixComponent
 	 */
 	protected function calculateDeliveries(EntityReference\Order $order, string $targetType) : array
 	{
-		$result = [];
 		$deliveryService = $this->environment->getDelivery();
+		$compatibleIds = $this->getCalculationDeliveries($order);
 
-		foreach ($deliveryService->getRestricted($order) as $deliveryId)
+		foreach ($compatibleIds as $deliveryId)
 		{
 			$type = $deliveryService->suggestDeliveryType($deliveryId);
 

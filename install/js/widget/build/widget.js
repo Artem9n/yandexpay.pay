@@ -473,7 +473,11 @@ this.BX = this.BX || {};
 
 	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
-	          _this.orderAccept('orderAccept', event).then(function (result) {//payment.update({shippingOptions: result})
+	          _this.orderAccept('orderAccept', event).then(function (result) {
+	            payment.complete(YaPay$1.CompleteReason.Success);
+
+	            _this.notify(result, event); //payment.update({shippingOptions: result})
+
 	          }); //this.notify(payment, event);
 	          //payment.complete(YaPay.CompleteReason.Success);
 
@@ -565,14 +569,12 @@ this.BX = this.BX || {};
 	          service: this.getOption('requestSign'),
 	          accept: 'json',
 	          yandexData: yandexPayData,
-	          externalId: this.getOption('externalId'),
-	          paySystemId: this.getOption('paySystemId')
+	          externalId: payment.externalId //paySystemId: this.getOption('paySystemId')
+
 	        })
 	      }).then(function (response) {
 	        return response.json();
 	      }).then(function (result) {
-	        payment.complete(YaPay$1.CompleteReason.Success);
-
 	        if (result.success === true) {
 	          _this2.widget.go(result.state, result);
 	        } else {

@@ -4,7 +4,6 @@ namespace YandexPay\Pay\Components;
 
 use Bitrix\Main;
 use Bitrix\Sale;
-use Bitrix\Iblock\ElementTable;
 use Bitrix\Main\Localization\Loc;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Setup;
@@ -62,6 +61,7 @@ class TradingCart extends \CBitrixComponent
 		global $USER;
 
 		$params = $handler->getParamsBusValue();
+		$cardNetworcks = $handler->getCardNetworks();
 
 		$setup = $this->getSetup();
 		$setup->wakeupOptions();
@@ -76,13 +76,14 @@ class TradingCart extends \CBitrixComponent
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
 			'buttonTheme'       => $params['YANDEX_PAY_VARIANT_BUTTON'],
 			'buttonWidth'       => $params['YANDEX_PAY_WIDTH_BUTTON'],
-			'cardNetworks'      => $this->getCardNetworks($params),
+			'cardNetworks'      => $cardNetworcks,
 			'gateway'           => $gataway,
 			'gatewayMerchantId' => $params['YANDEX_PAY_' . $gataway . '_PAYMENT_GATEWAY_MERCHANT_ID'],
 			'useEmail'          => (bool)$options->getValue('USE_BUYER_EMAIL'),
 			'useName'           => (bool)$options->getValue('USE_BUYER_NAME'),
 			'usePhone'          => (bool)$options->getValue('USE_BUYER_PHONE'),
 			'purchaseUrl'       => $options->getValue('PURCHASE_URL'),
+			'notifyUrl'         => $params['YANDEX_PAY_NOTIFY_URL'],
 			'siteUrl'           => Utils\Url::absolutizePath(),
 			'productId'         => $this->arParams['PRODUCT_ID'],
 			'siteId'            => $setup->getSiteId(),
@@ -111,27 +112,6 @@ class TradingCart extends \CBitrixComponent
 	protected function loadSetup() : Setup\Model
 	{
 		return Setup\Model::wakeUp(['ID' => $this->arParams['SETUP_ID']]);
-	}
-
-	protected function getCardNetworks(array $parameters) : array
-	{
-		$result = [];
-
-		$str = 'YANDEX_CARD_NETWORK_';
-		$strLength = mb_strlen($str);
-
-		foreach ($parameters as $code => $value)
-		{
-			$position = mb_strpos($code, $str);
-
-			if ($position !== false && $value === 'Y')
-			{
-				$cardName = mb_substr($code, $strLength);
-				$result[] = $cardName;
-			}
-		}
-
-		return $result;
 	}
 
 	protected function getHandler() : ?Sale\PaySystem\BaseServiceHandler
