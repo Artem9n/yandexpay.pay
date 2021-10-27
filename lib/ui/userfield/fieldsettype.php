@@ -90,7 +90,7 @@ class FieldsetType
 		$summaryTemplate = $userField['SETTINGS']['SUMMARY'] ?? null;
 
 		return !empty($value)
-			? (string)Helper\Summary::make($fields, $value, $summaryTemplate)
+			? Helper\Summary::make($fields, $value, $summaryTemplate)
 			: '';
 	}
 

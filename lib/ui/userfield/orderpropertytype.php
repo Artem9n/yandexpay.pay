@@ -3,7 +3,7 @@ namespace YandexPay\Pay\Ui\Userfield;
 
 class OrderPropertyType extends EnumerationType
 {
-	public static function GetList(array $arUserField) : \CDBResult
+	public static function GetList($arUserField) : \CDBResult
 	{
 		$variants = $arUserField['VALUES'];
 		$variants = static::filterVariants($arUserField, $variants);
