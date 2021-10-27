@@ -304,10 +304,7 @@ this.BX = this.BX || {};
 
 	        payment.on(YaPay.PaymentEventType.Process, function (event) {
 	          // ѕолучить платежный токен.
-	          //alert({'Process': event});
-	          //alert(event);
-	          _this.notify(payment, event).then(function (resolve) {//payment.complete(YaPay.CompleteReason.Success);
-	          });
+	          _this.notify(payment, event).then(function (result) {});
 	          /*alert('Payment token Ч ' + event.token);
 	          		// ќпционально (если выполнить шаг 7).
 	          alert('Billing email Ч ' + event.billingContact.email);
@@ -343,33 +340,28 @@ this.BX = this.BX || {};
 	    value: function notify(payment, yandexPayData) {
 	      var _this2 = this;
 
-	      return new Promise(function (resolve) {
-	        fetch(_this2.getOption('YANDEX_PAY_NOTIFY_URL'), {
-	          method: 'POST',
-	          headers: {
-	            'Content-Type': 'application/json'
-	          },
-	          body: JSON.stringify({
-	            service: _this2.getOption('requestSign'),
-	            accept: 'json',
-	            yandexData: yandexPayData,
-	            externalId: _this2.getOption('externalId'),
-	            paySystemId: _this2.getOption('paySystemId')
-	          })
-	        }).then(function (response) {
-	          return response.json();
-	        }).then(function (result) {
-	          //payment.complete(YaPay.CompleteReason.Success);
-	          resolve();
-
-	          if (result.success === true) {
-	            _this2.widget.go(result.state, result);
-	          } else {
-	            _this2.widget.go('error', result);
-	          }
-	        }).catch(function (error) {
-	          return alert(error);
-	        });
+	      return fetch(this.getOption('YANDEX_PAY_NOTIFY_URL'), {
+	        method: 'POST',
+	        headers: {
+	          'Content-Type': 'application/json'
+	        },
+	        body: JSON.stringify({
+	          service: this.getOption('requestSign'),
+	          accept: 'json',
+	          yandexData: yandexPayData,
+	          externalId: this.getOption('externalId'),
+	          paySystemId: this.getOption('paySystemId')
+	        })
+	      }).then(function (response) {
+	        return response.json();
+	      }).then(function (result) {
+	        if (result.success === true) {
+	          _this2.widget.go(result.state, result);
+	        } else {
+	          _this2.widget.go('error', result);
+	        }
+	      }).catch(function (error) {
+	        return console.log(error);
 	      });
 	    }
 	  }]);
