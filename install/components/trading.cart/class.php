@@ -10,8 +10,9 @@ use YandexPay\Pay\Trading\Setup;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 use YandexPay\Pay\Utils;
+use Bitrix\Sale\PaySystem;
 
-if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); };
+if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
 
 Loc::loadMessages(__FILE__);
 
@@ -29,7 +30,7 @@ class TradingCart extends \CBitrixComponent
 	public function onPrepareComponentParams($arParams) : array
 	{
 		$arParams['PRODUCT_ID'] = !empty($arParams['PRODUCT_ID']) ? (int)$arParams['PRODUCT_ID'] : null;
-		$arParams['PAY_SYSTEM_ID'] = !empty($arParams['PAY_SYSTEM_ID']) ? (int)$arParams['PAY_SYSTEM_ID'] : null;
+		$arParams['PAY_SYSTEM_ID'] = !empty($arParams['PAY_SYSTEM_ID']) && (int)$arParams['PAY_SYSTEM_ID'] > 0 ? (int)$arParams['PAY_SYSTEM_ID'] : null;
 		$arParams['SETUP_ID'] = !empty($arParams['SETUP_ID']) ? (int)$arParams['SETUP_ID'] : null;
 		$arParams['MODE'] = !empty($arParams['MODE']) ? (string)$arParams['MODE'] : 'PRODUCT';
 
@@ -44,9 +45,12 @@ class TradingCart extends \CBitrixComponent
 			$this->bootstrap();
 
 			$handler = $this->getHandler();
-			if ($handler === null) { return; }
+
+			$message = $this->getLang('NOT_LOAD_HANDLER');
+			Assert::notNull($handler, 'handler', $message);
 
 			$this->setParameters($handler);
+			$this->setRedirectUrl(); // todo временное решение установки backurl, надо будет пофиксить
 
 			$this->includeComponentTemplate();
 		}
@@ -68,7 +72,7 @@ class TradingCart extends \CBitrixComponent
 		$setup->fillSiteId();
 		$options = $setup->getOptions();
 
-		$gataway = $this->service->getField('PS_MODE');
+		$gateway = $this->service->getField('PS_MODE');
 
 		$this->arResult['PARAMS'] = [
 			'env'               => $params['YANDEX_PAY_TEST_MODE'] === 'Y' ? 'SANDBOX' : 'PRODUCTION',
@@ -77,8 +81,8 @@ class TradingCart extends \CBitrixComponent
 			'buttonTheme'       => $params['YANDEX_PAY_VARIANT_BUTTON'],
 			'buttonWidth'       => $params['YANDEX_PAY_WIDTH_BUTTON'],
 			'cardNetworks'      => $cardNetworcks,
-			'gateway'           => $gataway,
-			'gatewayMerchantId' => $params['YANDEX_PAY_' . $gataway . '_PAYMENT_GATEWAY_MERCHANT_ID'],
+			'gateway'           => $gateway,
+			'gatewayMerchantId' => $params['YANDEX_PAY_' . $gateway . '_PAYMENT_GATEWAY_MERCHANT_ID'],
 			'useEmail'          => (bool)$options->getValue('USE_BUYER_EMAIL'),
 			'useName'           => (bool)$options->getValue('USE_BUYER_NAME'),
 			'usePhone'          => (bool)$options->getValue('USE_BUYER_PHONE'),
@@ -97,6 +101,17 @@ class TradingCart extends \CBitrixComponent
 				'total' => '0'
 			]
 		];
+	}
+
+	protected function setRedirectUrl() : void
+	{
+		global $APPLICATION;
+
+		$server = Main\Context::getCurrent()->getServer();
+		$request = Main\Context::getCurrent()->getRequest();
+		$host = $request->isHttps() ? 'https' : 'http';
+		$url = $host . '://' . $server->get('SERVER_NAME') . $APPLICATION->GetCurPage();
+		$_SESSION['yabackurl'] = $url;
 	}
 
 	protected function getSetup() : Setup\Model
@@ -128,7 +143,19 @@ class TradingCart extends \CBitrixComponent
 	{
 		$service = $this->getService();
 
-		[$className, $handlerType] = Sale\PaySystem\Manager::includeHandler($service->getField('ACTION_FILE'));
+		$message = $this->getLang('NOT_LOAD_SERVICE');
+		Assert::notNull($service, 'service', $message);
+
+		$actionFile = $service->getField('ACTION_FILE');
+
+		if (method_exists(Sale\PaySystem\Manager::class, 'includeHandler'))
+		{
+			[$className, $handlerType] = Sale\PaySystem\Manager::includeHandler($actionFile);
+		}
+		else
+		{
+			[$className, $handlerType] = self::includeHandler($actionFile);
+		}
 
 		$this->handler = new $className($handlerType, $service);
 
@@ -137,7 +164,55 @@ class TradingCart extends \CBitrixComponent
 		return $this->handler;
 	}
 
-	protected function getService() : Sale\PaySystem\Service
+	protected static function includeHandler(string $actionFile) : array
+	{
+		$handlerType = '';
+		$className = '';
+
+		$name = Manager::getFolderFromClassName($actionFile);
+
+		foreach (Manager::getHandlerDirectories() as $type => $path)
+		{
+			$documentRoot = Main\Application::getDocumentRoot();
+			if (Main\IO\File::isFileExists($documentRoot.$path.$name.'/handler.php'))
+			{
+				$className = Manager::getClassNameFromPath($actionFile);
+				if (!class_exists($className))
+					require_once($documentRoot.$path.$name.'/handler.php');
+
+				if (class_exists($className))
+				{
+					$handlerType = $type;
+					break;
+				}
+
+				$className = '';
+			}
+		}
+
+		if ($className === '')
+		{
+			if (Manager::isRestHandler($actionFile))
+			{
+				$className = PaySystem\RestHandler::class;
+				if (!class_exists($actionFile))
+				{
+					class_alias($className, $actionFile);
+				}
+			}
+			else
+			{
+				$className = PaySystem\CompatibilityHandler::class;
+			}
+		}
+
+		return [
+			$className,
+			$handlerType,
+		];
+	}
+
+	protected function getService() : ?Sale\PaySystem\Service
 	{
 		if ($this->service === null)
 		{
@@ -149,10 +224,8 @@ class TradingCart extends \CBitrixComponent
 
 	protected function loadService() : ?Sale\PaySystem\Service
 	{
-		if ($this->arParams['PAY_SYSTEM_ID'] === null || $this->arParams['PAY_SYSTEM_ID'] <= 0 )
-		{
-			throw new Main\SystemException('not fill pay system id');
-		}
+		$message = $this->getLang('NOT_PRODUCT_ID');
+		Assert::notNull($this->arParams['PRODUCT_ID'], 'product id', $message);
 
 		$result = null;
 
