@@ -4,6 +4,7 @@
 namespace YandexPay\Pay\Trading\Entity\Reference;
 
 use Bitrix\Main;
+use Bitrix\Sale;
 
 class PaySystem
 {
@@ -22,5 +23,10 @@ class PaySystem
 	public function getCompatible(Order $order, int $deliveryId = null) : array
 	{
 		throw new Main\NotImplementedException('getCompatible is missing');
+	}
+
+	public function getHandler(int $paySystemId) : Sale\PaySystem\BaseServiceHandler
+	{
+		throw new Main\NotImplementedException('getHandler is missing');
 	}
 }

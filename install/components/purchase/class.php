@@ -444,6 +444,8 @@ class Purchase extends \CBitrixComponent
 
 	protected function fillPersonType(EntityReference\Order $order) : void
 	{
+		Assert::notNull($this->setup->getPersonTypeId(), 'personal type');
+
 		$personTypeResult = $order->setPersonType($this->setup->getPersonTypeId());
 
 		Exceptions\Facade::handleResult($personTypeResult);

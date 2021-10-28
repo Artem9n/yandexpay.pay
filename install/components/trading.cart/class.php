@@ -18,7 +18,7 @@ Loc::loadMessages(__FILE__);
 
 class TradingCart extends \CBitrixComponent
 {
-	/** @var Sale\PaySystem\BaseServiceHandler */
+	/** @var \Sale\Handlers\PaySystem\YandexPayHandler */
 	protected $handler;
 	/** @var Sale\PaySystem\Service */
 	protected $service;
@@ -44,10 +44,8 @@ class TradingCart extends \CBitrixComponent
 			$this->loadModules();
 			$this->bootstrap();
 
-			$handler = $this->getHandler();
-			Assert::notNull($handler, 'handler', $this->getLang('NOT_LOAD_HANDLER'));
-
-			$this->setParameters($handler);
+			$this->getHandler();
+			$this->setParameters();
 			$this->setRedirectUrl(); // todo временное решение установки backurl, надо будет пофиксить
 
 			$this->includeComponentTemplate();
@@ -58,19 +56,18 @@ class TradingCart extends \CBitrixComponent
 		}
 	}
 
-	protected function setParameters(Sale\PaySystem\BaseServiceHandler $handler) : void
+	protected function setParameters() : void
 	{
 		global $USER;
 
-		$params = $handler->getParamsBusValue();
-		$cardNetworcks = $handler->getCardNetworks();
+		$params = $this->handler->getParamsBusValue();
+		$cardNetworcks = $this->handler->getCardNetworks();
+		$gateway = $this->handler->getHandlerMode();
 
 		$setup = $this->getSetup();
 		$setup->wakeupOptions();
 		$setup->fillSiteId();
 		$options = $setup->getOptions();
-
-		$gateway = $this->service->getField('PS_MODE');
 
 		$this->arResult['PARAMS'] = [
 			'env'               => $params['YANDEX_PAY_TEST_MODE'] === 'Y' ? 'SANDBOX' : 'PRODUCTION',
@@ -127,118 +124,15 @@ class TradingCart extends \CBitrixComponent
 		return Setup\Model::wakeUp(['ID' => $this->arParams['SETUP_ID']]);
 	}
 
-	protected function getHandler() : ?Sale\PaySystem\BaseServiceHandler
+	protected function getHandler() : Sale\PaySystem\BaseServiceHandler
 	{
-		if ($this->handler === null)
-		{
-			$this->handler = $this->loadHandler();
-		}
+		Assert::notNull($this->arParams['PAY_SYSTEM_ID'], 'paySystem id', $this->getLang('NOT_PAY_SYSTEM_ID'));
 
-		return $this->handler;
-	}
-
-	protected function loadHandler()
-	{
-		$service = $this->getService();
-		Assert::notNull($service, 'service', $this->getLang('NOT_LOAD_SERVICE'));
-
-		$actionFile = $service->getField('ACTION_FILE');
-
-		if (method_exists(Sale\PaySystem\Manager::class, 'includeHandler'))
-		{
-			[$className, $handlerType] = Sale\PaySystem\Manager::includeHandler($actionFile);
-		}
-		else
-		{
-			[$className, $handlerType] = self::includeHandler($actionFile);
-		}
-
-		$this->handler = new $className($handlerType, $service);
+		$this->handler = $this->environment->getPaySystem()->getHandler($this->arParams['PAY_SYSTEM_ID']);
 
 		Assert::typeOf($this->handler, \Sale\Handlers\PaySystem\YandexPayHandler::class, 'handler');
 
 		return $this->handler;
-	}
-
-	protected static function includeHandler(string $actionFile) : array
-	{
-		$handlerType = '';
-		$className = '';
-
-		$name = Sale\PaySystem\Manager::getFolderFromClassName($actionFile);
-
-		foreach (Sale\PaySystem\Manager::getHandlerDirectories() as $type => $path)
-		{
-			$documentRoot = Main\Application::getDocumentRoot();
-			if (Main\IO\File::isFileExists($documentRoot.$path.$name.'/handler.php'))
-			{
-				$className = Sale\PaySystem\Manager::getClassNameFromPath($actionFile);
-				if (!class_exists($className))
-					require_once($documentRoot.$path.$name.'/handler.php');
-
-				if (class_exists($className))
-				{
-					$handlerType = $type;
-					break;
-				}
-
-				$className = '';
-			}
-		}
-
-		if ($className === '')
-		{
-			if (Sale\PaySystem\Manager::isRestHandler($actionFile))
-			{
-				$className = PaySystem\RestHandler::class;
-				if (!class_exists($actionFile))
-				{
-					class_alias($className, $actionFile);
-				}
-			}
-			else
-			{
-				$className = PaySystem\CompatibilityHandler::class;
-			}
-		}
-
-		return [
-			$className,
-			$handlerType,
-		];
-	}
-
-	protected function getService() : ?Sale\PaySystem\Service
-	{
-		if ($this->service === null)
-		{
-			$this->service = $this->loadService();
-		}
-
-		return $this->service;
-	}
-
-	protected function loadService() : ?Sale\PaySystem\Service
-	{
-		Assert::notNull($this->arParams['PAY_SYSTEM_ID'], 'paySystem id', $this->getLang('NOT_PAY_SYSTEM_ID'));
-
-		$result = null;
-
-		$query = Sale\PaySystem\Manager::getList([
-			'filter' => [
-				'=ID' => $this->arParams['PAY_SYSTEM_ID'],
-				'=ACTION_FILE' => 'yandexpay',
-				'ACTIVE' => 'Y'
-			],
-			'select' => ['*']
-		]);
-
-		if ($item = $query->fetch())
-		{
-			$result = new Sale\PaySystem\Service($item);
-		}
-
-		return $result;
 	}
 
 	protected function loadModules(): void
