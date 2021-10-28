@@ -18,11 +18,12 @@ class User extends Model
 		return $result;
 	}
 
-	public function getPhone() : string
+	public function getPhone() : ?string
 	{
 		$result = $this->getField('phone');
 
-		Assert::notNull($result, 'phone');
+		if ($result === null) { return null; }
+
 		Assert::isString($result, 'phone');
 
 		return $result;
@@ -31,6 +32,8 @@ class User extends Model
 	public function getFirstName() : ?string
 	{
 		$result = $this->getField('firstName');
+
+		if ($result === null) { return null; }
 
 		Assert::isString($result, 'firstName');
 
@@ -41,6 +44,8 @@ class User extends Model
 	{
 		$result = $this->getField('lastName');
 
+		if ($result === null) { return null; }
+
 		Assert::isString($result, 'lastName');
 
 		return $result;
@@ -49,6 +54,8 @@ class User extends Model
 	public function getSecondName() : ?string
 	{
 		$result = $this->getField('secondName');
+
+		if ($result === null) { return null; }
 
 		Assert::isString($result, 'secondName');
 

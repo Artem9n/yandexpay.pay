@@ -48,7 +48,24 @@ class BooleanType
 
 	public static function getEditFormHTML($userField, $htmlControl) : string
 	{
-		return static::callParent('getEditFormHTML', [$userField, $htmlControl]);
+		$value = (string)$htmlControl['VALUE'] !== ''
+			? (int)$htmlControl['VALUE']
+			: (int)$userField['SETTINGS']['DEFAULT_VALUE'];
+
+		$isChecked = ($value > 0);
+		$isDisabled = ($userField['EDIT_IN_LIST'] !== 'Y');
+
+		$result = sprintf('<input class="is--persistent" type="hidden" value="0" name="%s" />', $htmlControl['NAME']);
+		$result .= '<label>';
+		$result .= sprintf(
+			'<input class="adm-designed-checkbox" type="checkbox" value="1" name="%s" %s />',
+			$htmlControl['NAME'],
+			($isChecked ? ' checked' : '') . ($isDisabled ? ' disabled="disabled"' : '')
+		);
+		$result .= '<span class="adm-designed-checkbox-label"></span>';
+		$result .= '</label>';
+
+		return $result;
 	}
 
 	public static function getTableFieldDescription(bool $default = null) : array

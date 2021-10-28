@@ -142,6 +142,37 @@ class Attributes
 		}, $html);
 	}
 
+	public static function extractFromSettings($userFieldSettings, $settingNames = null) : array
+	{
+		$result = isset($userFieldSettings['ATTRIBUTES']) ? (array)$userFieldSettings['ATTRIBUTES'] : [];
+
+		if ($settingNames === null)
+		{
+			$settingNames = [
+				'READONLY',
+				'STYLE',
+				'PLACEHOLDER',
+			];
+		}
+
+		foreach ($settingNames as $settingName)
+		{
+			if (
+				isset($userFieldSettings[$settingName])
+				&& $userFieldSettings[$settingName] !== ''
+				&& $userFieldSettings[$settingName] !== false
+			)
+			{
+				$setting = $userFieldSettings[$settingName];
+				$attributeName = mb_strtolower($settingName, LANG_CHARSET);
+
+				$result[$attributeName] = $setting;
+			}
+		}
+
+		return $result;
+	}
+
 	public static function delayPluginInitialization(string $html) : string
 	{
 		return preg_replace('/([\s"\'])js-plugin([\s"\'])/', '$1js-plugin-delayed$2', $html);

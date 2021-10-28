@@ -129,7 +129,7 @@ class Form extends Component\Reference\Form
 		return $result;
 	}
 
-	public function add(array $values) : Main\Entity\AddResult
+	public function add(array $values) : Main\Entity\Result
 	{
 		$dataClass = $this->getDataClass();
 		$modelClass = $dataClass::getObjectClass();
@@ -145,7 +145,7 @@ class Form extends Component\Reference\Form
 		return $model->save();
 	}
 
-	public function update($primary, array $values) : Main\Entity\UpdateResult
+	public function update($primary, array $values) : Main\Entity\Result
 	{
 		$dataClass = $this->getDataClass();
 		$modelClass = $dataClass::getObjectClass();

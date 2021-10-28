@@ -26,7 +26,7 @@ trait HasMessage
 
 		$result = Loc::getMessage($fullCode, $replaces);
 
-		if ($result === '')
+		if ($result === '' || $result === null)
 		{
 			$result = $fallback ?? $code;
 		}

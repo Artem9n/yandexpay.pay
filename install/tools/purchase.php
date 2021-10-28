@@ -9,6 +9,6 @@ require $_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_before.ph
 
 global $APPLICATION;
 
-$APPLICATION->IncludeComponent('yandexpay.pay:trading.cart', '');
+$APPLICATION->IncludeComponent('yandexpay.pay:purchase', '');
 
 require $_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/epilog_after.php';

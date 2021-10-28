@@ -82,6 +82,8 @@ class Purchase extends \CBitrixComponent
 	protected function deliveryOptionsAction() : void
 	{
 		$order = $this->getOrder();
+
+		$this->fillPersonType($order);
 		$this->fillBasket($order);
 		$this->fillLocation($order);
 
@@ -95,10 +97,10 @@ class Purchase extends \CBitrixComponent
 		$result = [];
 
 		$order = $this->getOrder();
+
+		$this->fillPersonType($order);
 		$this->fillBasket($order);
 		$this->fillLocation($order);
-
-		//$this->fillAddress($order);
 
 		$calculatedDeliveries = $this->calculateDeliveries($order, 'PICKUP');
 		echo '<pre>';
@@ -210,8 +212,8 @@ class Purchase extends \CBitrixComponent
 		$userId = $this->createUser();
 		$order = $this->getOrder($userId);
 
-		$this->fillStatus($order);
 		$this->fillPersonType($order);
+		$this->fillStatus($order);
 		$this->fillProperties($order);
 		$this->fillLocation($order);
 		$this->fillBasket($order, true);
@@ -393,9 +395,16 @@ class Purchase extends \CBitrixComponent
 		$locationService = $this->environment->getLocation();
 		$locationId = $locationService->getLocation($address->getFields());
 
+		$meaningfulValues = $locationService->getMeaningfulValues($locationId);
+
 		$orderResult = $order->setLocation($locationId);
 
 		Exceptions\Facade::handleResult($orderResult);
+
+		if (!empty($meaningfulValues))
+		{
+			$this->setMeaningfulPropertyValues($order, $meaningfulValues);
+		}
 	}
 
 	protected function fillProperties(EntityReference\Order $order) : void

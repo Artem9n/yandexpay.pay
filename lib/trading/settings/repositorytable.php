@@ -25,9 +25,13 @@ class RepositoryTable extends ORM\Data\DataManager
 	public static function getMap() : array
 	{
 		return [
+			new ORM\Fields\IntegerField('ID', [
+				'autocomplete' => true,
+				'primary' => true,
+			]),
 			new ORM\Fields\IntegerField('SETUP_ID', [
 				'required' => true,
-				'primary' => true,
+				//'primary' => true,
 			]),
 			new ORM\Fields\StringField('NAME', [
 				'required' => true,

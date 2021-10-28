@@ -117,12 +117,12 @@ class Form extends Pay\Component\Plain\Form
 		return $values;
 	}
 
-	public function add(array $values) : Main\ORM\Data\AddResult
+	public function add(array $values) : Main\Entity\Result
 	{
 		throw new Main\NotSupportedException();
 	}
 
-	public function update($primary, array $values) : Main\ORM\Data\UpdateResult
+	public function update($primary, array $values) : Main\Entity\Result
 	{
 		$setup = $this->getSetup();
 

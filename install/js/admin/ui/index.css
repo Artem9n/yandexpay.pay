@@ -186,3 +186,7 @@
 	pointer-events: none !important;
 	opacity: 0 !important;
 }
+
+.adm-workarea textarea[readonly], .adm-workarea input[readonly]{
+	opacity: 1 !important;
+}

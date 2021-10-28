@@ -45,9 +45,7 @@ class TradingCart extends \CBitrixComponent
 			$this->bootstrap();
 
 			$handler = $this->getHandler();
-
-			$message = $this->getLang('NOT_LOAD_HANDLER');
-			Assert::notNull($handler, 'handler', $message);
+			Assert::notNull($handler, 'handler', $this->getLang('NOT_LOAD_HANDLER'));
 
 			$this->setParameters($handler);
 			$this->setRedirectUrl(); // todo временное решение установки backurl, надо будет пофиксить
@@ -86,7 +84,7 @@ class TradingCart extends \CBitrixComponent
 			'useEmail'          => (bool)$options->getValue('USE_BUYER_EMAIL'),
 			'useName'           => (bool)$options->getValue('USE_BUYER_NAME'),
 			'usePhone'          => (bool)$options->getValue('USE_BUYER_PHONE'),
-			'purchaseUrl'       => $options->getValue('PURCHASE_URL'),
+			'purchaseUrl'       => $options::getPurchaseUrl(),
 			'notifyUrl'         => $params['YANDEX_PAY_NOTIFY_URL'],
 			'siteUrl'           => Utils\Url::absolutizePath(),
 			'productId'         => $this->arParams['PRODUCT_ID'],
@@ -142,9 +140,7 @@ class TradingCart extends \CBitrixComponent
 	protected function loadHandler()
 	{
 		$service = $this->getService();
-
-		$message = $this->getLang('NOT_LOAD_SERVICE');
-		Assert::notNull($service, 'service', $message);
+		Assert::notNull($service, 'service', $this->getLang('NOT_LOAD_SERVICE'));
 
 		$actionFile = $service->getField('ACTION_FILE');
 
@@ -169,14 +165,14 @@ class TradingCart extends \CBitrixComponent
 		$handlerType = '';
 		$className = '';
 
-		$name = Manager::getFolderFromClassName($actionFile);
+		$name = Sale\PaySystem\Manager::getFolderFromClassName($actionFile);
 
-		foreach (Manager::getHandlerDirectories() as $type => $path)
+		foreach (Sale\PaySystem\Manager::getHandlerDirectories() as $type => $path)
 		{
 			$documentRoot = Main\Application::getDocumentRoot();
 			if (Main\IO\File::isFileExists($documentRoot.$path.$name.'/handler.php'))
 			{
-				$className = Manager::getClassNameFromPath($actionFile);
+				$className = Sale\PaySystem\Manager::getClassNameFromPath($actionFile);
 				if (!class_exists($className))
 					require_once($documentRoot.$path.$name.'/handler.php');
 
@@ -192,7 +188,7 @@ class TradingCart extends \CBitrixComponent
 
 		if ($className === '')
 		{
-			if (Manager::isRestHandler($actionFile))
+			if (Sale\PaySystem\Manager::isRestHandler($actionFile))
 			{
 				$className = PaySystem\RestHandler::class;
 				if (!class_exists($actionFile))
@@ -224,8 +220,7 @@ class TradingCart extends \CBitrixComponent
 
 	protected function loadService() : ?Sale\PaySystem\Service
 	{
-		$message = $this->getLang('NOT_PRODUCT_ID');
-		Assert::notNull($this->arParams['PRODUCT_ID'], 'product id', $message);
+		Assert::notNull($this->arParams['PAY_SYSTEM_ID'], 'paySystem id', $this->getLang('NOT_PAY_SYSTEM_ID'));
 
 		$result = null;
 
