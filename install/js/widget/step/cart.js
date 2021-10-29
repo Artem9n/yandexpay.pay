@@ -8,7 +8,10 @@ export default class Cart extends AbstractStep {
 	render(node, data) {
 		this.paymentData = this.getPaymentData(data);
 
-		this.createPayment(node, this.paymentData);
+		this.fillProducts().then((result) => {
+			this.exampleOrderWithProducts(result);
+			this.createPayment(node, this.paymentData);
+		});
 	}
 
 	compile(data) {
@@ -86,30 +89,17 @@ export default class Cart extends AbstractStep {
 
 				// Подписаться на событие click.
 				button.on(YaPay.ButtonEventType.Click, () => {
-					// Заполенение товаров
-					this.fillProducts().then((result) => {
-						payment.update({
-							order: this.exampleOrderWithProducts(result)
-						});
-						// Запустить оплату после клика на кнопку.
-						payment.checkout();
-					});
+					// Запустить оплату после клика на кнопку.
+					payment.checkout();
 				});
 
 				// Подписаться на событие process.
 				payment.on(YaPay.PaymentEventType.Process, (event) => {
 					// Получить платежный токен.
-
 					this.orderAccept('orderAccept', event).then((result) => {
 						payment.complete(YaPay.CompleteReason.Success);
 						this.notify(result, event);
-
-						//payment.update({shippingOptions: result})
 					});
-
-					//this.notify(payment, event);
-
-					//payment.complete(YaPay.CompleteReason.Success);
 				});
 
 				// Подписаться на событие error.
@@ -129,7 +119,7 @@ export default class Cart extends AbstractStep {
 				});
 
 				payment.on(YaPay.PaymentEventType.Change, (event) => {
-					console.log(222);
+
 					if (event.shippingAddress) {
 						this.exampleDeliveryOptions('deliveryOptions', event.shippingAddress).then((result) => {
 							payment.update({shippingOptions: result})
@@ -298,8 +288,6 @@ export default class Cart extends AbstractStep {
 		};
 
 		Object.assign(this.paymentData.order, exampleOrder);
-
-		return exampleOrder;
 	}
 
 	amountSum(amountA, amountB) {

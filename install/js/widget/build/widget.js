@@ -386,8 +386,14 @@ this.BX = this.BX || {};
 	  babelHelpers.createClass(Cart, [{
 	    key: "render",
 	    value: function render(node, data) {
+	      var _this = this;
+
 	      this.paymentData = this.getPaymentData(data);
-	      this.createPayment(node, this.paymentData);
+	      this.fillProducts().then(function (result) {
+	        _this.exampleOrderWithProducts(result);
+
+	        _this.createPayment(node, _this.paymentData);
+	      });
 	    }
 	  }, {
 	    key: "compile",
@@ -439,40 +445,31 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "createPayment",
 	    value: function createPayment(node, paymentData) {
-	      var _this = this;
+	      var _this2 = this;
 
 	      // Создать платеж.
 	      YaPay$1.createPayment(paymentData).then(function (payment) {
 	        // Создать экземпляр кнопки.
 	        var button = payment.createButton({
 	          type: YaPay$1.ButtonType.Pay,
-	          theme: _this.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
-	          width: _this.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
+	          theme: _this2.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
+	          width: _this2.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
 	        }); // Смонтировать кнопку в DOM.
 
 	        button.mount(node); // Подписаться на событие click.
 
 	        button.on(YaPay$1.ButtonEventType.Click, function () {
-	          // Заполенение товаров
-	          _this.fillProducts().then(function (result) {
-	            payment.update({
-	              order: _this.exampleOrderWithProducts(result)
-	            }); // Запустить оплату после клика на кнопку.
-
-	            payment.checkout();
-	          });
+	          // Запустить оплату после клика на кнопку.
+	          payment.checkout();
 	        }); // Подписаться на событие process.
 
 	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
-	          _this.orderAccept('orderAccept', event).then(function (result) {
+	          _this2.orderAccept('orderAccept', event).then(function (result) {
 	            payment.complete(YaPay$1.CompleteReason.Success);
 
-	            _this.notify(result, event); //payment.update({shippingOptions: result})
-
-	          }); //this.notify(payment, event);
-	          //payment.complete(YaPay.CompleteReason.Success);
-
+	            _this2.notify(result, event);
+	          });
 	        }); // Подписаться на событие error.
 
 	        payment.on(YaPay$1.PaymentEventType.Error, function onPaymentError(event) {
@@ -489,10 +486,8 @@ this.BX = this.BX || {};
 	        payment.on(YaPay$1.PaymentEventType.Abort, function (event) {// Предложить пользователю другой способ оплаты.
 	        });
 	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
-	          console.log(222);
-
 	          if (event.shippingAddress) {
-	            _this.exampleDeliveryOptions('deliveryOptions', event.shippingAddress).then(function (result) {
+	            _this2.exampleDeliveryOptions('deliveryOptions', event.shippingAddress).then(function (result) {
 	              payment.update({
 	                shippingOptions: result
 	              });
@@ -501,12 +496,12 @@ this.BX = this.BX || {};
 
 	          if (event.shippingOption) {
 	            payment.update({
-	              order: _this.exampleOrderWithDirectShipping(event.shippingOption, payment)
+	              order: _this2.exampleOrderWithDirectShipping(event.shippingOption, payment)
 	            });
 	          }
 
 	          if (event.pickupAddress) {
-	            _this.exampleDeliveryOptions('pickupOptions', event.pickupAddress).then(function (result) {
+	            _this2.exampleDeliveryOptions('pickupOptions', event.pickupAddress).then(function (result) {
 	              payment.update({
 	                pickupOptions: result
 	              });
@@ -515,7 +510,7 @@ this.BX = this.BX || {};
 
 	          if (event.pickupOption) {
 	            payment.update({
-	              order: _this.exampleOrderWithPickupShipping(event.pickupOption)
+	              order: _this2.exampleOrderWithPickupShipping(event.pickupOption)
 	            });
 	          }
 	        });
@@ -550,7 +545,7 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "notify",
 	    value: function notify(payment, yandexPayData) {
-	      var _this2 = this;
+	      var _this3 = this;
 
 	      fetch(this.getOption('notifyUrl'), {
 	        method: 'POST',
@@ -568,9 +563,9 @@ this.BX = this.BX || {};
 	        return response.json();
 	      }).then(function (result) {
 	        if (result.success === true) {
-	          _this2.widget.go(result.state, result);
+	          _this3.widget.go(result.state, result);
 	        } else {
-	          _this2.widget.go('error', result);
+	          _this3.widget.go('error', result);
 	        }
 	      });
 	    }
@@ -664,7 +659,6 @@ this.BX = this.BX || {};
 	        })
 	      });
 	      Object.assign(this.paymentData.order, exampleOrder);
-	      return exampleOrder;
 	    }
 	  }, {
 	    key: "amountSum",
