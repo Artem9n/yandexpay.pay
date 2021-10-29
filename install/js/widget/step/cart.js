@@ -111,8 +111,9 @@ export default class Cart extends AbstractStep {
 						{
 							this.notify(result, event);
 						}
+						payment.complete(YaPay.CompleteReason.Success);
 					});
-					payment.complete(YaPay.CompleteReason.Success);
+
 				});
 
 				// Подписаться на событие error.

@@ -480,9 +480,9 @@ this.BX = this.BX || {};
 	            if (!_this2.isPaymentTypeCash(event)) {
 	              _this2.notify(result, event);
 	            }
-	          });
 
-	          payment.complete(YaPay$1.CompleteReason.Success);
+	            payment.complete(YaPay$1.CompleteReason.Success);
+	          });
 	        }); // Подписаться на событие error.
 
 	        payment.on(YaPay$1.PaymentEventType.Error, function onPaymentError(event) {
