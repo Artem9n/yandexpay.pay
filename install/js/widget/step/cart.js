@@ -107,12 +107,12 @@ export default class Cart extends AbstractStep {
 				payment.on(YaPay.PaymentEventType.Process, (event) => {
 					// Получить платежный токен.
 					this.orderAccept('orderAccept', event).then((result) => {
-						payment.complete(YaPay.CompleteReason.Success);
 						if(!this.isPaymentTypeCash(event))
 						{
 							this.notify(result, event);
 						}
 					});
+					payment.complete(YaPay.CompleteReason.Success);
 				});
 
 				// Подписаться на событие error.

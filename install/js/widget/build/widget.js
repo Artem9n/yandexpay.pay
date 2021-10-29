@@ -477,12 +477,12 @@ this.BX = this.BX || {};
 	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
 	          _this2.orderAccept('orderAccept', event).then(function (result) {
-	            payment.complete(YaPay$1.CompleteReason.Success);
-
 	            if (!_this2.isPaymentTypeCash(event)) {
 	              _this2.notify(result, event);
 	            }
 	          });
+
+	          payment.complete(YaPay$1.CompleteReason.Success);
 	        }); // Подписаться на событие error.
 
 	        payment.on(YaPay$1.PaymentEventType.Error, function onPaymentError(event) {
