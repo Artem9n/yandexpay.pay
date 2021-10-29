@@ -7,7 +7,7 @@ export default class Cart extends AbstractStep {
 
 	render(node, data) {
 		this.paymentData = this.getPaymentData(data);
-
+		this.setupPaymentCash();
 		this.fillProducts().then((result) => {
 			this.exampleOrderWithProducts(result);
 			this.createPayment(node, this.paymentData);
@@ -16,6 +16,16 @@ export default class Cart extends AbstractStep {
 
 	compile(data) {
 		return Template.compile(this.options.template, data);
+	}
+
+	setupPaymentCash(){
+		// Указываем возможность оплаты заказа при получении
+		if (this.getOption('paymentCash') !== null)
+		{
+			this.paymentData.paymentMethods.push({
+				type: YaPay.PaymentMethodType.Cash,
+			});
+		}
 	}
 
 	getPaymentData(data) {
@@ -98,7 +108,10 @@ export default class Cart extends AbstractStep {
 					// Получить платежный токен.
 					this.orderAccept('orderAccept', event).then((result) => {
 						payment.complete(YaPay.CompleteReason.Success);
-						this.notify(result, event);
+						if(!this.isPaymentTypeCash(event))
+						{
+							this.notify(result, event);
+						}
 					});
 				});
 
@@ -150,6 +163,11 @@ export default class Cart extends AbstractStep {
 				// Платеж не создан.
 				console.log({'payment not create': err});
 			});
+	}
+
+	isPaymentTypeCash(event)
+	{
+		return event.paymentMethodInfo.type === 'CASH';
 	}
 
 	fillProducts(){
@@ -207,7 +225,8 @@ export default class Cart extends AbstractStep {
 				yapayAction: action,
 				address: event.shippingMethodInfo.shippingAddress,
 				contact: event.shippingContact,
-				paySystemId: this.getOption('paySystemId') || null,
+				payment: event.paymentMethodInfo,
+				paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
 				mode: this.getOption('mode'),
 				delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions
 			})

@@ -27,6 +27,11 @@ class Options extends Reference\Skeleton
 		return (int)$this->requireValue('PERSON_TYPE_ID');
 	}
 
+	public function getPaymentCash() : ?int
+	{
+		return $this->getValue('PICKUP_PAYSYSTEM');
+	}
+
 	protected function validateSelf() : Main\Result
 	{
 		$result = new Main\Result();
@@ -123,6 +128,9 @@ class Options extends Reference\Skeleton
 				'NAME' => self::getMessage('PICKUP_PAYSYSTEM'),
 				'SORT' => 2010,
 				'VALUES' => $environment->getPaySystem()->getEnum($siteId),
+				'SETTINGS' => [
+					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
+				],
 			],
 		];
 	}
@@ -148,25 +156,25 @@ class Options extends Reference\Skeleton
 				'TYPE' => 'boolean',
 				'GROUP' => self::getMessage('YANDEX'),
 				'NAME' => self::getMessage('USE_BUYER_NAME'),
-				'SORT' => 3005,
+				'SORT' => 3006,
 			],
 			'USE_BUYER_EMAIL' => [
 				'TYPE' => 'boolean',
 				'GROUP' => self::getMessage('YANDEX'),
 				'NAME' => self::getMessage('USE_BUYER_EMAIL'),
-				'SORT' => 3005
+				'SORT' => 3007
 			],
 			'USE_BUYER_PHONE' => [
 				'TYPE' => 'boolean',
 				'GROUP' => self::getMessage('YANDEX'),
 				'NAME' => self::getMessage('USE_BUYER_PHONE'),
-				'SORT' => 3007
+				'SORT' => 3008
 			],
 			'PROPERTY_LAST_NAME' => [
 				'TYPE' => 'orderProperty',
 				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_LAST_NAME'),
-				'SORT' => 3010,
+				'SORT' => 3009,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'LAST_NAME',
@@ -188,7 +196,7 @@ class Options extends Reference\Skeleton
 				'TYPE' => 'orderProperty',
 				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_MIDDLE_NAME'),
-				'SORT' => 3010,
+				'SORT' => 3011,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'MIDDLE_NAME',
@@ -199,7 +207,7 @@ class Options extends Reference\Skeleton
 				'TYPE' => 'orderProperty',
 				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_EMAIL'),
-				'SORT' => 3010,
+				'SORT' => 3012,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'EMAIL',
@@ -210,7 +218,7 @@ class Options extends Reference\Skeleton
 				'TYPE' => 'orderProperty',
 				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_PHONE'),
-				'SORT' => 3010,
+				'SORT' => 3013,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'PHONE',

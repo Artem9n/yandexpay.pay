@@ -281,11 +281,17 @@ class Purchase extends \CBitrixComponent
 
 	protected function fillPaySystem(EntityReference\Order $order) : void
 	{
-		//$paySystemId = $this->resolvePaySystem();
+		/** @var TradingAction\Request\Payment $requestPayment */
+		$requestPayment = $this->getRequestPayment();
 
-		$paySystemId = $this->request->get('paySystemId');
+		$paySystemId = (int)$this->request->get('paySystemId');
 
-		if ($paySystemId !== null)
+		if ($requestPayment->isPaymentCash())
+		{
+			$paySystemId = $this->options->getPaymentCash() ?? $paySystemId;
+		}
+
+		if ($paySystemId > 0)
 		{
 			$order->createPayment($paySystemId);
 		}
@@ -569,6 +575,16 @@ class Purchase extends \CBitrixComponent
 		Assert::isArray($delivery, 'delivery');
 
 		return TradingAction\Request\Delivery::initialize($delivery);
+	}
+
+	protected function getRequestPayment() : \YandexPay\Pay\Reference\Common\Model
+	{
+		$payment = $this->request->get('payment');
+
+		Assert::notNull($payment, 'payment');
+		Assert::isArray($payment, 'payment');
+
+		return TradingAction\Request\Payment::initialize($payment);
 	}
 
 	protected function getCalculationDeliveries(EntityReference\Order $order) : array

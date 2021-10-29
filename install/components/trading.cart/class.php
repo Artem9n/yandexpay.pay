@@ -90,6 +90,7 @@ class TradingCart extends \CBitrixComponent
 			'setupId'           => $setup->getId(),
 			'fUserId'           => Sale\Fuser::getId(true),
 			'paySystemId'       => $this->arParams['PAY_SYSTEM_ID'],
+			'paymentCash'       => $options->getPaymentCash(),
 			'mode'              => $this->arParams['MODE'],
 			'order'             => [
 				'id' => '0',

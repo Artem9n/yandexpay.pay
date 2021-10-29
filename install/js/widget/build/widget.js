@@ -389,6 +389,7 @@ this.BX = this.BX || {};
 	      var _this = this;
 
 	      this.paymentData = this.getPaymentData(data);
+	      this.setupPaymentCash();
 	      this.fillProducts().then(function (result) {
 	        _this.exampleOrderWithProducts(result);
 
@@ -399,6 +400,16 @@ this.BX = this.BX || {};
 	    key: "compile",
 	    value: function compile(data) {
 	      return Template.compile(this.options.template, data);
+	    }
+	  }, {
+	    key: "setupPaymentCash",
+	    value: function setupPaymentCash() {
+	      // Указываем возможность оплаты заказа при получении
+	      if (this.getOption('paymentCash') !== null) {
+	        this.paymentData.paymentMethods.push({
+	          type: YaPay$1.PaymentMethodType.Cash
+	        });
+	      }
 	    }
 	  }, {
 	    key: "getPaymentData",
@@ -468,7 +479,9 @@ this.BX = this.BX || {};
 	          _this2.orderAccept('orderAccept', event).then(function (result) {
 	            payment.complete(YaPay$1.CompleteReason.Success);
 
-	            _this2.notify(result, event);
+	            if (!_this2.isPaymentTypeCash(event)) {
+	              _this2.notify(result, event);
+	            }
 	          });
 	        }); // Подписаться на событие error.
 
@@ -520,6 +533,11 @@ this.BX = this.BX || {};
 	          'payment not create': err
 	        });
 	      });
+	    }
+	  }, {
+	    key: "isPaymentTypeCash",
+	    value: function isPaymentTypeCash(event) {
+	      return event.paymentMethodInfo.type === 'CASH';
 	    }
 	  }, {
 	    key: "fillProducts",
@@ -587,7 +605,8 @@ this.BX = this.BX || {};
 	          yapayAction: action,
 	          address: event.shippingMethodInfo.shippingAddress,
 	          contact: event.shippingContact,
-	          paySystemId: this.getOption('paySystemId') || null,
+	          payment: event.paymentMethodInfo,
+	          paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
 	          mode: this.getOption('mode'),
 	          delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions
 	        })
