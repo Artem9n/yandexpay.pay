@@ -106,6 +106,8 @@ class Model extends EO_Repository
 		{
 			$models[$name]->setValue($value);
 		}
+
+		$this->getSettings()->save();
 	}
 
 	protected function applySettingsDelete(array $models) : void

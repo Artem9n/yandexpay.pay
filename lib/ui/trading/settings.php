@@ -27,6 +27,7 @@ class Settings extends Pay\Ui\Reference\Page
 			'TITLE' => self::getMessage('TITLE'),
 			'ALLOW_SAVE' => Pay\Ui\Access::hasRights($this->getWriteRights()),
 			'LIST_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_grid', $baseQuery),
+			'SAVE_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_setup', $baseQuery),
 			'PRIMARY' => $primary,
 			'CONTEXT_MENU' => [
 				[
