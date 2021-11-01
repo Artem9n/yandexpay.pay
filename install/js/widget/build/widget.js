@@ -80,6 +80,19 @@ this.BX = this.BX || {};
 	      return Template.compile(this.options.template, data);
 	    }
 	  }, {
+	    key: "query",
+	    value: function query(url, data) {
+	      return fetch(url, {
+	        method: 'POST',
+	        headers: {
+	          'Content-Type': 'application/json'
+	        },
+	        body: JSON.stringify(data)
+	      }).then(function (response) {
+	        return response.json();
+	      });
+	    }
+	  }, {
 	    key: "getTemplate",
 	    value: function getTemplate(key) {
 	      var optionKey = key + 'Template';
@@ -389,9 +402,10 @@ this.BX = this.BX || {};
 	      var _this = this;
 
 	      this.paymentData = this.getPaymentData(data);
+	      this.defaultBody = this.getDefaultBody();
 	      this.setupPaymentCash();
-	      this.fillProducts().then(function (result) {
-	        _this.exampleOrderWithProducts(result);
+	      this.getProducts().then(function (result) {
+	        _this.combineOrderWithProducts(result);
 
 	        _this.createPayment(node, _this.paymentData);
 	      });
@@ -400,6 +414,18 @@ this.BX = this.BX || {};
 	    key: "compile",
 	    value: function compile(data) {
 	      return Template.compile(this.options.template, data);
+	    }
+	  }, {
+	    key: "getDefaultBody",
+	    value: function getDefaultBody() {
+	      return {
+	        siteId: this.getOption('siteId'),
+	        productId: this.getOption('productId'),
+	        fUserId: this.getOption('fUserId'),
+	        userId: this.getOption('userId'),
+	        setupId: this.getOption('setupId'),
+	        mode: this.getOption('mode')
+	      };
 	    }
 	  }, {
 	    key: "setupPaymentCash",
@@ -476,10 +502,19 @@ this.BX = this.BX || {};
 
 	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
-	          _this2.orderAccept('orderAccept', event).then(function (result) {
-	            if (!_this2.isPaymentTypeCash(event)) {
-	              _this2.notify(result, event);
+	          _this2.orderAccept(event).then(function (result) {
+	            if (_this2.isPaymentTypeCash(event)) {
+	              payment.complete(YaPay$1.CompleteReason.Success);
+	              return;
 	            }
+
+	            _this2.notify(result, event).then(function (result) {
+	              if (result.success === true) {
+	                _this2.widget.go(result.state, result);
+	              } else {
+	                _this2.widget.go('error', result);
+	              }
+	            });
 
 	            payment.complete(YaPay$1.CompleteReason.Success);
 	          });
@@ -500,7 +535,7 @@ this.BX = this.BX || {};
 	        });
 	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
 	          if (event.shippingAddress) {
-	            _this2.exampleDeliveryOptions('deliveryOptions', event.shippingAddress).then(function (result) {
+	            _this2.getDeliveryOptions('deliveryOptions', event.shippingAddress).then(function (result) {
 	              payment.update({
 	                shippingOptions: result
 	              });
@@ -509,12 +544,12 @@ this.BX = this.BX || {};
 
 	          if (event.shippingOption) {
 	            payment.update({
-	              order: _this2.exampleOrderWithDirectShipping(event.shippingOption, payment)
+	              order: _this2.combineOrderWithDirectShipping(event.shippingOption, payment)
 	            });
 	          }
 
 	          if (event.pickupAddress) {
-	            _this2.exampleDeliveryOptions('pickupOptions', event.pickupAddress).then(function (result) {
+	            _this2.getDeliveryOptions('pickupOptions', event.pickupAddress).then(function (result) {
 	              payment.update({
 	                pickupOptions: result
 	              });
@@ -523,7 +558,7 @@ this.BX = this.BX || {};
 
 	          if (event.pickupOption) {
 	            payment.update({
-	              order: _this2.exampleOrderWithPickupShipping(event.pickupOption)
+	              order: _this2.combineOrderWithPickupShipping(event.pickupOption)
 	            });
 	          }
 	        });
@@ -540,105 +575,52 @@ this.BX = this.BX || {};
 	      return event.paymentMethodInfo.type === 'CASH';
 	    }
 	  }, {
-	    key: "fillProducts",
-	    value: function fillProducts() {
-	      return fetch(this.getOption('purchaseUrl'), {
-	        method: 'POST',
-	        headers: {
-	          'Content-Type': 'application/json'
-	        },
-	        body: JSON.stringify({
-	          siteId: this.getOption('siteId'),
-	          productId: this.getOption('productId') || null,
-	          fUserId: this.getOption('fUserId'),
-	          userId: this.getOption('userId') || null,
-	          setupId: this.getOption('setupId') || null,
-	          yapayAction: 'getProducts',
-	          mode: this.getOption('mode')
-	        })
-	      }).then(function (response) {
-	        return response.json();
-	      });
+	    key: "getProducts",
+	    value: function getProducts() {
+	      var expandData = {
+	        yapayAction: 'getProducts'
+	      };
+	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);
+	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
 	    key: "notify",
 	    value: function notify(payment, yandexPayData) {
-	      var _this3 = this;
-
-	      fetch(this.getOption('notifyUrl'), {
-	        method: 'POST',
-	        headers: {
-	          'Content-Type': 'application/json'
-	        },
-	        body: JSON.stringify({
-	          service: this.getOption('requestSign'),
-	          accept: 'json',
-	          yandexData: yandexPayData,
-	          externalId: payment.externalId //paySystemId: this.getOption('paySystemId')
-
-	        })
-	      }).then(function (response) {
-	        return response.json();
-	      }).then(function (result) {
-	        if (result.success === true) {
-	          _this3.widget.go(result.state, result);
-	        } else {
-	          _this3.widget.go('error', result);
-	        }
-	      });
+	      var data = {
+	        service: this.getOption('requestSign'),
+	        accept: 'json',
+	        yandexData: yandexPayData,
+	        externalId: payment.externalId
+	      };
+	      return this.query(this.getOption('notifyUrl'), data);
 	    }
 	  }, {
 	    key: "orderAccept",
-	    value: function orderAccept(action, event) {
-	      return fetch(this.getOption('purchaseUrl'), {
-	        method: 'POST',
-	        headers: {
-	          'Content-Type': 'application/json'
-	        },
-	        body: JSON.stringify({
-	          siteId: this.getOption('siteId'),
-	          productId: this.getOption('productId') || null,
-	          order: this.paymentData.order,
-	          fUserId: this.getOption('fUserId'),
-	          userId: this.getOption('userId') || null,
-	          setupId: this.getOption('setupId') || null,
-	          yapayAction: action,
-	          address: event.shippingMethodInfo.shippingAddress,
-	          contact: event.shippingContact,
-	          payment: event.paymentMethodInfo,
-	          paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
-	          mode: this.getOption('mode'),
-	          delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions
-	        })
-	      }).then(function (response) {
-	        return response.json();
-	      });
+	    value: function orderAccept(event) {
+	      var expandData = {
+	        yapayAction: 'orderAccept',
+	        address: event.shippingMethodInfo.shippingAddress,
+	        contact: event.shippingContact,
+	        payment: event.paymentMethodInfo,
+	        delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions,
+	        paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId')
+	      };
+	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);
+	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
-	    key: "exampleDeliveryOptions",
-	    value: function exampleDeliveryOptions(action, address) {
-	      return fetch(this.getOption('purchaseUrl'), {
-	        method: 'POST',
-	        headers: {
-	          'Content-Type': 'application/json'
-	        },
-	        body: JSON.stringify({
-	          siteId: this.getOption('siteId'),
-	          productId: this.getOption('productId') || null,
-	          fUserId: this.getOption('fUserId'),
-	          userId: this.getOption('userId') || null,
-	          setupId: this.getOption('setupId') || null,
-	          mode: this.getOption('mode'),
-	          address: address,
-	          yapayAction: action
-	        })
-	      }).then(function (response) {
-	        return response.json();
-	      });
+	    key: "getDeliveryOptions",
+	    value: function getDeliveryOptions(action, address) {
+	      var expandData = {
+	        address: address,
+	        yapayAction: action
+	      };
+	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);
+	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
-	    key: "exampleOrderWithDirectShipping",
-	    value: function exampleOrderWithDirectShipping(shippingOption) {
+	    key: "combineOrderWithPickupShipping",
+	    value: function combineOrderWithPickupShipping(shippingOption) {
 	      var order = this.paymentData.order;
 	      console.log(shippingOption);
 	      return babelHelpers.objectSpread({}, order, {
@@ -653,8 +635,8 @@ this.BX = this.BX || {};
 	      });
 	    }
 	  }, {
-	    key: "exampleOrderWithPickupShipping",
-	    value: function exampleOrderWithPickupShipping(pickupOption) {
+	    key: "combineOrderWithDirectShipping",
+	    value: function combineOrderWithDirectShipping(pickupOption) {
 	      var order = this.paymentData.order;
 	      return babelHelpers.objectSpread({}, order, {
 	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
@@ -668,8 +650,8 @@ this.BX = this.BX || {};
 	      });
 	    }
 	  }, {
-	    key: "exampleOrderWithProducts",
-	    value: function exampleOrderWithProducts(products) {
+	    key: "combineOrderWithProducts",
+	    value: function combineOrderWithProducts(products) {
 	      var order = this.paymentData.order;
 	      var exampleOrder = babelHelpers.objectSpread({}, order, {
 	        items: products.items,

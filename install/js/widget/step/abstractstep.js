@@ -37,6 +37,15 @@ export default class AbstractStep {
 		return Template.compile(this.options.template, data);
 	}
 
+	query(url, data) {
+		return fetch(url, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(data)
+		})
+			.then(response => {return response.json()})
+	}
+
 	getTemplate(key) {
 		let optionKey = key + 'Template';
 		let option = this.options[optionKey];

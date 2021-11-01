@@ -7,9 +7,11 @@ export default class Cart extends AbstractStep {
 
 	render(node, data) {
 		this.paymentData = this.getPaymentData(data);
+		this.defaultBody = this.getDefaultBody();
+
 		this.setupPaymentCash();
-		this.fillProducts().then((result) => {
-			this.exampleOrderWithProducts(result);
+		this.getProducts().then((result) => {
+			this.combineOrderWithProducts(result);
 			this.createPayment(node, this.paymentData);
 		});
 	}
@@ -18,10 +20,20 @@ export default class Cart extends AbstractStep {
 		return Template.compile(this.options.template, data);
 	}
 
+	getDefaultBody() {
+		return {
+			siteId: this.getOption('siteId'),
+			productId: this.getOption('productId'),
+			fUserId: this.getOption('fUserId'),
+			userId: this.getOption('userId'),
+			setupId: this.getOption('setupId'),
+			mode: this.getOption('mode')
+		}
+	}
+
 	setupPaymentCash(){
 		// Указываем возможность оплаты заказа при получении
-		if (this.getOption('paymentCash') !== null)
-		{
+		if (this.getOption('paymentCash') !== null) {
 			this.paymentData.paymentMethods.push({
 				type: YaPay.PaymentMethodType.Cash,
 			});
@@ -106,11 +118,21 @@ export default class Cart extends AbstractStep {
 				// Подписаться на событие process.
 				payment.on(YaPay.PaymentEventType.Process, (event) => {
 					// Получить платежный токен.
-					this.orderAccept('orderAccept', event).then((result) => {
-						if(!this.isPaymentTypeCash(event))
-						{
-							this.notify(result, event);
+					this.orderAccept(event).then((result) => {
+
+						if(this.isPaymentTypeCash(event)) {
+							payment.complete(YaPay.CompleteReason.Success);
+							return;
 						}
+
+						this.notify(result, event).then(result => {
+							if (result.success === true) {
+								this.widget.go(result.state, result);
+							} else {
+								this.widget.go('error', result);
+							}
+						});
+
 						payment.complete(YaPay.CompleteReason.Success);
 					});
 
@@ -135,26 +157,26 @@ export default class Cart extends AbstractStep {
 				payment.on(YaPay.PaymentEventType.Change, (event) => {
 
 					if (event.shippingAddress) {
-						this.exampleDeliveryOptions('deliveryOptions', event.shippingAddress).then((result) => {
+						this.getDeliveryOptions('deliveryOptions', event.shippingAddress).then((result) => {
 							payment.update({shippingOptions: result})
 						});
 					}
 
 					if (event.shippingOption){
 						payment.update({
-							order: this.exampleOrderWithDirectShipping(event.shippingOption, payment),
+							order: this.combineOrderWithDirectShipping(event.shippingOption, payment),
 						});
 					}
 
 					if (event.pickupAddress) {
-						this.exampleDeliveryOptions('pickupOptions', event.pickupAddress).then((result) => {
+						this.getDeliveryOptions('pickupOptions', event.pickupAddress).then((result) => {
 							payment.update({pickupOptions: result})
 						});
 					}
 
 					if (event.pickupOption) {
 						payment.update({
-							order: this.exampleOrderWithPickupShipping(event.pickupOption),
+							order: this.combineOrderWithPickupShipping(event.pickupOption),
 						});
 					}
 
@@ -166,94 +188,62 @@ export default class Cart extends AbstractStep {
 			});
 	}
 
-	isPaymentTypeCash(event)
-	{
-		return event.paymentMethodInfo.type === 'CASH';
+	isPaymentTypeCash(event) {
+		return (event.paymentMethodInfo.type === 'CASH');
 	}
 
-	fillProducts(){
-		return fetch(this.getOption('purchaseUrl'), {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				siteId: this.getOption('siteId'),
-				productId: this.getOption('productId') || null,
-				fUserId: this.getOption('fUserId'),
-				userId: this.getOption('userId') || null,
-				setupId: this.getOption('setupId') || null,
-				yapayAction: 'getProducts',
-				mode: this.getOption('mode')
-			})
-		})
-			.then(response => {return response.json()})
+	getProducts(){
+
+		let expandData = {
+			yapayAction: 'getProducts',
+		};
+
+		let data = {...this.defaultBody, ...expandData };
+
+		return this.query(this.getOption('purchaseUrl'), data);
 	}
 
 	notify(payment, yandexPayData) {
-		fetch(this.getOption('notifyUrl'), {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				service: this.getOption('requestSign'),
-				accept: 'json',
-				yandexData: yandexPayData,
-				externalId: payment.externalId,
-				//paySystemId: this.getOption('paySystemId')
-			})
-		})
-			.then(response => response.json())
-			.then(result => {
-				if (result.success === true) {
-					this.widget.go(result.state, result);
-				} else {
-					this.widget.go('error', result);
-				}
-			});
+
+		let data = {
+			service: this.getOption('requestSign'),
+			accept: 'json',
+			yandexData: yandexPayData,
+			externalId: payment.externalId,
+		};
+
+		return this.query(this.getOption('notifyUrl'), data);
 	}
 
-	orderAccept(action, event){
-		return fetch(this.getOption('purchaseUrl'), {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				siteId: this.getOption('siteId'),
-				productId: this.getOption('productId') || null,
-				order: this.paymentData.order,
-				fUserId: this.getOption('fUserId'),
-				userId: this.getOption('userId') || null,
-				setupId: this.getOption('setupId') || null,
-				yapayAction: action,
-				address: event.shippingMethodInfo.shippingAddress,
-				contact: event.shippingContact,
-				payment: event.paymentMethodInfo,
-				paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
-				mode: this.getOption('mode'),
-				delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions
-			})
-		})
-		.then(response => {return response.json()})
+	orderAccept(event) {
+
+		let expandData = {
+			yapayAction: 'orderAccept',
+			address: event.shippingMethodInfo.shippingAddress,
+			contact: event.shippingContact,
+			payment: event.paymentMethodInfo,
+			delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions,
+			paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
+		};
+
+		let data = {...this.defaultBody, ...expandData };
+
+		return this.query(this.getOption('purchaseUrl'), data);
 	}
 
-	exampleDeliveryOptions(action, address){
-		return fetch(this.getOption('purchaseUrl'), {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				siteId: this.getOption('siteId'),
-				productId: this.getOption('productId') || null,
-				fUserId: this.getOption('fUserId'),
-				userId: this.getOption('userId') || null,
-				setupId: this.getOption('setupId') || null,
-				mode: this.getOption('mode'),
-				address: address,
-				yapayAction: action
-			})
-		})
-		.then(response => {return response.json()})
+	getDeliveryOptions(action, address) {
+
+		let expandData = {
+			address: address,
+			yapayAction: action
+		};
+
+		let data = {...this.defaultBody, ...expandData };
+
+		return this.query(this.getOption('purchaseUrl'), data);
 	}
 
-	exampleOrderWithDirectShipping(shippingOption) {
+	combineOrderWithPickupShipping(shippingOption) {
 		const { order } = this.paymentData;
 
 		console.log(shippingOption);
@@ -275,7 +265,7 @@ export default class Cart extends AbstractStep {
 		};
 	}
 
-	exampleOrderWithPickupShipping(pickupOption) {
+	combineOrderWithDirectShipping(pickupOption) {
 		const { order } = this.paymentData;
 
 		return {
@@ -295,7 +285,7 @@ export default class Cart extends AbstractStep {
 		};
 	}
 
-	exampleOrderWithProducts(products) {
+	combineOrderWithProducts(products) {
 		const { order } = this.paymentData;
 
 		let exampleOrder = {
