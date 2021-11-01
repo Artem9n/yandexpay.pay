@@ -79,6 +79,18 @@ class Purchase extends \CBitrixComponent
 		$this->{$method}();
 	}
 
+	protected function getProductsAction() : void
+	{
+		$order = $this->getOrder();
+		$this->fillBasket($order);
+
+		$basketItems = $order->getBasketItemsData();
+
+		Exceptions\Facade::handleResult($basketItems);
+
+		echo Main\Web\Json::encode($basketItems->getData());
+	}
+
 	protected function deliveryOptionsAction() : void
 	{
 		$order = $this->getOrder();
@@ -103,9 +115,6 @@ class Purchase extends \CBitrixComponent
 		$this->fillLocation($order);
 
 		$calculatedDeliveries = $this->calculateDeliveries($order, 'PICKUP');
-		echo '<pre>';
-		print_r($calculatedDeliveries);
-		echo '</pre>';
 
 		foreach ($calculatedDeliveries as $pickup)
 		{
@@ -127,14 +136,30 @@ class Purchase extends \CBitrixComponent
 			}
 		}
 
+		echo Main\Web\Json::encode($result);
+	}
 
-		echo '<pre>';
-		print_r($result);
-		echo '</pre>';
-		die;
-		//$this->environment->getDelivery()->
+	protected function couponAction() : void
+	{
+		$order = $this->getOrder();
+		$this->fillBasket($order);
+		$this->fillCoupon($order);
+	}
 
+	protected function orderAcceptAction() : void
+	{
+		$userId = $this->createUser();
+		$order = $this->getOrder($userId);
 
+		$this->fillPersonType($order);
+		$this->fillStatus($order);
+		$this->fillProperties($order);
+		$this->fillLocation($order);
+		$this->fillBasket($order, true);
+		$this->fillDelivery($order);
+		$this->fillPaySystem($order);
+
+		$this->addOrder($order);
 	}
 
 	protected function fillBasket(EntityReference\Order $order, bool $isStrict = false) : void
@@ -191,13 +216,6 @@ class Purchase extends \CBitrixComponent
 		}
 	}
 
-	protected function couponAction() : void
-	{
-		$order = $this->getOrder();
-		$this->fillBasket($order);
-		$this->fillCoupon($order);
-	}
-
 	protected function fillCoupon(EntityReference\Order $order) : void
 	{
 		/** @var \YandexPay\Pay\Trading\Action\Request\Coupon $coupon */
@@ -205,35 +223,6 @@ class Purchase extends \CBitrixComponent
 		$couponResult = $order->applyCoupon($coupon->getCoupon());
 
 		Exceptions\Facade::handleResult($couponResult);
-	}
-
-	protected function orderAcceptAction() : void
-	{
-		$userId = $this->createUser();
-		$order = $this->getOrder($userId);
-
-		$this->fillPersonType($order);
-		$this->fillStatus($order);
-		$this->fillProperties($order);
-		$this->fillLocation($order);
-		$this->fillBasket($order, true);
-		$this->fillDelivery($order);
-		$this->fillPaySystem($order);
-
-		$this->addOrder($order);
-
-
-		//
-
-
-
-		//$this->fillLocation($order);
-		//$this->fillAddress($order);
-		//$this->fillDelivery();
-
-
-
-
 	}
 
 	protected function addOrder(EntityReference\Order $order) : void
@@ -506,7 +495,7 @@ class Purchase extends \CBitrixComponent
 		return $propertyValues;
 	}
 
-	public function getAddressProperties(TradingAction\Request\Address $address) : array
+	protected function getAddressProperties(TradingAction\Request\Address $address) : array
 	{
 		/** @var TradingAction\Request\Address\Coordinates $coordinates */
 		$coordinates = $address->getCoordinates();
@@ -695,17 +684,5 @@ class Purchase extends \CBitrixComponent
 	protected function getLang(string $code, $replace = null, $language = null): string
 	{
 		return Main\Localization\Loc::getMessage('YANDEX_PAY_TRADING_CART_' . $code, $replace, $language);
-	}
-
-	protected function getProductsAction() : void
-	{
-		$order = $this->getOrder();
-		$this->fillBasket($order);
-
-		$basketItems = $order->getBasketItemsData();
-
-		Exceptions\Facade::handleResult($basketItems);
-
-		echo Main\Web\Json::encode($basketItems->getData());
 	}
 }
