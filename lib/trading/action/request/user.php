@@ -69,6 +69,7 @@ class User extends Model
 			'FIRST_NAME' => $this->getFirstName(),
 			'MIDDLE_NAME' => $this->getSecondName(),
 			'PHONE' => $this->getPhone(),
+			'EMAIL' => $this->getEmail()
 		]);
 	}
 }

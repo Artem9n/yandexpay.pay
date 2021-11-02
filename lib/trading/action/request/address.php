@@ -63,8 +63,8 @@ class Address extends Model
 	public function getAddressValues() : array
 	{
 		return [
-			'BUILDING' => $this->getField('building'),
 			'STREET' => $this->getField('street'),
+			'BUILDING' => $this->getField('building'),
 			'ENTRANCE' => $this->getField('entrance'),
 			'INTERCOM' => $this->getField('intercom'),
 			'FLOOR' => $this->getField('floor'),
