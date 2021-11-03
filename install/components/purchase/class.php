@@ -627,13 +627,15 @@ class Purchase extends \CBitrixComponent
 
 			if (!$calculationResult->isSuccess()) { continue; }
 
+			$dateFrom = $calculationResult->getDateFrom() ?? new Main\Type\DateTime();
+
 			$result[] = [
 				'id'        => (string)$calculationResult->getDeliveryId(),
 				'label'     => $calculationResult->getServiceName(),
 				'amount'    => (string)$calculationResult->getPrice(),
 				'provider'  => 'custom', //todo
 				'category'  => $calculationResult->getCategory(), //todo
-				'date'      => $calculationResult->getDateFrom()->getTimestamp(), //todo
+				'date'      => $dateFrom->getTimestamp(), //todo
 				'stores'    => $calculationResult->getStores(),
 			];
 		}
