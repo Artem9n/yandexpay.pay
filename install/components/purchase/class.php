@@ -82,7 +82,10 @@ class Purchase extends \CBitrixComponent
 	protected function getProductsAction() : void
 	{
 		$order = $this->getOrder();
+
+		$this->fillPersonType($order);
 		$this->fillBasket($order);
+		$this->fillCoupon($order);
 
 		$basketItems = $order->getBasketItemsData();
 
@@ -97,6 +100,7 @@ class Purchase extends \CBitrixComponent
 
 		$this->fillPersonType($order);
 		$this->fillBasket($order);
+		$this->fillCoupon($order);
 		$this->fillLocation($order);
 
 		$calculatedDeliveries = $this->calculateDeliveries($order, 'DELIVERY');
@@ -112,6 +116,7 @@ class Purchase extends \CBitrixComponent
 
 		$this->fillPersonType($order);
 		$this->fillBasket($order);
+		$this->fillCoupon($order);
 		$this->fillLocation($order);
 
 		$calculatedDeliveries = $this->calculateDeliveries($order, 'PICKUP');
@@ -156,6 +161,7 @@ class Purchase extends \CBitrixComponent
 		$this->fillProperties($order);
 		$this->fillLocation($order);
 		$this->fillBasket($order, true);
+		$this->fillCoupon($order);
 		$this->fillDelivery($order);
 		$this->fillPaySystem($order);
 
@@ -218,11 +224,15 @@ class Purchase extends \CBitrixComponent
 
 	protected function fillCoupon(EntityReference\Order $order) : void
 	{
-		/** @var \YandexPay\Pay\Trading\Action\Request\Coupon $coupon */
-		$coupon = $this->getRequestCoupon();
-		$couponResult = $order->applyCoupon($coupon->getCoupon());
+		/** @var \YandexPay\Pay\Trading\Action\Request\Coupon $requestCoupon */
+		$requestCoupon = $this->getRequestCoupon();
+		$coupon = $requestCoupon->getCoupon() ?? 'SL-HO25W-JD3ASTQ';
 
-		Exceptions\Facade::handleResult($couponResult);
+		if ($coupon !== null)
+		{
+			$couponResult = $order->applyCoupon($coupon);
+			Exceptions\Facade::handleResult($couponResult);
+		}
 	}
 
 	protected function addOrder(EntityReference\Order $order) : void

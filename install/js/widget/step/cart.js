@@ -164,7 +164,7 @@ export default class Cart extends AbstractStep {
 
 					if (event.shippingOption){
 						payment.update({
-							order: this.combineOrderWithDirectShipping(event.shippingOption, payment),
+							order: this.combineOrderWithDirectShipping(event.shippingOption),
 						});
 					}
 

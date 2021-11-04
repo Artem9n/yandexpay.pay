@@ -8,11 +8,12 @@ use YandexPay\Pay\Reference\Common\Model;
 
 class Coupon extends Model
 {
-	public function getCoupon() : string
+	public function getCoupon() : ?string
 	{
 		$result = $this->getField('coupon');
 
-		Assert::notNull($result, 'coupon');
+		if ($result === null) { return null; }
+
 		Assert::isString($result, 'coupon');
 
 		return $result;
