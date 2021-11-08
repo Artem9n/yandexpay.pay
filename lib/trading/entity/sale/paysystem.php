@@ -113,7 +113,7 @@ class PaySystem extends EntityReference\PaySystem
 
 		if ($className === '')
 		{
-			if (Sale\PaySystem\Manager::isRestHёandler($actionFile))
+			if (Sale\PaySystem\Manager::isRestHandler($actionFile))
 			{
 				$className = Sale\PaySystem\RestHandler::class;
 				if (!class_exists($actionFile))
