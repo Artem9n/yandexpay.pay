@@ -10,7 +10,6 @@ use YandexPay\Pay\Trading\Setup;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 use YandexPay\Pay\Utils;
-use Bitrix\Sale\PaySystem;
 
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
 
@@ -61,7 +60,7 @@ class TradingCart extends \CBitrixComponent
 		global $USER;
 
 		$params = $this->handler->getParamsBusValue();
-		$cardNetworcks = $this->handler->getCardNetworks();
+		$cardNetworks = $this->handler->getCardNetworks();
 		$gateway = $this->handler->getHandlerMode();
 
 		$setup = $this->getSetup();
@@ -75,7 +74,7 @@ class TradingCart extends \CBitrixComponent
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
 			'buttonTheme'       => $params['YANDEX_PAY_VARIANT_BUTTON'],
 			'buttonWidth'       => $params['YANDEX_PAY_WIDTH_BUTTON'],
-			'cardNetworks'      => $cardNetworcks,
+			'cardNetworks'      => $cardNetworks,
 			'gateway'           => $gateway,
 			'gatewayMerchantId' => $params['YANDEX_PAY_' . $gateway . '_PAYMENT_GATEWAY_MERCHANT_ID'],
 			'useEmail'          => (bool)$options->getValue('USE_BUYER_EMAIL'),

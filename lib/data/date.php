@@ -152,7 +152,7 @@ class Date
 
 		foreach ($variants as $variant)
 		{
-			if (TextString::getPosition($format, $variant) !== false)
+			if (mb_strpos($format, $variant) !== false)
 			{
 				$result = true;
 				break;
