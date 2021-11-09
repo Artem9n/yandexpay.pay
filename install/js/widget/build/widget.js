@@ -544,7 +544,7 @@ this.BX = this.BX || {};
 
 	          if (event.shippingOption) {
 	            payment.update({
-	              order: _this2.combineOrderWithDirectShipping(event.shippingOption, payment)
+	              order: _this2.combineOrderWithDirectShipping(event.shippingOption)
 	            });
 	          }
 
