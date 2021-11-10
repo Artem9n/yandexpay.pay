@@ -1,5 +1,10 @@
 export default class Template {
 
+	/**
+	 * @param {string=} template
+	 * @param {Object} vars
+	 * @returns {string}
+	 */
 	static compile(template, vars) {
 		let key;
 		let replaceKey;

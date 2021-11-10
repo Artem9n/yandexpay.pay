@@ -6,6 +6,11 @@ import Cart from "./cart";
 
 export default class Factory {
 
+	/**
+	 * @param {string} type
+	 * @returns {Cart|Finish|Step3ds|Payment|Failure}
+	 * @throws {Error}
+	 */
 	static make(type) {
 		if (type === '3ds') {
 			return new Secure3d();

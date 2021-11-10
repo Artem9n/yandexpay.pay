@@ -4,8 +4,6 @@ import AbstractStep from "./abstractstep";
 export default class Step3ds extends AbstractStep {
 
 	static defaults = {
-		url: '/yandex_pay.php',
-
 		template: '<form name="form" action="#ACTION#" method="#METHOD#">'
 			+ '#INPUTS#'
 			+ '</form>',
@@ -26,6 +24,10 @@ export default class Step3ds extends AbstractStep {
 		return Template.compile(template, vars);
 	}
 
+	/**
+	 * @param {{url:string, termUrl:boolean, params:[], method:string}} data
+	 * @returns {string}
+	 */
 	makeInputs(data) {
 		let key;
 		let vars = data.params;
@@ -48,6 +50,9 @@ export default class Step3ds extends AbstractStep {
 		return template;
 	}
 
+	/**
+	 * @returns {string}
+	 */
 	makeTermUrl() {
 		let result = this.getOption('YANDEX_PAY_NOTIFY_URL');
 		let backUrl = window.location.href;
@@ -61,6 +66,9 @@ export default class Step3ds extends AbstractStep {
 		return result;
 	}
 
+	/**
+	 * @param {Object<Element>} node
+	 */
 	autosubmit(node) {
 		const form = node.querySelector('form');
 

@@ -9,6 +9,12 @@ this.BX = this.BX || {};
 
 	  babelHelpers.createClass(Template, null, [{
 	    key: "compile",
+
+	    /**
+	     * @param {string=} template
+	     * @param {Object} vars
+	     * @returns {string}
+	     */
 	    value: function compile(template, vars) {
 	      var key;
 	      var replaceKey;
@@ -42,18 +48,32 @@ this.BX = this.BX || {};
 	}();
 
 	var AbstractStep = /*#__PURE__*/function () {
+	  /**
+	   * @param {Object} options
+	   */
 	  function AbstractStep() {
 	    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	    babelHelpers.classCallCheck(this, AbstractStep);
 	    this.options = Object.assign({}, this.constructor.defaults, options);
 	    this.widget = null;
 	  }
+	  /**
+	   *
+	   * @param {Widget} widget
+	   */
+
 
 	  babelHelpers.createClass(AbstractStep, [{
 	    key: "setWidget",
 	    value: function setWidget(widget) {
 	      this.widget = widget;
 	    }
+	    /**
+	     *
+	     * @param {string} key
+	     * @returns {*}
+	     */
+
 	  }, {
 	    key: "getOption",
 	    value: function getOption(key) {
@@ -68,17 +88,33 @@ this.BX = this.BX || {};
 	        return this.widget.options[key];
 	      }
 	    }
+	    /**
+	     * @param {Object<Element>} node Element
+	     * @param {Object} data Options
+	     */
+
 	  }, {
 	    key: "render",
 	    value: function render(node) {
 	      var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	      node.innerHTML = this.compile(data);
 	    }
+	    /**
+	     * @param {Object} data
+	     * @returns {string}
+	     */
+
 	  }, {
 	    key: "compile",
 	    value: function compile(data) {
 	      return Template.compile(this.options.template, data);
 	    }
+	    /**
+	     * @param {string} url
+	     * @param {Object} data
+	     * @returns {Promise.<Object>}
+	     */
+
 	  }, {
 	    key: "query",
 	    value: function query(url, data) {
@@ -139,7 +175,7 @@ this.BX = this.BX || {};
 
 	babelHelpers.defineProperty(AbstractStep, "optionSection", null);
 	babelHelpers.defineProperty(AbstractStep, "defaults", {
-	  template: null
+	  template: ''
 	});
 
 	var Step3ds = /*#__PURE__*/function (_AbstractStep) {
@@ -165,6 +201,11 @@ this.BX = this.BX || {};
 	      });
 	      return Template.compile(template, vars);
 	    }
+	    /**
+	     * @param {{url:string, termUrl:boolean, params:[], method:string}} data
+	     * @returns {string}
+	     */
+
 	  }, {
 	    key: "makeInputs",
 	    value: function makeInputs(data) {
@@ -190,6 +231,10 @@ this.BX = this.BX || {};
 
 	      return template;
 	    }
+	    /**
+	     * @returns {string}
+	     */
+
 	  }, {
 	    key: "makeTermUrl",
 	    value: function makeTermUrl() {
@@ -198,6 +243,10 @@ this.BX = this.BX || {};
 	      result += (result.indexOf('?') === -1 ? '?' : '&') + 'backurl=' + encodeURIComponent(backUrl) + '&service=' + this.getOption('requestSign') + '&paymentId=' + this.getOption('externalId');
 	      return result;
 	    }
+	    /**
+	     * @param {Object<Element>} node
+	     */
+
 	  }, {
 	    key: "autosubmit",
 	    value: function autosubmit(node) {
@@ -209,7 +258,6 @@ this.BX = this.BX || {};
 	}(AbstractStep);
 
 	babelHelpers.defineProperty(Step3ds, "defaults", {
-	  url: '/yandex_pay.php',
 	  template: '<form name="form" action="#ACTION#" method="#METHOD#">' + '#INPUTS#' + '</form>'
 	});
 
@@ -687,6 +735,12 @@ this.BX = this.BX || {};
 
 	  babelHelpers.createClass(Factory, null, [{
 	    key: "make",
+
+	    /**
+	     * @param {string} type
+	     * @returns {Cart|Finish|Step3ds|Payment|Failure}
+	     * @throws {Error}
+	     */
 	    value: function make(type) {
 	      if (type === '3ds') {
 	        return new Step3ds();
@@ -707,6 +761,14 @@ this.BX = this.BX || {};
 	}();
 
 	var Widget = /*#__PURE__*/function () {
+	  /**
+	   * @type {{failureTemplate: string, modalTemplate: string, finishedTemplate: string}}
+	   */
+
+	  /**
+	   * @param {Object<Element>} element
+	   * @param {Object} options
+	   */
 	  function Widget(element) {
 	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	    babelHelpers.classCallCheck(this, Widget);
@@ -718,23 +780,42 @@ this.BX = this.BX || {};
 	    this.el = element;
 	    this.options = Object.assign({}, this.defaults, options);
 	  }
+	  /**
+	   * @param {Object} data
+	   */
+
 
 	  babelHelpers.createClass(Widget, [{
 	    key: "payment",
 	    value: function payment(data) {
 	      this.go('payment', data);
 	    }
+	    /**
+	     * @param {Object} data
+	     */
+
 	  }, {
 	    key: "cart",
 	    value: function cart(data) {
 	      this.go('cart', data);
 	    }
+	    /**
+	     * @param {string} type
+	     * @param {Object} data
+	     */
+
 	  }, {
 	    key: "go",
 	    value: function go(type, data) {
 	      var step = this.makeStep(type);
 	      step.render(this.el, data);
 	    }
+	    /**
+	     * @param {String} type
+	     * @returns {Cart|Finish|Step3ds|Payment|Failure}
+	     * @throws {Error}
+	     */
+
 	  }, {
 	    key: "makeStep",
 	    value: function makeStep(type) {

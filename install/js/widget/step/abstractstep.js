@@ -5,18 +5,30 @@ export default class AbstractStep {
 	static optionSection = null;
 
 	static defaults = {
-		template: null,
+		template: '',
 	}
 
+	/**
+	 * @param {Object} options
+	 */
 	constructor(options = {}) {
 		this.options = Object.assign({}, this.constructor.defaults, options);
 		this.widget = null;
 	}
 
+	/**
+	 *
+	 * @param {Widget} widget
+	 */
 	setWidget(widget) {
 		this.widget = widget;
 	}
 
+	/**
+	 *
+	 * @param {string} key
+	 * @returns {*}
+	 */
 	getOption(key) {
 		const section = this.constructor.optionSection;
 
@@ -29,14 +41,27 @@ export default class AbstractStep {
 		}
 	}
 
+	/**
+	 * @param {Object<Element>} node Element
+	 * @param {Object} data Options
+	 */
 	render(node, data = {}) {
 		node.innerHTML = this.compile(data);
 	}
 
+	/**
+	 * @param {Object} data
+	 * @returns {string}
+	 */
 	compile(data) {
 		return Template.compile(this.options.template, data);
 	}
 
+	/**
+	 * @param {string} url
+	 * @param {Object} data
+	 * @returns {Promise.<Object>}
+	 */
 	query(url, data) {
 		return fetch(url, {
 			method: 'POST',
