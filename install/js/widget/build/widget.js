@@ -300,7 +300,12 @@ this.BX = this.BX || {};
 	      var _this = this;
 
 	      // Создать платеж.
-	      YaPay.createPayment(paymentData).then(function (payment) {
+	      YaPay.createPayment(paymentData, {
+	        agent: {
+	          name: "CMS-Bitrix",
+	          version: "1.0"
+	        }
+	      }).then(function (payment) {
 	        // Создать экземпляр кнопки.
 	        var button = payment.createButton({
 	          type: YaPay.ButtonType.Pay,

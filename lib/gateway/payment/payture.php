@@ -45,10 +45,22 @@ class Payture extends Base
 	protected function getUrlList() : array
 	{
 		return [
-			'pay'       => 'https://sandbox3.payture.com/api/MobilePay',
-			'block'     => 'https://sandbox3.payture.com/api/MobileBlock',
-			'refund'    => 'https://sandbox3.payture.com/api/Refund',
-			'pay3ds'    => 'https://sandbox3.payture.com/api/Pay3DS'
+			'pay' => [
+				static::TEST_URL => 'https://sandbox3.payture.com/api/MobilePay',
+				static::ACTIVE_URL => 'https://secure.payture.com/api/MobilePay',
+			],
+			'block' => [
+				static::TEST_URL => 'https://sandbox3.payture.com/api/MobileBlock',
+				static::ACTIVE_URL => 'https://secure.payture.com/api/MobileBlock',
+			],
+			'refund' => [
+				static::TEST_URL => 'https://sandbox3.payture.com/api/Refund',
+				static::ACTIVE_URL => 'https://secure.payture.com/api/Refund',
+			],
+			'pay3ds' => [
+				static::TEST_URL => 'https://sandbox3.payture.com/api/Pay3DS',
+				static::ACTIVE_URL => 'https://secure.payture.com/api/Pay3DS',
+			]
 		];
 	}
 
@@ -128,7 +140,7 @@ class Payture extends Base
 		$data = [
 			'Key'       => $this->getGatewayApiKey(),
 			'OrderId'   => $this->getExternalId(),
-			'PaRes'     => $this->request->get('PaRes') ?? $this->request->get('CRes')
+			'PaRes'     => $this->request->get('PaRes') ?? $this->request->get('cres') ?? $this->request->get('CRes')
 		];
 
 		$url = $this->getUrl('pay3ds');
@@ -275,7 +287,10 @@ class Payture extends Base
 	{
 		return (
 			($this->request->get('MD') !== null && $this->request->get('PaRes') !== null)
-			|| ($this->request->get('threeDSSessionData') !== null && $this->request->get('CRes') !== null)
+			|| (
+				$this->request->get('threeDSSessionData') !== null
+				&& ($this->request->get('cres') !== null || $this->request->get('CRes') !== null)
+			)
 		);
 	}
 }
