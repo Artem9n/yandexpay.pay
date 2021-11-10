@@ -97,7 +97,7 @@ export default class Cart extends AbstractStep {
 
 	createPayment(node, paymentData) {
 		// Создать платеж.
-		YaPay.createPayment(paymentData)
+		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then( (payment) => {
 				// Создать экземпляр кнопки.
 				let button = payment.createButton({
