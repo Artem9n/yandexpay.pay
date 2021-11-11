@@ -49,7 +49,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		$params = [
 			'requestSign'           => static::REQUEST_SIGN,
 			'order'                 => $this->getOrderData($payment),
-			'env'                   => $this->isTestMode($payment) ? self::YANDEX_TEST_MODE : self::YANDEX_PRODUCTION_MODE,
+			'env'                   => $this->getEnvironment($payment),
 			'merchantId'            => $this->getParamValue($payment, 'MERCHANT_ID'),
 			'merchantName'          => $this->getParamValue($payment, 'MERCHANT_NAME'),
 			'buttonTheme'           => $this->getParamValue($payment, 'VARIANT_BUTTON'),
@@ -89,6 +89,11 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
         }
 
         return $result;
+	}
+
+	public function getEnvironment(Payment $payment = null) : string
+	{
+		return $this->isTestMode($payment) ? self::YANDEX_TEST_MODE : self::YANDEX_PRODUCTION_MODE;
 	}
 
 	public function getCardNetworks(Payment $payment = null) : array

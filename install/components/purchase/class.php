@@ -355,7 +355,7 @@ class Purchase extends \CBitrixComponent
 			'FIRST_NAME' => $userData->getFirstName(),
 			'LAST_NAME' => $userData->getLastName(),
 			'SECOND_NAME' => $userData->getSecondName(),
-			'SITE_ID' => $this->options->getSiteId(),
+			'SITE_ID' => $this->setup->getSiteId(),
 		]);
 
 		if ($allowAppendOrder)
@@ -385,7 +385,7 @@ class Purchase extends \CBitrixComponent
 	protected function getOrder(int $userId = null) : EntityReference\Order
 	{
 		$userId = $userId ?? (int)$this->request->get('fUserId');
-		$siteId = $this->options->getSiteId() ?? SITE_ID;
+		$siteId = $this->setup->getSiteId() ?? SITE_ID;
 
 		return $this->environment->getOrderRegistry()->createOrder(
 			$siteId,
@@ -449,9 +449,9 @@ class Purchase extends \CBitrixComponent
 
 	protected function fillPersonType(EntityReference\Order $order) : void
 	{
-		Assert::notNull($this->options->getPersonTypeId(), 'personal type');
+		Assert::notNull($this->setup->getPersonTypeId(), 'personal type');
 
-		$personTypeResult = $order->setPersonType($this->options->getPersonTypeId());
+		$personTypeResult = $order->setPersonType($this->setup->getPersonTypeId());
 
 		Exceptions\Facade::handleResult($personTypeResult);
 	}
@@ -682,6 +682,7 @@ class Purchase extends \CBitrixComponent
 
 		$this->setup = $this->loadSetup();
 		$this->setup->wakeupOptions();
+		$this->setup->fill();
 
 		$this->options = $this->setup->getOptions();
 	}

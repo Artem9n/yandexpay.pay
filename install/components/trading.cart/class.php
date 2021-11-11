@@ -62,6 +62,7 @@ class TradingCart extends \CBitrixComponent
 		$params = $this->handler->getParamsBusValue();
 		$cardNetworks = $this->handler->getCardNetworks();
 		$gateway = $this->handler->getHandlerMode();
+		$environment = $this->handler->getEnvironment();
 
 		$setup = $this->getSetup();
 		$setup->wakeupOptions();
@@ -69,7 +70,7 @@ class TradingCart extends \CBitrixComponent
 		$options = $setup->getOptions();
 
 		$this->arResult['PARAMS'] = [
-			'env'               => $params['YANDEX_PAY_TEST_MODE'] === 'Y' ? 'SANDBOX' : 'PRODUCTION',
+			'env'               => $environment,
 			'merchantId'        => $params['YANDEX_PAY_MERCHANT_ID'],
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
 			'buttonTheme'       => $params['YANDEX_PAY_VARIANT_BUTTON'],
