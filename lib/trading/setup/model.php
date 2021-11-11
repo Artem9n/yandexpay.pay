@@ -39,8 +39,12 @@ class Model extends EO_Repository
 
 	protected function getOptionDefaults() : array
 	{
+		$this->fillPersonTypeId();
+		$this->fillSiteId();
+
 		return [
 			'PERSON_TYPE_ID' => $this->getPersonTypeId(),
+			'SITE_ID' => $this->getSiteId()
 		];
 	}
 

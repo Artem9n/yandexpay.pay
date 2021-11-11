@@ -27,6 +27,11 @@ class Options extends Reference\Skeleton
 		return (int)$this->requireValue('PERSON_TYPE_ID');
 	}
 
+	public function getSiteId() : string
+	{
+		return $this->requireValue('SITE_ID');
+	}
+
 	public function getPaymentCash() : ?int
 	{
 		return $this->getValue('PICKUP_PAYSYSTEM');

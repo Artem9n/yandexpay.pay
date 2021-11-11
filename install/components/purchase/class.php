@@ -261,13 +261,13 @@ class Purchase extends \CBitrixComponent
 	{
 		$result = null;
 
-		$order = \Bitrix\Sale\Order::load($orderId);
+		$order = Sale\Order::load($orderId);
 
 		if ($order === null) { return null; }
 
 		$paymentCollection = $order->getPaymentCollection();
 
-		/** @var \Bitrix\Sale\Payment $payment */
+		/** @var Sale\Payment $payment */
 		foreach ($paymentCollection as $payment)
 		{
 			if ($payment->isInner()) { continue; }
@@ -355,7 +355,7 @@ class Purchase extends \CBitrixComponent
 			'FIRST_NAME' => $userData->getFirstName(),
 			'LAST_NAME' => $userData->getLastName(),
 			'SECOND_NAME' => $userData->getSecondName(),
-			'SITE_ID' => $this->request->get('siteId'),
+			'SITE_ID' => $this->options->getSiteId(),
 		]);
 
 		if ($allowAppendOrder)
@@ -385,7 +385,7 @@ class Purchase extends \CBitrixComponent
 	protected function getOrder(int $userId = null) : EntityReference\Order
 	{
 		$userId = $userId ?? (int)$this->request->get('fUserId');
-		$siteId = $this->request->get('siteId') ?? SITE_ID;
+		$siteId = $this->options->getSiteId() ?? SITE_ID;
 
 		return $this->environment->getOrderRegistry()->createOrder(
 			$siteId,
@@ -449,9 +449,9 @@ class Purchase extends \CBitrixComponent
 
 	protected function fillPersonType(EntityReference\Order $order) : void
 	{
-		Assert::notNull($this->setup->getPersonTypeId(), 'personal type');
+		Assert::notNull($this->options->getPersonTypeId(), 'personal type');
 
-		$personTypeResult = $order->setPersonType($this->setup->getPersonTypeId());
+		$personTypeResult = $order->setPersonType($this->options->getPersonTypeId());
 
 		Exceptions\Facade::handleResult($personTypeResult);
 	}
@@ -682,8 +682,6 @@ class Purchase extends \CBitrixComponent
 
 		$this->setup = $this->loadSetup();
 		$this->setup->wakeupOptions();
-		$this->setup->fillPersonTypeId();
-		$this->setup->fillSiteId();
 
 		$this->options = $this->setup->getOptions();
 	}
