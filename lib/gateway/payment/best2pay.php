@@ -273,8 +273,7 @@ class Best2pay extends Gateway\Base
 		$password = $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
 		$amount = $this->getPaymentAmount();
 		$currency = $this->getCurrencyFormatted($this->getPaymentField('CURRENCY'));
-		$description =  $this->convertEncoding(
-			static::getMessage('REGISTER_DESCRIPTION', ['#ORDER_ID#' => $this->getOrderId()]));
+		$description =  $this->convertEncoding(static::getMessage('REGISTER_DESCRIPTION', ['#ORDER_ID#' => $this->getOrderId()]));
 		$reference = $this->getExternalId();
 		$signature = $this->getSignature([$sector, $amount, $currency, $password]);
 
