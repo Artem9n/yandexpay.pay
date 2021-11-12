@@ -161,9 +161,9 @@ class Best2pay extends Gateway\Base
 
 	protected function buildRegisterOrder(): array
 	{
-		$registredOrder = $this->getRegistredOrder();
+		$registeredOrder = $this->getRegisteredOrder();
 
-		if (!empty($registredOrder)) { return $registredOrder; }
+		if (!empty($registeredOrder)) { return $registeredOrder; }
 
 		return $this->registerOrder();
 	}
@@ -187,7 +187,7 @@ class Best2pay extends Gateway\Base
 		return $result;
 	}
 
-	protected function getRegistredOrder(): array
+	protected function getRegisteredOrder(): array
 	{
 		$httpClient = new HttpClient();
 
@@ -273,11 +273,8 @@ class Best2pay extends Gateway\Base
 		$password = $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
 		$amount = $this->getPaymentAmount();
 		$currency = $this->getCurrencyFormatted($this->getPaymentField('CURRENCY'));
-		$description =  Main\Text\Encoding::convertEncoding(
-			static::getMessage('REGISTER_DESCRIPTION', ['#ORDER_ID#' => $this->getOrderId()]),
-			'WINDOWS-1251',
-			'UTF-8'
-		);
+		$description =  $this->convertEncoding(
+			static::getMessage('REGISTER_DESCRIPTION', ['#ORDER_ID#' => $this->getOrderId()]));
 		$reference = $this->getExternalId();
 		$signature = $this->getSignature([$sector, $amount, $currency, $password]);
 
@@ -290,6 +287,15 @@ class Best2pay extends Gateway\Base
 			'reference'     => $reference,
 			'url'           => $this->getRedirectUrl()
 		];
+	}
+
+	protected function convertEncoding(string $message) : string
+	{
+		$isUtf8Config = Main\Application::isUtfMode();
+
+		if ($isUtf8Config) { return $message; }
+
+		return Main\Text\Encoding::convertEncoding($message, 'WINDOWS-1251', 'UTF-8');
 	}
 
 	public function refund(): void
