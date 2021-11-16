@@ -12,9 +12,9 @@ try
 		throw new Main\SystemException('Module yandexpay.pay is required');
 	}
 
-	$controller = new Pay\Ui\Trading\InjectionGrid();
+	$controller = new Pay\Ui\Injection\SetupEdit();
 
-    $controller->checkReadAccess();
+	$controller->checkReadAccess();
 	$controller->loadModules();
 
 	$controller->show();

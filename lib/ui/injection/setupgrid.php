@@ -1,10 +1,10 @@
 <?php
-namespace YandexPay\Pay\Ui\Trading;
+namespace YandexPay\Pay\Ui\Injection;
 
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay;
 
-class InjectionGrid extends Pay\Ui\Reference\Page
+class SetupGrid extends Pay\Ui\Reference\Page
 {
 	use Concerns\HasMessage;
 
@@ -20,40 +20,27 @@ class InjectionGrid extends Pay\Ui\Reference\Page
 			'GRID_ID' => 'YANDEX_PAY_TRADING_INJECTION_GRID',
 			'ALLOW_SAVE' => Pay\Ui\Access::hasRights($this->getReadRights()),
 			'PROVIDER_CLASS_NAME' => Pay\Component\Model\Grid::class,
-			'DATA_CLASS_NAME' => Pay\Trading\Injection\RepositoryTable::class,
-			'EDIT_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_injection_setup', $baseQuery) . '&id=#ID#',
-			'ADD_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_injection_edit', $baseQuery),
+			'DATA_CLASS_NAME' => Pay\Injection\Setup\RepositoryTable::class,
+			'EDIT_URL' => Pay\Ui\Admin\Path::getModuleUrl('injection_edit', $baseQuery) . '&id=#ID#',
+			'ADD_URL' => Pay\Ui\Admin\Path::getModuleUrl('injection_edit', $baseQuery),
 			'TITLE' => self::getMessage('TITLE'),
 			'NAV_TITLE' => self::getMessage('NAVIGATION'),
 			'LIST_FIELDS' => [
-				'ID',
-				'SITE_ID',
-				'PERSON_TYPE_ID',
-				'ACTIVE',
+				'TRADING_ID',
+				'BEHAVIOR',
 			],
 			'CONTEXT_MENU' => [
 				[
 					'TEXT' => self::getMessage('ACTION_ADD'),
-					'LINK' => Pay\Ui\Admin\Path::getModuleUrl('trading_injection_edit', $baseQuery),
+					'LINK' => Pay\Ui\Admin\Path::getModuleUrl('injection_edit', $baseQuery),
 					'ICON' => 'btn_new',
 				],
 			],
 			'ROW_ACTIONS' => [
-				'SETUP' => [
-					'URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_injection_setup', $baseQuery) . '&id=#ID#',
-					'ICON' => 'setting',
-					'TEXT' => self::getMessage('ACTION_SETUP'),
-					'DEFAULT' => true,
-				],
 				'EDIT' => [
-					'URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_injection_edit', $baseQuery) . '&id=#ID#',
+					'URL' => Pay\Ui\Admin\Path::getModuleUrl('injection_edit', $baseQuery) . '&id=#ID#',
 					'ICON' => 'edit',
 					'TEXT' => self::getMessage('ACTION_EDIT')
-				],
-				'COPY' => [
-					'URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_injection_edit', $baseQuery) . '&id=#ID#&copy=Y',
-					'ICON' => 'copy',
-					'TEXT' => self::getMessage('ACTION_COPY')
 				],
 				'ACTIVATE' => [
 					'ACTION' => 'activate',

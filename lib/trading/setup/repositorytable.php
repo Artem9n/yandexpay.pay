@@ -50,8 +50,8 @@ class RepositoryTable extends ORM\Data\DataManager
 
             new ORM\Fields\Relations\Reference(
                 'INJECTION',
-                Pay\Trading\injection\RepositoryTable::class,
-                ORM\Query\Join::on('this.ID', 'ref.SETUP_ID')
+                Pay\Injection\Setup\RepositoryTable::class,
+                ORM\Query\Join::on('this.ID', 'ref.TRADING_ID')
             ),
 		];
 	}

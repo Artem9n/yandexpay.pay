@@ -1,6 +1,6 @@
 <?php
 
-namespace YandexPay\Pay\Trading\Injection;
+namespace YandexPay\Pay\Injection\Setup;
 
 use YandexPay\Pay\Trading\Entity;
 use YandexPay\Pay\Trading\Settings;

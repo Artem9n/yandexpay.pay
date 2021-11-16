@@ -12,12 +12,12 @@ try
 		throw new Main\SystemException('Module yandexpay.pay is required');
 	}
 
-	$controller = new Pay\Ui\Trading\InjectionEdit();
-	$controller->checkReadAccess();
+	$controller = new Pay\Ui\Injection\SetupGrid();
+
+    $controller->checkReadAccess();
 	$controller->loadModules();
+
 	$controller->show();
-
-
 }
 catch (Main\SystemException $exception)
 {

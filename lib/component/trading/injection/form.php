@@ -26,8 +26,7 @@ class Form extends Pay\Component\Plain\Form
 
     public function load($primary, array $select = [], bool $isCopy = false) : array
     {
-        $result = $this->loadFieldsDefaults($select);
-        return $result;
+        return $this->loadFieldsDefaults($select);
     }
 
     protected function loadFieldsDefaults(array $select = []) : array
@@ -56,7 +55,7 @@ class Form extends Pay\Component\Plain\Form
     }
 
 
-    protected function getSetup() : Pay\Trading\Injection\Model
+    protected function getSetup() : Pay\Injection\Setup\Model
     {
 
         return $this->setup;

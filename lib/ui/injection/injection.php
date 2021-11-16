@@ -1,5 +1,5 @@
 <?php
-namespace YandexPay\Pay\Ui\Trading;
+namespace YandexPay\Pay\Ui\Injection;
 
 use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
@@ -23,15 +23,15 @@ class Injection extends Pay\Ui\Reference\Page
         $APPLICATION->IncludeComponent('yandexpay.pay:admin.form', '', [
             'FORM_ID' => 'YANDEX_PAY_ADMIN_TRADING_INJECTION_ADD',
             'PROVIDER_CLASS_NAME' => Pay\Component\Trading\Injection\Form::class,
-            'DATA_CLASS_NAME' => Pay\Trading\Injection\RepositoryTable::class,
+            'DATA_CLASS_NAME' => Pay\Injection\Setup\RepositoryTable::class,
             'TITLE' => self::getMessage('TITLE'),
             'ALLOW_SAVE' => Pay\Ui\Access::hasRights($this->getWriteRights()),
-            'LIST_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_injection_grid', $baseQuery),
+            'LIST_URL' => Pay\Ui\Admin\Path::getModuleUrl('injection_grid', $baseQuery),
             'PRIMARY' => $primary,
             'CONTEXT_MENU' => [
                 [
                     'ICON' => 'btn_list',
-                    'LINK' => Pay\Ui\Admin\Path::getModuleUrl('trading_injection_grid', $baseQuery),
+                    'LINK' => Pay\Ui\Admin\Path::getModuleUrl('injection_grid', $baseQuery),
                     'TEXT' => self::getMessage('CONTEXT_MENU_LIST'),
                 ],
             ],

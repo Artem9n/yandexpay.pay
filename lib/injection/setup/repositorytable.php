@@ -1,18 +1,19 @@
 <?php
 
-namespace YandexPay\Pay\Trading\Injection;
+namespace YandexPay\Pay\Injection\Setup;
 
 use Bitrix\Main\ORM;
 use YandexPay\Pay;
+use YandexPay\Pay\Ui\Userfield;
 
 class RepositoryTable extends ORM\Data\DataManager
     implements Pay\Reference\Storage\HasView
-
 {
     public static function getView() : Pay\Reference\Storage\View
     {
         return new View(static::class);
     }
+
     public static function getCollectionClass() : string
     {
         return Collection::class;
@@ -25,7 +26,7 @@ class RepositoryTable extends ORM\Data\DataManager
 
     public static function getTableName() : string
     {
-        return 'yapay_trading_injection';
+        return 'yapay_injection';
     }
 
     public static function getMap() : array
@@ -35,21 +36,27 @@ class RepositoryTable extends ORM\Data\DataManager
                 'autocomplete' => true,
                 'primary' => true,
             ]),
-            new ORM\Fields\IntegerField('SETUP_ID', [
+
+	        new ORM\Fields\BooleanField('ACTIVE', Userfield\BooleanType::getTableFieldDescription(false) + [
+		        'required' => true,
+	        ]),
+
+            new ORM\Fields\IntegerField('TRADING_ID', [
                 'required' => true,
             ]),
+
             new ORM\Fields\StringField('BEHAVIOR', [
                 'required' => true,
-                'primary' => true,
             ]),
-            new ORM\Fields\StringField('SELECTOR', [
-                'required' => true,
-                'primary' => true,
-            ]),
-            new ORM\Fields\Relations\Reference('SETUP',
-                Pay\Trading\Setup\RepositoryTable::class,
-                ORM\Query\Join::on('this.SETUP_ID', 'ref.ID')),
 
+	        (new ORM\Fields\ArrayField('SETTINGS'))
+	            ->configureSerializationPhp(),
+
+            new ORM\Fields\Relations\Reference(
+				'TRADING',
+                Pay\Trading\Setup\RepositoryTable::class,
+                ORM\Query\Join::on('this.TRADING_ID', 'ref.ID')
+            ),
         ];
     }
 
