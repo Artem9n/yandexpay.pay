@@ -67,7 +67,9 @@ class Form extends Component\Reference\Form
 	public function getFields(array $select = [], array $item = null) : array
 	{
 		$fields = $this->getTableFields();
-
+		echo "<pre>";
+        print_r($fields);
+		echo "</pre>";
 		return !empty($select)
 			? array_intersect_key($fields, array_flip($select))
 			: $fields;
