@@ -112,11 +112,17 @@ class Best2pay extends Gateway\Base
 		];
 
 		$httpClient->post($url, $data);
-		//$this->getStatusPerchase($operation, $id);
+		pr($httpClient->getResult());
+		pr($httpClient->getEffectiveUrl());
+		die;
+		/*pr($httpClient->getResult());
+		pr($httpClient->getEffectiveUrl());
+		die;*/
+		//$this->getStatusPurchase($operation, $id);
 		return $this->checkEffectiveUrl($httpClient->getEffectiveUrl());
 	}
 
-	protected function getStatusPerchase(int $operation, int $orderId)
+	protected function getStatusPurchase(int $operation, int $orderId)
 	{
 		$httpClient = new HttpClient();
 
@@ -232,11 +238,14 @@ class Best2pay extends Gateway\Base
 		$xmlData = new \SimpleXMLElement($data);
 		$parentName = $xmlData->getName();
 
-		/**
-		 * @var  $code
-		 * @var \SimpleXMLElement $value
-		 */
-		foreach ($xmlData as $code => $value)
+		$jsonData = Main\Text\Encoding::convertEncodingToCurrent(Main\Web\Json::encode($xmlData));
+		$result[$parentName] = Main\Web\Json::decode($jsonData);
+
+		return $result;
+		/*
+		$parentName = $xmlData->getName();
+
+		/*foreach ($xmlData as $code => $value)
 		{
 			if ($code === 'parameters')
 			{
@@ -264,7 +273,7 @@ class Best2pay extends Gateway\Base
 			$result[$code] = (string)$value;
 		}
 
-		return [$parentName => $result];
+		return [$parentName => $result];*/
 	}
 
 	protected function buildDataRegister(): array
@@ -273,7 +282,7 @@ class Best2pay extends Gateway\Base
 		$password = $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
 		$amount = $this->getPaymentAmount();
 		$currency = $this->getCurrencyFormatted($this->getPaymentField('CURRENCY'));
-		$description =  $this->convertEncoding(static::getMessage('REGISTER_DESCRIPTION', ['#ORDER_ID#' => $this->getOrderId()]));
+		$description = $this->convertEncoding(static::getMessage('REGISTER_DESCRIPTION', ['#ORDER_ID#' => $this->getOrderId()]));
 		$reference = $this->getExternalId();
 		$signature = $this->getSignature([$sector, $amount, $currency, $password]);
 
@@ -284,8 +293,55 @@ class Best2pay extends Gateway\Base
 			'description'   => $description,
 			'signature'     => $signature,
 			'reference'     => $reference,
-			'url'           => $this->getRedirectUrl()
+			'url'           => $this->getRedirectUrl(),
+			'fiscal_positions' => $this->buildFiscalPosition()
 		];
+	}
+
+	protected function buildFiscalPosition(string $separator = ';') : string
+	{
+		$items = $this->getItems();
+
+		foreach($items as &$item)
+		{
+			$item = implode($separator, $item);
+
+		}
+		unset($item);
+
+		return implode('|', $items);
+	}
+
+	protected function getItems() : array
+	{
+		$result = [];
+
+		$order = $this->payment->getOrder();
+		$basket = $order->getBasket();
+		$deliveryPrice = $order->getDeliveryPrice();
+
+		/** @var \Bitrix\Sale\BasketItem $basketItem */
+		foreach ($basket as $basketItem)
+		{
+			$result[] = [
+				'quantity'  => $basketItem->getQuantity(),
+				'price'     => round($basketItem->getPrice() * 100),
+				'tax'       => 6,
+				'text'      => $this->convertEncoding($basketItem->getField('NAME')),
+			];
+		}
+
+		if ($deliveryPrice > 0)
+		{
+			$result[] = [
+				'quantity'  => 1.00,
+				'price'     => round($deliveryPrice * 100),
+				'tax'       => 6,
+				'text'      => 'delivery'
+			];
+		}
+
+		return $result;
 	}
 
 	protected function convertEncoding(string $message) : string
@@ -344,7 +400,7 @@ class Best2pay extends Gateway\Base
 
 	public function getPaymentIdFromRequest() : ?int
 	{
-		// TODO: Implement getPaymentIdFromRequest() method.
+		return null;
 	}
 
 	protected function getSignature(array $params): string
