@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Ui\Injection;
 
+use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay;
 
@@ -11,6 +12,8 @@ class SetupEdit extends Pay\Ui\Reference\Page
 	public function show() : void
 	{
 		global $APPLICATION;
+
+		Main\UI\Extension::load('yandexpaypay.admin.ui');
 
 		$primary = $this->request->get('id') ?: null;
 		$useCopy = ($this->request->get('copy') === 'Y');
@@ -43,6 +46,7 @@ class SetupEdit extends Pay\Ui\Reference\Page
 					'fields' => [
 						'TRADING_ID',
 						'BEHAVIOR',
+						'SETTINGS',
 					],
 				],
 			],

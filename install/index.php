@@ -73,6 +73,8 @@ class yandexpay_pay extends CModule
 	{
 		global $APPLICATION, $step;
 
+		$step = (int)$step;
+
 		if ($step < 2)
 		{
 			$title = Loc::getMessage('YANDEX_PAY_UNINSTALL', [

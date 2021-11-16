@@ -7,14 +7,17 @@ use YandexPay\Pay\Trading;
 use YandexPay\Pay\Reference\Storage;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Ui\Userfield;
+use YandexPay\Pay\Utils\Userfield\DependField;
 
 class View extends Storage\View
 {
     use Concerns\HasMessage;
 
+	protected $behaviors;
+
     public function getFields() : array
     {
-        return $this->getTableFields([
+        $result = $this->getTableFields([
 			'OVERRIDES' => [
 	            'TRADING_ID' => [
 	                'TYPE' => 'enumeration',
@@ -29,6 +32,9 @@ class View extends Storage\View
 		        'SETTINGS',
 	        ],
         ]);
+	    $result += $this->getSettingsFields();
+
+		return $result;
     }
 
 	protected function getTradingEnum() : array
@@ -55,14 +61,61 @@ class View extends Storage\View
 	{
 		$result = [];
 
-		foreach (Injection\Behavior\Registry::getTypes() as $type)
+		foreach ($this->getBehaviors() as $type => $behavior)
 		{
-			$behavior = Injection\Behavior\Registry::getInstance($type);
-
 			$result[] = [
 				'ID' => $type,
 				'VALUE' => $behavior->getTitle(),
 			];
+		}
+
+		return $result;
+	}
+
+	protected function getSettingsFields() : array
+	{
+		$result = [];
+
+		foreach ($this->getBehaviors() as $type => $behavior)
+		{
+			foreach ($behavior->getFields() as $name => $field)
+			{
+				$fullName = sprintf('SETTINGS[%s]', $name);
+				$field += [
+					'LIST_COLUMN_LABEL' => $field['TITLE'],
+					'DEPEND' => [
+						'BEHAVIOR' => [
+							'RULE' => DependField::RULE_ANY,
+							'VALUE' => [ $type ],
+						],
+					]
+				];
+
+				$result[$fullName] = $field;
+			}
+		}
+
+		return $result;
+	}
+
+	/** @return array<string, Injection\Behavior\BehaviorInterface> */
+	protected function getBehaviors() : array
+	{
+		if ($this->behaviors === null)
+		{
+			$this->behaviors = $this->loadBehaviors();
+		}
+
+		return $this->behaviors;
+	}
+
+	protected function loadBehaviors() : array
+	{
+		$result = [];
+
+		foreach (Injection\Behavior\Registry::getTypes() as $type)
+		{
+			$result[$type] = Injection\Behavior\Registry::getInstance($type);
 		}
 
 		return $result;

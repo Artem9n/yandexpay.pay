@@ -112,4 +112,9 @@ class DotChain
 	{
 		return explode('.', $key);
 	}
+
+	public static function joinKey(array $chain) : string
+	{
+		return implode('.', $chain);
+	}
 }

@@ -13,8 +13,8 @@ class Registry
 	{
 		return [
 			static::ELEMENT,
-			/*static::BASKET,
-			static::ORDER,*/
+			static::BASKET,
+			/*static::ORDER,*/
 		];
 	}
 
