@@ -79,6 +79,28 @@ class Best2pay extends Gateway\Base
 				'GROUP'         => $this->getName(),
 				'SORT'          => 700,
 			],
+			$code . '_PAYMENT_GATEWAY_TAX' => [
+				'NAME'          => static::getMessage('MERCHANT_TAX'),
+				'DESCRIPTION'   => static::getMessage('MERCHANT_TAX_DESCRIPTION'),
+				'GROUP'         => $this->getName(),
+				'SORT'          => 750,
+				'TYPE'          => 'SELECT',
+				'INPUT'         => [
+					'TYPE'    => 'ENUM',
+					'OPTIONS' => [
+						'1' => static::getMessage('MERCHANT_TAX_1'),
+						'2' => static::getMessage('MERCHANT_TAX_2'),
+						'3' => static::getMessage('MERCHANT_TAX_3'),
+						'4' => static::getMessage('MERCHANT_TAX_4'),
+						'5' => static::getMessage('MERCHANT_TAX_5'),
+						'6' => static::getMessage('MERCHANT_TAX_6')
+					]
+				],
+				'DEFAULT' => [
+					'PROVIDER_VALUE'    => '6',
+					'PROVIDER_KEY'      => 'INPUT'
+				]
+			],
 		];
 	}
 
@@ -330,7 +352,7 @@ class Best2pay extends Gateway\Base
 			$result[] = [
 				'quantity'  => $basketItem->getQuantity(),
 				'price'     => round($basketItem->getPrice() * 100),
-				'tax'       => 6,
+				'tax'       => $this->getParameter('PAYMENT_GATEWAY_TAX'),
 				'text'      => $this->convertEncoding($basketItem->getField('NAME')),
 			];
 		}
@@ -338,9 +360,9 @@ class Best2pay extends Gateway\Base
 		if ($deliveryPrice > 0)
 		{
 			$result[] = [
-				'quantity'  => 1.00,
+				'quantity'  => 1,
 				'price'     => round($deliveryPrice * 100),
-				'tax'       => 6,
+				'tax'       => $this->getParameter('PAYMENT_GATEWAY_TAX'),
 				'text'      => 'delivery'
 			];
 		}
