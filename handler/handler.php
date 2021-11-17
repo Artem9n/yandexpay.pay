@@ -270,7 +270,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 				'action'    => $exception->getUrl(),
 				'params'    => $exception->getParams(),
 				'method'    => $exception->getMethod(),
-				'termUrl'   => $exception->getTermUrl()
+				'termUrl'   => $exception->getTermUrl(),
+				'view'      => $exception->getView()
 			]);
 		}
 		catch (Main\SystemException $exception)

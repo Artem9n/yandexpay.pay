@@ -5,6 +5,7 @@ namespace YandexPay\Pay\Gateway\Payment;
 use Bitrix\Main;
 use Bitrix\Main\Web\HttpClient;
 use Bitrix\Currency\CurrencyClassifier;
+use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Reference\Concerns;
 
@@ -14,6 +15,8 @@ class Best2pay extends Gateway\Base
 
 	protected const CODE_SKIP_ORDER = 109;
 	protected const CODE_NOT_ORDER = 104;
+
+	protected const STATUS_SUCCESS = 'COMPLETED';
 
 	protected const ACTION_PAY = 'pay';
 
@@ -81,17 +84,30 @@ class Best2pay extends Gateway\Base
 
 	public function startPay() : array
 	{
+		$result = [];
+
+		if ($this->isSecure3ds())
+		{
+			$purchaseResult = $this->getStatusPurchase();
+
+			if (!empty($purchaseResult))
+			{
+				$result = [
+					'PS_INVOICE_ID'     => implode('#', $purchaseResult),
+					'PS_SUM'            => $this->getPaymentSum()
+				];
+			}
+
+			return $result;
+		}
+
 		$orderData = $this->buildRegisterOrder();
+		$this->createPurchase($orderData['order']['id']);
 
-		[$operation, $id, $reference] = $this->createPurchase($orderData['order']['id']);
-
-		return [
-			'PS_INVOICE_ID'     => $id . '#' . $reference . '#' . $operation,
-			'PS_SUM'            => $this->getPaymentSum()
-		];
+		return $result;
 	}
 
-	protected function createPurchase(int $orderId) : array
+	protected function createPurchase(int $orderId) : void
 	{
 		$httpClient = new HttpClient();
 
@@ -112,18 +128,21 @@ class Best2pay extends Gateway\Base
 		];
 
 		$httpClient->post($url, $data);
-		pr($httpClient->getResult());
-		pr($httpClient->getEffectiveUrl());
-		die;
-		/*pr($httpClient->getResult());
-		pr($httpClient->getEffectiveUrl());
-		die;*/
-		//$this->getStatusPurchase($operation, $id);
-		return $this->checkEffectiveUrl($httpClient->getEffectiveUrl());
+
+		$this->checkEffectiveUrl($httpClient->getEffectiveUrl());
+
+		$result = $this->convertResultData($httpClient->getResult());
+
+		$this->checkResult($httpClient, $result);
 	}
 
-	protected function getStatusPurchase(int $operation, int $orderId)
+	protected function getStatusPurchase() : array
 	{
+		$result = [];
+
+		$orderId = $this->request->get('id');
+		$operation = $this->request->get('operation');
+
 		$httpClient = new HttpClient();
 
 		$this->setHeaders($httpClient);
@@ -142,12 +161,23 @@ class Best2pay extends Gateway\Base
 		];
 
 		$httpClient->post($url, $data);
+		$resultData = $this->convertResultData($httpClient->getResult());
 
-		pr($httpClient->getResult());
-		die;
+		$this->checkResult($httpClient, $resultData);
+
+		if ($resultData['operation']['order_state'] === self::STATUS_SUCCESS)
+		{
+			$result = [
+				$resultData['operation']['order_id'],
+				$resultData['operation']['id'],
+				$resultData['operation']['reference']
+			];
+		}
+
+		return $result;
 	}
 
-	protected function checkEffectiveUrl(string $url) : array
+	protected function checkEffectiveUrl(string $url) : void
 	{
 		$parseUrl = parse_url($url, PHP_URL_QUERY);
 		parse_str($parseUrl, $result);
@@ -161,8 +191,6 @@ class Best2pay extends Gateway\Base
 		{
 			throw new Main\SystemException(self::getMessage('ERROR_' . $result['error']));
 		}
-
-		return [$result['operation'], $result['id'], $result['reference']];
 	}
 
 	protected function buildRegisterOrder(): array
@@ -235,45 +263,21 @@ class Best2pay extends Gateway\Base
 	{
 		$result = [];
 
-		$xmlData = new \SimpleXMLElement($data);
-		$parentName = $xmlData->getName();
+		try {
+			$xmlData = new \SimpleXMLElement($data);
+			$parentName = $xmlData->getName();
 
-		$jsonData = Main\Text\Encoding::convertEncodingToCurrent(Main\Web\Json::encode($xmlData));
-		$result[$parentName] = Main\Web\Json::decode($jsonData);
+			$jsonData = Main\Text\Encoding::convertEncodingToCurrent(Main\Web\Json::encode($xmlData));
+			$result[$parentName] = Main\Web\Json::decode($jsonData);
 
-		return $result;
-		/*
-		$parentName = $xmlData->getName();
-
-		/*foreach ($xmlData as $code => $value)
+		} catch (\Exception $exception)
 		{
-			if ($code === 'parameters')
-			{
-				foreach ($value->attributes() as $attrName => $attribute)
-				{
-					$result[$code][$attrName] = (string)$attribute;
-				}
-
-				foreach ($value->children() as $child)
-				{
-					foreach ((array)$child as $childName => $childValue)
-					{
-						$result[$code][$childName] = $childValue;
-					}
-				}
-
-				continue;
-			}
-
-			if ($code === 'description')
-			{
-				$value = Main\Text\Encoding::convertEncodingToCurrent((string)$value);
-			}
-
-			$result[$code] = (string)$value;
+			$result = [
+				'secure3ds' => true
+			];
 		}
 
-		return [$parentName => $result];*/
+		return $result;
 	}
 
 	protected function buildDataRegister(): array
@@ -358,7 +362,7 @@ class Best2pay extends Gateway\Base
 		$httpClient = new HttpClient();
 
 		$invoiceId = $this->getPaymentField('PS_INVOICE_ID');
-		[$orderId, $reference, $operation] = explode('#', $invoiceId);
+		[$orderId] = explode('#', $invoiceId);
 
 		$sector = $this->getParameter('PAYMENT_GATEWAY_SECTOR_ID');
 		$password = $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
@@ -396,11 +400,18 @@ class Best2pay extends Gateway\Base
 		{
 			throw new Main\SystemException(self::getMessage('ERROR_' . $resultData['error']['code']));
 		}
+
+		if (isset($resultData['secure3ds']))
+		{
+			throw new Secure3dRedirect(
+				'', $httpClient->getResult(), false, 'POST', 'iframe'
+			);
+		}
 	}
 
 	public function getPaymentIdFromRequest() : ?int
 	{
-		return null;
+		return $this->request->get('paymentId');
 	}
 
 	protected function getSignature(array $params): string
@@ -415,5 +426,14 @@ class Best2pay extends Gateway\Base
 		$currency = CurrencyClassifier::getCurrency($code, []);
 
 		return (int)$currency['NUM_CODE'] ?: 643;
+	}
+
+	protected function isSecure3ds() : bool
+	{
+		return (
+			$this->request->get('id') !== null
+			&& $this->request->get('operation') !== null
+			&& $this->request->get('reference') !== null
+		);
 	}
 }

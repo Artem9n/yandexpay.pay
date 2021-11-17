@@ -129,18 +129,59 @@ this.BX = this.BX || {};
 	  template: null
 	});
 
-	var Step3ds = /*#__PURE__*/function (_AbstractStep) {
-	  babelHelpers.inherits(Step3ds, _AbstractStep);
-
-	  function Step3ds() {
-	    babelHelpers.classCallCheck(this, Step3ds);
-	    return babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(Step3ds).apply(this, arguments));
+	var Base = /*#__PURE__*/function () {
+	  function Base() {
+	    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	    babelHelpers.classCallCheck(this, Base);
+	    this.options = Object.assign({}, this.constructor.defaults, options);
+	    this.widget = null;
 	  }
 
-	  babelHelpers.createClass(Step3ds, [{
+	  babelHelpers.createClass(Base, [{
+	    key: "render",
+	    value: function render(node) {
+	      var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	      node.innerHTML = this.compile(data);
+	    }
+	  }, {
+	    key: "compile",
+	    value: function compile(data) {
+	      return Template.compile(this.options.template, data);
+	    }
+	  }, {
+	    key: "setWidget",
+	    value: function setWidget(widget) {
+	      this.widget = widget;
+	    }
+	  }, {
+	    key: "getOption",
+	    value: function getOption(key) {
+	      if (key in this.options) {
+	        return this.options[key];
+	      } else {
+	        return this.widget.options[key];
+	      }
+	    }
+	  }]);
+	  return Base;
+	}();
+
+	babelHelpers.defineProperty(Base, "defaults", {
+	  template: null
+	});
+
+	var Form = /*#__PURE__*/function (_Base) {
+	  babelHelpers.inherits(Form, _Base);
+
+	  function Form() {
+	    babelHelpers.classCallCheck(this, Form);
+	    return babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(Form).apply(this, arguments));
+	  }
+
+	  babelHelpers.createClass(Form, [{
 	    key: "render",
 	    value: function render(node, data) {
-	      babelHelpers.get(babelHelpers.getPrototypeOf(Step3ds.prototype), "render", this).call(this, node, data);
+	      babelHelpers.get(babelHelpers.getPrototypeOf(Form.prototype), "render", this).call(this, node, data);
 	      this.autosubmit(node);
 	    }
 	  }, {
@@ -192,13 +233,89 @@ this.BX = this.BX || {};
 	      form.submit();
 	    }
 	  }]);
-	  return Step3ds;
-	}(AbstractStep);
+	  return Form;
+	}(Base);
 
-	babelHelpers.defineProperty(Step3ds, "defaults", {
-	  url: '/yandex_pay.php',
+	babelHelpers.defineProperty(Form, "defaults", {
 	  template: '<form name="form" action="#ACTION#" method="#METHOD#">' + '#INPUTS#' + '</form>'
 	});
+
+	var Iframe = /*#__PURE__*/function (_Base) {
+	  babelHelpers.inherits(Iframe, _Base);
+
+	  function Iframe() {
+	    babelHelpers.classCallCheck(this, Iframe);
+	    return babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(Iframe).apply(this, arguments));
+	  }
+
+	  babelHelpers.createClass(Iframe, [{
+	    key: "render",
+	    value: function render(node, data) {
+	      this.insertIframe(node, data);
+	    }
+	  }, {
+	    key: "insertIframe",
+	    value: function insertIframe(node, data) {
+	      node.innerHTML = Template.compile(this.options.template, data);
+	      this.compile(node, data);
+	    }
+	  }, {
+	    key: "compile",
+	    value: function compile(node, data) {
+	      var iframe = node.querySelector('iframe');
+	      var contentIframe = iframe.contentWindow || iframe.contentDocument.document || iframe.contentDocument;
+	      var html = this.makeHtml(data);
+	      contentIframe.document.open();
+	      contentIframe.document.write(html);
+	      contentIframe.document.close();
+	    }
+	  }, {
+	    key: "makeHtml",
+	    value: function makeHtml(data) {
+	      var template = data.params;
+	      template = template.replace('<form', '<form target="_top"');
+	      template = template.replace('<head', '<head><base href="https://pay.best2pay.net/"/>');
+	      return template;
+	    }
+	  }]);
+	  return Iframe;
+	}(Base);
+
+	babelHelpers.defineProperty(Iframe, "defaults", {
+	  template: '<iframe style="display: none;"></iframe>'
+	});
+
+	var Step3ds = /*#__PURE__*/function (_AbstractStep) {
+	  babelHelpers.inherits(Step3ds, _AbstractStep);
+
+	  function Step3ds() {
+	    babelHelpers.classCallCheck(this, Step3ds);
+	    return babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(Step3ds).apply(this, arguments));
+	  }
+
+	  babelHelpers.createClass(Step3ds, [{
+	    key: "render",
+	    value: function render(node, data) {
+	      var view = this.makeView(data);
+	      view.setWidget(this.widget);
+	      view.render(node, data);
+	    }
+	  }, {
+	    key: "makeView",
+	    value: function makeView(data) {
+	      var view = data.view;
+
+	      if (view === 'form') {
+	        return new Form();
+	      } else if (view === 'iframe') {
+	        return new Iframe();
+	      }
+
+	      throw new Error('view secure3d missing');
+	    }
+	  }]);
+	  return Step3ds;
+	}(AbstractStep);
 
 	var Finish = /*#__PURE__*/function (_AbstractStep) {
 	  babelHelpers.inherits(Finish, _AbstractStep);

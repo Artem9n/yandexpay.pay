@@ -10,8 +10,9 @@ class Secure3dRedirect extends Main\SystemException
 	private $params;
 	private $method;
 	private $termUrl;
+	private $view;
 
-	public function __construct(string $url, array $params, bool $termUrl = false, string $method = 'POST')
+	public function __construct(string $url, $params, bool $termUrl = false, string $method = 'POST', string $view = 'form')
 	{
 		parent::__construct('3ds redirect');
 
@@ -19,6 +20,7 @@ class Secure3dRedirect extends Main\SystemException
 		$this->params = $params;
 		$this->method = $method;
 		$this->termUrl = $termUrl;
+		$this->view = $view;
 	}
 
 	public function getUrl() : string
@@ -26,7 +28,11 @@ class Secure3dRedirect extends Main\SystemException
 		return $this->url;
 	}
 
-	public function getParams() : array
+	/**
+	 *
+	 * @return string|array
+	 */
+	public function getParams()
 	{
 		return $this->params;
 	}
@@ -39,5 +45,10 @@ class Secure3dRedirect extends Main\SystemException
 	public function getTermUrl() : bool
 	{
 		return $this->termUrl;
+	}
+
+	public function getView() : string
+	{
+		return $this->view;
 	}
 }
