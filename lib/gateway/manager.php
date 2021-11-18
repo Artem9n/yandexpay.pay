@@ -77,24 +77,45 @@ class Manager
 
 	public static function getParams(): array
 	{
+		$result = [];
+
 		$handlerModeList = static::getHandlerModeList();
 
-		if (empty($handlerModeList)) { return []; }
+		if (empty($handlerModeList)) { return $result; }
 
 		$request = Main\Context::getCurrent()->getRequest();
-		$handlerMode = $request->get('PS_MODE');
-		$systemId = $request->get('ID');
 
-		if (isset($handlerModeList[$handlerMode]))
+		if ($request->isAdminSection())
 		{
-			$type = $handlerMode;
+			$result = static::getParamsForAdmin($request, $handlerModeList);
 		}
 		else
 		{
-			$type = static::getHandlerMode($systemId);
+			foreach ($handlerModeList as $type => $name)
+			{
+				$result[] = static::getProvider($type)->getParams();
+			}
+
+			$result = array_merge(...$result);
 		}
 
-		if ($type === null)
+		return $result;
+	}
+
+	protected static function getParamsForAdmin(Main\Request $request, array $handlerModeList) : array
+	{
+		$requestHandlerMode = $request->get('PS_MODE');
+		$requestPaySystemId = $request->get('ID');
+
+		if (isset($handlerModeList[$requestHandlerMode]))
+		{
+			$type = $requestHandlerMode;
+		}
+		else if ($requestPaySystemId !== null)
+		{
+			$type = static::getHandlerMode($requestPaySystemId);
+		}
+		else
 		{
 			reset($handlerModeList);
 
@@ -126,15 +147,11 @@ class Manager
 	protected static function loadHandlerMode($systemId): ?string
 	{
 		$result = null;
-		$systemId = $systemId ?? 'yandexpay';
 
 		$query = PaySystemActionTable::getList([
 			'filter' => [
-				[
-					'LOGIC' => 'OR',
-					['=ID' => $systemId],
-					['=ACTION_FILE' => $systemId]
-				]
+				'=ID' => $systemId,
+				'=ACTION_FILE' => 'yandexpay'
 			],
 			'select' => ['ID', 'PS_MODE', 'ACTION_FILE'],
 			'limit' => 1
@@ -142,7 +159,7 @@ class Manager
 
 		if ($paySystem = $query->fetch())
 		{
-			$result = $paySystem['ACTION_FILE'] === 'yandexpay' ? $paySystem['PS_MODE'] : null;
+			$result = $paySystem['PS_MODE'];
 		}
 
 		return $result;

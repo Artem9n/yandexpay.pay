@@ -248,6 +248,7 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 	{
 		$params = [
 			'paymentId' => $this->getPaymentId(),
+			'paySystemId' => $this->payment->getPaymentSystemId(),
 			'backurl'   => $_SESSION['yabackurl']
 		];
 
