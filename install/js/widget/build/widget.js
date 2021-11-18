@@ -264,18 +264,10 @@ this.BX = this.BX || {};
 	    value: function compile(node, data) {
 	      var iframe = node.querySelector('iframe');
 	      var contentIframe = iframe.contentWindow || iframe.contentDocument.document || iframe.contentDocument;
-	      var html = this.makeHtml(data);
+	      var html = data.params;
 	      contentIframe.document.open();
 	      contentIframe.document.write(html);
 	      contentIframe.document.close();
-	    }
-	  }, {
-	    key: "makeHtml",
-	    value: function makeHtml(data) {
-	      var template = data.params;
-	      template = template.replace('<form', '<form target="_top"');
-	      template = template.replace('<head', '<head><base href="https://pay.best2pay.net/"/>');
-	      return template;
 	    }
 	  }]);
 	  return Iframe;

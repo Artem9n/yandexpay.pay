@@ -19,19 +19,10 @@ export default class Iframe extends Base {
 	compile(node, data) {
 		let iframe = node.querySelector('iframe');
 		let contentIframe = iframe.contentWindow || ( iframe.contentDocument.document || iframe.contentDocument);
-		let html = this.makeHtml(data);
+		let html = data.params;
 
 		contentIframe.document.open();
 		contentIframe.document.write(html);
 		contentIframe.document.close();
-	}
-
-	makeHtml(data) {
-		let template = data.params;
-
-		template = template.replace('<form', '<form target="_top"');
-		template = template.replace('<head', '<head><base href="https://pay.best2pay.net/"/>');
-
-		return template;
 	}
 }

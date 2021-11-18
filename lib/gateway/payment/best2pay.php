@@ -425,8 +425,10 @@ class Best2pay extends Gateway\Base
 
 		if (isset($resultData['secure3ds']))
 		{
+			$secureData = $this->replaceHtml($httpClient->getResult());
+
 			throw new Secure3dRedirect(
-				'', $httpClient->getResult(), false, 'POST', 'iframe'
+				'', $secureData, false, 'POST', 'iframe'
 			);
 		}
 	}
@@ -448,6 +450,17 @@ class Best2pay extends Gateway\Base
 		$currency = CurrencyClassifier::getCurrency($code, []);
 
 		return (int)$currency['NUM_CODE'] ?: 643;
+	}
+
+	protected function replaceHtml($html) : string
+	{
+		return str_replace([
+			static::getMessage('TAG_FORM'),
+			static::getMessage('TAG_HEAD')
+		], [
+			static::getMessage('REPLACE_TAG_FORM'),
+			static::getMessage('REPLACE_TAG_HEAD')
+		], $html);
 	}
 
 	protected function isSecure3ds() : bool
