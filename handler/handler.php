@@ -10,6 +10,7 @@ use Bitrix\Sale\PaySystem;
 use Bitrix\Sale\PaySystem\ServiceResult;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway;
+use YandexPay\Pay\Reference\Assert;
 
 Loader::includeModule('yandexpay.pay');
 
@@ -42,7 +43,6 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		$result = new PaySystem\ServiceResult();
 
 		$gatewayType = $this->getHandlerMode();
-
 		$gatewayMerchantId = $this->getParamValue($payment, $gatewayType. '_PAYMENT_GATEWAY_MERCHANT_ID');
 
 		$params = [
@@ -61,8 +61,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'currency'              => $payment->getField('CURRENCY')
 		];
 
-        if ($this->getGateway($gatewayType) !== null)
-        {
+		try
+		{
 	        $this->setExtraParams($params);
 
 	        $showTemplateResult = $this->showTemplate($payment, 'template');
@@ -82,9 +82,9 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	            $result->addErrors($showTemplateResult->getErrors());
             }
         }
-        else
+        catch (Main\SystemException $exception)
         {
-	        $result->addError(new Main\Error('gateway not found'));
+	        $result->addError(new Main\Error($exception->getMessage()));
         }
 
         return $result;
@@ -171,9 +171,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		try
 		{
-			$gatewayType = $this->getHandlerMode();
-
-			$gatewayProvider = $this->getGateway($gatewayType, $payment);
+			$gatewayProvider = $this->getGateway($payment);
 			$gatewayProvider->setParameters($this->getParamsBusValue($payment));
 
 			$gatewayProvider->refund();
@@ -223,8 +221,12 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return ($this->getBusinessValue($payment, $this->getPrefix() . 'TEST_MODE') === 'Y');
 	}
 
-	protected function getGateway(string $type, Payment $payment = null, Request $request = null): Gateway\Base
+	protected function getGateway(Payment $payment = null, Request $request = null): Gateway\Base
 	{
+		$type = $this->getHandlerMode();
+
+		Assert::notNull($type, 'gatewayType');
+
 		return Gateway\Manager::getProvider($type, $payment, $request);
 	}
 
@@ -232,11 +234,9 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		$result = new PaySystem\ServiceResult();
 
-		$gatewayType = $this->getHandlerMode();
-
 		try
 		{
-			$gatewayProvider = $this->getGateway($gatewayType, $payment, $request);
+			$gatewayProvider = $this->getGateway($payment, $request);
 
 			$gatewayProvider->setParameters($this->getParamsBusValue($payment));
 
@@ -284,8 +284,6 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function getPaymentIdFromRequest(Request $request)
 	{
-		$result = null;
-
 		$this->readFromStream($request);
 
 		$externalId = $request->get('externalId');
@@ -296,13 +294,11 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		if (empty($gatewayType)) { return null; }
 
-		$gateway = $this->getGateway($gatewayType, null, $request);
+		$gateway = $this->getGateway(null, $request);
 
 		$gateway->setParameters($this->getParamsBusValue());
 
-		$result = $gateway->getPaymentIdFromRequest();
-
-		return $result;
+		return $gateway->getPaymentIdFromRequest();
 	}
 
 	public function sendResponse(ServiceResult $result, Request $request): void
@@ -348,7 +344,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return Gateway\Manager::getHandlerModeList();
 	}
 
-	protected function getHandlerMode(): string
+	public function getHandlerMode(): string
 	{
 		return $this->service->getField('PS_MODE');
 	}

@@ -31,7 +31,7 @@ export default class Form extends Base {
 
 		if (Object.keys(vars).length === 0) { return ''; }
 
-		template = data.termUrl ? '<input type="hidden" name="TermUrl" value="' + this.makeTermUrl() + '">' : '';
+		template = data.termUrl ? '<input type="hidden" name="TermUrl" value="' + vars.termUrl + '">' : '';
 
 		for (key in vars)
 		{

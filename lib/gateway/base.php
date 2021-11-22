@@ -244,20 +244,34 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 		return $result;
 	}
 
-	protected function getRedirectUrl() : string
+	protected function getRedirectUrl(array $extraParams = []) : string
 	{
 		$params = [
 			'paymentId' => $this->getPaymentId(),
 			'paySystemId' => $this->payment->getPaymentSystemId(),
 			'backurl'   => $_SESSION['yabackurl']
+		] + $extraParams;
+
+		$secure = [
+			'secure3ds' => static::generateParams($params)
 		];
 
-		return $this->getParameter('YANDEX_PAY_NOTIFY_URL', true) . '?' . http_build_query($params);
+		return $this->getParameter('YANDEX_PAY_NOTIFY_URL', true) . '?' . http_build_query($secure);
 	}
 
 	protected function getHeaders(string $key = '') : array
 	{
 		return [];
+	}
+
+	public static function generateParams(array $params) : string
+	{
+		return base64_encode(Main\Web\Json::encode($params));
+	}
+
+	public static function parseParams(string $params) : array
+	{
+		return Main\Web\Json::decode(base64_decode($params));
 	}
 
 	protected function setHeaders(Main\Web\HttpClient $httpClient, string $key = '') : void

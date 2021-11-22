@@ -465,10 +465,12 @@ class Best2pay extends Gateway\Base
 
 	protected function isSecure3ds() : bool
 	{
-		return (
+		return $this->request->get('secure3ds') !== null;
+
+		/*return (
 			$this->request->get('id') !== null
 			&& $this->request->get('operation') !== null
 			&& $this->request->get('reference') !== null
-		);
+		);*/
 	}
 }

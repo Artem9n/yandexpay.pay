@@ -205,7 +205,7 @@ this.BX = this.BX || {};
 	        return '';
 	      }
 
-	      template = data.termUrl ? '<input type="hidden" name="TermUrl" value="' + this.makeTermUrl() + '">' : '';
+	      template = data.termUrl ? '<input type="hidden" name="TermUrl" value="' + vars.termUrl + '">' : '';
 
 	      for (key in vars) {
 	        if (!vars.hasOwnProperty(key)) {

@@ -1,9 +1,9 @@
 <?php
 
 use Bitrix\Main\Localization\Loc;
-use YandexPay\Pay;
+use YandexPay\Pay\Gateway;
 
-/** @var $this \Bitrix\Sale\PaySystem\BaseServiceHandler */
+/** @var $this \Sale\Handlers\PaySystem\YandexPayHandler */
 
 if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) { die(); }
 
@@ -173,7 +173,33 @@ $data = [
 				'PROVIDER_VALUE'    => 'Y'
 			]
 		]
-	] + Pay\Gateway\Manager::getParams()
+	],
 ];
 
-$psDescription = Pay\Gateway\Manager::getModeDescription();
+try
+{
+	$gateway = null;
+
+	if (isset($this) && $this instanceof \Sale\Handlers\PaySystem\YandexPayHandler)
+	{
+		$gateway = $this->getGateway();
+	}
+	else if (isset($paySystem['PS_MODE'])) // pay_system_edit.php variable
+	{
+		$gateway = Gateway\Manager::getProvider($paySystem['PS_MODE']);
+	}
+	else if ($request->get('PS_MODE') !== null)
+	{
+		$gateway = Gateway\Manager::getProvider($request->get('PS_MODE'));
+	}
+
+	if ($gateway !== null)
+	{
+		$data['CODES'] += $gateway->getParams();
+		$psDescription = $gateway->getDescription();
+	}
+}
+catch (\Bitrix\Main\SystemException $exception)
+{
+	// nothing
+}

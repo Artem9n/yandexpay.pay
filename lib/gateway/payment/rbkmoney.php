@@ -15,6 +15,7 @@ class Rbkmoney extends Base
 	protected $sort = 200;
 
 	protected const STATUS_PAID = 'processed';
+	protected const STATUS_CAPTURED = 'captured';
 	protected const STATUS_FAILED = 'failed';
 	protected const STATUS_REFUNDED = 'refunded';
 
@@ -100,6 +101,10 @@ class Rbkmoney extends Base
 	{
 		$result = null;
 
+		$paymentId = $this->request->get('paymentId');
+
+		if ($paymentId !== null) { return $paymentId; }
+
 		$contentSignature = $this->server->get('HTTP_CONTENT_SIGNATURE');
 
 		if ($contentSignature === null) { return null; }
@@ -177,6 +182,24 @@ class Rbkmoney extends Base
 
 	public function startPay() : array
 	{
+		$result = [];
+
+		if ($this->isSecure3ds())
+		{
+			$invoiceId = $this->request->get('invoiceId');
+
+			$payment = $this->checkInvoiceEvents($invoiceId);
+
+			if ($payment !== null)
+			{
+				return [
+					'PS_INVOICE_ID'     => $invoiceId . '#' . $payment['paymentID'],
+					'PS_STATUS_CODE'    => $payment['status'],
+					'PS_SUM'            => $this->getPaymentSum()
+				];
+			}
+		}
+
 		$fields = $this->processWebHook();
 
 		if (!empty($fields)) { return $fields; }
@@ -189,7 +212,7 @@ class Rbkmoney extends Base
 
 		$this->checkInvoiceEvents($invoiceId);
 
-		return $fields;
+		return $result;
 	}
 
 	protected function createInvoice(): array
@@ -287,12 +310,15 @@ class Rbkmoney extends Base
 
 	protected function buildDataResource(): string
 	{
+		$yandexData = $this->getYandexData();
+		unset($yandexData['orderAmount']);
+
 		return Main\Web\Json::encode([
 			'paymentTool' => [
 				'provider'          => self::RESOURCE_PROVIDER,
 				'paymentToolType'   => self::RESOURCE_PAYMENT_TYPE,
 				'gatewayMerchantID' => $this->getParameter('PAYMENT_GATEWAY_MERCHANT_ID'),
-				'paymentToken'      => $this->getYandexData(),
+				'paymentToken'      => $yandexData,
 			],
 			'clientInfo' => [
 				'fingerprint'   => $this->server->get('HTTP_USER_AGENT'),
@@ -304,7 +330,7 @@ class Rbkmoney extends Base
 	{
 		$url = $this->getUrl('createPay', ['#INVOICE_ID#' => $invoiceId]);
 
-		$data = $this->buildDataPayment($resourceData);
+		$data = $this->buildDataPayment($resourceData, $invoiceId);
 
 		$httpClient = new HttpClient();
 
@@ -317,7 +343,7 @@ class Rbkmoney extends Base
 		$this->checkResult($resultData, $httpClient->getStatus());
 	}
 
-	protected function buildDataPayment(array $resourceData): string
+	protected function buildDataPayment(array $resourceData, string $invoiceId): string
 	{
 		$order = $this->payment->getOrder();
 
@@ -347,7 +373,7 @@ class Rbkmoney extends Base
 				'payerType'         => self::PAYMENT_PAYER_TYPE,
 				'contactInfo'       => $contactInfo,
 				'sessionInfo'       => [
-					'redirectUrl'   => $_SESSION['yabackurl']
+					'redirectUrl'   => $this->getRedirectUrl(['invoiceId' => $invoiceId])//$_SESSION['yabackurl']
 				]
 			],
 			'metadata'  => [
@@ -358,16 +384,22 @@ class Rbkmoney extends Base
 		]);
 	}
 
-	protected function checkInvoiceEvents(string $invoiceId): void
+	protected function checkInvoiceEvents(string $invoiceId): ?array
 	{
-		for ($seconds = 0; $seconds < 5; $seconds++)
+		$result = null;
+
+		sleep(5);
+
+		$resultData = $this->getInvoiceDataEvents($invoiceId);
+
+		$resultPayment = $this->checkStatusPay($resultData);
+
+		if ($resultPayment !== null)
 		{
-			$resultData = $this->getInvoiceDataEvents($invoiceId);
-
-			if ($this->checkStatusPay($resultData)) { break; }
-
-			sleep(1);
+			$result = $resultPayment;
 		}
+
+		return $result;
 	}
 
 	protected function getInvoiceDataEvents(string $invoiceId) : array
@@ -417,9 +449,9 @@ class Rbkmoney extends Base
 		}
 	}
 
-	protected function checkStatusPay(array $resultData): bool
+	protected function checkStatusPay(array $resultData): ?array
 	{
-		$result = false;
+		$result = null;
 
 		$changes = array_merge(... array_column($resultData, 'changes'));
 		$mapType = array_flip(array_column($changes, 'changeType'));
@@ -458,9 +490,9 @@ class Rbkmoney extends Base
 				throw new Main\SystemException(self::getMessage('REFUNDED_STATUS'));
 			}
 
-			if ($payment['status'] === self::STATUS_PAID)
+			if ($payment['status'] === self::STATUS_PAID || $payment['status'] === self::STATUS_CAPTURED)
 			{
-				$result = true;
+				$result = $payment;
 			}
 		}
 
@@ -505,5 +537,10 @@ class Rbkmoney extends Base
 			'currency'      => $this->getPaymentField('CURRENCY'),
 			'reason'        => Main\Text\Encoding::convertEncodingToCurrent($comment)
 		]);
+	}
+
+	protected function isSecure3ds() : bool
+	{
+		return $this->request->get('secure3ds') !== null;
 	}
 }

@@ -21,14 +21,16 @@ if (
 	$context = Application::getInstance()->getContext();
 	$request = $context->getRequest();
 	$request->addFilter(new \YandexPay\Pay\Utils\JsonBodyFilter());
-	/*$payment = $request->get('payment');
+	$request->addFilter(new \YandexPay\Pay\Utils\Secure3dBodyFilter());
 
-	$paySystem = $request->get('paySystemId') ?? $payment['metadata']['paySystemId'];*/
+	$payment = $request->get('payment');
+
+	$paySystem = $request->get('paySystemId') ?? $payment['metadata']['paySystemId'];
 
 	$item = PaySystem\Manager::getList([
 		'filter' => [
 			'=ACTION_FILE' => 'yandexpay',
-			//'=ID' => $paySystem,
+			'=ID' => $paySystem,
 			'ACTIVE' => 'Y'
 		],
 		'select' => ['*']

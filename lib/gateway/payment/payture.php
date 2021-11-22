@@ -253,7 +253,7 @@ class Payture extends Base
 
 		if ($resultData['Success'] === self::STATUS_3DS)
 		{
-			$params = $this->buildParamsForSecture($resultData);
+			$params = $this->buildParamsForSecure($resultData);
 			$isTermUrl = ($resultData['ThreeDSVersion'] === self::THREE_DS_VERSION_1);
 
 			throw new \YandexPay\Pay\Exceptions\Secure3dRedirect(
@@ -262,7 +262,7 @@ class Payture extends Base
 		}
 	}
 
-	protected function buildParamsForSecture(array $data) : array
+	protected function buildParamsForSecure(array $data) : array
 	{
 		$result = [];
 
@@ -280,17 +280,20 @@ class Payture extends Base
 			}
 		}
 
+		$result['termUrl'] = $this->getRedirectUrl();
+
 		return $result;
 	}
 
 	protected function isSecure3ds() : bool
 	{
-		return (
+		return $this->request->get('secure3ds') !== null;
+		/*return (
 			($this->request->get('MD') !== null && $this->request->get('PaRes') !== null)
 			|| (
 				$this->request->get('threeDSSessionData') !== null
 				&& ($this->request->get('cres') !== null || $this->request->get('CRes') !== null)
 			)
-		);
+		);*/
 	}
 }
