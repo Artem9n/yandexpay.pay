@@ -180,17 +180,45 @@ try
 {
 	$gateway = null;
 
-	if (isset($this) && $this instanceof \Sale\Handlers\PaySystem\YandexPayHandler)
-	{
-		$gateway = $this->getGateway();
-	}
-	else if (isset($paySystem['PS_MODE'])) // pay_system_edit.php variable
+	if (isset($paySystem['PS_MODE']))
 	{
 		$gateway = Gateway\Manager::getProvider($paySystem['PS_MODE']);
 	}
-	else if ($request->get('PS_MODE') !== null)
+	else if ($request->get('PS_MODE') !== null) // pay_system_edit.php variable
 	{
 		$gateway = Gateway\Manager::getProvider($request->get('PS_MODE'));
+	}
+	else if (isset($this) && $this instanceof \Sale\Handlers\PaySystem\YandexPayHandler)
+	{
+		$handlerMode = $this->getHandlerMode();
+
+		if ($handlerMode === null)
+		{
+			$query = \Bitrix\Sale\Internals\PaySystemActionTable::getList([
+				'filter' => [
+					'=ID' => $request->get('ID'),
+					'=ACTION_FILE' => $this->service->getField('ACTION_FILE')
+				],
+				'select' => ['ID', 'PS_MODE', 'ACTION_FILE'],
+				'limit' => 1
+			]);
+
+			if (($system = $query->fetch()) && $system['PS_MODE'] !== '')
+			{
+				$gateway = Gateway\Manager::getProvider($system['PS_MODE']);
+			}
+
+			if ($gateway === null)
+			{
+				$list = Gateway\Manager::getHandlerModeList();
+				reset($list);
+				$gateway = Gateway\Manager::getProvider(key($list));
+			}
+		}
+		else
+		{
+			$gateway = Gateway\Manager::getProvider($handlerMode);
+		}
 	}
 
 	if ($gateway !== null)

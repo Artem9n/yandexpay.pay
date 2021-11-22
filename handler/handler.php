@@ -344,7 +344,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return Gateway\Manager::getHandlerModeList();
 	}
 
-	public function getHandlerMode(): string
+	public function getHandlerMode(): ?string
 	{
 		return $this->service->getField('PS_MODE');
 	}
