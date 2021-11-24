@@ -48,18 +48,32 @@ this.BX = this.BX || {};
 	}();
 
 	var AbstractStep = /*#__PURE__*/function () {
+	  /**
+	   * @param {Object} options
+	   */
 	  function AbstractStep() {
 	    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	    babelHelpers.classCallCheck(this, AbstractStep);
 	    this.options = Object.assign({}, this.constructor.defaults, options);
 	    this.widget = null;
 	  }
+	  /**
+	   *
+	   * @param {Widget} widget
+	   */
+
 
 	  babelHelpers.createClass(AbstractStep, [{
 	    key: "setWidget",
 	    value: function setWidget(widget) {
 	      this.widget = widget;
 	    }
+	    /**
+	     *
+	     * @param {string} key
+	     * @returns {*}
+	     */
+
 	  }, {
 	    key: "getOption",
 	    value: function getOption(key) {
@@ -74,12 +88,22 @@ this.BX = this.BX || {};
 	        return this.widget.options[key];
 	      }
 	    }
+	    /**
+	     * @param {Object<Element>} node Element
+	     * @param {Object} data Options
+	     */
+
 	  }, {
 	    key: "render",
 	    value: function render(node) {
 	      var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	      node.innerHTML = this.compile(data);
 	    }
+	    /**
+	     * @param {Object} data
+	     * @returns {string}
+	     */
+
 	  }, {
 	    key: "compile",
 	    value: function compile(data) {
@@ -808,6 +832,12 @@ this.BX = this.BX || {};
 
 	  babelHelpers.createClass(Factory, null, [{
 	    key: "make",
+
+	    /**
+	     * @param {string} type
+	     * @returns {Cart|Finish|Step3ds|Payment|Failure}
+	     * @throws {Error}
+	     */
 	    value: function make(type) {
 	      if (type === '3ds') {
 	        return new Step3ds();
@@ -817,6 +847,8 @@ this.BX = this.BX || {};
 	        return new Failure();
 	      } else if (type === 'payment') {
 	        return new Payment();
+	      } else if (type === 'cart') {
+	        return new Cart();
 	      }
 
 	      throw new Error('unknown step ' + type);
@@ -826,6 +858,14 @@ this.BX = this.BX || {};
 	}();
 
 	var Widget = /*#__PURE__*/function () {
+	  /**
+	   * @type {{failureTemplate: string, modalTemplate: string, finishedTemplate: string}}
+	   */
+
+	  /**
+	   * @param {Object<Element>} element
+	   * @param {Object} options
+	   */
 	  function Widget(element) {
 	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	    babelHelpers.classCallCheck(this, Widget);
@@ -837,6 +877,10 @@ this.BX = this.BX || {};
 	    this.el = element;
 	    this.options = Object.assign({}, this.defaults, options);
 	  }
+	  /**
+	   * @param {Object} data
+	   */
+
 
 	  babelHelpers.createClass(Widget, [{
 	    key: "payment",
@@ -863,6 +907,12 @@ this.BX = this.BX || {};
 	      var step = this.makeStep(type);
 	      step.render(this.el, data);
 	    }
+	    /**
+	     * @param {String} type
+	     * @returns {Cart|Finish|Step3ds|Payment|Failure}
+	     * @throws {Error}
+	     */
+
 	  }, {
 	    key: "makeStep",
 	    value: function makeStep(type) {
