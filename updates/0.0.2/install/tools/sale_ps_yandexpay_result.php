@@ -39,7 +39,10 @@ if (
 	if ($item !== false)
 	{
 		$service = new PaySystem\Service($item);
-		$result = $service->processRequest($request);
+		if ($service instanceof PaySystem\Service)
+		{
+			$result = $service->processRequest($request);
+		}
 	}
 	else
 	{

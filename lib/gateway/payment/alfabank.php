@@ -8,13 +8,13 @@ use Bitrix\Main\Web\HttpClient;
 use Yandexpay\Pay\Gateway;
 use Yandexpay\Pay\Reference\Concerns;
 
-class alfabank extends Gateway\Base
+class Alfabank extends Gateway\Base
 {
     use Concerns\HasMessage;
 
     protected $sort = 400;
     protected const STATUS_FAILED = false;
-    protected const STATUS_SUCCSES = 2;
+    protected const STATUS_SUCCESS = 2;
 
     protected static $currencyMap = [
         'RUB' => 810
@@ -90,7 +90,7 @@ class alfabank extends Gateway\Base
                 'PS_SUM' => $this->getPaymentSum()
             ];
 
-            if ($orderStatus['orderStatus'] === self::STATUS_SUCCSES)
+            if ($orderStatus['orderStatus'] === self::STATUS_SUCCESS)
 			{
                 return $result;
             }
@@ -184,7 +184,7 @@ class alfabank extends Gateway\Base
 
         if (
 			isset($resultData['orderStatus'])
-			&& $resultData['orderStatus'] !== self::STATUS_SUCCSES
+			&& $resultData['orderStatus'] !== self::STATUS_SUCCESS
         )
 		{
             throw new Main\SystemException(self::getMessage('ERROR_' . $resultData['orderStatus']));
