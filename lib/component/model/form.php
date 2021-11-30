@@ -6,6 +6,7 @@ use Bitrix\Main;
 use YandexPay\Pay\Component;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Storage;
+use YandexPay\Pay\Utils;
 
 class Form extends Component\Reference\Form
 {
@@ -68,9 +69,9 @@ class Form extends Component\Reference\Form
 	{
 		$fields = $this->getTableFields();
 
-		return !empty($select)
-			? array_intersect_key($fields, array_flip($select))
-			: $fields;
+		if (empty($select)) { return $fields; }
+
+		return $this->selectFields($fields, $select);
 	}
 
 	protected function getTableFields() : array
@@ -81,6 +82,44 @@ class Form extends Component\Reference\Form
 		Assert::isSubclassOf($dataClass, Storage\HasView::class);
 
 		return $dataClass::getView()->getFields();
+	}
+
+	protected function selectFields(array $fields, array $select) : array
+	{
+		$map = array_flip($select);
+		$result = [];
+
+		foreach ($fields as $name => $field)
+		{
+			if (isset($map[$name]))
+			{
+				$match = true;
+			}
+			else
+			{
+				$match = false;
+				$parts = Utils\BracketChain::splitKey($name);
+				$partsTotal = count($parts);
+
+				foreach (range(1, $partsTotal) as $sliceCount)
+				{
+					$slice = array_slice($parts, 0, $sliceCount);
+					$sliceName = Utils\BracketChain::joinKey($slice);
+
+					if (!isset($map[$sliceName])) { continue; }
+
+					$match = true;
+					break;
+				}
+			}
+
+			if ($match)
+			{
+				$result[$name] = $field;
+			}
+		}
+
+		return $result;
 	}
 
 	public function load($primary, array $select = [], bool $isCopy = false) : array

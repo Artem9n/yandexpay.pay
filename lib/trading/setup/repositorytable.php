@@ -46,8 +46,13 @@ class RepositoryTable extends ORM\Data\DataManager
 			new ORM\Fields\BooleanField('ACTIVE', Pay\Ui\Userfield\BooleanType::getTableFieldDescription(false) + [
 				'required' => true,
 			]),
+            new ORM\Fields\Relations\OneToMany('SETTINGS', Pay\Trading\Settings\RepositoryTable::class, 'SETUP'),
 
-			new ORM\Fields\Relations\OneToMany('SETTINGS', Pay\Trading\Settings\RepositoryTable::class, 'SETUP'),
+            new ORM\Fields\Relations\Reference(
+                'INJECTION',
+                Pay\Injection\Setup\RepositoryTable::class,
+                ORM\Query\Join::on('this.ID', 'ref.TRADING_ID')
+            ),
 		];
 	}
 

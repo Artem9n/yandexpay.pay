@@ -58,4 +58,16 @@ class BracketChain extends DotChain
 
 		return $keyChain;
 	}
+
+	public static function joinKey(array $chain) : string
+	{
+		$result = array_shift($chain);
+
+		if (!empty($chain))
+		{
+			$result .= '[' . implode('][', $chain) . ']';
+		}
+
+		return $result;
+	}
 }

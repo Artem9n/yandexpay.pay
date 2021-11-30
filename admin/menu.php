@@ -28,6 +28,15 @@ return [
 					'yapay_trading_setup.php?lang=' . LANGUAGE_ID,
 				],
 			],
+            [
+                'text' => Loc::getMessage('YANDEX_PAY_MENU_TRADING_INJECTION'),
+                'title' => Loc::getMessage('YANDEX_PAY_MENU_TRADING_INJECTION'),
+                'url' => 'yapay_injection_grid.php?lang=' . LANGUAGE_ID,
+                'more_url' => [
+                    'yapay_injection_edit.php?lang=' . LANGUAGE_ID,
+                    'yapay_injection_setup.php?lang=' . LANGUAGE_ID,
+                ],
+            ],
 		],
 	],
 ];

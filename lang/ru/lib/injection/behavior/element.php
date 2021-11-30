@@ -1,0 +1,3 @@
+<?php
+
+$MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ELEMENT_TITLE'] = 'Карточка товара';
