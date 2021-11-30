@@ -31,6 +31,10 @@ class Purchase extends \CBitrixComponent
 
 	public function executeComponent(): void
 	{
+		global $APPLICATION;
+
+		$APPLICATION->RestartBuffer();
+
 		try
 		{
 			$this->loadModules();
@@ -52,6 +56,8 @@ class Purchase extends \CBitrixComponent
 
 			// todo show error
 		}
+
+		die();
 	}
 
 	protected function parseRequest() : void
@@ -96,6 +102,8 @@ class Purchase extends \CBitrixComponent
 
 	protected function deliveryOptionsAction() : void
 	{
+		$result = [];
+
 		$order = $this->getOrder();
 
 		$this->fillPersonType($order);
@@ -105,7 +113,12 @@ class Purchase extends \CBitrixComponent
 
 		$calculatedDeliveries = $this->calculateDeliveries($order, 'DELIVERY');
 
-		echo Main\Web\Json::encode($calculatedDeliveries);
+		foreach ($calculatedDeliveries as $calculateDelivery)
+		{
+			$result[] = $calculateDelivery->getMeaningfulDelivery();
+		}
+
+		echo Main\Web\Json::encode($result);
 	}
 
 	protected function pickupOptionsAction() : void
@@ -117,28 +130,20 @@ class Purchase extends \CBitrixComponent
 		$this->fillPersonType($order);
 		$this->fillBasket($order);
 		$this->fillCoupon($order);
-		$this->fillLocation($order);
+		//$this->fillLocation($order);// todo need data locality
 
 		$calculatedDeliveries = $this->calculateDeliveries($order, 'PICKUP');
 
-		foreach ($calculatedDeliveries as $pickup)
+		foreach ($calculatedDeliveries as $calculateDelivery)
 		{
-			foreach ($pickup['stores'] as $store)
-			{
-				$result[] = [
-					'id'        => $store['ID'],
-					'label'     => $store['TITLE'],
-					'provider'  => 'custom',
-					'address'   => $store['ADDRESS'],
-					'date'      => '', //todo
-					'amount'    => $pickup['amount'],
-					'info'      => [
-						'schedule'      => $store['SCHEDULE'],
-						'contacts'      => $store['PHONE'],
-						'description'   => $store['DESCRIPTION'],
-					],
-				];
-			}
+			$result[] = $calculateDelivery->getMeaningfulPickup();
+		}
+
+		$result = !empty($result) ? array_merge(...$result) : $result;
+
+		if (!empty($result))
+		{
+			//$result = $this->filterPickup($result);
 		}
 
 		echo Main\Web\Json::encode($result);
@@ -226,7 +231,7 @@ class Purchase extends \CBitrixComponent
 	{
 		/** @var \YandexPay\Pay\Trading\Action\Request\Coupon $requestCoupon */
 		$requestCoupon = $this->getRequestCoupon();
-		$coupon = $requestCoupon->getCoupon() ?? 'SL-HO25W-JD3ASTQ';
+		$coupon = $requestCoupon->getCoupon();// ?? 'SL-HO25W-JD3ASTQ';
 
 		if ($coupon !== null)
 		{
@@ -250,20 +255,24 @@ class Purchase extends \CBitrixComponent
 			throw new Main\SystemException($errorMessage);
 		}
 
+		[$paymentId, $paySystemId] = $this->getPayment($saveData['ID']);
+
 		$result = [
-			'externalId' => $this->getPaymentId($saveData['ID']),
+			'externalId' => $paymentId,
+			'paySystemId' => $paySystemId
 		];
 
 		echo Main\Web\Json::encode($result);
 	}
 
-	protected function getPaymentId(int $orderId) : ?int
+	protected function getPayment(int $orderId) : array
 	{
-		$result = null;
-
 		$order = Sale\Order::load($orderId);
 
-		if ($order === null) { return null; }
+		if ($order === null) { return []; }
+
+		$paymentId = null;
+		$pasSystemId = null;
 
 		$paymentCollection = $order->getPaymentCollection();
 
@@ -272,10 +281,11 @@ class Purchase extends \CBitrixComponent
 		{
 			if ($payment->isInner()) { continue; }
 
-			$result = $payment->getId();
+			$paymentId = $payment->getId();
+			$pasSystemId = $payment->getPaymentSystemId();
 		}
 
-		return $result;
+		return [$paymentId, $pasSystemId];
 	}
 
 	protected function fillPaySystem(EntityReference\Order $order) : void
@@ -323,6 +333,27 @@ class Purchase extends \CBitrixComponent
 		}
 
 		return [$deliveryId, $price];
+	}
+
+	protected function filterPickup(array $pickup) : array
+	{
+		/**
+		 * @var TradingAction\Request\Address $directions
+		 * @var $northeast TradingAction\Request\Address\Coordinates
+		 * @var $southwest TradingAction\Request\Address\Coordinates
+		 */
+		$directions = $this->getRequestAddress();
+		$northeast = $directions->getNortheast();
+		$southwest = $directions->getSouthwest();
+
+		return array_values(array_filter($pickup, static function ($value) use ($northeast, $southwest){
+			return (
+				$value['coordinates']['latitude'] >= $northeast->getLat()
+				&& $value['coordinates']['latitude'] <= $southwest->getLat()
+				&& $value['coordinates']['longitude'] >= $northeast->getLon()
+				&& $value['coordinates']['longitude'] <= $southwest->getLon()
+			);
+		}));
 	}
 
 	protected function fillStatus(EntityReference\Order $order) : void
@@ -614,9 +645,10 @@ class Purchase extends \CBitrixComponent
 
 	/**
 	 * @param EntityReference\Order $order
-	 * @param string $targetType
+	 * @param string                $targetType
 	 *
-	 * @return array
+	 * @return EntityReference\Delivery\CalculationResult[]
+	 * @throws \Bitrix\Main\SystemException
 	 */
 	protected function calculateDeliveries(EntityReference\Order $order, string $targetType) : array
 	{
@@ -637,17 +669,7 @@ class Purchase extends \CBitrixComponent
 
 			if (!$calculationResult->isSuccess()) { continue; }
 
-			$dateFrom = $calculationResult->getDateFrom() ?? new Main\Type\DateTime();
-
-			$result[] = [
-				'id'        => (string)$calculationResult->getDeliveryId(),
-				'label'     => $calculationResult->getServiceName(),
-				'amount'    => (string)$calculationResult->getPrice(),
-				'provider'  => 'custom', //todo
-				'category'  => $calculationResult->getCategory(), //todo
-				'date'      => $dateFrom->getTimestamp(), //todo
-				'stores'    => $calculationResult->getStores(),
-			];
+			$result[] = $calculationResult;
 		}
 
 		return $result;

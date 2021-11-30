@@ -38,7 +38,13 @@ class Location extends EntityReference\Location
 				'fields' => [
 					'locality'
 				]
-			]
+			],
+			/*'Bounds' => [
+				'fields' => [
+					'ne',
+					'sw'
+				]
+			]*/
 		];
 
 		foreach ($searchMethods as $searchMethod => $searchArgument)
@@ -65,6 +71,35 @@ class Location extends EntityReference\Location
 		return $result;
 	}
 
+	protected function searchLocationByBounds(array $bounds, $parentLocation = null)
+	{
+		/*point.coordinates.latitude >= pickupBounds.ne.latitude &&
+		point.coordinates.latitude <= pickupBounds.sw.latitude &&
+		point.coordinates.longitude >= pickupBounds.ne.longitude &&
+		point.coordinates.longitude <= pickupBounds.sw.longitude,*/
+		$result = [];
+
+		$query = \Bitrix\Catalog\StoreTable::getList([
+			'filter' => [
+				[
+					'LOGIC' => 'AND',
+					[
+						'LOGIC' => 'AND',
+						['>=GPS_N' => $bounds['ne']['latitude']],
+						['<=GP_N' => $bounds['sw']['latitude']]
+					],
+					[
+						'LOGIC' => 'AND',
+						['>=GPS_S' => $bounds['ne']['longitude']],
+						['<=GP_S' => $bounds['sw']['longitude']]
+					]
+				]
+			]
+		]);
+
+		//while ($)
+	}
+
 	protected function makeSearchLocationPayload($regions, $argument) : array
 	{
 		$fields = array_flip($argument['fields']);
@@ -86,7 +121,9 @@ class Location extends EntityReference\Location
 
 		$regions = array_intersect_key($address, [
 			'locality' => true,
-			'country' => true
+			'country' => true,
+			'ne' => true,
+			'sw' => true
 		]);
 
 		foreach ($regions as $code => $value)

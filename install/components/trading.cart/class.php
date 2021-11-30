@@ -51,7 +51,9 @@ class TradingCart extends \CBitrixComponent
 		}
 		catch (Main\SystemException $exception)
 		{
-			pr($exception->getMessage());
+			echo '<pre>';
+			print_r($exception->getMessage());
+			echo '</pre>';
 		}
 	}
 
@@ -60,17 +62,17 @@ class TradingCart extends \CBitrixComponent
 		global $USER;
 
 		$params = $this->handler->getParamsBusValue();
-		$cardNetworks = $this->handler->getCardNetworks();
+		$cardNetworks = $this->getCardNetworks();
 		$gateway = $this->handler->getHandlerMode();
-		$environment = $this->handler->getEnvironment();
 
 		$setup = $this->getSetup();
+
 		$setup->wakeupOptions();
-		$setup->fillSiteId();
+
 		$options = $setup->getOptions();
 
 		$this->arResult['PARAMS'] = [
-			'env'               => $environment,
+			'env'               => $this->handler->isTestMode() ? 'SANDBOX' : 'PRODUCTION',
 			'merchantId'        => $params['YANDEX_PAY_MERCHANT_ID'],
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
 			'buttonTheme'       => $params['YANDEX_PAY_VARIANT_BUTTON'],
@@ -110,6 +112,28 @@ class TradingCart extends \CBitrixComponent
 		$_SESSION['yabackurl'] = $url;
 	}
 
+	public function getCardNetworks() : array
+	{
+		$result = [];
+
+		$parameters = $this->handler->getParamsBusValue();
+		$str = 'YANDEX_CARD_NETWORK_';
+		$strLength = mb_strlen($str);
+
+		foreach ($parameters as $code => $value)
+		{
+			$position = mb_strpos($code, $str);
+
+			if ($position !== false && $value === 'Y')
+			{
+				$cardName = mb_substr($code, $strLength);
+				$result[] = $cardName;
+			}
+		}
+
+		return $result;
+	}
+
 	protected function getSetup() : Setup\Model
 	{
 		if ($this->setup === null)
@@ -122,7 +146,16 @@ class TradingCart extends \CBitrixComponent
 
 	protected function loadSetup() : Setup\Model
 	{
-		return Setup\Model::wakeUp(['ID' => $this->arParams['SETUP_ID']]);
+		$result = Setup\RepositoryTable::getList([
+			'filter' => [
+				'ID' => $this->arParams['SETUP_ID'],
+				'ACTIVE' => true
+			]
+		])->fetchObject();
+
+		Assert::notNull($result, 'setup');
+
+		return $result;
 	}
 
 	protected function getHandler() : Sale\PaySystem\BaseServiceHandler

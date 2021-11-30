@@ -8,13 +8,14 @@ use Bitrix\Main\Request;
 use Bitrix\Sale\Payment;
 use Bitrix\Sale\PaySystem;
 use Bitrix\Sale\PaySystem\ServiceResult;
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Reference\Assert;
 
 Loader::includeModule('yandexpay.pay');
 
-class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRefund, PaySystem\IPrePayable, Main\Type\IRequestFilter
+class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRefund
 {
 	public const REQUEST_SIGN = 'yandexpay';
 
@@ -28,54 +29,23 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	/** @var Gateway\Base|null */
 	protected $gateway;
 
-	protected function getPrefix(): string
-	{
-		return 'YANDEX_PAY_';
-	}
-
 	/**
 	 * @inheritDoc
 	 */
 	public function initiatePay(Payment $payment, Request $request = null) : PaySystem\ServiceResult
 	{
-		global $APPLICATION;
-
 		$result = new PaySystem\ServiceResult();
-
-		$gatewayType = $this->getHandlerMode();
-		$gatewayMerchantId = $this->getParamValue($payment, $gatewayType. '_PAYMENT_GATEWAY_MERCHANT_ID');
-
-		$params = [
-			'requestSign'           => static::REQUEST_SIGN,
-			'order'                 => $this->getOrderData($payment),
-			'env'                   => $this->isTestMode($payment) ? self::YANDEX_TEST_MODE : self::YANDEX_PRODUCTION_MODE,
-			'merchantId'            => $this->getParamValue($payment, 'MERCHANT_ID'),
-			'merchantName'          => $this->getParamValue($payment, 'MERCHANT_NAME'),
-			'buttonTheme'           => $this->getParamValue($payment, 'VARIANT_BUTTON'),
-			'buttonWidth'           => $this->getParamValue($payment, 'WIDTH_BUTTON'),
-			'cardNetworks'          => $this->getCardNetworks($payment),
-			'gateway'               => mb_strtolower($gatewayType),
-			'gatewayMerchantId'     => $gatewayMerchantId,
-			'externalId'            => $payment->getId(),
-			'paySystemId'           => $this->service->getField('ID'),
-			'currency'              => $payment->getField('CURRENCY')
-		];
 
 		try
 		{
-	        $this->setExtraParams($params);
+	        $this->setExtraParams($this->getParams($payment));
 
 	        $showTemplateResult = $this->showTemplate($payment, 'template');
 
 	        if ($showTemplateResult->isSuccess())
 	        {
 		        $result->setTemplate($showTemplateResult->getTemplate());
-
-				$server = Main\Context::getCurrent()->getServer();
-		        $request = Main\Context::getCurrent()->getRequest();
-		        $host = $request->isHttps() ? 'https' : 'http';
-				$url = $host . '://' . $server->get('SERVER_NAME') . $APPLICATION->GetCurPage() . '?ORDER_ID=' . $payment->getOrderId();
-		        $_SESSION['yabackurl'] = $url;
+				$this->setRedirectUrl($payment);
 	        }
 	        else
             {
@@ -90,7 +60,40 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
         return $result;
 	}
 
-	protected function getCardNetworks(Payment $payment) : array
+	protected function setRedirectUrl(Payment $payment) : void
+	{
+		global $APPLICATION;
+
+		$server = Main\Context::getCurrent()->getServer();
+		$request = Main\Context::getCurrent()->getRequest();
+		$host = $request->isHttps() ? 'https' : 'http';
+		$url = $host . '://' . $server->get('SERVER_NAME') . $APPLICATION->GetCurPage() . '?ORDER_ID=' . $payment->getOrderId();
+		$_SESSION['yabackurl'] = $url;
+	}
+
+	protected function getParams(Payment $payment) : array
+	{
+		$gatewayType = $this->getHandlerMode();
+		$gatewayMerchantId = $this->getParamValue($payment, $gatewayType. '_PAYMENT_GATEWAY_MERCHANT_ID');
+
+		return [
+			'requestSign'           => static::REQUEST_SIGN,
+			'order'                 => $this->getOrderData($payment),
+			'env'                   => $this->isTestMode($payment) ? self::YANDEX_TEST_MODE : self::YANDEX_PRODUCTION_MODE,
+			'merchantId'            => $this->getParamValue($payment, 'MERCHANT_ID'),
+			'merchantName'          => $this->getParamValue($payment, 'MERCHANT_NAME'),
+			'buttonTheme'           => $this->getParamValue($payment, 'VARIANT_BUTTON'),
+			'buttonWidth'           => $this->getParamValue($payment, 'WIDTH_BUTTON'),
+			'cardNetworks'          => $this->getCardNetworks($payment),
+			'gateway'               => mb_strtolower($gatewayType),
+			'gatewayMerchantId'     => $gatewayMerchantId,
+			'externalId'            => $payment->getId(),
+			'paySystemId'           => $this->service->getField('ID'),
+			'currency'              => $payment->getField('CURRENCY')
+		];
+	}
+
+	public function getCardNetworks(Payment $payment) : array
 	{
 		$result = [];
 
@@ -150,9 +153,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	protected function getParamValue(Payment $payment, $code)
 	{
-		$prefix = $this->getPrefix();
-
-		$code = $prefix . $code;
+		$code = Config::getLangPrefix() . $code;
 
 		return $this->getBusinessValue($payment, $code);
 	}
@@ -171,10 +172,9 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		try
 		{
-			$gatewayProvider = $this->getGateway($payment);
-			$gatewayProvider->setParameters($this->getParamsBusValue($payment));
-
-			$gatewayProvider->refund();
+			$gateway = $this->getGateway();
+			$gateway->setParameters($this->getParamsBusValue($payment));
+			$gateway->refund($payment);
 
 			$result->setOperationType(PaySystem\ServiceResult::MONEY_LEAVING);
 		}
@@ -186,48 +186,23 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return $result;
 	}
 
-	public function initPrePayment(Payment $payment = null, Request $request)
-	{
-		// TODO: Implement initPrePayment() method.
-	}
-
-	public function getProps()
-	{
-		// TODO: Implement getProps() method.
-	}
-
-	public function payOrder($orderData = array())
-	{
-		// TODO: Implement payOrder() method.
-	}
-
-	public function setOrderConfig($orderData = array())
-	{
-		// TODO: Implement setOrderConfig() method.
-	}
-
-	public function basketButtonAction($orderData)
-	{
-		// TODO: Implement basketButtonAction() method.
-	}
-
 	/**
 	 * @param \Bitrix\Sale\Payment|null $payment
 	 *
 	 * @return bool
 	 */
-	protected function isTestMode(Payment $payment = null): bool
+	public function isTestMode(Payment $payment = null): bool
 	{
-		return ($this->getBusinessValue($payment, $this->getPrefix() . 'TEST_MODE') === 'Y');
+		return ($this->getBusinessValue($payment, Config::getLangPrefix() . 'TEST_MODE') === 'Y');
 	}
 
-	protected function getGateway(Payment $payment = null, Request $request = null): Gateway\Base
+	protected function getGateway(): Gateway\Base
 	{
 		$type = $this->getHandlerMode();
 
 		Assert::notNull($type, 'gatewayType');
 
-		return Gateway\Manager::getProvider($type, $payment, $request);
+		return Gateway\Manager::getProvider($type);
 	}
 
 	public function processRequest(Payment $payment, Request $request): ServiceResult
@@ -236,11 +211,11 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		try
 		{
-			$gatewayProvider = $this->getGateway($payment, $request);
+			$gatewayProvider = $this->getGateway();
 
 			$gatewayProvider->setParameters($this->getParamsBusValue($payment));
 
-			$resultData = $gatewayProvider->startPay();
+			$resultData = $gatewayProvider->startPay($payment);
 
 			if (!empty($resultData))
 			{
@@ -284,8 +259,6 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function getPaymentIdFromRequest(Request $request)
 	{
-		$this->readFromStream($request);
-
 		$externalId = $request->get('externalId');
 
 		if (!empty($externalId)) { return $externalId; }
@@ -294,7 +267,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		if (empty($gatewayType)) { return null; }
 
-		$gateway = $this->getGateway(null, $request);
+		$gateway = $this->getGateway();
 
 		$gateway->setParameters($this->getParamsBusValue());
 
@@ -352,29 +325,5 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	public function isNewWindow(): bool
 	{
 		return $this->service->getField('NEW_WINDOW') === 'Y';
-	}
-
-	protected function readFromStream(Request $request): void
-	{
-		$request->addFilter($this);
-	}
-
-	public function filter(array $values): array
-	{
-		try
-		{
-			$rawInput = file_get_contents('php://input');
-			$postData = Main\Web\Json::decode($rawInput);
-
-			$result = [
-				'post' => $postData,
-			];
-		}
-		catch (\Exception $exception)
-		{
-			$result = [];
-		}
-
-		return $result;
 	}
 }

@@ -3,6 +3,7 @@
 namespace YandexPay\Pay\Gateway\Payment;
 
 use Bitrix\Main;
+use Bitrix\Sale;
 use Bitrix\Main\Web\HttpClient;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway\Base;
@@ -11,8 +12,6 @@ use YandexPay\Pay\Reference\Concerns\HasMessage;
 class Rbkmoney extends Base
 {
 	use HasMessage;
-
-	protected $sort = 200;
 
 	protected const STATUS_PAID = 'processed';
 	protected const STATUS_CAPTURED = 'captured';
@@ -180,24 +179,29 @@ class Rbkmoney extends Base
 		return $result;
 	}
 
-	public function startPay() : array
+	public function startPay(Sale\Payment $payment) : array
 	{
+		$this->setPayment($payment);
+
 		$result = [];
 
 		if ($this->isSecure3ds())
 		{
-			$invoiceId = $this->request->get('invoiceId');
+			$invoiceId = (string)$this->request->get('invoiceId');
 
-			$payment = $this->checkInvoiceEvents($invoiceId);
+			if ($invoiceId !== null)
+			{
+				$paymentInvoice = $this->checkInvoiceEvents($invoiceId);
 
-			if ($payment !== null)
+				if ($paymentInvoice !== null)
 			{
 				return [
-					'PS_INVOICE_ID'     => $invoiceId . '#' . $payment['paymentID'],
-					'PS_STATUS_CODE'    => $payment['status'],
+						'PS_INVOICE_ID'     => $invoiceId . '#' . $paymentInvoice['paymentID'],
+						'PS_STATUS_CODE'    => $paymentInvoice['status'],
 					'PS_SUM'            => $this->getPaymentSum()
 				];
 			}
+		}
 		}
 
 		$fields = $this->processWebHook();
@@ -504,8 +508,10 @@ class Rbkmoney extends Base
 		return Main\Web\Json::decode($data);
 	}
 
-	public function refund(): void
+	public function refund(Sale\Payment $payment): void
 	{
+		$this->setPayment($payment);
+
 		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 
 		[$invoiceId, $paymentId] = explode('#', $this->getPaymentField('PS_INVOICE_ID'));

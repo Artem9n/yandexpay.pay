@@ -85,7 +85,7 @@ class Summary
 		return $result;
 	}
 
-	protected static function getDisplayValue(array $field, $value, array $values = null) : string
+	protected static function getDisplayValue(array $field, $value, array $values = null) : ?string
 	{
 		$valueFormatted = static::formatValue($field, $value, $values);
 		$unit = static::formatUnit($field, $valueFormatted);
@@ -95,7 +95,7 @@ class Summary
 			: $valueFormatted;
 	}
 
-	protected static function formatValue(array $field, $value, array $values = null) : string
+	protected static function formatValue(array $field, $value, array $values = null) : ?string
 	{
 		if (!empty($field['SETTINGS']['SUMMARY']) && is_string($field['SETTINGS']['SUMMARY']))
 		{
@@ -123,7 +123,7 @@ class Summary
 		return $displayValue;
 	}
 
-	protected static function getSystemDisplayValue(array $field, $value, array $values) : string
+	protected static function getSystemDisplayValue(array $field, $value, array $values) : ?string
 	{
 		$field = Field::extend($field);
 		$result = Renderer::getViewHtml($field, $value, $values);

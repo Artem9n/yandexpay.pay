@@ -658,18 +658,15 @@ this.BX = this.BX || {};
 	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
 	          _this2.orderAccept(event).then(function (result) {
-	            if (_this2.isPaymentTypeCash(event)) {
-	              payment.complete(YaPay$1.CompleteReason.Success);
-	              return;
+	            if (!_this2.isPaymentTypeCash(event)) {
+	              _this2.notify(result, event).then(function (result) {
+	                if (result.success === true) {
+	                  _this2.widget.go(result.state, result);
+	                } else {
+	                  _this2.widget.go('error', result);
+	                }
+	              });
 	            }
-
-	            _this2.notify(result, event).then(function (result) {
-	              if (result.success === true) {
-	                _this2.widget.go(result.state, result);
-	              } else {
-	                _this2.widget.go('error', result);
-	              }
-	            });
 
 	            payment.complete(YaPay$1.CompleteReason.Success);
 	          });
@@ -687,7 +684,11 @@ this.BX = this.BX || {};
 	        // Это когда пользователь закрыл форму Yandex Pay.
 
 	        payment.on(YaPay$1.PaymentEventType.Abort, function (event) {// Предложить пользователю другой способ оплаты.
-	        });
+	        }); // Подписаться на событие setup.
+
+	        payment.on(YaPay$1.PaymentEventType.Setup, function (event) {// Передаем данные для инициализации формы
+	        }); // Подписаться на событие change.
+
 	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
 	          if (event.shippingAddress) {
 	            _this2.getDeliveryOptions('deliveryOptions', event.shippingAddress).then(function (result) {
@@ -703,17 +704,19 @@ this.BX = this.BX || {};
 	            });
 	          }
 
-	          if (event.pickupAddress) {
-	            _this2.getDeliveryOptions('pickupOptions', event.pickupAddress).then(function (result) {
+	          if (event.pickupBounds) {
+	            console.log(event.pickupBounds);
+
+	            _this2.getDeliveryOptions('pickupOptions', event.pickupBounds).then(function (result) {
 	              payment.update({
-	                pickupOptions: result
+	                pickupPoints: result
 	              });
 	            });
 	          }
 
-	          if (event.pickupOption) {
+	          if (event.pickupPoints) {
 	            payment.update({
-	              order: _this2.combineOrderWithPickupShipping(event.pickupOption)
+	              order: _this2.combineOrderWithPickupShipping(event.pickupPoints)
 	            });
 	          }
 	        });
@@ -745,7 +748,8 @@ this.BX = this.BX || {};
 	        service: this.getOption('requestSign'),
 	        accept: 'json',
 	        yandexData: yandexPayData,
-	        externalId: payment.externalId
+	        externalId: payment.externalId,
+	        paySystemId: payment.paySystemId
 	      };
 	      return this.query(this.getOption('notifyUrl'), data);
 	    }
@@ -757,7 +761,7 @@ this.BX = this.BX || {};
 	        address: event.shippingMethodInfo.shippingAddress,
 	        contact: event.shippingContact,
 	        payment: event.paymentMethodInfo,
-	        delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions,
+	        delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupPoints,
 	        paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId')
 	      };
 	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);

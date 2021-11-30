@@ -3,16 +3,14 @@
 namespace YandexPay\Pay\Gateway\Payment;
 
 use Bitrix\Main;
+use Bitrix\Sale;
 use Bitrix\Main\Web\HttpClient;
-use YandexPay\Pay\Gateway\Base;
+use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Reference\Concerns;
 
-class Payture extends Base
+class Payture extends Gateway\Base
 {
 	use Concerns\HasMessage;
-
-	/** @var int  */
-	protected $sort = 100;
 
 	protected const STATUS_3DS = '3DS';
 	protected const STATUS_SUCCESS = 'True';
@@ -97,8 +95,10 @@ class Payture extends Base
 		];
 	}
 
-	public function startPay() : array
+	public function startPay(Sale\Payment $payment) : array
 	{
+		$this->setPayment($payment);
+
 		$result = [
 			'PS_INVOICE_ID'     => $this->getExternalId(),
 			'PS_SUM'            => $this->getPaymentSum()
@@ -218,8 +218,9 @@ class Payture extends Base
 		return $this->request->get('paymentId');
 	}
 
-	public function refund(): void
+	public function refund(Sale\Payment $payment): void
 	{
+		$this->setPayment($payment);
 		$httpClient = new HttpClient();
 		$url = $this->getUrl('refund');
 

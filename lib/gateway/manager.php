@@ -41,13 +41,13 @@ class Manager
 		return $result;
 	}
 
-	public static function getProvider(string $type, Sale\Payment $payment = null, Main\Request $request = null): Base
+	public static function getProvider(string $type): Base
 	{
 		$className = '\\' . __NAMESPACE__ . '\\Payment\\' . ucfirst($type);
 
 		Assert::classExists($className);
 		Assert::isSubclassOf($className, Base::class);
 
-		return new $className($payment, $request);
+		return new $className();
 	}
 }

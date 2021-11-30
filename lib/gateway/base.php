@@ -7,15 +7,13 @@ use Bitrix\Sale;
 use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference\Concerns\HasMessage;
 
-abstract class Base implements IGateway, Main\Type\IRequestFilter
+abstract class Base implements IGateway
 {
 	use HasMessage;
 
 	public const TEST_URL = 'test';
 	public const ACTIVE_URL = 'active';
 
-	/** @var int */
-	protected $sort;
 	/** @var array */
 	protected $params = [];
 	/** @var Sale\Payment */
@@ -27,16 +25,15 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 	/** @var string */
 	protected $externalId;
 
-	public function __construct(Sale\Payment $payment = null, Main\Request $request = null)
+	public function __construct()
 	{
-		$this->payment = $payment;
 		$this->server = Main\Context::getCurrent()->getServer();
-		$this->request = $request ?? Main\Context::getCurrent()->getRequest();
+		$this->request = Main\Context::getCurrent()->getRequest();
 	}
 
 	abstract public function getPaymentIdFromRequest(): ?int;
 
-	abstract public function refund(): void;
+	abstract public function refund(Sale\Payment $payment): void;
 
 	abstract protected function getUrlList(): array;
 
@@ -45,14 +42,14 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 		return '';
 	}
 
+	public function setPayment(Sale\Payment $payment) : void
+	{
+		$this->payment = $payment;
+	}
+
 	public function getName() : string
 	{
 		return  '';
-	}
-
-	public function getSort(): int
-	{
-		return $this->sort;
 	}
 
 	public function getDescription(): string
@@ -109,14 +106,9 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 		return Config::getLangPrefix();
 	}
 
-	public function startPay() : array
+	public function startPay(Sale\Payment $payment) : array
 	{
 		return [];
-	}
-
-	protected function readFromStream(): void
-	{
-		$this->request->addFilter($this);
 	}
 
 	/**
@@ -215,7 +207,7 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 
 	protected function getYandexData() : array
 	{
-		return $this->request->get('yandexData') ?? [];
+		return (array)$this->request->get('yandexData');
 	}
 
 	protected function getYandexToken() : string
@@ -223,25 +215,6 @@ abstract class Base implements IGateway, Main\Type\IRequestFilter
 		$yandexData = $this->getYandexData();
 
 		return $yandexData['token'] ?? '';
-	}
-
-	public function filter(array $values): array
-	{
-		try
-		{
-			$rawInput = file_get_contents('php://input');
-			$postData = Main\Web\Json::decode($rawInput);
-
-			$result = [
-				'post' => $postData,
-			];
-		}
-		catch (\Exception $exception)
-		{
-			$result = [];
-		}
-
-		return $result;
 	}
 
 	protected function getRedirectUrl(array $extraParams = []) : string

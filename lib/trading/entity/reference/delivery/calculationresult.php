@@ -67,10 +67,10 @@ class CalculationResult extends Pay\Result\Base
 		return $this->category;
 	}
 
-	/** @return Main\Type\Date|null */
+	/** @return Main\Type\Date */
 	public function getDateFrom()
 	{
-		return $this->dateFrom;
+		return $this->dateFrom ?? new Main\Type\DateTime();
 	}
 
 	public function setDateTo(Main\Type\Date $date = null)
@@ -129,5 +129,45 @@ class CalculationResult extends Pay\Result\Base
 	public function setStores($stores)
 	{
 		$this->stores = (array)$stores;
+	}
+
+	public function getMeaningfulDelivery() : array
+	{
+		return [
+			'id'        => (string)$this->getDeliveryId(),
+			'label'     => $this->getServiceName(),
+			'amount'    => (string)$this->getPrice(),
+			'provider'  => 'custom', //todo
+			'category'  => $this->getCategory(),
+			'date'      => $this->getDateFrom()->getTimestamp()
+		];
+	}
+
+	public function getMeaningfulPickup() : array
+	{
+		$result = [];
+
+		foreach ($this->getStores() as $store)
+		{
+			$result[] = [
+				'id'        => $store['ID'],
+				'label'     => $store['TITLE'],
+				'provider'  => 'pickpoint', //todo
+				'address'   => $store['ADDRESS'],
+				'date'      => $this->getDateFrom()->getTimestamp(),
+				'amount'    => (string)$this->getPrice(),
+				'storagePeriod' => 3, // todo
+				'info' => [
+                    'contacts' => [$store['PHONE']],
+                    'tripDescription' => $store['DESCRIPTION'] . PHP_EOL . $store['SCHEDULE'],
+                ],
+				'coordinates' =>  [
+					'latitude' => (float)$store['GPS_N'],
+					'longitude' => (float)$store['GPS_S'],
+				]
+			];
+		}
+
+		return $result;
 	}
 }

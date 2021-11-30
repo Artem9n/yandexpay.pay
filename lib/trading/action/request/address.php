@@ -244,4 +244,26 @@ class Address extends Model
 
 		return Address\Coordinates::initialize($result);
 	}
+
+	public function getNortheast() : ?Model
+	{
+		$result = $this->getField('ne');
+
+		if ($result === null) { return null; }
+
+		Assert::isArray($result, 'northeast');
+
+		return Address\Coordinates::initialize($result);
+	}
+
+	public function getSouthwest() : ?Model
+	{
+		$result = $this->getField('sw');
+
+		if ($result === null) { return null; }
+
+		Assert::isArray($result, 'southwest');
+
+		return Address\Coordinates::initialize($result);
+	}
 }

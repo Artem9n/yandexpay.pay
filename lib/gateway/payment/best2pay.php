@@ -3,6 +3,7 @@
 namespace YandexPay\Pay\Gateway\Payment;
 
 use Bitrix\Main;
+use Bitrix\Sale;
 use Bitrix\Main\Web\HttpClient;
 use Bitrix\Currency\CurrencyClassifier;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
@@ -19,8 +20,6 @@ class Best2pay extends Gateway\Base
 	protected const STATUS_SUCCESS = 'COMPLETED';
 
 	protected const ACTION_PAY = 'pay';
-
-	protected $sort = 300;
 
 	public function getId() : string
 	{
@@ -104,8 +103,10 @@ class Best2pay extends Gateway\Base
 		];
 	}
 
-	public function startPay() : array
+	public function startPay(Sale\Payment $payment) : array
 	{
+		$this->setPayment($payment);
+
 		$result = [];
 
 		if ($this->isSecure3ds())
@@ -379,8 +380,10 @@ class Best2pay extends Gateway\Base
 		return Main\Text\Encoding::convertEncoding($message, 'WINDOWS-1251', 'UTF-8');
 	}
 
-	public function refund(): void
+	public function refund(Sale\Payment $payment): void
 	{
+		$this->setPayment($payment);
+
 		$httpClient = new HttpClient();
 
 		$invoiceId = $this->getPaymentField('PS_INVOICE_ID');

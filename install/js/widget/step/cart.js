@@ -120,18 +120,15 @@ export default class Cart extends AbstractStep {
 					// Получить платежный токен.
 					this.orderAccept(event).then((result) => {
 
-						if(this.isPaymentTypeCash(event)) {
-							payment.complete(YaPay.CompleteReason.Success);
-							return;
+						if(!this.isPaymentTypeCash(event)) {
+							this.notify(result, event).then(result => {
+								if (result.success === true) {
+									this.widget.go(result.state, result);
+								} else {
+									this.widget.go('error', result);
+								}
+							});
 						}
-
-						this.notify(result, event).then(result => {
-							if (result.success === true) {
-								this.widget.go(result.state, result);
-							} else {
-								this.widget.go('error', result);
-							}
-						});
 
 						payment.complete(YaPay.CompleteReason.Success);
 					});
@@ -154,6 +151,12 @@ export default class Cart extends AbstractStep {
 					// Предложить пользователю другой способ оплаты.
 				});
 
+				// Подписаться на событие setup.
+				payment.on(YaPay.PaymentEventType.Setup, (event) => {
+					// Передаем данные для инициализации формы
+				});
+
+				// Подписаться на событие change.
 				payment.on(YaPay.PaymentEventType.Change, (event) => {
 
 					if (event.shippingAddress) {
@@ -168,15 +171,16 @@ export default class Cart extends AbstractStep {
 						});
 					}
 
-					if (event.pickupAddress) {
-						this.getDeliveryOptions('pickupOptions', event.pickupAddress).then((result) => {
-							payment.update({pickupOptions: result})
+					if (event.pickupBounds) {
+						console.log(event.pickupBounds);
+						this.getDeliveryOptions('pickupOptions', event.pickupBounds).then((result) => {
+							payment.update({pickupPoints: result})
 						});
 					}
 
-					if (event.pickupOption) {
+					if (event.pickupPoints) {
 						payment.update({
-							order: this.combineOrderWithPickupShipping(event.pickupOption),
+							order: this.combineOrderWithPickupShipping(event.pickupPoints),
 						});
 					}
 
@@ -210,6 +214,7 @@ export default class Cart extends AbstractStep {
 			accept: 'json',
 			yandexData: yandexPayData,
 			externalId: payment.externalId,
+			paySystemId: payment.paySystemId
 		};
 
 		return this.query(this.getOption('notifyUrl'), data);
@@ -222,7 +227,7 @@ export default class Cart extends AbstractStep {
 			address: event.shippingMethodInfo.shippingAddress,
 			contact: event.shippingContact,
 			payment: event.paymentMethodInfo,
-			delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupOptions,
+			delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupPoints,
 			paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
 		};
 
