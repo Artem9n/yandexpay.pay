@@ -117,12 +117,12 @@ class Form extends Pay\Component\Plain\Form
 		return $values;
 	}
 
-	public function add(array $values) : Main\Entity\Result
+	public function add(array $values) : Main\ORM\Data\AddResult
 	{
 		throw new Main\NotSupportedException();
 	}
 
-	public function update($primary, array $values) : Main\Entity\Result
+	public function update($primary, array $values) : Main\ORM\Data\UpdateResult
 	{
 		$setup = $this->getSetup();
 
@@ -141,7 +141,9 @@ class Form extends Pay\Component\Plain\Form
 			$setup->removeAllSettings();
 		}
 
-		return $setup->save();
+		$setup->save();
+
+		return new Main\ORM\Data\UpdateResult();
 	}
 
 	protected function sliceEmptyValues(array $values) : array

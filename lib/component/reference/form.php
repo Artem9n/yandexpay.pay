@@ -14,9 +14,9 @@ abstract class Form extends AbstractProvider
 
 	abstract public function validate(array $data, array $fields = null) : Main\Result;
 
-	abstract public function add(array $values) : Main\Entity\Result;
+	abstract public function add(array $values) : Main\ORM\Data\AddResult;
 
-	abstract public function update($primary, array $values) : Main\Entity\Result;
+	abstract public function update($primary, array $values) : Main\ORM\Data\UpdateResult;
 
 	public function extend(array $data, array $select = []) : array
 	{
