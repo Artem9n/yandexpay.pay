@@ -3,6 +3,7 @@
 namespace YandexPay\Pay\Component\Model;
 
 use Bitrix\Main;
+use YandexPay\Pay;
 use YandexPay\Pay\Component;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Storage;
@@ -168,11 +169,15 @@ class Form extends Component\Reference\Form
 		return $result;
 	}
 
-	public function add(array $values) : Main\Entity\Result
+	public function add(array $values) : Main\ORM\Data\AddResult
 	{
 		$dataClass = $this->getDataClass();
 		$modelClass = $dataClass::getObjectClass();
 		$model = new $modelClass();
+
+		$fields = $this->getComponentResult('FIELDS');
+
+		$values = $this->sliceFieldsDependHidden($fields, $values);
 
 		foreach ($values as $name => $value)
 		{
@@ -184,11 +189,15 @@ class Form extends Component\Reference\Form
 		return $model->save();
 	}
 
-	public function update($primary, array $values) : Main\Entity\Result
+	public function update($primary, array $values) : Main\ORM\Data\UpdateResult
 	{
 		$dataClass = $this->getDataClass();
 		$modelClass = $dataClass::getObjectClass();
 		$model = $modelClass::wakeUp($primary);
+
+		$fields = $this->getComponentResult('FIELDS');
+
+		$values = $this->sliceFieldsDependHidden($fields, $values);
 
 		foreach ($values as $name => $value)
 		{
@@ -204,5 +213,19 @@ class Form extends Component\Reference\Form
 	protected function getDataClass() : string
 	{
 		return $this->getComponentParam('DATA_CLASS_NAME');
+	}
+
+	protected function sliceFieldsDependHidden(array $fields, array $values) : array
+	{
+		$result = $values;
+
+		foreach ($fields as $fieldName => $field)
+		{
+			if (empty($field['DEPEND_HIDDEN'])) { continue; }
+
+			Pay\Utils\BracketChain::unset($result, $fieldName);
+		}
+
+		return $result;
 	}
 }
