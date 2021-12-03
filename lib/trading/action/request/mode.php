@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Request;
 
+use YandexPay\Pay\Injection;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Common\Model;
 
@@ -8,9 +9,6 @@ use YandexPay\Pay\Reference\Common\Model;
 
 class Mode extends Model
 {
-	public const MODE_PRODUCT = 'PRODUCT';
-	public const MODE_CART = 'CART';
-
 	public function getMode() : string
 	{
 		$result = $this->getField('mode');
@@ -25,13 +23,20 @@ class Mode extends Model
 	{
 		$mode = $this->getMode();
 
-		return $mode === self::MODE_PRODUCT;
+		return $mode === Injection\Behavior\Registry::ELEMENT;
 	}
 
-	public function isCart() : bool
+	public function isBasket() : bool
 	{
 		$mode = $this->getMode();
 
-		return $mode === self::MODE_CART;
+		return $mode === Injection\Behavior\Registry::BASKET;
+	}
+
+	public function isOrder() : bool
+	{
+		$mode = $this->getMode();
+
+		return $mode === Injection\Behavior\Registry::ORDER;
 	}
 }
