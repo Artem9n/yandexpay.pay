@@ -37,10 +37,6 @@ class RepositoryTable extends ORM\Data\DataManager
                 'primary' => true,
             ]),
 
-	        new ORM\Fields\BooleanField('ACTIVE', Userfield\BooleanType::getTableFieldDescription(false) + [
-		        'required' => true,
-	        ]),
-
             new ORM\Fields\IntegerField('TRADING_ID', [
                 'required' => true,
             ]),
@@ -48,6 +44,14 @@ class RepositoryTable extends ORM\Data\DataManager
             new ORM\Fields\StringField('BEHAVIOR', [
                 'required' => true,
             ]),
+
+	        new ORM\Fields\StringField('INSERT_POSITION', [
+		        'required' => true,
+	        ]),
+
+	        new ORM\Fields\BooleanField('ACTIVE', Userfield\BooleanType::getTableFieldDescription(false) + [
+				'required' => true,
+	        ]),
 
 	        (new ORM\Fields\ArrayField('SETTINGS'))
 	            ->configureSerializationPhp(),

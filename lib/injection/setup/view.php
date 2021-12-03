@@ -14,6 +14,12 @@ class View extends Storage\View
     use Concerns\HasMessage;
 
 	protected $behaviors;
+	protected $insertPositions = [
+		'beforebegin' => true,
+		'afterbegin' => true,
+		'beforeend' => true,
+		'afterend' => true,
+	];
 
     public function getFields() : array
     {
@@ -27,6 +33,10 @@ class View extends Storage\View
 	                'TYPE' => 'enumeration',
 	                'VALUES' => $this->getBehaviorEnum(),
 	            ],
+				'INSERT_POSITION' => [
+					'TYPE' => 'enumeration',
+					'VALUES' => $this->getPositionsEnum(),
+				]
 			],
 	        'EXCLUDE' => [
 		        'SETTINGS',
@@ -116,6 +126,23 @@ class View extends Storage\View
 		foreach (Injection\Behavior\Registry::getTypes() as $type)
 		{
 			$result[$type] = Injection\Behavior\Registry::getInstance($type);
+		}
+
+		return $result;
+	}
+
+	protected function getPositionsEnum() : array
+	{
+		$result = [];
+
+		foreach ($this->insertPositions as $code => $enable)
+		{
+			if (!$enable) { continue; }
+
+			$result[] = [
+				'ID' => $code,
+				'VALUE' => self::getMessage('POSITION_' . mb_strtoupper($code))
+			];
 		}
 
 		return $result;
