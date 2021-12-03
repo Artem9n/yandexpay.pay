@@ -182,7 +182,7 @@ class Purchase extends \CBitrixComponent
 		{
 			$addProductResult = $order->addProduct($this->request->get('productId'));
 		}
-		elseif ($modeRequest->isCart())
+		elseif ($modeRequest->isBasket() || $modeRequest->isOrder())
 		{
 			$addProductResult = $order->loadUserBasket();
 
