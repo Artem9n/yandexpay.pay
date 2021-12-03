@@ -1,5 +1,5 @@
 module.exports = {
-	input: './widget.js',
+	input: './index.js',
 	output: './build/widget.js',
 	namespace: 'BX.YandexPay',
 	adjustConfigPhp: false

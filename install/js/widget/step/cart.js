@@ -6,14 +6,19 @@ const YaPay = window.YaPay;
 export default class Cart extends AbstractStep {
 
 	render(node, data) {
+		this.element = node;
 		this.paymentData = this.getPaymentData(data);
 		this.defaultBody = this.getDefaultBody();
 
 		this.setupPaymentCash();
+
 		this.getProducts().then((result) => {
 			this.combineOrderWithProducts(result);
-			this.createPayment(node, this.paymentData);
+			this.createPayment(this.element, this.paymentData);
 		});
+
+		this.catalogElementChangeOffer();
+		this.basketRefresh();
 	}
 
 	compile(data) {
@@ -23,12 +28,36 @@ export default class Cart extends AbstractStep {
 	getDefaultBody() {
 		return {
 			siteId: this.getOption('siteId'),
-			productId: this.getOption('productId'),
 			fUserId: this.getOption('fUserId'),
 			userId: this.getOption('userId'),
 			setupId: this.getOption('setupId'),
 			mode: this.getOption('mode')
 		}
+	}
+
+	catalogElementChangeOffer() {
+
+		if (!BX) { return; }
+
+		if (!window.JCCatalogElement) { return; }
+
+		BX.addCustomEvent('onCatalogElementChangeOffer', (eventData) => {
+			this.setOption('productId', eventData.newId);
+			this.getProducts().then((result) => {
+				this.combineOrderWithProducts(result);
+			});
+		});
+	}
+
+	basketRefresh() {
+
+		if (!BX) { return; }
+
+		BX.addCustomEvent('OnBasketChange', () => {
+			this.getProducts().then((result) => {
+				this.combineOrderWithProducts(result);
+			});
+		});
 	}
 
 	setupPaymentCash(){
@@ -200,6 +229,7 @@ export default class Cart extends AbstractStep {
 
 		let expandData = {
 			yapayAction: 'getProducts',
+			productId: this.getOption('productId'),
 		};
 
 		let data = {...this.defaultBody, ...expandData };
@@ -225,6 +255,7 @@ export default class Cart extends AbstractStep {
 		let expandData = {
 			yapayAction: 'orderAccept',
 			address: event.shippingMethodInfo.shippingAddress,
+			productId: this.getOption('productId'),
 			contact: event.shippingContact,
 			payment: event.paymentMethodInfo,
 			delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupPoints,
@@ -240,7 +271,8 @@ export default class Cart extends AbstractStep {
 
 		let expandData = {
 			address: address,
-			yapayAction: action
+			yapayAction: action,
+			productId: this.getOption('productId'),
 		};
 
 		let data = {...this.defaultBody, ...expandData };

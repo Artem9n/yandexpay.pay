@@ -1,6 +1,6 @@
 import StepFactory from './step/factory';
 
-export class Widget {
+export default class Widget {
 
 	/**
 	 * @type {{failureTemplate: string, modalTemplate: string, finishedTemplate: string}}
@@ -13,10 +13,12 @@ export class Widget {
 
 	/**
 	 * @param {Object<Element>} element
-	 * @param {Object} options
 	 */
-	constructor(element, options = {}){
+	constructor(element){
 		this.el = element;
+	}
+
+	setOptions(options) {
 		this.options = Object.assign({}, this.defaults, options);
 	}
 

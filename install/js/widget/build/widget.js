@@ -47,6 +47,95 @@ this.BX = this.BX || {};
 	  return Template;
 	}();
 
+	var Factory = /*#__PURE__*/function () {
+	  function Factory() {
+	    babelHelpers.classCallCheck(this, Factory);
+	    babelHelpers.defineProperty(this, "defaults", {
+	      template: '<div id="yandexpay" class="yandex-pay"></div>'
+	    });
+	  }
+
+	  babelHelpers.createClass(Factory, [{
+	    key: "inject",
+	    value: function inject(selector, position) {
+	      var _this = this;
+
+	      return Promise.resolve().then(function () {
+	        return _this.waitElement(selector);
+	      }).then(function (anchor) {
+	        var element = _this.renderElement(anchor, position);
+
+	        return _this.install(element);
+	      });
+	    }
+	  }, {
+	    key: "install",
+	    value: function install(element) {
+	      return new BX.YandexPay.Widget(element);
+	    }
+	  }, {
+	    key: "waitElement",
+	    value: function waitElement(selector) {
+	      var _this2 = this;
+
+	      return new Promise(function (resolve, reject) {
+	        _this2.waitCount = 0;
+	        _this2.waitLimit = 10;
+
+	        _this2.waitElementLoop(selector, resolve, reject);
+	      });
+	    }
+	  }, {
+	    key: "waitElementLoop",
+	    value: function waitElementLoop(selector, resolve, reject) {
+	      var anchor = this.findElement(selector);
+
+	      if (anchor) {
+	        resolve(anchor);
+	        return;
+	      }
+
+	      ++this.waitCount;
+
+	      if (this.waitCount >= this.waitLimit) {
+	        reject('cant find element by selector ' + selector);
+	        return;
+	      }
+
+	      setTimeout(this.waitElementLoop.bind(this, selector, resolve, reject));
+	    }
+	  }, {
+	    key: "findElement",
+	    value: function findElement(selector) {
+	      if (this.isCssSelector(selector)) {
+	        return document.querySelector(selector);
+	      }
+
+	      var variant = selector.trim();
+
+	      if (variant === '') {
+	        throw new Error('widget selector is empty');
+	      }
+
+	      return document.getElementById(variant) || document.getElementsByClassName(variant)[0];
+	    }
+	  }, {
+	    key: "isCssSelector",
+	    value: function isCssSelector(selector) {
+	      return /^[.#]/.test(selector);
+	    }
+	  }, {
+	    key: "renderElement",
+	    value: function renderElement(anchor, position) {
+	      var result = Template.toElement(this.defaults.template);
+	      anchor.insertAdjacentElement('afterend', result); // todo choose position
+
+	      return result;
+	    }
+	  }]);
+	  return Factory;
+	}();
+
 	var AbstractStep = /*#__PURE__*/function () {
 	  /**
 	   * @param {Object} options
@@ -86,6 +175,15 @@ this.BX = this.BX || {};
 	        return this.options[key];
 	      } else {
 	        return this.widget.options[key];
+	      }
+	    }
+	  }, {
+	    key: "setOption",
+	    value: function setOption(key, value) {
+	      if (key in this.options) {
+	        this.options[key] = value;
+	      } else if (key in this.widget.options) {
+	        this.widget.options[key] = value;
 	      }
 	    }
 	    /**
@@ -551,14 +649,17 @@ this.BX = this.BX || {};
 	    value: function render(node, data) {
 	      var _this = this;
 
+	      this.element = node;
 	      this.paymentData = this.getPaymentData(data);
 	      this.defaultBody = this.getDefaultBody();
 	      this.setupPaymentCash();
 	      this.getProducts().then(function (result) {
 	        _this.combineOrderWithProducts(result);
 
-	        _this.createPayment(node, _this.paymentData);
+	        _this.createPayment(_this.element, _this.paymentData);
 	      });
+	      this.catalogElementChangeOffer();
+	      this.basketRefresh();
 	    }
 	  }, {
 	    key: "compile",
@@ -570,12 +671,47 @@ this.BX = this.BX || {};
 	    value: function getDefaultBody() {
 	      return {
 	        siteId: this.getOption('siteId'),
-	        productId: this.getOption('productId'),
 	        fUserId: this.getOption('fUserId'),
 	        userId: this.getOption('userId'),
 	        setupId: this.getOption('setupId'),
 	        mode: this.getOption('mode')
 	      };
+	    }
+	  }, {
+	    key: "catalogElementChangeOffer",
+	    value: function catalogElementChangeOffer() {
+	      var _this2 = this;
+
+	      if (!BX) {
+	        return;
+	      }
+
+	      if (!window.JCCatalogElement) {
+	        return;
+	      }
+
+	      BX.addCustomEvent('onCatalogElementChangeOffer', function (eventData) {
+	        _this2.setOption('productId', eventData.newId);
+
+	        _this2.getProducts().then(function (result) {
+	          _this2.combineOrderWithProducts(result);
+	        });
+	      });
+	    }
+	  }, {
+	    key: "basketRefresh",
+	    value: function basketRefresh() {
+	      var _this3 = this;
+
+	      if (!BX) {
+	        return;
+	      }
+
+	      BX.addCustomEvent('OnBasketChange', function () {
+	        _this3.getProducts().then(function (result) {
+	          _this3.combineOrderWithProducts(result);
+	        });
+	      });
 	    }
 	  }, {
 	    key: "setupPaymentCash",
@@ -632,7 +768,7 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "createPayment",
 	    value: function createPayment(node, paymentData) {
-	      var _this2 = this;
+	      var _this4 = this;
 
 	      // Создать платеж.
 	      YaPay$1.createPayment(paymentData, {
@@ -644,8 +780,8 @@ this.BX = this.BX || {};
 	        // Создать экземпляр кнопки.
 	        var button = payment.createButton({
 	          type: YaPay$1.ButtonType.Pay,
-	          theme: _this2.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
-	          width: _this2.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
+	          theme: _this4.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
+	          width: _this4.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
 	        }); // Смонтировать кнопку в DOM.
 
 	        button.mount(node); // Подписаться на событие click.
@@ -657,13 +793,13 @@ this.BX = this.BX || {};
 
 	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
-	          _this2.orderAccept(event).then(function (result) {
-	            if (!_this2.isPaymentTypeCash(event)) {
-	              _this2.notify(result, event).then(function (result) {
+	          _this4.orderAccept(event).then(function (result) {
+	            if (!_this4.isPaymentTypeCash(event)) {
+	              _this4.notify(result, event).then(function (result) {
 	                if (result.success === true) {
-	                  _this2.widget.go(result.state, result);
+	                  _this4.widget.go(result.state, result);
 	                } else {
-	                  _this2.widget.go('error', result);
+	                  _this4.widget.go('error', result);
 	                }
 	              });
 	            }
@@ -691,7 +827,7 @@ this.BX = this.BX || {};
 
 	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
 	          if (event.shippingAddress) {
-	            _this2.getDeliveryOptions('deliveryOptions', event.shippingAddress).then(function (result) {
+	            _this4.getDeliveryOptions('deliveryOptions', event.shippingAddress).then(function (result) {
 	              payment.update({
 	                shippingOptions: result
 	              });
@@ -700,14 +836,14 @@ this.BX = this.BX || {};
 
 	          if (event.shippingOption) {
 	            payment.update({
-	              order: _this2.combineOrderWithDirectShipping(event.shippingOption)
+	              order: _this4.combineOrderWithDirectShipping(event.shippingOption)
 	            });
 	          }
 
 	          if (event.pickupBounds) {
 	            console.log(event.pickupBounds);
 
-	            _this2.getDeliveryOptions('pickupOptions', event.pickupBounds).then(function (result) {
+	            _this4.getDeliveryOptions('pickupOptions', event.pickupBounds).then(function (result) {
 	              payment.update({
 	                pickupPoints: result
 	              });
@@ -716,7 +852,7 @@ this.BX = this.BX || {};
 
 	          if (event.pickupPoints) {
 	            payment.update({
-	              order: _this2.combineOrderWithPickupShipping(event.pickupPoints)
+	              order: _this4.combineOrderWithPickupShipping(event.pickupPoints)
 	            });
 	          }
 	        });
@@ -736,7 +872,8 @@ this.BX = this.BX || {};
 	    key: "getProducts",
 	    value: function getProducts() {
 	      var expandData = {
-	        yapayAction: 'getProducts'
+	        yapayAction: 'getProducts',
+	        productId: this.getOption('productId')
 	      };
 	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);
 	      return this.query(this.getOption('purchaseUrl'), data);
@@ -759,6 +896,7 @@ this.BX = this.BX || {};
 	      var expandData = {
 	        yapayAction: 'orderAccept',
 	        address: event.shippingMethodInfo.shippingAddress,
+	        productId: this.getOption('productId'),
 	        contact: event.shippingContact,
 	        payment: event.paymentMethodInfo,
 	        delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupPoints,
@@ -772,7 +910,8 @@ this.BX = this.BX || {};
 	    value: function getDeliveryOptions(action, address) {
 	      var expandData = {
 	        address: address,
-	        yapayAction: action
+	        yapayAction: action,
+	        productId: this.getOption('productId')
 	      };
 	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);
 	      return this.query(this.getOption('purchaseUrl'), data);
@@ -829,7 +968,7 @@ this.BX = this.BX || {};
 	  return Cart;
 	}(AbstractStep);
 
-	var Factory = /*#__PURE__*/function () {
+	var Factory$1 = /*#__PURE__*/function () {
 	  function Factory() {
 	    babelHelpers.classCallCheck(this, Factory);
 	  }
@@ -868,10 +1007,8 @@ this.BX = this.BX || {};
 
 	  /**
 	   * @param {Object<Element>} element
-	   * @param {Object} options
 	   */
 	  function Widget(element) {
-	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	    babelHelpers.classCallCheck(this, Widget);
 	    babelHelpers.defineProperty(this, "defaults", {
 	      finishedTemplate: '<div class="alert alert-success" role="alert"><strong>#MESSAGE#</strong></div>',
@@ -879,14 +1016,18 @@ this.BX = this.BX || {};
 	      modalTemplate: '<div class="yandex-pay-modal-inner">#IFRAME#</div>'
 	    });
 	    this.el = element;
-	    this.options = Object.assign({}, this.defaults, options);
 	  }
-	  /**
-	   * @param {Object} data
-	   */
-
 
 	  babelHelpers.createClass(Widget, [{
+	    key: "setOptions",
+	    value: function setOptions(options) {
+	      this.options = Object.assign({}, this.defaults, options);
+	    }
+	    /**
+	     * @param {Object} data
+	     */
+
+	  }, {
 	    key: "payment",
 	    value: function payment(data) {
 	      this.go('payment', data);
@@ -920,7 +1061,7 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "makeStep",
 	    value: function makeStep(type) {
-	      var step = Factory.make(type);
+	      var step = Factory$1.make(type);
 	      step.setWidget(this);
 	      return step;
 	    }
@@ -928,6 +1069,7 @@ this.BX = this.BX || {};
 	  return Widget;
 	}();
 
+	exports.Factory = Factory;
 	exports.Widget = Widget;
 
 }((this.BX.YandexPay = this.BX.YandexPay || {})));

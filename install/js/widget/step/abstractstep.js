@@ -41,6 +41,14 @@ export default class AbstractStep {
 		}
 	}
 
+	setOption(key, value) {
+		if (key in this.options) {
+			this.options[key] = value;
+		} else if (key in this.widget.options){
+			this.widget.options[key] = value;
+		}
+	}
+
 	/**
 	 * @param {Object<Element>} node Element
 	 * @param {Object} data Options
