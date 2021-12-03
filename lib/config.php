@@ -40,7 +40,7 @@ class Config
 
 		if (strpos($optionValue, static::$serializedOptionPrefix) === 0)
 		{
-			$unserializedValue = unserialize(substr($optionValue, strlen(static::$serializedOptionPrefix)), false);
+			$unserializedValue = unserialize(substr($optionValue, strlen(static::$serializedOptionPrefix)), [false]);
 			$optionValue = ($unserializedValue !== false ? $unserializedValue : null);
 		}
 

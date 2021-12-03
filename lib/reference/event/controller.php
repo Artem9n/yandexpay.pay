@@ -347,7 +347,7 @@ class Controller
 
 		if (is_string($handlerArgs))
 		{
-			$handlerArgsUnserialize = unserialize($handlerArgs, false);
+			$handlerArgsUnserialize = unserialize($handlerArgs, [false]);
 
 			if (is_array($handlerArgsUnserialize) && !empty($handlerArgsUnserialize))
 			{
