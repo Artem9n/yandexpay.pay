@@ -28,6 +28,7 @@ class SetupGrid extends Pay\Ui\Reference\Page
 			'LIST_FIELDS' => [
 				'TRADING_ID',
 				'BEHAVIOR',
+				'ACTIVE'
 			],
 			'CONTEXT_MENU' => [
 				[

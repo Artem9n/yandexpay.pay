@@ -24,7 +24,7 @@ class SetupEdit extends Pay\Ui\Reference\Page
 		
 		$APPLICATION->IncludeComponent('yandexpay.pay:admin.form', '', [
 			'FORM_ID' => 'YANDEX_PAY_ADMIN_INJECTION_ADD',
-			'PROVIDER_CLASS_NAME' => Pay\Component\Model\Form::class,
+			'PROVIDER_CLASS_NAME' => Pay\Component\Trading\Injection\Form::class,
 			'DATA_CLASS_NAME' => Pay\Injection\Setup\RepositoryTable::class,
 			'TITLE' => self::getMessage('TITLE'),
 			'TITLE_ADD' => self::getMessage('TITLE_ADD'),
@@ -46,6 +46,7 @@ class SetupEdit extends Pay\Ui\Reference\Page
 					'fields' => [
 						'TRADING_ID',
 						'BEHAVIOR',
+						'INSERT_POSITION',
 						'SETTINGS',
 					],
 				],
