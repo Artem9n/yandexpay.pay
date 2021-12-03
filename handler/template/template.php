@@ -35,10 +35,15 @@ $widgetOptions = array_intersect_key($params, [
 	<?= Loc::getMessage('YANDEX_MARKET_SALE_SUM_DESCRIPTION', ['#SUM#' => CurrencyFormat($params['order']['total'], $params['currency'])])?>
 </div>
 <div id="yandexpay" class="yandex-pay"></div>
+
 <script>
 	(function() {
+		const factory = new BX.YandexPay.Factory();
 		const element = document.getElementById('yandexpay');
-		const widget = new BX.YandexPay.Widget(element, <?= Json::encode($widgetOptions) ?>);
+		const options = <?= Json::encode($widgetOptions) ?>;
+		const widget = factory.install(element);
+
+		widget.setOptions(options);
 		widget.payment(<?= Json::encode($params['order']) ?>);
 	})();
 </script>
