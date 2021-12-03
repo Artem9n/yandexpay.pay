@@ -6,7 +6,8 @@ use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Main\Localization\Loc;
 use YandexPay\Pay\Reference\Assert;
-use YandexPay\Pay\Trading\Setup;
+use YandexPay\Pay\Trading;
+use YandexPay\Pay\Injection;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 use YandexPay\Pay\Utils;
@@ -23,15 +24,18 @@ class TradingCart extends \CBitrixComponent
 	protected $service;
 	/** @var EntityReference\Environment */
 	protected $environment;
-	/** @var Setup\Model */
+	/** @var Trading\Setup\Model */
 	protected $setup;
+	/** @var Injection\Setup\Model */
+	protected $injection;
 
 	public function onPrepareComponentParams($arParams) : array
 	{
 		$arParams['PRODUCT_ID'] = !empty($arParams['PRODUCT_ID']) ? (int)$arParams['PRODUCT_ID'] : null;
-		$arParams['PAY_SYSTEM_ID'] = !empty($arParams['PAY_SYSTEM_ID']) && (int)$arParams['PAY_SYSTEM_ID'] > 0 ? (int)$arParams['PAY_SYSTEM_ID'] : null;
-		$arParams['SETUP_ID'] = !empty($arParams['SETUP_ID']) ? (int)$arParams['SETUP_ID'] : null;
-		$arParams['MODE'] = !empty($arParams['MODE']) ? (string)$arParams['MODE'] : 'PRODUCT';
+		$arParams['PAY_SYSTEM_ID'] = !empty($arParams['PAY_SYSTEM_ID']) && (int)$arParams['PAY_SYSTEM_ID'] > 0 ? (int)$arParams['PAY_SYSTEM_ID'] : 10; // todo
+		//$arParams['SETUP_ID'] = !empty($arParams['SETUP_ID']) ? (int)$arParams['SETUP_ID'] : null;
+		$arParams['INJECTION_ID'] = !empty($arParams['INJECTION_ID']) ? (int)$arParams['INJECTION_ID'] : null;
+		$arParams['MODE'] = !empty($arParams['MODE']) ? (string)$arParams['MODE'] : null;
 
 		return $arParams;
 	}
@@ -65,7 +69,8 @@ class TradingCart extends \CBitrixComponent
 		$cardNetworks = $this->getCardNetworks();
 		$gateway = $this->handler->getHandlerMode();
 
-		$setup = $this->getSetup();
+		$injection = $this->getInjection();
+		$setup = $this->getSetup($injection->getTradingId());
 
 		$setup->wakeupOptions();
 
@@ -94,6 +99,7 @@ class TradingCart extends \CBitrixComponent
 			'paySystemId'       => $this->arParams['PAY_SYSTEM_ID'],
 			'paymentCash'       => $options->getPaymentCash(),
 			'mode'              => $this->arParams['MODE'],
+			'selector'          => $injection->getSelectorValue(),
 			'order'             => [
 				'id' => '0',
 				'total' => '0'
@@ -134,21 +140,45 @@ class TradingCart extends \CBitrixComponent
 		return $result;
 	}
 
-	protected function getSetup() : Setup\Model
+	protected function getInjection() : Injection\Setup\Model
+	{
+		if ($this->injection === null)
+		{
+			$this->injection = $this->loadInjection();
+		}
+
+		return $this->injection;
+	}
+
+	protected function loadInjection() : Injection\Setup\Model
+	{
+		$result = Injection\Setup\RepositoryTable::getList([
+			'filter' => [
+				'ID' => $this->arParams['INJECTION_ID'],
+				'ACTIVE' => true
+			]
+		])->fetchObject();
+
+		Assert::notNull($result, 'injection');
+
+		return $result;
+	}
+
+	protected function getSetup(int $tradingId) : Trading\Setup\Model
 	{
 		if ($this->setup === null)
 		{
-			$this->setup = $this->loadSetup();
+			$this->setup = $this->loadSetup($tradingId);
 		}
 
 		return $this->setup;
 	}
 
-	protected function loadSetup() : Setup\Model
+	protected function loadSetup(int $tradingId) : Trading\Setup\Model
 	{
-		$result = Setup\RepositoryTable::getList([
+		$result = Trading\Setup\RepositoryTable::getList([
 			'filter' => [
-				'ID' => $this->arParams['SETUP_ID'],
+				'ID' => $tradingId,
 				'ACTIVE' => true
 			]
 		])->fetchObject();
