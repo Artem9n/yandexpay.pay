@@ -3,6 +3,7 @@ namespace YandexPay\Pay\Injection\Behavior;
 
 use Bitrix\Iblock;
 use Bitrix\Main;
+use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Concerns;
 
 class Element
@@ -18,7 +19,7 @@ class Element
 	public function getFields() : array
 	{
 		return [
-			'SELECTOR' => [
+			'SELECTOR_ELEMENT' => [
 				'TYPE' => 'string',
 				'TITLE' => self::getMessage('SELECTOR'),
 				'MANDATORY' => 'Y',
@@ -61,13 +62,38 @@ class Element
 		return $result;
 	}
 
-	public function install()
+	public function install(int $injectionId, array $settings) : void
 	{
+		Assert::notNull($settings['IBLOCK'], 'settings[iblock]');
 
+		\YandexPay\Pay\Injection\Engine\Element::register([
+			'module' => 'main',
+			'event' => 'onEpilog',
+			'arguments' => [
+				$injectionId,
+				$settings,
+			],
+		]);
 	}
 
-	public function uninstall()
+	public function uninstall(int $injectionId, array $settings) : void
 	{
+		try
+		{
+			Assert::notNull($settings['IBLOCK'], 'settings[iblock]');
 
+			\YandexPay\Pay\Injection\Engine\Element::unregister([
+				'module' => 'main',
+				'event' => 'onEpilog',
+				'arguments' => [
+					$injectionId,
+					$settings,
+				],
+			]);
+		}
+		catch (Main\SystemException $exception)
+		{
+			//nothing
+		}
 	}
 }
