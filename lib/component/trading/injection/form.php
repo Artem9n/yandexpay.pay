@@ -5,65 +5,68 @@ namespace YandexPay\Pay\Component\Trading\Injection;
 use Bitrix\Main;
 use YandexPay\Pay;
 use YandexPay\Pay\Reference\Assert;
+use YandexPay\Pay\Injection;
 
-class Form extends Pay\Component\Plain\Form
+class Form extends Pay\Component\Model\Form
 {
-    protected $setup;
+	/** @var Injection\Setup\Model */
+	protected $injection;
 
-    public function prepareComponentParams(array $params) : array
-    {
+	public function update($primary, array $values) : Main\ORM\Data\UpdateResult
+	{
+		$injection = $this->getInjection();
 
+		$behavior = Injection\Behavior\Registry::getInstance($injection->getBehavior());
+		$behavior->uninstall($primary, $injection->getSettings());
 
-        /*$setup = $this->getSetup();
-        $options = $setup->getOptions();
+		$fields = $this->getComponentResult('FIELDS');
 
-        $params['FIELDS'] = $options->getFields($setup->getEnvironment(), $setup->getSiteId());
-        $params['TABS'] = $this->getSetup()->getOptions()->getTabs();*/
+		$values = $this->sliceFieldsDependHidden($fields, $values);
 
+		$update = parent::update($primary, $values);
 
-        return $params;
-    }
+		if ($values['ACTIVE'] && $update->isSuccess())
+		{
+			$behavior = Injection\Behavior\Registry::getInstance($values['BEHAVIOR']);
+			$behavior->install($primary, $values['SETTINGS']);
+		}
 
-    public function load($primary, array $select = [], bool $isCopy = false) : array
-    {
-        return $this->loadFieldsDefaults($select);
-    }
+		return $update;
+	}
 
-    protected function loadFieldsDefaults(array $select = []) : array
-    {
-        $result = [];
+	public function add(array $values) : Main\ORM\Data\AddResult
+	{
+		$add = parent::add($values);
 
-        foreach ($this->getFields($select) as $fieldName => $field)
-        {
-            if (!isset($field['INJECTION'])) { continue; }
+		$fields = $this->getComponentResult('FIELDS');
 
-            Pay\Utils\BracketChain::set($result, $fieldName, $field['INJECTION']);
-        }
+		$values = $this->sliceFieldsDependHidden($fields, $values);
 
-        return $result;
-    }
+		if ($values['ACTIVE'] && $add->isSuccess())
+		{
+			$behavior = Injection\Behavior\Registry::getInstance($values['BEHAVIOR']);
+			$behavior->install($add->getId(), $values['SETTINGS']);
+		}
 
-    public function add(array $values) : Main\Entity\Result
-    {
-        throw new Main\NotSupportedException();
-    }
+		return $add;
+	}
 
-    public function update($primary, array $values) : Main\Entity\Result
-    {
-        $setup = $this->getSetup();
-        return $setup->save();
-    }
+	protected function getInjection() : Injection\Setup\Model
+	{
+		if ($this->injection === null)
+		{
+			$primary = $this->getComponentParam('PRIMARY');
+			$dataClass = $this->getDataClass();
 
+			Assert::notNull($primary, 'params[PRIMARY]');
 
-    protected function getSetup() : Pay\Injection\Setup\Model
-    {
+			$this->injection = $dataClass::wakeUpObject($primary);
 
-        return $this->setup;
-    }
+			Assert::typeOf($this->injection, Injection\Setup\Model::class, 'setup injection');
 
-    /** @return Main\ORM\Data\DataManager  */
-    protected function getDataClass() : string
-    {
-        return $this->getComponentParam('DATA_CLASS_NAME');
-    }
+			$this->injection->fill();
+		}
+
+		return $this->injection;
+	}
 }
