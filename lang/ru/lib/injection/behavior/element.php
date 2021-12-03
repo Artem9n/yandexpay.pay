@@ -1,3 +1,5 @@
 <?php
 
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ELEMENT_TITLE'] = 'Карточка товара';
+$MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ELEMENT_SELECTOR'] = 'Селектор, куда привязывать кнопку "Yandex Pay"';
+$MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ELEMENT_IBLOCK'] = 'Ифоблок';
