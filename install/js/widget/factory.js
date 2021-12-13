@@ -63,7 +63,7 @@ export default class Factory {
 	renderElement(anchor, position) {
 		const result = Utils.toElement(this.defaults.template);
 
-		anchor.insertAdjacentElement('afterend', result); // todo choose position
+		anchor.insertAdjacentElement(position, result); // todo choose position
 
 		return result;
 	}

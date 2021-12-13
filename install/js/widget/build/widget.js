@@ -128,7 +128,7 @@ this.BX = this.BX || {};
 	    key: "renderElement",
 	    value: function renderElement(anchor, position) {
 	      var result = Template.toElement(this.defaults.template);
-	      anchor.insertAdjacentElement('afterend', result); // todo choose position
+	      anchor.insertAdjacentElement(position, result); // todo choose position
 
 	      return result;
 	    }
@@ -793,6 +793,8 @@ this.BX = this.BX || {};
 
 	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
+	          console.log(event);
+
 	          _this4.orderAccept(event).then(function (result) {
 	            if (!_this4.isPaymentTypeCash(event)) {
 	              _this4.notify(result, event).then(function (result) {
@@ -822,12 +824,24 @@ this.BX = this.BX || {};
 	        payment.on(YaPay$1.PaymentEventType.Abort, function (event) {// Предложить пользователю другой способ оплаты.
 	        }); // Подписаться на событие setup.
 
-	        payment.on(YaPay$1.PaymentEventType.Setup, function (event) {// Передаем данные для инициализации формы
+	        payment.on(YaPay$1.PaymentEventType.Setup, function (event) {
+	          // Передаем данные для инициализации формы
+	          if (event.pickupPoints) {
+	            _this4.getPickupOptions(event.pickupBounds).then(function (result) {
+	              payment.setup({
+	                pickupPoints: result
+	              });
+	            });
+	          }
+
+	          console.log(event);
 	        }); // Подписаться на событие change.
 
 	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
+	          console.log(event);
+
 	          if (event.shippingAddress) {
-	            _this4.getDeliveryOptions('deliveryOptions', event.shippingAddress).then(function (result) {
+	            _this4.getShippingOptions(event.shippingAddress).then(function (result) {
 	              payment.update({
 	                shippingOptions: result
 	              });
@@ -841,18 +855,16 @@ this.BX = this.BX || {};
 	          }
 
 	          if (event.pickupBounds) {
-	            console.log(event.pickupBounds);
-
-	            _this4.getDeliveryOptions('pickupOptions', event.pickupBounds).then(function (result) {
+	            _this4.getPickupOptions(event.pickupBounds).then(function (result) {
 	              payment.update({
 	                pickupPoints: result
 	              });
 	            });
 	          }
 
-	          if (event.pickupPoints) {
+	          if (event.pickupPoint) {
 	            payment.update({
-	              order: _this4.combineOrderWithPickupShipping(event.pickupPoints)
+	              order: _this4.combineOrderWithPickupShipping(event.pickupPoint)
 	            });
 	          }
 	        });
@@ -893,48 +905,64 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "orderAccept",
 	    value: function orderAccept(event) {
+	      var deliveryType = event.shippingMethodInfo.shippingOption ? 'delivery' : 'pickup';
+	      var delivery;
+
+	      if (deliveryType === 'pickup') {
+	        delivery = {
+	          address: event.shippingMethodInfo.pickupPoint.address,
+	          pickup: event.shippingMethodInfo.pickupPoint
+	        };
+	      } else {
+	        delivery = {
+	          address: event.shippingMethodInfo.shippingAddress,
+	          delivery: event.shippingMethodInfo.shippingOption
+	        };
+	      }
+
 	      var expandData = {
-	        yapayAction: 'orderAccept',
-	        address: event.shippingMethodInfo.shippingAddress,
-	        productId: this.getOption('productId'),
-	        contact: event.shippingContact,
+	        items: this.paymentData.order.items,
 	        payment: event.paymentMethodInfo,
-	        delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupPoints,
+	        contact: event.shippingContact,
+	        yapayAction: 'orderAccept',
+	        //address: event.shippingMethodInfo.shippingAddress || event.shippingMethodInfo.pickupPoint.address,
+	        productId: this.getOption('productId'),
+	        //delivery: event.shippingMethodInfo.shippingOption,
+	        //pickup: event.shippingMethodInfo.pickupPoint,
+	        deliveryType: deliveryType,
 	        paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId')
+	      };
+	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData, delivery);
+	      console.log(data);
+	      return this.query(this.getOption('purchaseUrl'), data);
+	    }
+	  }, {
+	    key: "getShippingOptions",
+	    value: function getShippingOptions(address) {
+	      var expandData = {
+	        address: address,
+	        yapayAction: 'deliveryOptions',
+	        productId: this.getOption('productId'),
+	        deliveryType: 'delivery'
 	      };
 	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
-	    key: "getDeliveryOptions",
-	    value: function getDeliveryOptions(action, address) {
+	    key: "getPickupOptions",
+	    value: function getPickupOptions(bounds) {
 	      var expandData = {
-	        address: address,
-	        yapayAction: action,
-	        productId: this.getOption('productId')
+	        bounds: bounds,
+	        yapayAction: 'pickupOptions',
+	        productId: this.getOption('productId'),
+	        deliveryType: 'pickup'
 	      };
 	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
 	    key: "combineOrderWithPickupShipping",
-	    value: function combineOrderWithPickupShipping(shippingOption) {
-	      var order = this.paymentData.order;
-	      console.log(shippingOption);
-	      return babelHelpers.objectSpread({}, order, {
-	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
-	          type: 'SHIPPING',
-	          label: shippingOption.label,
-	          amount: shippingOption.amount
-	        }]),
-	        total: babelHelpers.objectSpread({}, order.total, {
-	          amount: this.amountSum(order.total.amount, shippingOption.amount)
-	        })
-	      });
-	    }
-	  }, {
-	    key: "combineOrderWithDirectShipping",
-	    value: function combineOrderWithDirectShipping(pickupOption) {
+	    value: function combineOrderWithPickupShipping(pickupOption) {
 	      var order = this.paymentData.order;
 	      return babelHelpers.objectSpread({}, order, {
 	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
@@ -944,6 +972,21 @@ this.BX = this.BX || {};
 	        }]),
 	        total: babelHelpers.objectSpread({}, order.total, {
 	          amount: this.amountSum(order.total.amount, pickupOption.amount)
+	        })
+	      });
+	    }
+	  }, {
+	    key: "combineOrderWithDirectShipping",
+	    value: function combineOrderWithDirectShipping(shippingOption) {
+	      var order = this.paymentData.order;
+	      return babelHelpers.objectSpread({}, order, {
+	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
+	          type: 'SHIPPING',
+	          label: shippingOption.label,
+	          amount: shippingOption.amount
+	        }]),
+	        total: babelHelpers.objectSpread({}, order.total, {
+	          amount: this.amountSum(order.total.amount, shippingOption.amount)
 	        })
 	      });
 	    }

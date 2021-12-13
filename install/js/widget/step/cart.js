@@ -183,13 +183,19 @@ export default class Cart extends AbstractStep {
 				// Подписаться на событие setup.
 				payment.on(YaPay.PaymentEventType.Setup, (event) => {
 					// Передаем данные для инициализации формы
+					if (event.pickupPoints) {
+
+						this.getPickupOptions(event.pickupBounds).then((result) => {
+							payment.setup({pickupPoints: result})
+						});
+					}
 				});
 
 				// Подписаться на событие change.
 				payment.on(YaPay.PaymentEventType.Change, (event) => {
 
 					if (event.shippingAddress) {
-						this.getDeliveryOptions('deliveryOptions', event.shippingAddress).then((result) => {
+						this.getShippingOptions(event.shippingAddress).then((result) => {
 							payment.update({shippingOptions: result})
 						});
 					}
@@ -201,15 +207,14 @@ export default class Cart extends AbstractStep {
 					}
 
 					if (event.pickupBounds) {
-						console.log(event.pickupBounds);
-						this.getDeliveryOptions('pickupOptions', event.pickupBounds).then((result) => {
+						this.getPickupOptions(event.pickupBounds).then((result) => {
 							payment.update({pickupPoints: result})
 						});
 					}
 
-					if (event.pickupPoints) {
+					if (event.pickupPoint) {
 						payment.update({
-							order: this.combineOrderWithPickupShipping(event.pickupPoints),
+							order: this.combineOrderWithPickupShipping(event.pickupPoint),
 						});
 					}
 
@@ -252,27 +257,49 @@ export default class Cart extends AbstractStep {
 
 	orderAccept(event) {
 
+		let deliveryType = event.shippingMethodInfo.shippingOption ? 'delivery' : 'pickup';
+		let delivery;
+
+		if (deliveryType === 'pickup') {
+			delivery = {
+				address: event.shippingMethodInfo.pickupPoint.address,
+				pickup: event.shippingMethodInfo.pickupPoint,
+			}
+		}
+		else {
+			delivery = {
+				address: event.shippingMethodInfo.shippingAddress,
+				delivery: event.shippingMethodInfo.shippingOption,
+			}
+		}
+
 		let expandData = {
-			yapayAction: 'orderAccept',
-			address: event.shippingMethodInfo.shippingAddress,
-			productId: this.getOption('productId'),
-			contact: event.shippingContact,
+			items: this.paymentData.order.items,
 			payment: event.paymentMethodInfo,
-			delivery: event.shippingMethodInfo.shippingOption || event.shippingMethodInfo.pickupPoints,
+			contact: event.shippingContact,
+			yapayAction: 'orderAccept',
+			//address: event.shippingMethodInfo.shippingAddress || event.shippingMethodInfo.pickupPoint.address,
+			productId: this.getOption('productId'),
+			//delivery: event.shippingMethodInfo.shippingOption,
+			//pickup: event.shippingMethodInfo.pickupPoint,
+			deliveryType: deliveryType,
 			paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
 		};
 
-		let data = {...this.defaultBody, ...expandData };
+		let data = {...this.defaultBody, ...expandData, ...delivery };
+
+		console.log(data);
 
 		return this.query(this.getOption('purchaseUrl'), data);
 	}
 
-	getDeliveryOptions(action, address) {
+	getShippingOptions(address) {
 
 		let expandData = {
 			address: address,
-			yapayAction: action,
+			yapayAction: 'deliveryOptions',
 			productId: this.getOption('productId'),
+			deliveryType: 'delivery'
 		};
 
 		let data = {...this.defaultBody, ...expandData };
@@ -280,29 +307,21 @@ export default class Cart extends AbstractStep {
 		return this.query(this.getOption('purchaseUrl'), data);
 	}
 
-	combineOrderWithPickupShipping(shippingOption) {
-		const { order } = this.paymentData;
+	getPickupOptions(bounds) {
 
-		console.log(shippingOption);
-
-		return {
-			...order,
-			items: [
-				...order.items,
-				{
-					type: 'SHIPPING',
-					label: shippingOption.label,
-					amount: shippingOption.amount,
-				},
-			],
-			total: {
-				...order.total,
-				amount: this.amountSum(order.total.amount, shippingOption.amount),
-			},
+		let expandData = {
+			bounds: bounds,
+			yapayAction: 'pickupOptions',
+			productId: this.getOption('productId'),
+			deliveryType: 'pickup'
 		};
+
+		let data = {...this.defaultBody, ...expandData };
+
+		return this.query(this.getOption('purchaseUrl'), data);
 	}
 
-	combineOrderWithDirectShipping(pickupOption) {
+	combineOrderWithPickupShipping(pickupOption) {
 		const { order } = this.paymentData;
 
 		return {
@@ -318,6 +337,26 @@ export default class Cart extends AbstractStep {
 			total: {
 				...order.total,
 				amount: this.amountSum(order.total.amount, pickupOption.amount),
+			},
+		};
+	}
+
+	combineOrderWithDirectShipping(shippingOption) {
+		const { order } = this.paymentData;
+
+		return {
+			...order,
+			items: [
+				...order.items,
+				{
+					type: 'SHIPPING',
+					label: shippingOption.label,
+					amount: shippingOption.amount,
+				},
+			],
+			total: {
+				...order.total,
+				amount: this.amountSum(order.total.amount, shippingOption.amount),
 			},
 		};
 	}
