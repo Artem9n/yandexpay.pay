@@ -48,11 +48,11 @@ class Delivery extends Fieldset
 				'HELP' => self::getMessage('TYPE_HELP'),
 				'VALUES' => [
 					[
-						'ID' => 'PICKUP',
+						'ID' => Entity\Sale\Delivery::PICKUP_TYPE,
 						'VALUE' => self::getMessage('TYPE_PICKUP'),
 					],
 					[
-						'ID' => 'DELIVERY',
+						'ID' => Entity\Sale\Delivery::DELIVERY_TYPE,
 						'VALUE' => self::getMessage('TYPE_DELIVERY'),
 					],
 				], // todo

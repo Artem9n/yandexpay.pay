@@ -27,7 +27,7 @@ class DeliveryCollection extends FieldsetCollection
 		return $result;
 	}
 
-	public function getItemByServiceId(int $serviceId) : Delivery
+	public function getItemByServiceId(int $serviceId) : ?Delivery
 	{
 		$result = null;
 
@@ -40,10 +40,10 @@ class DeliveryCollection extends FieldsetCollection
 			}
 		}
 
-		if ($result === null)
+		/*if ($result === null)
 		{
 			throw new Main\ObjectNotFoundException();
-		}
+		}*/
 
 		return $result;
 	}

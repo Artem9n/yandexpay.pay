@@ -34,7 +34,12 @@ class Options extends Reference\Skeleton
 
 	public function getPaymentCash() : ?int
 	{
-		return $this->getValue('PICKUP_PAYSYSTEM');
+		return $this->getValue('PAYSYSTEM_CASH');
+	}
+
+	public function getPaymentCard() : int
+	{
+		return $this->requireValue('PAYSYSTEM_CARD');
 	}
 
 	protected function validateSelf() : Main\Result
@@ -69,7 +74,8 @@ class Options extends Reference\Skeleton
 			$this->getHandlerFields($environment, $siteId)
 			+ $this->getPurchaseFields($environment, $siteId)
 			+ $this->getDeliveryFields($environment, $siteId)
-			+ $this->getPickupFields($environment, $siteId)
+			+ $this->getPaymentCardFields($environment, $siteId)
+			+ $this->getPaymentCashFields($environment, $siteId)
 			+ $this->getBuyerProperties($environment, $siteId)
 			+ $this->getAddressCommonFields($environment, $siteId);
 	}
@@ -124,18 +130,32 @@ class Options extends Reference\Skeleton
 		];
 	}
 
-	protected function getPickupFields(Entity\Reference\Environment $environment, string $siteId) : array
+	protected function getPaymentCashFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return [
-			'PICKUP_PAYSYSTEM' => [
+			'PAYSYSTEM_CASH' => [
 				'TYPE' => 'enumeration',
-				'GROUP' => self::getMessage('PICKUP'),
-				'NAME' => self::getMessage('PICKUP_PAYSYSTEM'),
+				'GROUP' => self::getMessage('PAYSYSTEM'),
+				'NAME' => self::getMessage('CASH'),
 				'SORT' => 2010,
-				'VALUES' => $environment->getPaySystem()->getEnum($siteId),
+				'VALUES' => $environment->getPaySystem()->getEnum($siteId, 'yandexpay', '!='),
 				'SETTINGS' => [
 					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
 				],
+			],
+		];
+	}
+
+	protected function getPaymentCardFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return [
+			'PAYSYSTEM_CARD' => [
+				'TYPE' => 'enumeration',
+				'MANDATORY' => 'Y',
+				'GROUP' => self::getMessage('PAYSYSTEM'),
+				'NAME' => self::getMessage('CARD'),
+				'SORT' => 2010,
+				'VALUES' => $environment->getPaySystem()->getEnum($siteId, 'yandexpay')
 			],
 		];
 	}
