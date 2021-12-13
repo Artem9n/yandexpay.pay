@@ -19,9 +19,6 @@ class Basket extends Event\Base
 		global $APPLICATION;
 
 		$model = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
-		$model->fillBehavior();
-
-		if ($model->getBehavior() !== Injection\Behavior\Registry::BASKET) { return; }
 
 		if (!static::isBasketPath($settings['PATH_BASKET'])) { return; }
 

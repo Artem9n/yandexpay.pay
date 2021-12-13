@@ -31,6 +31,11 @@ class Basket
 		];
 	}
 
+	public function getSelectorCode() : string
+	{
+		return 'SELECTOR_BASKET';
+	}
+
 	public function install(int $injectionId, array $settings) : void
 	{
 		//Assert::notNull($settings['SELECTOR_BASKET'], 'settings[SELECTOR_BASKET]');

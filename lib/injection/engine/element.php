@@ -1,9 +1,9 @@
 <?php
 namespace YandexPay\Pay\Injection\Engine;
 
+use Bitrix\Main;
 use Bitrix\Iblock\ElementTable;
 use Bitrix\Iblock\IblockTable;
-use Bitrix\Main\Context;
 use YandexPay\Pay\Injection;
 use YandexPay\Pay\Reference\Event;
 
@@ -21,9 +21,6 @@ class Element extends Event\Base
 		global $APPLICATION;
 
 		$model = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
-		$model->fillBehavior();
-
-		if ($model->getBehavior() !== Injection\Behavior\Registry::ELEMENT) { return; }
 
 		if (trim($model->getSelectorValue()) === '') { return; }
 
@@ -49,11 +46,13 @@ class Element extends Event\Base
 
 	protected static function getUrl() : string
 	{
-		return Context::getCurrent()->getRequest()->getRequestedPage();
+		return Main\Context::getCurrent()->getRequest()->getRequestedPage();
 	}
 
 	protected static function getDetailPageUtlTemplate(int $iblockId, string $url) : ?array
 	{
+		if (!Main\Loader::includeModule('iblock')) { return null; }
+
 		$result = null;
 		$variables = [];
 

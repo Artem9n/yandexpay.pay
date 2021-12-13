@@ -31,6 +31,11 @@ class Order
 		];
 	}
 
+	public function getSelectorCode() : string
+	{
+		return 'SELECTOR_ORDER';
+	}
+
 	public function install(int $injectionId, array $settings) : void
 	{
 		//Assert::notNull($settings['SELECTOR_BASKET'], 'settings[SELECTOR_BASKET]');

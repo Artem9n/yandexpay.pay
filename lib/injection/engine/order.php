@@ -19,9 +19,6 @@ class Order extends Event\Base
 		global $APPLICATION;
 
 		$model = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
-		$model->fillBehavior();
-
-		if ($model->getBehavior() !== Injection\Behavior\Registry::ORDER) { return; }
 
 		if (!static::isOrderPath($settings['PATH_ORDER'])) { return; }
 
@@ -46,6 +43,8 @@ class Order extends Event\Base
 
 		$url = static::getUrl();
 
+		if (static::isOrderId($url)) { return false; }
+
 		if ($url === $basketPath) { return true; }
 
 		$url = static::normalize($url);
@@ -65,5 +64,17 @@ class Order extends Event\Base
 		}
 
 		return $path;
+	}
+
+	protected static function isOrderId(string $url) : bool
+	{
+		$result = false;
+
+		if (mb_strpos($url, 'ORDER_ID') !== false)
+		{
+			$result = true;
+		}
+
+		return $result;
 	}
 }

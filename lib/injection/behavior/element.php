@@ -33,6 +33,11 @@ class Element
 		];
 	}
 
+	public function getSelectorCode() : string
+	{
+		return 'SELECTOR_ELEMENT';
+	}
+
 	protected function getIblockEnum() : array
 	{
 		if (!Main\Loader::includeModule('iblock')) { return []; }

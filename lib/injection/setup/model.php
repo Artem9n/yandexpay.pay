@@ -50,16 +50,7 @@ class Model extends EO_Repository
 	public function getSelectorValue() : ?string
 	{
 		$behavior = $this->getBehaviorModel();
-		$result = null;
-
-		foreach ($behavior->getFields() as $code => $field)
-		{
-			if (mb_strpos($code, 'SELECTOR') === false) { continue; }
-
-			$result = $this->getSettings()[$code];
-			break;
-		}
-
-		return $result;
+		$selectorCode = $behavior->getSelectorCode();
+		return $this->getSettings()[$selectorCode] ?? null;
 	}
 }

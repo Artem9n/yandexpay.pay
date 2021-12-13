@@ -7,6 +7,8 @@ interface BehaviorInterface
 
 	public function getFields() : array;
 
+	public function getSelectorCode() : string;
+
 	public function install(int $injectionId, array $settings);
 
 	public function uninstall(int $injectionId, array $settings);
