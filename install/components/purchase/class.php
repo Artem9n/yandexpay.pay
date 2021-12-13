@@ -5,6 +5,7 @@ namespace YandexPay\Pay\Components;
 use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Main\Localization\Loc;
+use YandexPay\Pay;
 use YandexPay\Pay\Exceptions;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Action as TradingAction;
@@ -12,6 +13,7 @@ use YandexPay\Pay\Trading\Settings as TradingSettings;
 use YandexPay\Pay\Trading\Setup as TradingSetup;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
+use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 use YandexPay\Pay\Utils\JsonBodyFilter;
 
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
@@ -49,6 +51,7 @@ class Purchase extends \CBitrixComponent
 			echo Main\Web\Json::encode([
 				'code' => (string)$exception->getCode(),
 				'message' => $exception->getMessage(),
+				'trace' => $exception->getTraceAsString()
 			]);
 
 			/*pr($exception->getMessage(), 1);
@@ -63,6 +66,15 @@ class Purchase extends \CBitrixComponent
 	protected function parseRequest() : void
 	{
 		$this->request->addFilter(new JsonBodyFilter());
+	}
+
+	protected function makeRequest($className) : TradingAction\Incoming\Common
+	{
+		Assert::isSubclassOf($className, Pay\Reference\Common\Model::class);
+
+		$data = $this->request->getPostList()->toArray();
+
+		return new $className($data);
 	}
 
 	protected function resolveAction() : string
@@ -91,34 +103,140 @@ class Purchase extends \CBitrixComponent
 
 		$this->fillPersonType($order);
 		$this->fillBasket($order);
-		$this->fillCoupon($order);
+		//$this->fillCoupon($order);
 
-		$basketItems = $order->getBasketItemsData();
+		$basket = $order->getBasket();
 
-		Exceptions\Facade::handleResult($basketItems);
+		if ($basket->isEmpty())
+		{
+			throw new Main\ArgumentException('empty basket');
+		}
 
-		echo Main\Web\Json::encode($basketItems->getData());
+		$result['amount'] = (string)$basket->getPrice();//number_format($basket->getPrice(), 2, '.', '');
+
+		foreach ($basket as $basketItem)
+		{
+			$result['items'][] = $this->collectBasketItem($basketItem);
+		}
+
+		echo Main\Web\Json::encode($result);
+	}
+
+	protected function collectBasketItem(\Bitrix\Sale\BasketItemBase $basketItem) : array
+	{
+		return [
+			'id' => $basketItem->getProductId(),
+			'count' => (string)$basketItem->getQuantity(),
+			'label' => $basketItem->getField('NAME'),
+			'amount' => (string)$basketItem->getFinalPrice() //number_format($basketItem->getFinalPrice(), 2, '.', '')
+		];
 	}
 
 	protected function deliveryOptionsAction() : void
 	{
 		$result = [];
 
+		/** @var TradingAction\Incoming\DeliveryOptions $request */
+		$request = $this->makeRequest(TradingAction\Incoming\DeliveryOptions::class);
 		$order = $this->getOrder();
 
 		$this->fillPersonType($order);
 		$this->fillBasket($order);
-		$this->fillCoupon($order);
-		$this->fillLocation($order);
+		//$this->fillCoupon($order); //todo
+		$this->fillLocation($order, $request->getAddress());
 
-		$calculatedDeliveries = $this->calculateDeliveries($order, 'DELIVERY');
+		$deliveries = $this->restrictedDeliveries($order);
+		$deliveries = $this->filterDeliveryByType($deliveries, EntitySale\Delivery::DELIVERY_TYPE);
 
-		foreach ($calculatedDeliveries as $calculateDelivery)
+		foreach ($deliveries as $deliveryId)
 		{
-			$result[] = $calculateDelivery->getMeaningfulDelivery();
+			if (!$this->isDeliveryCompatible($order, $deliveryId)) { continue; }
+
+			$calculationResult = $this->calculateDelivery($order, $deliveryId);
+
+			if (!$calculationResult->isSuccess()) { continue; }
+
+			$result[] = $this->collectDeliveryOption($calculationResult);
 		}
 
 		echo Main\Web\Json::encode($result);
+	}
+
+	protected function collectDeliveryOption(EntityReference\Delivery\CalculationResult $calculationResult) : array
+	{
+		return [
+			'id'        => $calculationResult->getDeliveryId(),
+			'label'     => $calculationResult->getServiceName(),
+			'amount'    => (string)$calculationResult->getPrice(),
+			'provider'  => 'custom', //todo
+			'category'  => $calculationResult->getCategory(),
+			'date'      => $calculationResult->getDateFrom()->getTimestamp()
+		];
+	}
+
+	protected function restrictedDeliveries(EntityReference\Order $order) : array
+	{
+		$result = [];
+		$deliveryService = $this->environment->getDelivery();
+		$compatibleIds = $deliveryService->getRestricted($order);
+
+		if (empty($compatibleIds)) { return $result; }
+
+		if ($this->options->isDeliveryStrict())
+		{
+			$deliveryOptions = $this->options->getDeliveryOptions();
+			$configuredIds = $deliveryOptions->getServiceIds();
+
+			$result = array_intersect($compatibleIds, $configuredIds);
+		}
+		else
+		{
+			$result = $compatibleIds;
+		}
+
+		return $result;
+	}
+
+	protected function isDeliveryCompatible(EntityReference\Order $order, int $deliveryId) : bool
+	{
+		$deliveryService = $this->environment->getDelivery();
+		return $deliveryService->isCompatible($deliveryId, $order);
+	}
+
+	protected function calculateDelivery(EntityReference\Order $order, int $deliveryId) : EntityReference\Delivery\CalculationResult
+	{
+		$deliveryService = $this->environment->getDelivery();
+		return $deliveryService->calculate($deliveryId, $order);
+	}
+
+	protected function filterDeliveryByType(array $deliveryIds, string $type) : array
+	{
+		if (empty($deliveryIds)) { return []; }
+
+		$result = [];
+
+		$deliveryOptions = $this->options->getDeliveryOptions();
+		$deliveryService = $this->environment->getDelivery();
+
+		foreach ($deliveryIds as $deliveryId)
+		{
+			$service = $deliveryOptions->getItemByServiceId($deliveryId);
+
+			if ($service !== null)
+			{
+				$typeOption = $service->getType();
+			}
+			else
+			{
+				$typeOption = $deliveryService->suggestDeliveryType($deliveryId);
+			}
+
+			if ($typeOption !== $type) { continue; }
+
+			$result[] = $deliveryId;
+		}
+
+		return $result;
 	}
 
 	protected function pickupOptionsAction() : void
@@ -129,24 +247,59 @@ class Purchase extends \CBitrixComponent
 
 		$this->fillPersonType($order);
 		$this->fillBasket($order);
-		$this->fillCoupon($order);
-		//$this->fillLocation($order);// todo need data locality
+		//$this->fillCoupon($order);
 
-		$calculatedDeliveries = $this->calculateDeliveries($order, 'PICKUP');
+		$deliveries = $this->restrictedDeliveries($order);
+		$deliveries = $this->filterDeliveryByType($deliveries, EntitySale\Delivery::PICKUP_TYPE);
+		$deliveryService = $this->environment->getDelivery();
 
-		foreach ($calculatedDeliveries as $calculateDelivery)
+		foreach ($deliveries as $deliveryId)
 		{
-			$result[] = $calculateDelivery->getMeaningfulPickup();
-		}
+			if (!$this->isDeliveryCompatible($order, $deliveryId)) { continue; }
 
-		$result = !empty($result) ? array_merge(...$result) : $result;
+			$allStores = $deliveryService->getPickupStores($order, $deliveryId);
+			//$storesByLocation = $this->groupStoresByLocation($allStores); //todo, need group?
+			foreach ($allStores as $locationId => $stores)
+			{
+				$this->setLocation($order, $locationId);
 
-		if (!empty($result))
-		{
-			//$result = $this->filterPickup($result);
+				$calculationResult = $this->calculateDelivery($order, $deliveryId);
+
+				if (!$calculationResult->isSuccess()) { continue; }
+
+				foreach ($stores as $store)
+				{
+					$result[] = $this->collectPickupOption($store, $calculationResult, $locationId);
+				}
+			}
 		}
 
 		echo Main\Web\Json::encode($result);
+	}
+
+	protected function collectPickupOption(array $store, EntityReference\Delivery\CalculationResult $calculationResult, int $locationId = null) : array
+	{
+		return [
+			'id'        => [
+				'deliveryId' => $calculationResult->getDeliveryId(), //todo пока что нельзя передавать дополнительные данные
+				'storeId' => (int)$store['ID'],
+				'locationId' => $locationId
+			],
+			'label'     => $store['TITLE'],
+			'provider'  => 'pickpoint', //todo
+			'address'   => $store['ADDRESS'],
+			'deliveryDate' => $calculationResult->getDateFrom()->getTimestamp(),
+			'amount'    => (string)$calculationResult->getPrice(),
+			//'storagePeriod' => 3, // todo
+			'info' => [
+				'contacts' => [$store['PHONE']],
+				'tripDescription' => $store['DESCRIPTION'] . PHP_EOL . $store['SCHEDULE'],
+			],
+			'coordinates' =>  [
+				'latitude' => (float)$store['GPS_N'],
+				'longitude' => (float)$store['GPS_S'],
+			]
+		];
 	}
 
 	protected function couponAction() : void
@@ -158,38 +311,69 @@ class Purchase extends \CBitrixComponent
 
 	protected function orderAcceptAction() : void
 	{
-		$userId = $this->createUser();
+		/** @var TradingAction\Incoming\OrderAccept $request */
+		$request = $this->makeRequest(TradingAction\Incoming\OrderAccept::class);
+		$paySystemId = $request->getPaySystemId();
+
+		$userId = $this->createUser($request);
 		$order = $this->getOrder($userId);
 
 		$this->fillPersonType($order);
 		$this->fillStatus($order);
-		$this->fillProperties($order);
-		$this->fillLocation($order);
-		$this->fillBasket($order, true);
-		$this->fillCoupon($order);
-		$this->fillDelivery($order);
-		$this->fillPaySystem($order);
+		$this->fillProperties($order, $request);
+		$this->fillBasket($order);
+
+		$this->excludeProductsForBasket($order, $request);
+
+		if ($request->getDeliveryType() === EntitySale\Delivery::PICKUP_TYPE)
+		{
+			$this->fillPickup($order, $request->getPickup());
+		}
+		else
+		{
+			$this->fillLocation($order, $request->getAddress());
+			$this->fillDelivery($order, $request->getDelivery());
+		}
+
+		//$this->fillCoupon($order);
+
+		$this->fillPaySystem($order, $paySystemId);
 
 		$this->addOrder($order);
 	}
 
-	protected function fillBasket(EntityReference\Order $order, bool $isStrict = false) : void
+	protected function fillPickup(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Pickup $pickup) : void
 	{
-		/** @var TradingAction\Request\Mode $modeRequest */
-		$modeRequest = $this->getRequestMode();
+		$this->setLocation($order, $pickup->getLocationId());
 
-		if ($modeRequest->isProduct())
+		$deliveryId = $pickup->getId();
+		$price = $pickup->getAmount();
+		$storeId = $pickup->getStoreId();
+
+		if ((string)$deliveryId === '')
 		{
-			$addProductResult = $order->addProduct($this->request->get('productId'));
+			$deliveryId = $this->environment->getDelivery()->getEmptyDeliveryId();
 		}
-		elseif ($modeRequest->isBasket() || $modeRequest->isOrder())
+
+		$order->createShipment($deliveryId, $price, $storeId);
+	}
+
+	protected function fillBasket(EntityReference\Order $order) : void
+	{
+		/** @var TradingAction\Incoming\Product $request */
+		$request = $this->makeRequest(TradingAction\Incoming\Product::class);
+		$mode = $request->getMode();
+
+		if ($mode === Pay\Injection\Behavior\Registry::ELEMENT)
+		{
+			$addProductResult = $order->addProduct($request->getProductId());
+		}
+		elseif (
+			$mode === Pay\Injection\Behavior\Registry::BASKET
+			|| $mode === Pay\Injection\Behavior\Registry::ORDER
+		)
 		{
 			$addProductResult = $order->loadUserBasket();
-
-			if ($isStrict)
-			{
-				$this->excludeProducts($order);
-			}
 		}
 		else
 		{
@@ -199,15 +383,10 @@ class Purchase extends \CBitrixComponent
 		Exceptions\Facade::handleResult($addProductResult);
 	}
 
-	protected function excludeProducts(EntityReference\Order $order) : void
+	protected function excludeProductsForBasket(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request) : void
 	{
-		/** @var TradingAction\Request\Order $orderRequest */
-		$orderRequest = $this->getRequestOrder();
+		$products = $request->getItems()->getProducts();
 		$basket = $order->getBasket();
-
-		/** @var TradingAction\Request\Order\Items $itemsRequest */
-		$itemsRequest = $orderRequest->getItems();
-		$products = $itemsRequest->getProducts();
 
 		/** @var \Bitrix\Sale\BasketItemBase $basketItem */
 		foreach ($basket as $basketItem)
@@ -272,7 +451,7 @@ class Purchase extends \CBitrixComponent
 		if ($order === null) { return []; }
 
 		$paymentId = null;
-		$pasSystemId = null;
+		$paySystemId = null;
 
 		$paymentCollection = $order->getPaymentCollection();
 
@@ -282,57 +461,31 @@ class Purchase extends \CBitrixComponent
 			if ($payment->isInner()) { continue; }
 
 			$paymentId = $payment->getId();
-			$pasSystemId = $payment->getPaymentSystemId();
+			$paySystemId = $payment->getPaymentSystemId();
 		}
 
-		return [$paymentId, $pasSystemId];
+		return [$paymentId, $paySystemId];
 	}
 
-	protected function fillPaySystem(EntityReference\Order $order) : void
+	protected function fillPaySystem(EntityReference\Order $order, int $paySystemId) : void
 	{
-		/** @var TradingAction\Request\Payment $requestPayment */
-		$requestPayment = $this->getRequestPayment();
-
-		$paySystemId = (int)$this->request->get('paySystemId');
-
-		if ($requestPayment->isPaymentCash())
-		{
-			$paySystemId = $this->options->getPaymentCash() ?? $paySystemId;
-		}
-
 		if ($paySystemId > 0)
 		{
 			$order->createPayment($paySystemId);
 		}
 	}
 
-	protected function fillDelivery(EntityReference\Order $order) : void
+	protected function fillDelivery(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Delivery $delivery) : void
 	{
-		[$deliveryId, $price] = $this->resolveDelivery();
+		$deliveryId = $delivery->getId();
+		$price = $delivery->getAmount();
 
-		if ((string)$deliveryId !== '')
-		{
-			$order->createShipment($deliveryId, $price);
-		}
-	}
-
-	protected function resolveDelivery() : array
-	{
-		/** @var TradingAction\Request\Delivery $deliveryRequest */
-		$deliveryRequest = $this->getRequestDelivery();
-		$price = null;
-
-		if ($deliveryRequest->getId() !== null)
-		{
-			$deliveryId = $deliveryRequest->getId();
-			$price = $deliveryRequest->getAmount();
-		}
-		else
+		if ((string)$deliveryId === '')
 		{
 			$deliveryId = $this->environment->getDelivery()->getEmptyDeliveryId();
 		}
 
-		return [$deliveryId, $price];
+		$order->createShipment($deliveryId, $price);
 	}
 
 	protected function filterPickup(array $pickup) : array
@@ -348,10 +501,10 @@ class Purchase extends \CBitrixComponent
 
 		return array_values(array_filter($pickup, static function ($value) use ($northeast, $southwest){
 			return (
-				$value['coordinates']['latitude'] >= $northeast->getLat()
-				&& $value['coordinates']['latitude'] <= $southwest->getLat()
-				&& $value['coordinates']['longitude'] >= $northeast->getLon()
-				&& $value['coordinates']['longitude'] <= $southwest->getLon()
+				$value['coordinates']['latitude'] >= $southwest->getLat()
+				&& $value['coordinates']['latitude'] <= $northeast->getLat()
+				&& $value['coordinates']['longitude'] >= $southwest->getLon()
+				&& $value['coordinates']['longitude'] <= $northeast->getLon()
 			);
 		}));
 	}
@@ -363,11 +516,11 @@ class Purchase extends \CBitrixComponent
 		Exceptions\Facade::handleResult($statusResult);
 	}
 
-	protected function createUser() : int
+	protected function createUser(TradingAction\Incoming\OrderAccept $request) : int
 	{
 		global $USER;
 
-		$userId = (int)$this->request->get('userId');
+		$userId = $request->getUserId();
 
 		if ($userId > 0)
 		{
@@ -376,8 +529,7 @@ class Purchase extends \CBitrixComponent
 			return $this->userId;
 		}
 
-		/** @var TradingAction\Request\User $userData */
-		$userData = $this->getRequestContact();
+		$userData = $request->getUser();
 		$allowAppendOrder = true;
 
 		$user = $this->environment->getUserRegistry()->getUser([
@@ -415,7 +567,8 @@ class Purchase extends \CBitrixComponent
 
 	protected function getOrder(int $userId = null) : EntityReference\Order
 	{
-		$userId = $userId ?? (int)$this->request->get('fUserId');
+		$requestUser = $this->request->get('userId') ?? $this->request->get('fUserId');
+		$userId = $userId ?? (int)$requestUser;
 		$siteId = $this->setup->getSiteId() ?? SITE_ID;
 
 		return $this->environment->getOrderRegistry()->createOrder(
@@ -425,17 +578,13 @@ class Purchase extends \CBitrixComponent
 		);
 	}
 
-	protected function fillLocation(EntityReference\Order $order) : void
+	protected function fillLocation(EntityReference\Order $order, TradingAction\Incoming\Address $address) : void
 	{
-		$address = $this->getRequestAddress();
 		$locationService = $this->environment->getLocation();
 		$locationId = $locationService->getLocation($address->getFields());
-
 		$meaningfulValues = $locationService->getMeaningfulValues($locationId);
 
-		$orderResult = $order->setLocation($locationId);
-
-		Exceptions\Facade::handleResult($orderResult);
+		$this->setLocation($order, $locationId);
 
 		if (!empty($meaningfulValues))
 		{
@@ -443,37 +592,47 @@ class Purchase extends \CBitrixComponent
 		}
 	}
 
-	protected function fillProperties(EntityReference\Order $order) : void
+	protected function setLocation(EntityReference\Order $order, $locationId) : void
 	{
-		$this->fillBuyerProperties($order);
-		$this->fillAddress($order);
-		$this->fillComment($order);
+		$orderResult = $order->setLocation($locationId);
+
+		Exceptions\Facade::handleResult($orderResult);
 	}
 
-	protected function fillComment(EntityReference\Order $order): void
+	protected function fillProperties(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request) : void
 	{
-		/** @var TradingAction\Request\Address $address */
-		$address = $this->getRequestAddress();
-		$comment = (string)$address->getComment();
+		$this->fillBuyerProperties($order, $request);
 
-		if ($comment !== '')
+		$deliveryType = $request->getDeliveryType();
+
+		if ($deliveryType !== EntitySale\Delivery::PICKUP_TYPE)
 		{
-			$order->setComment($address->getComment());
+			$this->fillAddress($order, $request);
+			$this->fillComment($order, $request);
 		}
 	}
 
-	protected function fillBuyerProperties(EntityReference\Order $order) : void
+	protected function fillComment(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request): void
 	{
-		/** @var TradingAction\Request\User $buyer */
-		$buyer = $this->getRequestContact();
+		$address = $request->getAddress();
+		$comment = $address->getComment();
+
+		if ((string)$comment !== '')
+		{
+			$order->setComment($comment);
+		}
+	}
+
+	protected function fillBuyerProperties(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request) : void
+	{
+		$buyer = $request->getUser();
 		$values = $buyer->getMeaningfulValues();
 		$this->setMeaningfulPropertyValues($order, $values);
 	}
 
-	protected function fillAddress(EntityReference\Order $order) : void
+	protected function fillAddress(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request) : void
 	{
-		/** @var TradingAction\Request\Address $address */
-		$address = $this->getRequestAddress();
+		$address = $request->getAddress();
 		$propertyValues = $this->getAddressProperties($address);
 		$this->setMeaningfulPropertyValues($order, $propertyValues);
 	}
@@ -536,17 +695,14 @@ class Purchase extends \CBitrixComponent
 		return $propertyValues;
 	}
 
-	protected function getAddressProperties(TradingAction\Request\Address $address) : array
+	protected function getAddressProperties(TradingAction\Incoming\Address $address) : array
 	{
-		/** @var TradingAction\Request\Address\Coordinates $coordinates */
-		$coordinates = $address->getCoordinates();
-
 		return [
 			'ZIP' => $address->getMeaningfulZip(),
 			'CITY' => $address->getMeaningfulCity(),
 			'ADDRESS' => $address->getMeaningfulAddress(),
-			'LAT' => $coordinates->getLat(),
-			'LON' => $coordinates->getLon(),
+			'LAT' => $address->getLat(),
+			'LON' => $address->getLon(),
 		];
 	}
 
@@ -555,124 +711,6 @@ class Purchase extends \CBitrixComponent
 		$coupon = $this->request->get('coupon');
 
 		return TradingAction\Request\Coupon::initialize(['coupon' => $coupon]);
-	}
-
-	protected function getRequestContact() : \YandexPay\Pay\Reference\Common\Model
-	{
-		$contact = $this->request->get('contact');
-
-		Assert::notNull($contact, 'contact');
-		Assert::isArray($contact, 'contact');
-
-		return TradingAction\Request\User::initialize($contact);
-	}
-
-	protected function getRequestAddress() : \YandexPay\Pay\Reference\Common\Model
-	{
-		$address = $this->request->get('address');
-
-		Assert::notNull($address, 'address');
-		Assert::isArray($address, 'address');
-
-		return TradingAction\Request\Address::initialize($address);
-	}
-
-	protected function getRequestMode() : \YandexPay\Pay\Reference\Common\Model
-	{
-		$mode = $this->request->get('mode');
-
-		Assert::notNull($mode, 'mode');
-		Assert::isString($mode, 'mode');
-
-		return TradingAction\Request\Mode::initialize(['mode' => $mode]);
-	}
-
-	protected function getRequestOrder() : \YandexPay\Pay\Reference\Common\Model
-	{
-		$order = $this->request->get('order');
-
-		Assert::notNull($order, 'order');
-		Assert::isArray($order, 'order');
-
-		return TradingAction\Request\Order::initialize($order);
-	}
-
-	protected function getRequestDelivery() : \YandexPay\Pay\Reference\Common\Model
-	{
-		$delivery = $this->request->get('delivery');
-
-		Assert::notNull($delivery, 'delivery');
-		Assert::isArray($delivery, 'delivery');
-
-		return TradingAction\Request\Delivery::initialize($delivery);
-	}
-
-	protected function getRequestPayment() : \YandexPay\Pay\Reference\Common\Model
-	{
-		$payment = $this->request->get('payment');
-
-		Assert::notNull($payment, 'payment');
-		Assert::isArray($payment, 'payment');
-
-		return TradingAction\Request\Payment::initialize($payment);
-	}
-
-	protected function getCalculationDeliveries(EntityReference\Order $order) : array
-	{
-		$result = [];
-		$deliveryService = $this->environment->getDelivery();
-		$compatibleIds = $deliveryService->getRestricted($order);
-
-		if (empty($compatibleIds))
-		{
-			return $result;
-		}
-
-		if ($this->options->isDeliveryStrict())
-		{
-			$deliveryOptions = $this->options->getDeliveryOptions();
-			$configuredIds = $deliveryOptions->getServiceIds();
-
-			$result = array_intersect($compatibleIds, $configuredIds);
-		}
-		else
-		{
-			$result = $compatibleIds;
-		}
-
-		return $result;
-	}
-
-	/**
-	 * @param EntityReference\Order $order
-	 * @param string                $targetType
-	 *
-	 * @return EntityReference\Delivery\CalculationResult[]
-	 * @throws \Bitrix\Main\SystemException
-	 */
-	protected function calculateDeliveries(EntityReference\Order $order, string $targetType) : array
-	{
-		$result = [];
-
-		$deliveryService = $this->environment->getDelivery();
-		$compatibleIds = $this->getCalculationDeliveries($order);
-
-		foreach ($compatibleIds as $deliveryId)
-		{
-			$type = $deliveryService->suggestDeliveryType($deliveryId);
-
-			if ($type !== $targetType) { continue; }
-
-			if (!$deliveryService->isCompatible($deliveryId, $order)) { continue; }
-
-			$calculationResult = $deliveryService->calculate($deliveryId, $order);
-
-			if (!$calculationResult->isSuccess()) { continue; }
-
-			$result[] = $calculationResult;
-		}
-
-		return $result;
 	}
 
 	protected function loadModules(): void
