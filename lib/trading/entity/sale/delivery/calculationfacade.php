@@ -42,21 +42,26 @@ class CalculationFacade
 
 	public static function mergeDeliveryService(EntityReference\Delivery\CalculationResult $result, Sale\Delivery\Services\Base $service)
 	{
-		$stores = Sale\Delivery\ExtraServices\Manager::getStoresList($service->getId());
-		$stores = static::getStores($stores);
+		//$stores = Sale\Delivery\ExtraServices\Manager::getStoresList($service->getId());
+		//$stores = static::getStores($stores);
 
 		$result->setDeliveryId($service->getId());
 		$result->setServiceName($service->getNameWithParent());
-		$result->setStores($stores);
+		//$result->setStores($stores);
 	}
 
 	protected static function getStores(array $stores) : array
 	{
 		$result = [];
 
+		if (empty($stores)) { return []; }
+
 		$query = StoreTable::getList([
 			'filter' => [
-				'=ID' => $stores
+				'=ID' => $stores,
+				'!GPS_N' => false,
+				'!GPS_S' => false,
+				'!ADDRESS' => false
 			]
 		]);
 
@@ -101,7 +106,7 @@ class CalculationFacade
 
 		if ($result === null)
 		{
-			//$result = static::parsePeriodDescription($saleResult->getPeriodDescription());
+			$result = static::parsePeriodDescription($saleResult->getPeriodDescription());
 		}
 
 		return $result;
@@ -118,7 +123,7 @@ class CalculationFacade
 
 		if ($result === null)
 		{
-			//$result = static::parsePeriodDescription($saleResult->getPeriodDescription(), true);
+			$result = static::parsePeriodDescription($saleResult->getPeriodDescription(), true);
 		}
 
 		return $result;
@@ -167,13 +172,13 @@ class CalculationFacade
 		return $interval;
 	}
 
-	/*protected static function parsePeriodDescription($text, $final = false)
+	protected static function parsePeriodDescription($text, $final = false)
 	{
 		$text = trim($text);
 
 		if ($text === '') { return null; }
 
-		list($from, $to) = Pay\Utils\Delivery\PeriodParser::parse($text);
+		[$from, $to] = Pay\Utils\Delivery\PeriodParser::parse($text);
 		$target = $final ? $to : $from;
 		$result = null;
 
@@ -184,7 +189,7 @@ class CalculationFacade
 		}
 
 		return $result;
-	}*/
+	}
 
 	protected static function getDateIntervals(Sale\Delivery\CalculationResult $saleResult)
 	{
