@@ -1,21 +1,14 @@
 <?php
-namespace YandexPay\Pay\Trading\Action\Request;
+namespace YandexPay\Pay\Trading\Action\Incoming;
 
-use Bitrix\Main;
-use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Reference\Assert;
-use YandexPay\Pay\Reference\Common\Model;
+use YandexPay\Pay\Trading\Action\Incoming;
+use YandexPay\Pay\Reference\Concerns;
 
-//lib/trading/service/marketplacedbs/model/cart/delivery/address.php
 
-class Address extends Model
+class Address extends Incoming\Skeleton
 {
 	use Concerns\HasMessage;
-
-	protected static function includeMessages() : void
-	{
-		Main\Localization\Loc::loadMessages(__FILE__);
-	}
 
 	public function getMeaningfulAddress(array $skipAdditionalTypes = []) : string
 	{
@@ -129,141 +122,74 @@ class Address extends Model
 
 	public function getCountry() : string
 	{
-		$result = $this->getField('country');
-
-		Assert::notNull($result, 'country');
-		Assert::isString($result, 'country');
-
-		return $result;
+		return (string)$this->requireField('country');
 	}
 
 	public function getEntrance() : ?string
 	{
-		$result = $this->getField('entrance');
-
-		if ($result === null) { return null; }
-
-		Assert::isString($result, 'entrance');
-
-		return $result;
+		return $this->getField('entrance');
 	}
 
 	public function getZip() : string
 	{
-		$result = $this->getField('zip');
-
-		Assert::notNull($result, 'zip');
-		Assert::isString($result, 'zip');
-
-		return $result;
+		return $this->requireField('zip');
 	}
 
 	public function getLocality() : string
 	{
-		$result = $this->getField('locality');
-
-		Assert::notNull($result, 'locality');
-		Assert::isString($result, 'locality');
-
-		return $result;
+		return $this->requireField('locality');
 	}
 
 	public function getStreet() : ?string
 	{
-		$result = $this->getField('street');
-
-		if ($result === null) { return null; }
-
-		Assert::isString($result, 'street');
-
-		return $result;
+		return $this->getField('street');
 	}
 
 	public function getBuilding() : ?string
 	{
-		$result = $this->getField('building');
-
-		if ($result === null) { return null; }
-
-		Assert::isString($result, 'building');
-
-		return $result;
+		return $this->getField('building');
 	}
 
 	public function getFloor() : ?string
 	{
-		$result = $this->getField('floor');
-
-		if ($result === null) { return null; }
-
-		Assert::isString($result, 'floor');
-
-		return $result;
+		return $this->getField('floor');
 	}
 
 	public function getRoom() : ?string
 	{
-		$result = $this->getField('room');
-
-		if ($result === null) { return null; }
-
-		Assert::isString($result, 'room');
-
-		return $result;
+		return $this->getField('room');
 	}
 
 	public function getIntercom() : ?string
 	{
-		$result = $this->getField('intercom');
-
-		if ($result === null) { return null; }
-
-		Assert::isString($result, 'intercom');
-
-		return $result;
+		return $this->getField('intercom');
 	}
 
 	public function getComment() : ?string
 	{
-		$result = $this->getField('comment');
+		return $this->getField('comment');
+	}
 
-		if ($result === null) { return null; }
+	public function getCoordinates() : ?array
+	{
+		$result = $this->requireField('location');
 
-		Assert::isString($result, 'comment');
+		Assert::isArray($result, 'location');
 
 		return $result;
 	}
 
-	public function getCoordinates() : ?Model
+	public function getLat() : ?int
 	{
-		$result = $this->getField('location');
+		$result = $this->getCoordinates();
 
-		if ($result === null) { return null; }
-
-		Assert::isArray($result, 'location');
-
-		return Address\Coordinates::initialize($result);
+		return (int)$result['latitude'];
 	}
 
-	public function getNortheast() : ?Model
+	public function getLon() : ?int
 	{
-		$result = $this->getField('ne');
+		$result = $this->getCoordinates();
 
-		if ($result === null) { return null; }
-
-		Assert::isArray($result, 'northeast');
-
-		return Address\Coordinates::initialize($result);
-	}
-
-	public function getSouthwest() : ?Model
-	{
-		$result = $this->getField('sw');
-
-		if ($result === null) { return null; }
-
-		Assert::isArray($result, 'southwest');
-
-		return Address\Coordinates::initialize($result);
+		return (int)$result['longitude'];
 	}
 }
