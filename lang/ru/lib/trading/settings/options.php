@@ -6,8 +6,6 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_GROUP'] = 'Доставка';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_STRICT'] = 'Рассчитывать только добавленные варианты доставки';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_OPTIONS'] = 'Варианты доставки';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_OPTIONS_NOTE'] = 'На то чтобы вернуть ответ при запросе информации о товарах, магазину отводится не более 5,5 секунд. Расчет стоимости доставки будет прерван при приближении таймаута и получения первого успешного результата.';
-$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_PICKUP'] = 'Параметры заказа, если оплата при получении';
-$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_PICKUP_PAYSYSTEM'] = 'Платежная система';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_YANDEX'] = 'Настройки окна оплаты Yandex Pay';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_BUYER'] = 'Покупатель';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ALLOW_ENTER_COMMENT'] = 'Разрешить ввод комментария';
@@ -27,3 +25,7 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_GROUP'] = 'Адрес';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_ZIP'] = 'Индекс';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_CITY'] = 'Город';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_ADDRESS'] = 'Адрес';
+
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_CASH'] = 'Оплата при получении';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_CARD'] = 'Оплата картой';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_PAYSYSTEM'] = 'Платежная система';
