@@ -27,6 +27,9 @@ class Delivery extends EntityReference\Delivery
 	public const CATEGORY_EXPRESS = 'express';
 	public const CATEGORY_TODAY = 'today';
 
+	public const DELIVERY_TYPE = 'delivery';
+	public const PICKUP_TYPE = 'pickup';
+
 	protected static function includeMessages()
 	{
 		Main\Localization\Loc::loadMessages(__FILE__);
@@ -153,6 +156,24 @@ class Delivery extends EntityReference\Delivery
 	public function getEmptyDeliveryId() : ?int
 	{
 		return Sale\Delivery\Services\Manager::getEmptyDeliveryServiceId();
+	}
+
+	public function getPickupStores(EntityReference\Order $order, int $deliveryId) : array
+	{
+		try
+		{
+			$calculatableOrder = $this->getOrderCalculatable($order);
+			$service = $this->getDeliveryService($deliveryId);
+			$pickup = Pickup\Factory::make($service);
+
+			$result = $pickup->getStores($calculatableOrder);
+		}
+		catch (Main\SystemException $exception)
+		{
+			$result = [];
+		}
+
+		return $result;
 	}
 
 	public function getRestricted(EntityReference\Order $order) : array
@@ -449,7 +470,7 @@ class Delivery extends EntityReference\Delivery
 		if (empty($processTypes)) { return null; }
 
 		$deliveryService = $this->getDeliveryService($deliveryId);
-		$result = null;
+		$result = static::DELIVERY_TYPE;
 
 		foreach ($processTypes as $type)
 		{
@@ -478,59 +499,24 @@ class Delivery extends EntityReference\Delivery
 
 	protected function matchDeliveryTypePickup(Sale\Delivery\Services\Base $deliveryService) : bool
 	{
-		$deliveryId = $deliveryService->getId();
-		$stores = Sale\Delivery\ExtraServices\Manager::getStoresList($deliveryId);
-
-		return !empty($stores);
-	}
-
-	protected function matchDeliveryTypeDelivery(Sale\Delivery\Services\Base $deliveryService)
-	{
-		/*$result = false;
-		$conditions = [
-			'code',
-			'serviceType',
-		];
-
-		foreach ($conditions as $condition)
+		try
 		{
-			$method = 'testDeliveryTypePostBy' . ucfirst($condition);
+			Pickup\Factory::make($deliveryService);
 
-			if ($this->{$method}($deliveryService))
-			{
-				$result = true;
-				break;
-			}
-		}*/
+			$result = true;
+		}
+		catch (Main\ArgumentException $exception)
+		{
+			$result = false;
+		}
 
-		return true;
-	}
-
-	protected function testDeliveryTypePostByCode(Sale\Delivery\Services\Base $deliveryService)
-	{
-		if (!($deliveryService instanceof SaleHandlers\Delivery\AdditionalProfile)) { return false; }
-
-		$parentService = $deliveryService->getParentService();
-		$parentConfig = $parentService && method_exists($parentService, 'getConfigValues') ? $parentService->getConfigValues() : null;
-
-		return (
-			isset($parentConfig['MAIN']['SERVICE_TYPE'])
-			&& mb_stripos($parentConfig['MAIN']['SERVICE_TYPE'], 'post') !== false
-		);
-	}
-
-	protected function testDeliveryTypePostByServiceType(Sale\Delivery\Services\Base $deliveryService)
-	{
-		$serviceCode = $deliveryService->getCode();
-
-		return (mb_stripos($serviceCode, 'post') !== false);
+		return $result;
 	}
 
 	protected function getSuggestImplementedDeliveryTypes() : array
 	{
 		return [
-			'PICKUP',
-			'DELIVERY'
+			static::PICKUP_TYPE
 		];
 	}
 }

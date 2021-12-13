@@ -77,8 +77,20 @@ class Delivery
 	 *
 	 * @return string|null
 	 */
-	public function suggestDeliveryType($deliveryId, array $supportedTypes = null) : ?string
+	public function suggestDeliveryType(int $deliveryId, array $supportedTypes = null) : ?string
 	{
 		return null;
+	}
+
+	/**
+	 * @param Order $order
+	 * @param int   $deliveryId
+	 *
+	 * @return array
+	 * @throws \Bitrix\Main\NotImplementedException
+	 */
+	public function getPickupStores(Order $order, int $deliveryId) : array
+	{
+		throw new NotImplementedException('getPickupStores is missing');
 	}
 }
