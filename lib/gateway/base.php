@@ -222,7 +222,7 @@ abstract class Base implements IGateway
 		$params = [
 			'paymentId' => $this->getPaymentId(),
 			'paySystemId' => $this->payment->getPaymentSystemId(),
-			'backurl'   => $_SESSION['yabackurl']
+			'backurl'   => $_SESSION['yabackurl'] ?? $_SESSION['yabehaviorbackurl']
 		] + $extraParams;
 
 		$secure = [
