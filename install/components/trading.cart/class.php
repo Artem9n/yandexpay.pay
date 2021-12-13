@@ -32,8 +32,6 @@ class TradingCart extends \CBitrixComponent
 	public function onPrepareComponentParams($arParams) : array
 	{
 		$arParams['PRODUCT_ID'] = !empty($arParams['PRODUCT_ID']) ? (int)$arParams['PRODUCT_ID'] : null;
-		$arParams['PAY_SYSTEM_ID'] = !empty($arParams['PAY_SYSTEM_ID']) && (int)$arParams['PAY_SYSTEM_ID'] > 0 ? (int)$arParams['PAY_SYSTEM_ID'] : 10; // todo
-		//$arParams['SETUP_ID'] = !empty($arParams['SETUP_ID']) ? (int)$arParams['SETUP_ID'] : null;
 		$arParams['INJECTION_ID'] = !empty($arParams['INJECTION_ID']) ? (int)$arParams['INJECTION_ID'] : null;
 		$arParams['MODE'] = !empty($arParams['MODE']) ? (string)$arParams['MODE'] : null;
 
@@ -47,7 +45,6 @@ class TradingCart extends \CBitrixComponent
 			$this->loadModules();
 			$this->bootstrap();
 
-			$this->getHandler();
 			$this->setParameters();
 			$this->setRedirectUrl(); // todo временное решение установки backurl, надо будет пофиксить
 
@@ -65,16 +62,20 @@ class TradingCart extends \CBitrixComponent
 	{
 		global $USER;
 
-		$params = $this->handler->getParamsBusValue();
-		$cardNetworks = $this->getCardNetworks();
-		$gateway = $this->handler->getHandlerMode();
-
 		$injection = $this->getInjection();
-		$setup = $this->getSetup($injection->getTradingId());
+		$setup = $injection->getTrading();
 
 		$setup->wakeupOptions();
 
 		$options = $setup->getOptions();
+
+		$paySystemId = $options->getPaymentCard();
+
+		$this->getHandler($paySystemId);
+
+		$params = $this->handler->getParamsBusValue();
+		$cardNetworks = $this->getCardNetworks();
+		$gateway = $this->handler->getHandlerMode();
 
 		$this->arResult['PARAMS'] = [
 			'env'               => $this->handler->isTestMode() ? 'SANDBOX' : 'PRODUCTION',
@@ -96,10 +97,11 @@ class TradingCart extends \CBitrixComponent
 			'userId'            => $USER->GetID(),
 			'setupId'           => $setup->getId(),
 			'fUserId'           => Sale\Fuser::getId(true),
-			'paySystemId'       => $this->arParams['PAY_SYSTEM_ID'],
+			'paySystemId'       => $options->getPaymentCard(),
 			'paymentCash'       => $options->getPaymentCash(),
 			'mode'              => $this->arParams['MODE'],
 			'selector'          => $injection->getSelectorValue(),
+			'position'          => $injection->getInsertPosition(),
 			'order'             => [
 				'id' => '0',
 				'total' => '0'
@@ -115,7 +117,7 @@ class TradingCart extends \CBitrixComponent
 		$request = Main\Context::getCurrent()->getRequest();
 		$host = $request->isHttps() ? 'https' : 'http';
 		$url = $host . '://' . $server->get('SERVER_NAME') . $APPLICATION->GetCurPage();
-		$_SESSION['yabackurl'] = $url;
+		$_SESSION['yabehaviorbackurl'] = $url;
 	}
 
 	public function getCardNetworks() : array
@@ -161,38 +163,14 @@ class TradingCart extends \CBitrixComponent
 
 		Assert::notNull($result, 'injection');
 
-		return $result;
-	}
-
-	protected function getSetup(int $tradingId) : Trading\Setup\Model
-	{
-		if ($this->setup === null)
-		{
-			$this->setup = $this->loadSetup($tradingId);
-		}
-
-		return $this->setup;
-	}
-
-	protected function loadSetup(int $tradingId) : Trading\Setup\Model
-	{
-		$result = Trading\Setup\RepositoryTable::getList([
-			'filter' => [
-				'ID' => $tradingId,
-				'ACTIVE' => true
-			]
-		])->fetchObject();
-
-		Assert::notNull($result, 'setup');
+		$result->fill();
 
 		return $result;
 	}
 
-	protected function getHandler() : Sale\PaySystem\BaseServiceHandler
+	protected function getHandler(int $paySystemId) : Sale\PaySystem\BaseServiceHandler
 	{
-		Assert::notNull($this->arParams['PAY_SYSTEM_ID'], 'paySystem id', $this->getLang('NOT_PAY_SYSTEM_ID'));
-
-		$this->handler = $this->environment->getPaySystem()->getHandler($this->arParams['PAY_SYSTEM_ID']);
+		$this->handler = $this->environment->getPaySystem()->getHandler($paySystemId);
 
 		Assert::typeOf($this->handler, \Sale\Handlers\PaySystem\YandexPayHandler::class, 'handler');
 

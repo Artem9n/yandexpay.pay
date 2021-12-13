@@ -13,9 +13,10 @@ Loc::loadMessages(__FILE__);
 
 echo Extension::getHtml('yandexpaypay.widget');
 
-$widgetOptions = array_diff_key($arResult['PARAMS'], [ 'order' => true , 'selector' => true]);
+$widgetOptions = array_diff_key($arResult['PARAMS'], [ 'order' => true , 'selector' => true, 'position' => true]);
 $order = $arResult['PARAMS']['order'];
 $selector = $arResult['PARAMS']['selector'];
+$position = $arResult['PARAMS']['position'];
 ?>
 
 <?php
@@ -26,7 +27,7 @@ if (!empty($selector))
 		(function() {
 			const factory = new BX.YandexPay.Factory();
 			const selector = '<?= $selector ?>';
-			const position = 'after';
+			const position = '<?= $position?>';
 			const options = <?= Json::encode($widgetOptions) ?>;
 
 			factory.inject(selector, position)
