@@ -54,6 +54,11 @@ class Order extends EntityReference\Order
 		return $this->setLocationPropertyValue($locationCode);
 	}
 
+	public function setLocationByCode($locationCode) : Main\Result
+	{
+		return $this->setLocationPropertyValue($locationCode);
+	}
+
 	protected function setLocationPropertyValue($locationCode = null) : Main\Result
 	{
 		$propertyCollection = $this->internalOrder->getPropertyCollection();
@@ -559,7 +564,7 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setPersonTypeId($personType);
 	}
 
-	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
+	public function createShipment(int $deliveryId, float $price = null, int $storeId = null, array $data = null) : Main\Result
 	{
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
 
@@ -568,6 +573,7 @@ class Order extends EntityReference\Order
 
 		$this->fillShipmentPrice($shipment, $price);
 		$this->fillShipmentBasket($shipment);
+		$this->fillShipmentStore($shipment, $storeId);
 
 		return new Main\Result();
 	}
@@ -632,6 +638,14 @@ class Order extends EntityReference\Order
 		}
 
 		return $result;
+	}
+
+	protected function fillShipmentStore(Sale\Shipment $shipment, int $storeId = null) : void
+	{
+		if ($storeId !== null && $storeId > 0)
+		{
+			$shipment->setStoreId($storeId);
+		}
 	}
 
 	public function createPayment($paySystemId, $price = null, array $data = null) : Main\Result
@@ -723,35 +737,5 @@ class Order extends EntityReference\Order
 	public function setComment(string $value) : void
 	{
 		$this->internalOrder->setField('USER_DESCRIPTION', $value);
-	}
-
-	public function getBasketItemsData() : Main\Result
-	{
-		$result = new Main\Result();
-		$basket = $this->getBasket();
-
-		if ($basket->isEmpty())
-		{
-			$result->addError(new Main\Error('empty basket'));
-		}
-
-		$items = [];
-
-		/** @var \Bitrix\Sale\BasketItemBase $basketItem */
-		foreach ($basket as $basketItem)
-		{
-			$items['items'][] = [
-				'id' => $basketItem->getProductId(),
-				'count' => (string)$basketItem->getQuantity(),
-				'label' => $basketItem->getField('NAME'),
-				'amount' => (string)$basketItem->getFinalPrice() //number_format($basketItem->getFinalPrice(), 2, '.', '')
-			];
-		}
-
-		$items['amount'] = (string)$basket->getPrice();//number_format($basket->getPrice(), 2, '.', '');
-
-		$result->setData($items);
-
-		return $result;
 	}
 }

@@ -84,6 +84,17 @@ abstract class Order
 	}
 
 	/**
+	 * @param int $locationId
+	 *
+	 * @return Main\Result
+	 * @throws \Bitrix\Main\NotImplementedException
+	 */
+	public function setLocation(int $locationId) : Main\Result
+	{
+		throw new Main\NotImplementedException('setLocation is missing');
+	}
+
+	/**
 	 * @param array $values
 	 *
 	 * @return Main\Result
@@ -100,7 +111,7 @@ abstract class Order
 	 *
 	 * @return Main\Result
 	 */
-	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
+	public function createShipment(int $deliveryId, float $price = null, int $storeId = null, array $data = null) : Main\Result
 	{
 		throw new Main\NotImplementedException('createShipment is missing');
 	}
