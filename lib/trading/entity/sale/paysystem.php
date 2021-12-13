@@ -20,15 +20,24 @@ class PaySystem extends EntityReference\PaySystem
 		parent::__construct($environment);
 	}
 
-	public function getEnum(string $siteId = null) : array
+	public function getEnum(string $siteId = null, string $actionFile = null, string $separator = '=') : array
 	{
 		$result = [];
 
+		$filter = [
+			'=ACTIVE' => 'Y',
+			'=ENTITY_REGISTRY_TYPE' => Sale\Payment::getRegistryType(),
+		];
+
+		if ($actionFile !== null)
+		{
+			$filter += [
+				$separator . 'ACTION_FILE' => $actionFile
+			];
+		}
+
 		$query = Sale\PaySystem\Manager::getList([
-			'filter' => [
-				'=ACTIVE' => 'Y',
-				'=ENTITY_REGISTRY_TYPE' => Sale\Payment::getRegistryType(),
-			],
+			'filter' => $filter,
 			'order' => ['SORT' => 'ASC', 'NAME' => 'ASC'],
 			'select' => ['ID', 'NAME']
 		]);
