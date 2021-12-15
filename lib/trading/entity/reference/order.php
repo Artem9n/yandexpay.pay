@@ -18,6 +18,16 @@ abstract class Order
 		$this->internalOrder = $internalOrder;
 	}
 
+	public function initialize() : void
+	{
+		throw new Main\NotImplementedException('initialize is missing');
+	}
+
+	public function finalize() : Main\Result
+	{
+		throw new Main\NotImplementedException('finalize is missing');
+	}
+
 	public function loadUserBasket() : Main\Result
 	{
 		throw new Main\NotImplementedException('loadUserBasket is missing');

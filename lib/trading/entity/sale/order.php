@@ -12,10 +12,65 @@ class Order extends EntityReference\Order
 {
 	/** @var Sale\OrderBase */
 	protected $calculatable;
+	protected $isStartField;
 
 	public function __construct(Environment $environment, Sale\OrderBase $internalOrder)
 	{
 		parent::__construct($environment, $internalOrder);
+	}
+
+	public function initialize() : void
+	{
+		Sale\DiscountCouponsManager::init(Sale\DiscountCouponsManager::MODE_EXTERNAL);
+
+		$this->freeze();
+		$this->getBasket(); // initialize basket (fix clear shipmentCollection)
+	}
+
+	public function finalize() : Main\Result
+	{
+		$basket = $this->getBasket();
+
+		$this->internalOrder->setMathActionOnly(false);
+		$result = $basket->refreshData();
+
+		if ($result->isSuccess())
+		{
+			$unfreezeResult = $this->unfreeze();
+
+			if (!$unfreezeResult->isSuccess())
+			{
+				$result->addErrors($unfreezeResult->getErrors());
+			}
+		}
+
+		return $result;
+	}
+
+	public function freeze() : void
+	{
+		$this->isStartField = $this->internalOrder->isStartField();
+		$this->internalOrder->setMathActionOnly(true);
+	}
+
+	public function unfreeze()
+	{
+		$result = new Main\Result();
+
+		$this->internalOrder->setMathActionOnly(false);
+
+		if ($this->isStartField)
+		{
+			$hasMeaningfulFields = $this->internalOrder->hasMeaningfulField();
+			$finalActionResult = $this->internalOrder->doFinalAction($hasMeaningfulFields);
+
+			if (!$finalActionResult->isSuccess())
+			{
+				$result->addErrors($finalActionResult->getErrors());
+			}
+		}
+
+		return $result;
 	}
 
 	public function loadUserBasket() : Main\Result
@@ -566,6 +621,7 @@ class Order extends EntityReference\Order
 
 	public function createShipment(int $deliveryId, float $price = null, int $storeId = null, array $data = null) : Main\Result
 	{
+		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
 
 		$this->clearOrderShipment($shipmentCollection);

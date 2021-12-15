@@ -140,10 +140,14 @@ class Purchase extends \CBitrixComponent
 		$request = $this->makeRequest(TradingAction\Incoming\DeliveryOptions::class);
 		$order = $this->getOrder();
 
+		$order->initialize();
+
 		$this->fillPersonType($order);
 		$this->fillBasket($order);
 		//$this->fillCoupon($order); //todo
 		$this->fillLocation($order, $request->getAddress());
+
+		$order->finalize();
 
 		$deliveries = $this->restrictedDeliveries($order);
 		$deliveries = $this->filterDeliveryByType($deliveries, EntitySale\Delivery::DELIVERY_TYPE);
@@ -199,14 +203,17 @@ class Purchase extends \CBitrixComponent
 
 	protected function isDeliveryCompatible(EntityReference\Order $order, int $deliveryId) : bool
 	{
-		$deliveryService = $this->environment->getDelivery();
-		return $deliveryService->isCompatible($deliveryId, $order);
+		return $this->environment->getDelivery()->isCompatible($deliveryId, $order);
 	}
 
 	protected function calculateDelivery(EntityReference\Order $order, int $deliveryId) : EntityReference\Delivery\CalculationResult
 	{
-		$deliveryService = $this->environment->getDelivery();
-		return $deliveryService->calculate($deliveryId, $order);
+		return $this->environment->getDelivery()->calculate($deliveryId, $order);
+	}
+
+	protected function getPickupStores(EntityReference\Order $order, int $deliveryId) : array
+	{
+		return $this->environment->getDelivery()->getPickupStores($order, $deliveryId);
 	}
 
 	protected function filterDeliveryByType(array $deliveryIds, string $type) : array
@@ -245,19 +252,22 @@ class Purchase extends \CBitrixComponent
 
 		$order = $this->getOrder();
 
+		$order->initialize();
+
 		$this->fillPersonType($order);
 		$this->fillBasket($order);
 		//$this->fillCoupon($order);
 
+		$order->finalize();
+
 		$deliveries = $this->restrictedDeliveries($order);
 		$deliveries = $this->filterDeliveryByType($deliveries, EntitySale\Delivery::PICKUP_TYPE);
-		$deliveryService = $this->environment->getDelivery();
 
 		foreach ($deliveries as $deliveryId)
 		{
 			if (!$this->isDeliveryCompatible($order, $deliveryId)) { continue; }
 
-			$allStores = $deliveryService->getPickupStores($order, $deliveryId);
+			$allStores = $this->getPickupStores($order, $deliveryId);
 			//$storesByLocation = $this->groupStoresByLocation($allStores); //todo, need group?
 			foreach ($allStores as $locationId => $stores)
 			{
@@ -318,6 +328,8 @@ class Purchase extends \CBitrixComponent
 		$userId = $this->createUser($request);
 		$order = $this->getOrder($userId);
 
+		$order->initialize();
+
 		$this->fillPersonType($order);
 		$this->fillStatus($order);
 		$this->fillProperties($order, $request);
@@ -338,6 +350,8 @@ class Purchase extends \CBitrixComponent
 		//$this->fillCoupon($order);
 
 		$this->fillPaySystem($order, $paySystemId);
+
+		$order->finalize();
 
 		$this->addOrder($order);
 	}
