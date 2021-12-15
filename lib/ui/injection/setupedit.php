@@ -46,7 +46,6 @@ class SetupEdit extends Pay\Ui\Reference\Page
 					'fields' => [
 						'TRADING_ID',
 						'BEHAVIOR',
-						'INSERT_POSITION',
 						'SETTINGS',
 					],
 				],
