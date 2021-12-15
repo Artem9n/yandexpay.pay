@@ -18,7 +18,7 @@ export default class Cart extends AbstractStep {
 		});
 
 		this.catalogElementChangeOffer();
-		this.basketRefresh();
+		this.basketChange();
 	}
 
 	compile(data) {
@@ -49,7 +49,7 @@ export default class Cart extends AbstractStep {
 		});
 	}
 
-	basketRefresh() {
+	basketChange() {
 
 		if (!BX) { return; }
 
@@ -156,10 +156,12 @@ export default class Cart extends AbstractStep {
 								} else {
 									this.widget.go('error', result);
 								}
-							});
-						}
 
-						payment.complete(YaPay.CompleteReason.Success);
+								payment.complete(YaPay.CompleteReason.Success);
+							});
+						} else {
+							payment.complete(YaPay.CompleteReason.Success);
+						}
 					});
 
 				});
@@ -278,10 +280,7 @@ export default class Cart extends AbstractStep {
 			payment: event.paymentMethodInfo,
 			contact: event.shippingContact,
 			yapayAction: 'orderAccept',
-			//address: event.shippingMethodInfo.shippingAddress || event.shippingMethodInfo.pickupPoint.address,
 			productId: this.getOption('productId'),
-			//delivery: event.shippingMethodInfo.shippingOption,
-			//pickup: event.shippingMethodInfo.pickupPoint,
 			deliveryType: deliveryType,
 			paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
 		};

@@ -659,7 +659,7 @@ this.BX = this.BX || {};
 	        _this.createPayment(_this.element, _this.paymentData);
 	      });
 	      this.catalogElementChangeOffer();
-	      this.basketRefresh();
+	      this.basketChange();
 	    }
 	  }, {
 	    key: "compile",
@@ -699,8 +699,8 @@ this.BX = this.BX || {};
 	      });
 	    }
 	  }, {
-	    key: "basketRefresh",
-	    value: function basketRefresh() {
+	    key: "basketChange",
+	    value: function basketChange() {
 	      var _this3 = this;
 
 	      if (!BX) {
@@ -793,8 +793,6 @@ this.BX = this.BX || {};
 
 	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
-	          console.log(event);
-
 	          _this4.orderAccept(event).then(function (result) {
 	            if (!_this4.isPaymentTypeCash(event)) {
 	              _this4.notify(result, event).then(function (result) {
@@ -803,10 +801,12 @@ this.BX = this.BX || {};
 	                } else {
 	                  _this4.widget.go('error', result);
 	                }
-	              });
-	            }
 
-	            payment.complete(YaPay$1.CompleteReason.Success);
+	                payment.complete(YaPay$1.CompleteReason.Success);
+	              });
+	            } else {
+	              payment.complete(YaPay$1.CompleteReason.Success);
+	            }
 	          });
 	        }); // Подписаться на событие error.
 
@@ -833,13 +833,9 @@ this.BX = this.BX || {};
 	              });
 	            });
 	          }
-
-	          console.log(event);
 	        }); // Подписаться на событие change.
 
 	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
-	          console.log(event);
-
 	          if (event.shippingAddress) {
 	            _this4.getShippingOptions(event.shippingAddress).then(function (result) {
 	              payment.update({
@@ -925,10 +921,7 @@ this.BX = this.BX || {};
 	        payment: event.paymentMethodInfo,
 	        contact: event.shippingContact,
 	        yapayAction: 'orderAccept',
-	        //address: event.shippingMethodInfo.shippingAddress || event.shippingMethodInfo.pickupPoint.address,
 	        productId: this.getOption('productId'),
-	        //delivery: event.shippingMethodInfo.shippingOption,
-	        //pickup: event.shippingMethodInfo.pickupPoint,
 	        deliveryType: deliveryType,
 	        paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId')
 	      };
