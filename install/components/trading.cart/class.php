@@ -32,7 +32,9 @@ class TradingCart extends \CBitrixComponent
 	public function onPrepareComponentParams($arParams) : array
 	{
 		$arParams['PRODUCT_ID'] = !empty($arParams['PRODUCT_ID']) ? (int)$arParams['PRODUCT_ID'] : null;
-		$arParams['INJECTION_ID'] = !empty($arParams['INJECTION_ID']) ? (int)$arParams['INJECTION_ID'] : null;
+		$arParams['TRADING_ID'] = !empty($arParams['TRADING_ID']) ? (int)$arParams['TRADING_ID'] : null;
+		$arParams['POSITION'] = !empty($arParams['POSITION']) ? (string)$arParams['POSITION'] : null;
+		$arParams['SELECTOR'] = !empty($arParams['SELECTOR']) ? (string)$arParams['SELECTOR'] : null;
 		$arParams['MODE'] = !empty($arParams['MODE']) ? (string)$arParams['MODE'] : null;
 
 		return $arParams;
@@ -62,8 +64,7 @@ class TradingCart extends \CBitrixComponent
 	{
 		global $USER;
 
-		$injection = $this->getInjection();
-		$setup = $injection->getTrading();
+		$setup = $this->getSetup();
 
 		$setup->wakeupOptions();
 
@@ -100,8 +101,8 @@ class TradingCart extends \CBitrixComponent
 			'paySystemId'       => $options->getPaymentCard(),
 			'paymentCash'       => $options->getPaymentCash(),
 			'mode'              => $this->arParams['MODE'],
-			'selector'          => $injection->getSelectorValue(),
-			'position'          => $injection->getInsertPosition(),
+			'selector'          => $this->arParams['SELECTOR'],
+			'position'          => $this->arParams['POSITION'],
 			'order'             => [
 				'id' => '0',
 				'total' => '0'
@@ -142,26 +143,26 @@ class TradingCart extends \CBitrixComponent
 		return $result;
 	}
 
-	protected function getInjection() : Injection\Setup\Model
+	protected function getSetup() : Trading\Setup\Model
 	{
-		if ($this->injection === null)
+		if ($this->setup === null)
 		{
-			$this->injection = $this->loadInjection();
+			$this->setup = $this->loadSetup();
 		}
 
-		return $this->injection;
+		return $this->setup;
 	}
 
-	protected function loadInjection() : Injection\Setup\Model
+	protected function loadSetup() : Trading\Setup\Model
 	{
-		$result = Injection\Setup\RepositoryTable::getList([
+		$result = Trading\Setup\RepositoryTable::getList([
 			'filter' => [
-				'ID' => $this->arParams['INJECTION_ID'],
+				'ID' => $this->arParams['TRADING_ID'],
 				'ACTIVE' => true
 			]
 		])->fetchObject();
 
-		Assert::notNull($result, 'injection');
+		Assert::notNull($result, 'setup');
 
 		$result->fill();
 
