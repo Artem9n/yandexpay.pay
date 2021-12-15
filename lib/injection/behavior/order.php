@@ -1,12 +1,10 @@
 <?php
 namespace YandexPay\Pay\Injection\Behavior;
 
-use Bitrix\Main;
-use YandexPay\Pay\Reference\Assert;
+use YandexPay\Pay\Injection\Engine;
 use YandexPay\Pay\Reference\Concerns;
 
-class Order
-	implements BehaviorInterface
+class Order extends AbstractBehavior
 {
 	use Concerns\HasMessage;
 
@@ -17,13 +15,13 @@ class Order
 
 	public function getFields() : array
 	{
-		return [
-			'SELECTOR_ORDER' => [
+		return parent::getFields() + [
+			'SELECTOR' => [
 				'TYPE' => 'string',
 				'TITLE' => self::getMessage('SELECTOR'),
 				'MANDATORY' => 'Y',
 			],
-			'PATH_ORDER' => [
+			'PATH' => [
 				'TYPE' => 'string',
 				'TITLE' => self::getMessage('PATH'),
 				'MANDATORY' => 'Y',
@@ -31,43 +29,25 @@ class Order
 		];
 	}
 
-	public function getSelectorCode() : string
+	public function getEngineReference() : string
 	{
-		return 'SELECTOR_ORDER';
+		return Engine\Order::class;
 	}
 
-	public function install(int $injectionId, array $settings) : void
+	public function getMode() : string
 	{
-		//Assert::notNull($settings['SELECTOR_BASKET'], 'settings[SELECTOR_BASKET]');
-
-		\YandexPay\Pay\Injection\Engine\Order::register([
-			'module' => 'main',
-			'event' => 'onEpilog',
-			'arguments' => [
-				$injectionId,
-				$settings,
-			],
-		]);
+		return Registry::ORDER;
 	}
 
-	public function uninstall(int $injectionId, array $settings)
+	public function getPath() : string
 	{
-		try
-		{
-			//Assert::notNull($settings['IBLOCK'], 'settings[iblock]');
+		return $this->requireValue('PATH');
+	}
 
-			\YandexPay\Pay\Injection\Engine\Order::unregister([
-				'module' => 'main',
-				'event' => 'onEpilog',
-				'arguments' => [
-					$injectionId,
-					$settings,
-				],
-			]);
-		}
-		catch (Main\SystemException $exception)
-		{
-			//nothing
-		}
+	protected function eventSettings() : array
+	{
+		return [
+			'PATH' => $this->getPath()
+		];
 	}
 }

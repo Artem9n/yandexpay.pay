@@ -14,21 +14,13 @@ class Form extends Pay\Component\Model\Form
 
 	public function update($primary, array $values) : Main\ORM\Data\UpdateResult
 	{
-		$injection = $this->getInjection();
-
-		$behavior = Injection\Behavior\Registry::getInstance($injection->getBehavior());
-		$behavior->uninstall($primary, $injection->getSettings());
-
-		$fields = $this->getComponentResult('FIELDS');
-
-		$values = $this->sliceFieldsDependHidden($fields, $values);
+		$this->getInjection()->unregister();
 
 		$update = parent::update($primary, $values);
 
 		if ($values['ACTIVE'] && $update->isSuccess())
 		{
-			$behavior = Injection\Behavior\Registry::getInstance($values['BEHAVIOR']);
-			$behavior->install($primary, $values['SETTINGS']);
+			$this->getInjection()->register();
 		}
 
 		return $update;
@@ -38,14 +30,9 @@ class Form extends Pay\Component\Model\Form
 	{
 		$add = parent::add($values);
 
-		$fields = $this->getComponentResult('FIELDS');
-
-		$values = $this->sliceFieldsDependHidden($fields, $values);
-
 		if ($values['ACTIVE'] && $add->isSuccess())
 		{
-			$behavior = Injection\Behavior\Registry::getInstance($values['BEHAVIOR']);
-			$behavior->install($add->getId(), $values['SETTINGS']);
+			$this->getInjection()->register();
 		}
 
 		return $add;
@@ -53,19 +40,14 @@ class Form extends Pay\Component\Model\Form
 
 	protected function getInjection() : Injection\Setup\Model
 	{
-		if ($this->injection === null)
-		{
-			$primary = $this->getComponentParam('PRIMARY');
-			$dataClass = $this->getDataClass();
+		$primary = $this->getComponentParam('PRIMARY');
+		$dataClass = $this->getDataClass();
 
-			Assert::notNull($primary, 'params[PRIMARY]');
+		Assert::notNull($primary, 'params[PRIMARY]');
 
-			$this->injection = $dataClass::wakeUpObject($primary);
+		$this->injection = $dataClass::wakeUpObject($primary);
 
-			Assert::typeOf($this->injection, Injection\Setup\Model::class, 'setup injection');
-
-			$this->injection->fill();
-		}
+		Assert::typeOf($this->injection, Injection\Setup\Model::class, 'setup injection');
 
 		return $this->injection;
 	}

@@ -3,11 +3,10 @@ namespace YandexPay\Pay\Injection\Behavior;
 
 use Bitrix\Iblock;
 use Bitrix\Main;
-use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Injection\Engine;
 
-class Element
-	implements BehaviorInterface
+class Element extends AbstractBehavior
 {
 	use Concerns\HasMessage;
 
@@ -18,8 +17,8 @@ class Element
 
 	public function getFields() : array
 	{
-		return [
-			'SELECTOR_ELEMENT' => [
+		return parent::getFields() + [
+			'SELECTOR' => [
 				'TYPE' => 'string',
 				'TITLE' => self::getMessage('SELECTOR'),
 				'MANDATORY' => 'Y',
@@ -27,15 +26,14 @@ class Element
 			'IBLOCK' => [
 				'TYPE' => 'enumeration',
 				'TITLE' => self::getMessage('IBLOCK'),
-				'MANDATORY' => 'Y',
 				'VALUES' => $this->getIblockEnum(),
 			],
 		];
 	}
 
-	public function getSelectorCode() : string
+	public function getEngineReference() : string
 	{
-		return 'SELECTOR_ELEMENT';
+		return Engine\Element::class;
 	}
 
 	protected function getIblockEnum() : array
@@ -67,38 +65,27 @@ class Element
 		return $result;
 	}
 
-	public function install(int $injectionId, array $settings) : void
-	{
-		Assert::notNull($settings['IBLOCK'], 'settings[iblock]');
 
-		\YandexPay\Pay\Injection\Engine\Element::register([
-			'module' => 'main',
-			'event' => 'onEpilog',
-			'arguments' => [
-				$injectionId,
-				$settings,
-			],
-		]);
+	public function getIblock() : ?int
+	{
+		return $this->getValue('IBLOCK');
 	}
 
-	public function uninstall(int $injectionId, array $settings) : void
+	public function getUrlTemplate() : ?string
 	{
-		try
-		{
-			Assert::notNull($settings['IBLOCK'], 'settings[iblock]');
+		return $this->getValue('URL_TEMPLATE');//todo
+	}
 
-			\YandexPay\Pay\Injection\Engine\Element::unregister([
-				'module' => 'main',
-				'event' => 'onEpilog',
-				'arguments' => [
-					$injectionId,
-					$settings,
-				],
-			]);
-		}
-		catch (Main\SystemException $exception)
-		{
-			//nothing
-		}
+	public function getMode() : string
+	{
+		return Registry::ELEMENT;
+	}
+
+	protected function eventSettings() : array
+	{
+		return [
+			'IBLOCK' => $this->getIblock(),
+			'URL_TEMPLATE' => $this->getUrlTemplate(),
+		];
 	}
 }

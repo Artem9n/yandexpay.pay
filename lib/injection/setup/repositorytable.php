@@ -45,10 +45,6 @@ class RepositoryTable extends ORM\Data\DataManager
                 'required' => true,
             ]),
 
-	        new ORM\Fields\StringField('INSERT_POSITION', [
-		        'required' => true,
-	        ]),
-
 	        new ORM\Fields\BooleanField('ACTIVE', Userfield\BooleanType::getTableFieldDescription(false) + [
 				'required' => true,
 	        ]),

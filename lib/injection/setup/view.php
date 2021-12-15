@@ -14,12 +14,6 @@ class View extends Storage\View
     use Concerns\HasMessage;
 
 	protected $behaviors;
-	protected $insertPositions = [
-		'beforebegin' => true,
-		'afterbegin' => true,
-		'beforeend' => true,
-		'afterend' => true,
-	];
 
     public function getFields() : array
     {
@@ -32,11 +26,7 @@ class View extends Storage\View
 	            'BEHAVIOR' => [
 	                'TYPE' => 'enumeration',
 	                'VALUES' => $this->getBehaviorEnum(),
-	            ],
-				'INSERT_POSITION' => [
-					'TYPE' => 'enumeration',
-					'VALUES' => $this->getPositionsEnum(),
-				]
+	            ]
 			],
 	        'EXCLUDE' => [
 		        'SETTINGS',
@@ -90,7 +80,7 @@ class View extends Storage\View
 		{
 			foreach ($behavior->getFields() as $name => $field)
 			{
-				$fullName = sprintf('SETTINGS[%s]', $name);
+				$fullName = sprintf('SETTINGS[%s]', $type . '_' . $name);
 				$field += [
 					'LIST_COLUMN_LABEL' => $field['TITLE'],
 					'DEPEND' => [
@@ -126,23 +116,6 @@ class View extends Storage\View
 		foreach (Injection\Behavior\Registry::getTypes() as $type)
 		{
 			$result[$type] = Injection\Behavior\Registry::getInstance($type);
-		}
-
-		return $result;
-	}
-
-	protected function getPositionsEnum() : array
-	{
-		$result = [];
-
-		foreach ($this->insertPositions as $code => $enable)
-		{
-			if (!$enable) { continue; }
-
-			$result[] = [
-				'ID' => $code,
-				'VALUE' => self::getMessage('POSITION_' . mb_strtoupper($code))
-			];
 		}
 
 		return $result;

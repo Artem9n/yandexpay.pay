@@ -3,43 +3,26 @@ namespace YandexPay\Pay\Injection\Engine;
 
 use Bitrix\Main;
 use Bitrix\Iblock\ElementTable;
-use Bitrix\Iblock\IblockTable;
 use YandexPay\Pay\Injection;
-use YandexPay\Pay\Reference\Event;
+use YandexPay\Pay\Reference\Assert;
 
-class Element extends Event\Base
+class Element extends AbstractEngine
 {
 	public static function onEpilog(int $injectionId, array $settings) : void
 	{
-		self::render($injectionId, $settings);
-	}
-
-	protected static function render(int $injectionId, array $settings) : void
-	{
 		if (self::$handlerDisallowYaPay) { return; }
 
-		global $APPLICATION;
-
-		$model = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
-
-		if (trim($model->getSelectorValue()) === '') { return; }
-
-		$iblockId = $settings['IBLOCK'];
-
 		$url = static::getUrl();
-		$element = static::getDetailPageUtlTemplate($iblockId, $url);
+
+		$element = static::getDetailPageUtlTemplate($settings['IBLOCK'], $url);
 
 		if (empty($element)) { return; }
 
-		$elementId = static::getElementId($iblockId, $element);
+		$elementId = static::getElementId($settings['IBLOCK'], $element);
 
 		if ($elementId === null) { return; }
 
-		$APPLICATION->IncludeComponent('yandexpay.pay:trading.cart', '', [
-			'INJECTION_ID'	=> $injectionId,
-			'PRODUCT_ID'	=> $elementId,
-			'MODE'			=> Injection\Behavior\Registry::ELEMENT
-		], false);
+		static::render($injectionId, ['PRODUCT_ID' => $elementId]);
 
 		self::$handlerDisallowYaPay = true;
 	}
@@ -53,22 +36,18 @@ class Element extends Event\Base
 	{
 		if (!Main\Loader::includeModule('iblock')) { return null; }
 
-		$result = null;
+		$result = [];
 		$variables = [];
 
+		$listPageUrl = \CIBlock::GetArrayByID($iblockId, 'LIST_PAGE_URL');
+		$detailPageUrl = \CIBlock::GetArrayByID($iblockId, 'DETAIL_PAGE_URL');
+
+		if (!$listPageUrl || !$detailPageUrl) { return null; }
+
+		$result['SEF_FOLDER'] = mb_substr($listPageUrl, mb_strlen('#SITE_DIR#'));
+		$result['SEF_URL_TEMPLATES']['element'] = mb_substr($detailPageUrl, mb_strlen($listPageUrl));
+
 		$engine = new \CComponentEngine();
-
-		$query = IblockTable::getList([
-			'filter' => [ '=ID' => $iblockId ],
-			//'cache' => [ 'ttl' => 360000 ], //todo, not clear
-		]);
-
-		$iblock = $query->fetchObject();
-
-		if (!$iblock) { return null; }
-
-		$result['SEF_FOLDER'] = mb_substr($iblock->getListPageUrl(), mb_strlen('#SITE_DIR#'));
-		$result['SEF_URL_TEMPLATES']['element'] = mb_substr($iblock->getDetailPageUrl(), mb_strlen($iblock->getListPageUrl()));
 
 		$engine->guessComponentPath(
 			$result['SEF_FOLDER'],
