@@ -8,6 +8,11 @@ class PickupOptions extends Common
 		return $this->getChildModel('bounds');
 	}
 
+	public function getAddress() : string
+	{
+		return $this->requireField('address');
+	}
+
 	protected function modelMap() : array
 	{
 		return [
