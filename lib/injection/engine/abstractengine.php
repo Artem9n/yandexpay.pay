@@ -8,9 +8,15 @@ use YandexPay\Pay\Injection;
 
 abstract class AbstractEngine extends Event\Base
 {
+	protected static $handlerDisallowYaPay = false;
+
 	protected static function render(int $injectionId, array $data = []) : void
 	{
 		global $APPLICATION;
+
+		if (static::$handlerDisallowYaPay) { return; }
+
+		static::$handlerDisallowYaPay = true;
 
 		$setup = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
 		$setup->fill();
@@ -25,7 +31,7 @@ abstract class AbstractEngine extends Event\Base
 		/** @var Injection\Behavior\AbstractBehavior $options */
 		$options = $setup->wakeupOptions();
 
-		Assert::typeOf($options, Injection\Behavior\AbstractBehavior::class, 'options');
+		Assert::typeOf($options, Injection\Behavior\BehaviorInterface::class, 'options');
 
 		return $data + [
 			'MODE' => $options->getMode(),

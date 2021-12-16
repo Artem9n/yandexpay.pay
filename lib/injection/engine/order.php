@@ -9,13 +9,9 @@ class Order extends AbstractEngine
 {
 	public static function onEpilog(int $injectionId, array $settings) : void
 	{
-		if (self::$handlerDisallowYaPay) { return; }
-
 		if (!static::isOrderPath($settings['PATH'])) { return; }
 
 		static::render($injectionId);
-
-		self::$handlerDisallowYaPay = true;
 	}
 
 	protected static function isOrderPath(string $path) : bool

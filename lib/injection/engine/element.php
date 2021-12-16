@@ -10,8 +10,6 @@ class Element extends AbstractEngine
 {
 	public static function onEpilog(int $injectionId, array $settings) : void
 	{
-		if (self::$handlerDisallowYaPay) { return; }
-
 		$url = static::getUrl();
 
 		$element = static::getDetailPageUtlTemplate($settings['IBLOCK'], $url);
@@ -23,8 +21,6 @@ class Element extends AbstractEngine
 		if ($elementId === null) { return; }
 
 		static::render($injectionId, ['PRODUCT_ID' => $elementId]);
-
-		self::$handlerDisallowYaPay = true;
 	}
 
 	protected static function getUrl() : string
