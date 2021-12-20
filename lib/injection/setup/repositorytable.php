@@ -4,7 +4,6 @@ namespace YandexPay\Pay\Injection\Setup;
 
 use Bitrix\Main\ORM;
 use YandexPay\Pay;
-use YandexPay\Pay\Ui\Userfield;
 
 class RepositoryTable extends ORM\Data\DataManager
     implements Pay\Reference\Storage\HasView
@@ -45,10 +44,6 @@ class RepositoryTable extends ORM\Data\DataManager
                 'required' => true,
             ]),
 
-	        new ORM\Fields\BooleanField('ACTIVE', Userfield\BooleanType::getTableFieldDescription(false) + [
-				'required' => true,
-	        ]),
-
 	        (new ORM\Fields\ArrayField('SETTINGS'))
 	            ->configureSerializationPhp(),
 
@@ -60,5 +55,33 @@ class RepositoryTable extends ORM\Data\DataManager
         ];
     }
 
+	public static function OnBeforeUpdate(ORM\Event $event) : void
+	{
+		/** @var Model $model */
+		$primary = $event->getParameter('id');
+		$model = Model::wakeUp($primary);
+		$model->unregister();
+	}
 
+	public static function OnAfterAdd(ORM\Event $event) : void
+	{
+		/** @var Model $model */
+		$model = $event->getParameter('object');
+		$model->register();
+	}
+
+	public static function OnAfterUpdate(ORM\Event $event) : void
+	{
+		/** @var Model $model */
+		$model = $event->getParameter('object');
+		$model->register();
+	}
+
+	public static function OnBeforeDelete(ORM\Event $event) : void
+	{
+		/** @var Model $model */
+		$primary = $event->getParameter('id');
+		$model = Model::wakeUp($primary);
+		$model->unregister();
+	}
 }
