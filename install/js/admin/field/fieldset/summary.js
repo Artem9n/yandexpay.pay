@@ -217,13 +217,29 @@
 		},
 
 		getTemplateReplaces: function(values, keys) {
-			const result = {};
+			var result = {};
+			var keyIndex;
+			var key;
+			var chain;
+			var chainIndex;
+			var chainKey;
+			var level;
 
-			for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
-				let key = keys[keyIndex];
+			for (keyIndex = 0; keyIndex < keys.length; keyIndex++) {
+				key = keys[keyIndex];
+				chain = key.split('.');
+				level = values;
 
-				if (values[key]) {
-					result[key] = values[key];
+				for (chainIndex = 0; chainIndex < chain.length; chainIndex++) {
+					chainKey = chain[chainIndex];
+
+					if (level[chainKey] == null) { break; }
+
+					if (chainIndex < chain.length - 1) {
+						level = level[chainKey];
+					} else if (level[chainKey]) {
+						result[key] = level[chainKey];
+					}
 				}
 			}
 
@@ -276,6 +292,10 @@
 					after = after.substring(0, after.length - 1);
 				}
 
+				if (after[0] === '(') {
+					after = ' ' + after;
+				}
+
 				result = before + after;
 			}
 
@@ -283,15 +303,15 @@
 		},
 
 		trimLeftPart: function(part) {
-			return part.replace(/^[^#.,]+/, '');
+			return part.replace(/^[^#.,(]+/, '');
 		},
 
 		trimRightPart: function(part) {
-			return part.replace(/,?[^#.,]+$/, '');
+			return part.replace(/[,(]?[^#.,()]*$/, '');
 		},
 
 		getTemplateUsedKeys: function(template) {
-			const pattern = /#([A-Z0-9_]+?)#/g;
+			const pattern = /#([A-Z0-9_.]+?)#/g;
 			const result = [];
 			let match;
 

@@ -254,6 +254,8 @@
 				inputName = input.data('name');
 				inputValue = '';
 
+				if (input.closest('tr').hasClass('is--hidden')) { continue; } // depend support
+
 				if (inputTag === 'select') {
 					selectedOptionList = input.find('option').filter(':checked');
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace YandexPay\Pay\Ui\Userfield\Helper;
+namespace YandexPay\Pay\Ui\UserField\Helper;
 
 class SummaryTemplate
 {
@@ -10,8 +10,9 @@ class SummaryTemplate
 		[$replaces, $removes] = static::splitValidVariables($vars, $usedKeys);
 
 		$result = static::applyRemoveVariables($template, $removes);
+		$result = static::applyReplaceVariables($result, $replaces);
 
-		return static::applyReplaceVariables($result, $replaces);
+		return $result;
 	}
 
 	protected static function applyRemoveVariables(string $template, array $keys) : string
@@ -40,7 +41,7 @@ class SummaryTemplate
 
 	public static function getUsedKeys(string $template) : array
 	{
-		if (preg_match_all('/#([A-Z0-9_]+?)#/', $template, $matches))
+		if (preg_match_all('/#([A-Z0-9_.]+?)#/', $template, $matches))
 		{
 			$result = $matches[1];
 		}
@@ -50,6 +51,38 @@ class SummaryTemplate
 		}
 
 		return $result;
+	}
+
+	public static function normalizeNames(array $fields) : array
+	{
+		$result = [];
+
+		foreach ($fields as $name => $field)
+		{
+			$normalized = static::normalizeFieldName($name);
+
+			$result[$normalized] = $field;
+		}
+
+		return $result;
+	}
+
+	protected static function normalizeFieldName(string $name) : string
+	{
+		if (mb_strpos($name, '[') === false) { return $name; }
+
+		$parts = [];
+
+		foreach (explode('[', $name) as $part)
+		{
+			$part = rtrim($part, ']');
+
+			if ($part === '') { continue; }
+
+			$parts[] = $part;
+		}
+
+		return implode('.', $parts);
 	}
 
 	protected static function splitValidVariables(array $vars, array $keys) : array
@@ -94,6 +127,11 @@ class SummaryTemplate
 				$after = mb_substr($after, 1);
 			}
 
+			if (isset($after[0]) && $after[0] === '(')
+			{
+				$after = ' ' . $after;
+			}
+
 			$result = $before . $after;
 		}
 
@@ -102,12 +140,12 @@ class SummaryTemplate
 
 	protected static function trimRightPart(string $part) : string
 	{
-		return preg_replace('/,?[^#.,]+$/', '', $part);
+		return preg_replace('/[,(]?[^#.,()]*$/', '', $part);
 	}
 
 	protected static function trimLeftPart(string $part) : string
 	{
-		return preg_replace('/^[^#.,]+/', '', $part);
+		return preg_replace('/^[^#.,(]+/', '', $part);
 	}
 
 	protected static function replaceVariable(string $template, string $key, $value) : string
