@@ -26,8 +26,8 @@ class Delivery extends Fieldset
 			'SETTINGS' => [
 				'SUMMARY' => '#TYPE# &laquo;#ID#&raquo;',
 				'LAYOUT' => 'summary',
-				'MODAL_WIDTH' => 600,
-				'MODAL_HEIGHT' => 450,
+				'MODAL_WIDTH' => 450,
+				'MODAL_HEIGHT' => 300,
 			],
 		];
 	}
