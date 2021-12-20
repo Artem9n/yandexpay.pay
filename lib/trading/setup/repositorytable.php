@@ -43,15 +43,15 @@ class RepositoryTable extends ORM\Data\DataManager
 				'required' => true,
 				'validation' => [static::class, 'validatePersonTypeId'],
 			]),
-			new ORM\Fields\BooleanField('ACTIVE', Pay\Ui\Userfield\BooleanType::getTableFieldDescription(false) + [
+			new ORM\Fields\BooleanField('ACTIVE', Pay\Ui\Userfield\BooleanType::getTableFieldDescription(true) + [
 				'required' => true,
 			]),
             new ORM\Fields\Relations\OneToMany('SETTINGS', Pay\Trading\Settings\RepositoryTable::class, 'SETUP'),
 
-            new ORM\Fields\Relations\Reference(
+            new ORM\Fields\Relations\OneToMany(
                 'INJECTION',
                 Pay\Injection\Setup\RepositoryTable::class,
-                ORM\Query\Join::on('this.ID', 'ref.TRADING_ID')
+                'TRADING'//ORM\Query\Join::on('this.ID', 'ref.TRADING_ID')
             ),
 		];
 	}

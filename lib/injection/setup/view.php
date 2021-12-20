@@ -80,7 +80,7 @@ class View extends Storage\View
 		{
 			foreach ($behavior->getFields() as $name => $field)
 			{
-				$fullName = sprintf('SETTINGS[%s]', $type . '_' . $name);
+				$fullName = sprintf('SETTINGS[%s]', mb_strtoupper($type) . '_' . $name);
 				$field += [
 					'LIST_COLUMN_LABEL' => $field['TITLE'],
 					'DEPEND' => [

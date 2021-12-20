@@ -15,14 +15,12 @@ class Model extends EO_Repository
 	public function activateAction() : void
 	{
 		$this->register();
-		$this->setActive(true);
 		$this->save();
 	}
 
 	public function deactivateAction() : void
 	{
 		$this->unregister();
-		$this->setActive(false);
 		$this->save();
 	}
 
@@ -53,7 +51,7 @@ class Model extends EO_Repository
 	protected function collectSettings() : array
 	{
 		$type = $this->getBehavior();
-		$prefix = $type . '_';
+		$prefix = mb_strtoupper($type) . '_';
 		$prefixLength = mb_strlen($prefix);
 		$result = [];
 

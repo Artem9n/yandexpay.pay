@@ -57,12 +57,14 @@ class Model extends EO_Repository
 	public function activateAction() : void
 	{
 		$this->setActive(true);
+		$this->fillInjection()->activate();
 		$this->save();
 	}
 
 	public function deactivateAction() : void
 	{
 		$this->setActive(false);
+		$this->fillInjection()->deactivate();
 		$this->save();
 	}
 
@@ -74,6 +76,7 @@ class Model extends EO_Repository
 
 	public function deleteAction() : void
 	{
+		$this->fillInjection()->delete();
 		$this->delete();
 	}
 
@@ -106,8 +109,6 @@ class Model extends EO_Repository
 		{
 			$models[$name]->setValue($value);
 		}
-
-		$this->getSettings()->save();
 	}
 
 	protected function applySettingsDelete(array $models) : void
