@@ -15,7 +15,7 @@ class PaySystem
 		$this->environment = $environment;
 	}
 
-	public function getEnum(string $siteId = null, string $actionFile = null, string $separator = '=') : array
+	public function getEnum(string $siteId = null, array $dataFilter = []) : array
 	{
 		throw new Main\NotImplementedException('getEnum is missing');
 	}
