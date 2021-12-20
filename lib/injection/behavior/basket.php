@@ -29,6 +29,15 @@ class Basket extends AbstractBehavior
 		];
 	}
 
+	public function getDefaults(string $siteId, array $parameters = []) : ?array
+	{
+		return [
+			'SELECTOR' => '#basket-root',
+			'POSITION' => 'afterend',
+			'PATH' => '/personal/cart/',
+		];
+	}
+
 	public function getEngineReference() : string
 	{
 		return Engine\Basket::class;

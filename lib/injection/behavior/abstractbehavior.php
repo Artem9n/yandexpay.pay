@@ -32,6 +32,11 @@ abstract class AbstractBehavior implements BehaviorInterface
 		];
 	}
 
+	public function getDefaults(string $siteId, array $parameters = []) : ?array
+	{
+		return null;
+	}
+
 	protected function getPositionsEnum() : array
 	{
 		$result = [];

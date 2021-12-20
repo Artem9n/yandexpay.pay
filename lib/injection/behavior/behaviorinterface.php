@@ -7,6 +7,8 @@ interface BehaviorInterface
 
 	public function getFields() : array;
 
+	public function getDefaults(string $siteId, array $parameters = []) : ?array;
+
 	public function setValues(array $values) : void;
 
 	public function getMode() : string;

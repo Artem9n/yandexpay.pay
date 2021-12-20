@@ -29,6 +29,15 @@ class Order extends AbstractBehavior
 		];
 	}
 
+	public function getDefaults(string $siteId, array $parameters = []) : ?array
+	{
+		return [
+			'SELECTOR' => '#bx-soa-total',
+			'POSITION' => 'beforeend',
+			'PATH' => '/personal/order/make/',
+		];
+	}
+
 	public function getEngineReference() : string
 	{
 		return Engine\Order::class;
