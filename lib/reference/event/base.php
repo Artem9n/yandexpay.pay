@@ -6,8 +6,6 @@ use Bitrix\Main;
 
 abstract class Base
 {
-	protected static $handlerDisallowYaPay = false;
-
 	public static function getClassName(): string
 	{
 		return '\\' . static::class;
