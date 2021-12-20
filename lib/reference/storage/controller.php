@@ -94,12 +94,13 @@ class Controller
 	{
 		$connection = $entity->getConnection();
 		$tableName = $entity->getDBTableName();
+		$installer = new Installer($entity);
 
 		$this->assertTableName($tableName);
 
 		if (!$connection->isTableExists($tableName))
 		{
-			$entity->createDbTable();
+			$installer->install();
 		}
 	}
 
