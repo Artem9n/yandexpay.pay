@@ -1,5 +1,5 @@
 <?php
-namespace YandexPay\Pay\Ui\Userfield;
+namespace YandexPay\Pay\Ui\UserField;
 
 use YandexPay\Pay;
 
@@ -67,7 +67,7 @@ class FieldsetType
 
 	public static function GetAdminListViewHTML(array $userField, ?array $htmlControl) : string
 	{
-		$value = Helper\ComplexValue::asSingle($userField, $htmlControl);
+		$value = static::asSingle($userField, $htmlControl);
 
 		return static::renderSummary($userField, $value);
 	}
@@ -76,7 +76,7 @@ class FieldsetType
 	{
 		$parts = [];
 
-		foreach (Helper\ComplexValue::asMultiple($userField, $htmlControl) as $value)
+		foreach (static::asMultiple($userField, $htmlControl) as $value)
 		{
 			$parts[] = static::renderSummary($userField, $value);
 		}
@@ -96,7 +96,7 @@ class FieldsetType
 
 	public static function GetEditFormHtml(array $userField, ?array $htmlControl) : string
 	{
-		$values = Helper\ComplexValue::asSingle($userField, $htmlControl);
+		$values = static::asSingle($userField, $htmlControl);
 		$layout = static::makeLayout($userField, $htmlControl);
 
 		return $layout->edit($values);
@@ -104,10 +104,35 @@ class FieldsetType
 
 	public static function GetEditFormHtmlMulty(array $userField, ?array $htmlControl) : string
 	{
-		$values = Helper\ComplexValue::asMultiple($userField, $htmlControl);
+		$values = static::asMultiple($userField, $htmlControl);
 		$layout = static::makeLayout($userField, $htmlControl);
 
 		return $layout->editMultiple($values);
+	}
+
+	protected static function asSingle(array $userField, ?array $htmlControl)
+	{
+		$result = Helper\ComplexValue::asSingle($userField, $htmlControl);
+		$result = static::convertValue($userField, $result);
+
+		return $result;
+	}
+
+	protected static function asMultiple(array $userField, ?array $htmlControl) : array
+	{
+		$result = [];
+
+		foreach (Helper\ComplexValue::asMultiple($userField, $htmlControl) as $value)
+		{
+			$result[] = static::convertValue($userField, $value);
+		}
+
+		return $result;
+	}
+
+	protected static function convertValue(array $userField, $value)
+	{
+		return $value;
 	}
 
 	protected static function getFields(array $userField) : array
