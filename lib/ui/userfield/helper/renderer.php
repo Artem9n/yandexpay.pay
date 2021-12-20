@@ -1,6 +1,6 @@
 <?php
 
-namespace YandexPay\Pay\Ui\Userfield\Helper;
+namespace YandexPay\Pay\Ui\UserField\Helper;
 
 class Renderer
 {

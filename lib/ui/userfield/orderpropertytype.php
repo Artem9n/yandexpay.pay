@@ -1,5 +1,5 @@
 <?php
-namespace YandexPay\Pay\Ui\Userfield;
+namespace YandexPay\Pay\Ui\UserField;
 
 class OrderPropertyType extends EnumerationType
 {

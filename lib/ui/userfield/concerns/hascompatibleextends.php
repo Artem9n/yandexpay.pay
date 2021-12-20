@@ -1,6 +1,6 @@
 <?php
 
-namespace YandexPay\Pay\Ui\Userfield\Concerns;
+namespace YandexPay\Pay\Ui\UserField\Concerns;
 
 use Bitrix\Main;
 

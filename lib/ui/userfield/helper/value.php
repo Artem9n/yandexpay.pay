@@ -1,6 +1,6 @@
 <?php
 
-namespace YandexPay\Pay\Ui\Userfield\Helper;
+namespace YandexPay\Pay\Ui\UserField\Helper;
 
 class Value
 {
@@ -52,7 +52,10 @@ class Value
 		{
 			$result = $userField['SETTINGS']['DEFAULT_VALUE'];
 		}
-		else $result = $userField['VALUE'] ?? $htmlControl['VALUE'] ?? null;
+		else
+		{
+			$result = $userField['VALUE'] ?? $htmlControl['VALUE'] ?? null;
+		}
 
 		return $result;
 	}

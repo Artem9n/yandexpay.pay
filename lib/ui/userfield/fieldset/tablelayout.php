@@ -1,10 +1,10 @@
 <?php
 
-namespace YandexPay\Pay\Ui\Userfield\Fieldset;
+namespace YandexPay\Pay\Ui\UserField\Fieldset;
 
 use Bitrix\Main;
 use YandexPay\Pay;
-use YandexPay\Pay\Ui\Userfield;
+use YandexPay\Pay\Ui\UserField;
 
 class TableLayout extends AbstractLayout
 {
