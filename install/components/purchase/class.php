@@ -33,10 +33,6 @@ class Purchase extends \CBitrixComponent
 
 	public function executeComponent(): void
 	{
-		global $APPLICATION;
-
-		$APPLICATION->RestartBuffer();
-
 		try
 		{
 			$this->loadModules();
@@ -48,7 +44,7 @@ class Purchase extends \CBitrixComponent
 		}
 		catch (Main\SystemException $exception)
 		{
-			echo Main\Web\Json::encode([
+			$this->sendResponse([
 				'code' => (string)$exception->getCode(),
 				'message' => $exception->getMessage(),
 				'trace' => $exception->getTraceAsString()
@@ -59,8 +55,6 @@ class Purchase extends \CBitrixComponent
 
 			// todo show error
 		}
-
-		die();
 	}
 
 	protected function parseRequest() : void
@@ -97,13 +91,23 @@ class Purchase extends \CBitrixComponent
 		$this->{$method}();
 	}
 
+	protected function sendResponse(array $response) : void
+	{
+		$json = Main\Web\Json::encode($response);
+		\CMain::FinalActions($json);
+	}
+
 	protected function getProductsAction() : void
 	{
 		$order = $this->getOrder();
 
+		$order->initialize();
+
 		$this->fillPersonType($order);
 		$this->fillBasket($order);
 		//$this->fillCoupon($order);
+
+		$order->finalize();
 
 		$basket = $order->getBasket();
 
@@ -119,7 +123,7 @@ class Purchase extends \CBitrixComponent
 			$result['items'][] = $this->collectBasketItem($basketItem);
 		}
 
-		echo Main\Web\Json::encode($result);
+		$this->sendResponse($result);
 	}
 
 	protected function collectBasketItem(\Bitrix\Sale\BasketItemBase $basketItem) : array
@@ -163,7 +167,7 @@ class Purchase extends \CBitrixComponent
 			$result[] = $this->collectDeliveryOption($calculationResult);
 		}
 
-		echo Main\Web\Json::encode($result);
+		$this->sendResponse($result);
 	}
 
 	protected function collectDeliveryOption(EntityReference\Delivery\CalculationResult $calculationResult) : array
@@ -213,7 +217,7 @@ class Purchase extends \CBitrixComponent
 
 	protected function getPickupStores(EntityReference\Order $order, int $deliveryId) : array
 	{
-		return $this->environment->getDelivery()->getPickupStores($order, $deliveryId);
+		return $this->environment->getDelivery()->getPickupStores($deliveryId, $order);
 	}
 
 	protected function filterDeliveryByType(array $deliveryIds, string $type) : array
@@ -284,7 +288,7 @@ class Purchase extends \CBitrixComponent
 			}
 		}
 
-		echo Main\Web\Json::encode($result);
+		$this->sendResponse($result);
 	}
 
 	protected function collectPickupOption(array $store, EntityReference\Delivery\CalculationResult $calculationResult, int $locationId = null) : array
@@ -349,7 +353,7 @@ class Purchase extends \CBitrixComponent
 
 		//$this->fillCoupon($order);
 
-		$this->fillPaySystem($order, $paySystemId);
+		$this->fillPaySystem($order, $paySystemId, $request->getOrderAmount());
 
 		$order->finalize();
 
@@ -455,7 +459,7 @@ class Purchase extends \CBitrixComponent
 			'paySystemId' => $paySystemId
 		];
 
-		echo Main\Web\Json::encode($result);
+		$this->sendResponse($result);
 	}
 
 	protected function getPayment(int $orderId) : array
@@ -481,11 +485,11 @@ class Purchase extends \CBitrixComponent
 		return [$paymentId, $paySystemId];
 	}
 
-	protected function fillPaySystem(EntityReference\Order $order, int $paySystemId) : void
+	protected function fillPaySystem(EntityReference\Order $order, int $paySystemId, float $price = null) : void
 	{
 		if ($paySystemId > 0)
 		{
-			$order->createPayment($paySystemId);
+			$order->createPayment($paySystemId, $price);
 		}
 	}
 

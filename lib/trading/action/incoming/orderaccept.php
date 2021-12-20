@@ -8,6 +8,11 @@ class OrderAccept extends Common
 		return $this->requireField('deliveryType');
 	}
 
+	public function getOrderAmount() : float
+	{
+		return $this->requireField('orderAmount');
+	}
+
 	public function getAddress() : Address
 	{
 		return $this->getChildModel('address');
