@@ -6,6 +6,8 @@ use Bitrix\Main;
 use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity;
+use YandexPay\Pay\Injection;
+use YandexPay\Pay\Ui;
 use YandexPay\Pay\Utils;
 
 class Options extends Reference\Skeleton
@@ -42,13 +44,52 @@ class Options extends Reference\Skeleton
 		return $this->requireValue('PAYSYSTEM_CARD');
 	}
 
+	public function useBuyerPhone() : bool
+	{
+		return $this->getProperty('PHONE') !== null;
+	}
+
+	public function useBuyerEmail() : bool
+	{
+		return $this->getProperty('EMAIL') !== null;
+	}
+
+	public function useBuyerName() : bool
+	{
+		$result = false;
+
+		$allName = [
+			'LAST_NAME',
+			'FIRST_NAME',
+			'MIDDLE_NAME'
+		];
+
+		foreach ($allName as $value)
+		{
+			if($this->getProperty($value) !== null)
+			{
+				$result = true;
+				break;
+			}
+		}
+
+		return $result;
+	}
+
+	public function getProperty(string $fieldName) : ?int
+	{
+		$result = (int)$this->getValue('PROPERTY_' . $fieldName);
+
+		return $result > 0 ? $result : null;
+	}
+
 	protected function validateSelf() : Main\Result
 	{
 		$result = new Main\Result();
 
 		if (
-			(int)$this->getValue('USE_BUYER_PHONE') <= 0
-			&& (int)$this->getValue('USE_BUYER_EMAIL') <= 0
+			!$this->useBuyerPhone()
+			&& !$this->useBuyerEmail()
 		)
 		{
 			$result->addError(new Main\Error(self::getMessage('VALIDATE_ONE_OF_EMAIL_PHONE')));
@@ -69,39 +110,15 @@ class Options extends Reference\Skeleton
 
 	public function getFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
-		/** @noinspection AdditionOperationOnArraysInspection */
 		return
-			$this->getHandlerFields($environment, $siteId)
-			+ $this->getPurchaseFields($environment, $siteId)
-			+ $this->getDeliveryFields($environment, $siteId)
-			+ $this->getPaymentCardFields($environment, $siteId)
-			+ $this->getPaymentCashFields($environment, $siteId)
+			$this->getDeliveryFields($environment, $siteId)
+			+ $this->getPaymentFields($environment, $siteId)
+			+ $this->getCouponFields($environment, $siteId)
 			+ $this->getBuyerProperties($environment, $siteId)
-			+ $this->getAddressCommonFields($environment, $siteId);
-	}
-
-	protected function getHandlerFields(Entity\Reference\Environment $environment, string $siteId) : array
-	{
-		return [
-			// todo
-		];
-	}
-
-	protected function getPurchaseFields(Entity\Reference\Environment $environment, string $siteId) : array
-	{
-		return [
-			'PURCHASE_URL' => [
-				'TYPE' => 'string',
-				'MANDATORY' => 'Y',
-				'NAME' => self::getMessage('PURCHASE_URL'),
-				'GROUP' => self::getMessage('COMMON'),
-				'SORT' => 2000,
-				'VALUE' => static::getPurchaseUrl(),
-				'SETTINGS' => [
-					'READONLY' => true,
-				]
-			]
-		];
+			+ $this->getAddressFields($environment, $siteId)
+			+ $this->getCommentFields($environment, $siteId)
+			+ $this->getSuccessUrlFields($environment, $siteId)
+			+ $this->getInjectionFields($environment, $siteId);
 	}
 
 	public static function getPurchaseUrl() : string
@@ -122,15 +139,13 @@ class Options extends Reference\Skeleton
 			],
 			'DELIVERY_OPTIONS' => $deliveryOptions->getFieldDescription($environment, $siteId) + [
 				'TYPE' => 'fieldset',
-				'GROUP' => self::getMessage('DELIVERY_GROUP'),
 				'NAME' => self::getMessage('DELIVERY_OPTIONS'),
-				'NOTE' => self::getMessage('DELIVERY_OPTIONS_NOTE'),
 				'SORT' => 1010,
 			],
 		];
 	}
 
-	protected function getPaymentCashFields(Entity\Reference\Environment $environment, string $siteId) : array
+	protected function getPaymentFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return [
 			'PAYSYSTEM_CASH' => [
@@ -138,24 +153,32 @@ class Options extends Reference\Skeleton
 				'GROUP' => self::getMessage('PAYSYSTEM'),
 				'NAME' => self::getMessage('CASH'),
 				'SORT' => 2010,
-				'VALUES' => $environment->getPaySystem()->getEnum($siteId, 'yandexpay', '!='),
+				'VALUES' => $environment->getPaySystem()->getEnum($siteId, [
+					'!=ACTION_FILE' => 'yandexpay',
+				]),
 				'SETTINGS' => [
-					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
+					'CAPTION_NO_VALUE' => self::getMessage('CASH_NO_VALUE'),
 				],
+			],
+			'PAYSYSTEM_CARD' => [
+				'TYPE' => 'enumeration',
+				'MANDATORY' => 'Y',
+				'NAME' => self::getMessage('CARD'),
+				'SORT' => 2010,
+				'VALUES' => $environment->getPaySystem()->getEnum($siteId, [
+					'=ACTION_FILE' => 'yandexpay',
+				]),
 			],
 		];
 	}
 
-	protected function getPaymentCardFields(Entity\Reference\Environment $environment, string $siteId) : array
+	protected function getCouponFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return [
-			'PAYSYSTEM_CARD' => [
-				'TYPE' => 'enumeration',
-				'MANDATORY' => 'Y',
-				'GROUP' => self::getMessage('PAYSYSTEM'),
-				'NAME' => self::getMessage('CARD'),
-				'SORT' => 2010,
-				'VALUES' => $environment->getPaySystem()->getEnum($siteId, 'yandexpay')
+			'ALLOW_ENTER_COUPON' => [
+				'TYPE' => 'boolean',
+				'NAME' => self::getMessage('ALLOW_ENTER_COUPON'),
+				'SORT' => 2050,
 			],
 		];
 	}
@@ -165,36 +188,6 @@ class Options extends Reference\Skeleton
 		$propertyEnum = $environment->getProperty()->getEnum($this->getPersonTypeId());
 
 		return [
-			'ALLOW_ENTER_COMMENT' => [
-				'TYPE' => 'boolean',
-				'GROUP' => self::getMessage('YANDEX'),
-				'NAME' => self::getMessage('ALLOW_ENTER_COMMENT'),
-				'SORT' => 3000,
-			],
-			'ALLOW_ENTER_COUPON' => [
-				'TYPE' => 'boolean',
-				'GROUP' => self::getMessage('YANDEX'),
-				'NAME' => self::getMessage('ALLOW_ENTER_COUPON'),
-				'SORT' => 3005,
-			],
-			'USE_BUYER_NAME' => [
-				'TYPE' => 'boolean',
-				'GROUP' => self::getMessage('YANDEX'),
-				'NAME' => self::getMessage('USE_BUYER_NAME'),
-				'SORT' => 3006,
-			],
-			'USE_BUYER_EMAIL' => [
-				'TYPE' => 'boolean',
-				'GROUP' => self::getMessage('YANDEX'),
-				'NAME' => self::getMessage('USE_BUYER_EMAIL'),
-				'SORT' => 3007
-			],
-			'USE_BUYER_PHONE' => [
-				'TYPE' => 'boolean',
-				'GROUP' => self::getMessage('YANDEX'),
-				'NAME' => self::getMessage('USE_BUYER_PHONE'),
-				'SORT' => 3008
-			],
 			'PROPERTY_LAST_NAME' => [
 				'TYPE' => 'orderProperty',
 				'GROUP' => self::getMessage('BUYER'),
@@ -203,64 +196,53 @@ class Options extends Reference\Skeleton
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'LAST_NAME',
-					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
+					'CAPTION_NO_VALUE' => self::getMessage('NO_PROMPT'),
 				],
 			],
 			'PROPERTY_FIRST_NAME' => [
 				'TYPE' => 'orderProperty',
-				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_FIRST_NAME'),
 				'SORT' => 3010,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'FIRST_NAME',
-					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
+					'CAPTION_NO_VALUE' => self::getMessage('NO_PROMPT'),
 				],
 			],
 			'PROPERTY_MIDDLE_NAME' => [
 				'TYPE' => 'orderProperty',
-				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_MIDDLE_NAME'),
 				'SORT' => 3011,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'MIDDLE_NAME',
-					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
+					'CAPTION_NO_VALUE' => self::getMessage('NO_PROMPT'),
 				],
 			],
 			'PROPERTY_EMAIL' => [
 				'TYPE' => 'orderProperty',
-				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_EMAIL'),
 				'SORT' => 3012,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'EMAIL',
-					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
+					'CAPTION_NO_VALUE' => self::getMessage('NO_PROMPT'),
 				],
 			],
 			'PROPERTY_PHONE' => [
 				'TYPE' => 'orderProperty',
-				'GROUP' => self::getMessage('BUYER'),
 				'NAME' => self::getMessage('PROPERTY_PHONE'),
 				'SORT' => 3013,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => 'PHONE',
-					'CAPTION_NO_VALUE' => self::getMessage('NO_VALUE'),
+					'CAPTION_NO_VALUE' => self::getMessage('NO_PROMPT'),
 				],
 			],
 		];
 	}
 
-	protected function getFieldsetCollectionMap() : array
-	{
-		return [
-			'DELIVERY_OPTIONS' => Options\DeliveryCollection::class,
-		];
-	}
-
-	protected function getAddressCommonFields(Entity\Reference\Environment $environment, string $siteId) : array
+	protected function getAddressFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		$propertyEnum = $environment->getProperty()->getEnum($this->getPersonTypeId());
 
@@ -270,13 +252,15 @@ class Options extends Reference\Skeleton
 			'CITY',
 			'ADDRESS',
 		];
+		$sort = 3100;
 
 		foreach ($keys as $key)
 		{
 			$propertyFields['PROPERTY_' . $key] = [
 				'NAME' => static::getMessage('ADDRESS_' . $key, null, $key),
 				'TYPE' => 'orderProperty',
-				'GROUP' => static::getMessage('ADDRESS_GROUP'),
+				'GROUP' => static::getMessage('ADDRESS'),
+				'SORT' => $sort++,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
 					'TYPE' => $key,
@@ -288,8 +272,128 @@ class Options extends Reference\Skeleton
 		return  $propertyFields;
 	}
 
-	public function getProperty(string $fieldName)
+	protected function getCommentFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
-		return $this->getValue('PROPERTY_' . $fieldName);
+		return [
+			'ALLOW_ENTER_COMMENT' => [
+				'TYPE' => 'boolean',
+				'NAME' => self::getMessage('ALLOW_ENTER_COMMENT'),
+				'SORT' => 3150,
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_TRUE,
+				],
+			],
+		];
+	}
+
+	protected function getSuccessUrlFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return [
+			'URL_SUCCESS' => [
+				'TYPE' => 'string',
+				'NAME' => self::getMessage('URL_SUCCESS'),
+				'GROUP' => self::getMessage('YANDEX_PAY'),
+				'SORT' => 4000,
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => Utils\Url::absolutizePath('/personal/order/make/?ORDER_ID=#ORDER_ID#'),
+				],
+			],
+		];
+	}
+
+	protected function getInjectionFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return [
+			'INJECTION' => [
+				'TYPE' => 'reference',
+				'MULTIPLE' => 'Y',
+				'GROUP' => self::getMessage('YANDEX_PAY'),
+				'NAME' => self::getMessage('INJECTION'),
+				'SORT' => 5000,
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => $this->makeInjectionDefaults($environment, $siteId),
+					'DATA_CLASS' => Injection\Setup\RepositoryTable::class,
+					'REFERENCE' => [ 'ID' => 'TRADING_ID' ],
+					'SUMMARY' => '#BEHAVIOR# (#SETTINGS.ELEMENT_IBLOCK#) (#SETTINGS.ORDER_PATH#) (#SETTINGS.BASKET_PATH#)',
+					'LAYOUT' => 'summary',
+					'MODAL_WIDTH' => 600,
+					'MODAL_HEIGHT' => 450,
+				],
+			],
+		];
+	}
+
+	protected function makeInjectionDefaults(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return array_merge(
+			$this->makeInjectionOrderDefaults($environment, $siteId)
+			//$this->makeInjectionCatalogDefaults($environment, $siteId)
+		);
+	}
+
+	protected function makeInjectionOrderDefaults(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		$orderTypes = [
+			Injection\Behavior\Registry::ORDER,
+			Injection\Behavior\Registry::BASKET,
+		];
+		$result = [];
+
+		foreach ($orderTypes as $type)
+		{
+			$injection = Injection\Behavior\Registry::getInstance($type);
+			$defaults = $injection->getDefaults($siteId);
+
+			if ($defaults === null) { continue; }
+
+			$result[] = [
+				'BEHAVIOR' => $type,
+				'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $defaults),
+			];
+		}
+
+		return $result;
+	}
+
+	protected function makeInjectionCatalogDefaults(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		$result = [];
+		$type = Injection\Behavior\Registry::ELEMENT;
+
+		foreach ($environment->getCatalog()->getIblocks() as $iblockId)
+		{
+			$injection = Injection\Behavior\Registry::getInstance($type);
+			$defaults = $injection->getDefaults($siteId, [
+				'IBLOCK_ID' => $iblockId,
+			]);
+
+			if ($defaults === null) { continue; }
+
+			$result[] = [
+				'BEHAVIOR' => $type,
+				'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $defaults),
+			];
+		}
+
+		return $result;
+	}
+
+	protected function prefixInjectionDefaults(string $prefix, array $values) : array
+	{
+		$result = [];
+
+		foreach ($values as $key => $value)
+		{
+			$result[$prefix . $key] = $value;
+		}
+
+		return $result;
+	}
+
+	protected function getFieldsetCollectionMap() : array
+	{
+		return [
+			'DELIVERY_OPTIONS' => Options\DeliveryCollection::class,
+		];
 	}
 }
