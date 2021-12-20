@@ -275,7 +275,7 @@ export default class Cart extends AbstractStep {
 			}
 		}
 
-		let expandData = {
+		let orderData = {
 			items: this.paymentData.order.items,
 			payment: event.paymentMethodInfo,
 			contact: event.shippingContact,
@@ -283,10 +283,12 @@ export default class Cart extends AbstractStep {
 			productId: this.getOption('productId'),
 			deliveryType: deliveryType,
 			paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
+			orderAmount: event.orderAmount
 		};
 
-		let data = {...this.defaultBody, ...expandData, ...delivery };
+		let data = {...this.defaultBody, ...orderData, ...delivery };
 
+		console.log(event);
 		console.log(data);
 
 		return this.query(this.getOption('purchaseUrl'), data);

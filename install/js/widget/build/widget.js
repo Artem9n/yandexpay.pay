@@ -916,16 +916,18 @@ this.BX = this.BX || {};
 	        };
 	      }
 
-	      var expandData = {
+	      var orderData = {
 	        items: this.paymentData.order.items,
 	        payment: event.paymentMethodInfo,
 	        contact: event.shippingContact,
 	        yapayAction: 'orderAccept',
 	        productId: this.getOption('productId'),
 	        deliveryType: deliveryType,
-	        paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId')
+	        paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
+	        orderAmount: event.orderAmount
 	      };
-	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData, delivery);
+	      var data = babelHelpers.objectSpread({}, this.defaultBody, orderData, delivery);
+	      console.log(event);
 	      console.log(data);
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
