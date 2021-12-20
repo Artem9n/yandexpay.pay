@@ -10,12 +10,12 @@ namespace YandexPay\Pay\Trading\Setup {
 	 * ---------------
 	 *
 	 * @method \int getId()
-	 * @method \YandexPay\Pay\Trading\Setup\Model setId(\int|\Bitrix\Main\DB\SqlExpression $id)
+	 * @method \YandexPay\Pay\Trading\Setup\Model setId(\int $id)
 	 * @method bool hasId()
 	 * @method bool isIdFilled()
 	 * @method bool isIdChanged()
 	 * @method \string getSiteId()
-	 * @method \YandexPay\Pay\Trading\Setup\Model setSiteId(\string|\Bitrix\Main\DB\SqlExpression $siteId)
+	 * @method \YandexPay\Pay\Trading\Setup\Model setSiteId(\string $siteId)
 	 * @method bool hasSiteId()
 	 * @method bool isSiteIdFilled()
 	 * @method bool isSiteIdChanged()
@@ -25,7 +25,7 @@ namespace YandexPay\Pay\Trading\Setup {
 	 * @method \YandexPay\Pay\Trading\Setup\Model unsetSiteId()
 	 * @method \string fillSiteId()
 	 * @method \string getPersonTypeId()
-	 * @method \YandexPay\Pay\Trading\Setup\Model setPersonTypeId(\string|\Bitrix\Main\DB\SqlExpression $personTypeId)
+	 * @method \YandexPay\Pay\Trading\Setup\Model setPersonTypeId(\string $personTypeId)
 	 * @method bool hasPersonTypeId()
 	 * @method bool isPersonTypeIdFilled()
 	 * @method bool isPersonTypeIdChanged()
@@ -35,7 +35,7 @@ namespace YandexPay\Pay\Trading\Setup {
 	 * @method \YandexPay\Pay\Trading\Setup\Model unsetPersonTypeId()
 	 * @method \string fillPersonTypeId()
 	 * @method \boolean getActive()
-	 * @method \YandexPay\Pay\Trading\Setup\Model setActive(\boolean|\Bitrix\Main\DB\SqlExpression $active)
+	 * @method \YandexPay\Pay\Trading\Setup\Model setActive(\boolean $active)
 	 * @method bool hasActive()
 	 * @method bool isActiveFilled()
 	 * @method bool isActiveChanged()
@@ -55,16 +55,17 @@ namespace YandexPay\Pay\Trading\Setup {
 	 * @method void removeAllSettings()
 	 * @method \YandexPay\Pay\Trading\Setup\Model resetSettings()
 	 * @method \YandexPay\Pay\Trading\Setup\Model unsetSettings()
-	 * @method \YandexPay\Pay\Injection\Setup\Model getInjection()
-	 * @method \YandexPay\Pay\Injection\Setup\Model remindActualInjection()
-	 * @method \YandexPay\Pay\Injection\Setup\Model requireInjection()
-	 * @method \YandexPay\Pay\Trading\Setup\Model setInjection(\YandexPay\Pay\Injection\Setup\Model $object)
-	 * @method \YandexPay\Pay\Trading\Setup\Model resetInjection()
-	 * @method \YandexPay\Pay\Trading\Setup\Model unsetInjection()
+	 * @method \YandexPay\Pay\Injection\Setup\Collection getInjection()
+	 * @method \YandexPay\Pay\Injection\Setup\Collection requireInjection()
+	 * @method \YandexPay\Pay\Injection\Setup\Collection fillInjection()
 	 * @method bool hasInjection()
 	 * @method bool isInjectionFilled()
 	 * @method bool isInjectionChanged()
-	 * @method \YandexPay\Pay\Injection\Setup\Model fillInjection()
+	 * @method void addToInjection(\YandexPay\Pay\Injection\Setup\Model $repository)
+	 * @method void removeFromInjection(\YandexPay\Pay\Injection\Setup\Model $repository)
+	 * @method void removeAllInjection()
+	 * @method \YandexPay\Pay\Trading\Setup\Model resetInjection()
+	 * @method \YandexPay\Pay\Trading\Setup\Model unsetInjection()
 	 *
 	 * Common methods:
 	 * ---------------
@@ -72,7 +73,6 @@ namespace YandexPay\Pay\Trading\Setup {
 	 * @property-read \Bitrix\Main\ORM\Entity $entity
 	 * @property-read array $primary
 	 * @property-read int $state @see \Bitrix\Main\ORM\Objectify\State
-	 * @property-read \Bitrix\Main\Type\Dictionary $customData
 	 * @property \Bitrix\Main\Authentication\Context $authContext
 	 * @method mixed get($fieldName)
 	 * @method mixed remindActual($fieldName)
@@ -110,17 +110,15 @@ namespace YandexPay\Pay\Trading\Setup {
 	 *
 	 * @method \int[] getIdList()
 	 * @method \string[] getSiteIdList()
-	 * @method \string[] fillSiteId()
+	 * @method fillSiteId()
 	 * @method \string[] getPersonTypeIdList()
-	 * @method \string[] fillPersonTypeId()
+	 * @method fillPersonTypeId()
 	 * @method \boolean[] getActiveList()
-	 * @method \boolean[] fillActive()
+	 * @method fillActive()
 	 * @method \YandexPay\Pay\Trading\Settings\Collection[] getSettingsList()
-	 * @method \YandexPay\Pay\Trading\Settings\Collection getSettingsCollection()
-	 * @method \YandexPay\Pay\Trading\Settings\Collection fillSettings()
-	 * @method \YandexPay\Pay\Injection\Setup\Model[] getInjectionList()
-	 * @method \YandexPay\Pay\Trading\Setup\Collection getInjectionCollection()
-	 * @method \YandexPay\Pay\Injection\Setup\Collection fillInjection()
+	 * @method void fillSettings()
+	 * @method \YandexPay\Pay\Injection\Setup\Collection[] getInjectionList()
+	 * @method void fillInjection()
 	 *
 	 * Common methods:
 	 * ---------------
@@ -166,16 +164,9 @@ namespace YandexPay\Pay\Trading\Setup {
 	 */
 	class RepositoryTable extends \Bitrix\Main\ORM\Data\DataManager {}
 	/**
-	 * Common methods:
-	 * ---------------
-	 *
 	 * @method EO_Repository_Result exec()
 	 * @method \YandexPay\Pay\Trading\Setup\Model fetchObject()
 	 * @method \YandexPay\Pay\Trading\Setup\Collection fetchCollection()
-	 *
-	 * Custom methods:
-	 * ---------------
-	 *
 	 */
 	class EO_Repository_Query extends \Bitrix\Main\ORM\Query\Query {}
 	/**
@@ -201,12 +192,12 @@ namespace YandexPay\Pay\Trading\Settings {
 	 * ---------------
 	 *
 	 * @method \int getId()
-	 * @method \YandexPay\Pay\Trading\Settings\Model setId(\int|\Bitrix\Main\DB\SqlExpression $id)
+	 * @method \YandexPay\Pay\Trading\Settings\Model setId(\int $id)
 	 * @method bool hasId()
 	 * @method bool isIdFilled()
 	 * @method bool isIdChanged()
 	 * @method \int getSetupId()
-	 * @method \YandexPay\Pay\Trading\Settings\Model setSetupId(\int|\Bitrix\Main\DB\SqlExpression $setupId)
+	 * @method \YandexPay\Pay\Trading\Settings\Model setSetupId(\int $setupId)
 	 * @method bool hasSetupId()
 	 * @method bool isSetupIdFilled()
 	 * @method bool isSetupIdChanged()
@@ -216,20 +207,20 @@ namespace YandexPay\Pay\Trading\Settings {
 	 * @method \YandexPay\Pay\Trading\Settings\Model unsetSetupId()
 	 * @method \int fillSetupId()
 	 * @method \string getName()
-	 * @method \YandexPay\Pay\Trading\Settings\Model setName(\string|\Bitrix\Main\DB\SqlExpression $name)
+	 * @method \YandexPay\Pay\Trading\Settings\Model setName(\string $name)
 	 * @method bool hasName()
 	 * @method bool isNameFilled()
 	 * @method bool isNameChanged()
-	 * @method mixed getValue()
-	 * @method \YandexPay\Pay\Trading\Settings\Model setValue(mixed|\Bitrix\Main\DB\SqlExpression $value)
+	 * @method \string getValue()
+	 * @method \YandexPay\Pay\Trading\Settings\Model setValue(\string $value)
 	 * @method bool hasValue()
 	 * @method bool isValueFilled()
 	 * @method bool isValueChanged()
-	 * @method mixed remindActualValue()
-	 * @method mixed requireValue()
+	 * @method \string remindActualValue()
+	 * @method \string requireValue()
 	 * @method \YandexPay\Pay\Trading\Settings\Model resetValue()
 	 * @method \YandexPay\Pay\Trading\Settings\Model unsetValue()
-	 * @method mixed fillValue()
+	 * @method \string fillValue()
 	 * @method \YandexPay\Pay\Trading\Setup\Model getSetup()
 	 * @method \YandexPay\Pay\Trading\Setup\Model remindActualSetup()
 	 * @method \YandexPay\Pay\Trading\Setup\Model requireSetup()
@@ -247,7 +238,6 @@ namespace YandexPay\Pay\Trading\Settings {
 	 * @property-read \Bitrix\Main\ORM\Entity $entity
 	 * @property-read array $primary
 	 * @property-read int $state @see \Bitrix\Main\ORM\Objectify\State
-	 * @property-read \Bitrix\Main\Type\Dictionary $customData
 	 * @property \Bitrix\Main\Authentication\Context $authContext
 	 * @method mixed get($fieldName)
 	 * @method mixed remindActual($fieldName)
@@ -285,13 +275,12 @@ namespace YandexPay\Pay\Trading\Settings {
 	 *
 	 * @method \int[] getIdList()
 	 * @method \int[] getSetupIdList()
-	 * @method \int[] fillSetupId()
+	 * @method fillSetupId()
 	 * @method \string[] getNameList()
-	 * @method mixed[] getValueList()
-	 * @method mixed[] fillValue()
+	 * @method \string[] getValueList()
+	 * @method fillValue()
 	 * @method \YandexPay\Pay\Trading\Setup\Model[] getSetupList()
-	 * @method \YandexPay\Pay\Trading\Settings\Collection getSetupCollection()
-	 * @method \YandexPay\Pay\Trading\Setup\Collection fillSetup()
+	 * @method fillSetup()
 	 *
 	 * Common methods:
 	 * ---------------
@@ -337,16 +326,9 @@ namespace YandexPay\Pay\Trading\Settings {
 	 */
 	class RepositoryTable extends \Bitrix\Main\ORM\Data\DataManager {}
 	/**
-	 * Common methods:
-	 * ---------------
-	 *
 	 * @method EO_Repository_Result exec()
 	 * @method \YandexPay\Pay\Trading\Settings\Model fetchObject()
 	 * @method \YandexPay\Pay\Trading\Settings\Collection fetchCollection()
-	 *
-	 * Custom methods:
-	 * ---------------
-	 *
 	 */
 	class EO_Repository_Query extends \Bitrix\Main\ORM\Query\Query {}
 	/**
@@ -372,22 +354,12 @@ namespace YandexPay\Pay\Injection\Setup {
 	 * ---------------
 	 *
 	 * @method \int getId()
-	 * @method \YandexPay\Pay\Injection\Setup\Model setId(\int|\Bitrix\Main\DB\SqlExpression $id)
+	 * @method \YandexPay\Pay\Injection\Setup\Model setId(\int $id)
 	 * @method bool hasId()
 	 * @method bool isIdFilled()
 	 * @method bool isIdChanged()
-	 * @method \boolean getActive()
-	 * @method \YandexPay\Pay\Injection\Setup\Model setActive(\boolean|\Bitrix\Main\DB\SqlExpression $active)
-	 * @method bool hasActive()
-	 * @method bool isActiveFilled()
-	 * @method bool isActiveChanged()
-	 * @method \boolean remindActualActive()
-	 * @method \boolean requireActive()
-	 * @method \YandexPay\Pay\Injection\Setup\Model resetActive()
-	 * @method \YandexPay\Pay\Injection\Setup\Model unsetActive()
-	 * @method \boolean fillActive()
 	 * @method \int getTradingId()
-	 * @method \YandexPay\Pay\Injection\Setup\Model setTradingId(\int|\Bitrix\Main\DB\SqlExpression $tradingId)
+	 * @method \YandexPay\Pay\Injection\Setup\Model setTradingId(\int $tradingId)
 	 * @method bool hasTradingId()
 	 * @method bool isTradingIdFilled()
 	 * @method bool isTradingIdChanged()
@@ -397,7 +369,7 @@ namespace YandexPay\Pay\Injection\Setup {
 	 * @method \YandexPay\Pay\Injection\Setup\Model unsetTradingId()
 	 * @method \int fillTradingId()
 	 * @method \string getBehavior()
-	 * @method \YandexPay\Pay\Injection\Setup\Model setBehavior(\string|\Bitrix\Main\DB\SqlExpression $behavior)
+	 * @method \YandexPay\Pay\Injection\Setup\Model setBehavior(\string $behavior)
 	 * @method bool hasBehavior()
 	 * @method bool isBehaviorFilled()
 	 * @method bool isBehaviorChanged()
@@ -407,7 +379,7 @@ namespace YandexPay\Pay\Injection\Setup {
 	 * @method \YandexPay\Pay\Injection\Setup\Model unsetBehavior()
 	 * @method \string fillBehavior()
 	 * @method array getSettings()
-	 * @method \YandexPay\Pay\Injection\Setup\Model setSettings(array|\Bitrix\Main\DB\SqlExpression $settings)
+	 * @method \YandexPay\Pay\Injection\Setup\Model setSettings(array $settings)
 	 * @method bool hasSettings()
 	 * @method bool isSettingsFilled()
 	 * @method bool isSettingsChanged()
@@ -433,7 +405,6 @@ namespace YandexPay\Pay\Injection\Setup {
 	 * @property-read \Bitrix\Main\ORM\Entity $entity
 	 * @property-read array $primary
 	 * @property-read int $state @see \Bitrix\Main\ORM\Objectify\State
-	 * @property-read \Bitrix\Main\Type\Dictionary $customData
 	 * @property \Bitrix\Main\Authentication\Context $authContext
 	 * @method mixed get($fieldName)
 	 * @method mixed remindActual($fieldName)
@@ -470,17 +441,14 @@ namespace YandexPay\Pay\Injection\Setup {
 	 * ---------------
 	 *
 	 * @method \int[] getIdList()
-	 * @method \boolean[] getActiveList()
-	 * @method \boolean[] fillActive()
 	 * @method \int[] getTradingIdList()
-	 * @method \int[] fillTradingId()
+	 * @method fillTradingId()
 	 * @method \string[] getBehaviorList()
-	 * @method \string[] fillBehavior()
+	 * @method fillBehavior()
 	 * @method array[] getSettingsList()
-	 * @method array[] fillSettings()
+	 * @method fillSettings()
 	 * @method \YandexPay\Pay\Trading\Setup\Model[] getTradingList()
-	 * @method \YandexPay\Pay\Injection\Setup\Collection getTradingCollection()
-	 * @method \YandexPay\Pay\Trading\Setup\Collection fillTrading()
+	 * @method fillTrading()
 	 *
 	 * Common methods:
 	 * ---------------
@@ -526,16 +494,9 @@ namespace YandexPay\Pay\Injection\Setup {
 	 */
 	class RepositoryTable extends \Bitrix\Main\ORM\Data\DataManager {}
 	/**
-	 * Common methods:
-	 * ---------------
-	 *
 	 * @method EO_Repository_Result exec()
 	 * @method \YandexPay\Pay\Injection\Setup\Model fetchObject()
 	 * @method \YandexPay\Pay\Injection\Setup\Collection fetchCollection()
-	 *
-	 * Custom methods:
-	 * ---------------
-	 *
 	 */
 	class EO_Repository_Query extends \Bitrix\Main\ORM\Query\Query {}
 	/**
