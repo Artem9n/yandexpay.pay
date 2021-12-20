@@ -1,10 +1,10 @@
 <?php
 
-namespace YandexPay\Pay\Ui\Userfield\Fieldset;
+namespace YandexPay\Pay\Ui\UserField\Fieldset;
 
 use Bitrix\Main;
 use YandexPay\Pay;
-use YandexPay\Pay\Ui\Userfield;
+use YandexPay\Pay\Ui\UserField;
 
 class SummaryLayout extends AbstractLayout
 {
@@ -139,6 +139,7 @@ class SummaryLayout extends AbstractLayout
 		$activeGroup = null;
 		$groupHtml = '';
 		$hasGroupFields = false;
+		[$editable, $hidden] = $this->splitHiddenFields($fields);
 
 		$result = sprintf('<table %s>', UserField\Helper\Attributes::stringify(array_filter([
 			'class' => 'edit-table ' . $this->getFieldsetName('summary__field'),
@@ -146,8 +147,9 @@ class SummaryLayout extends AbstractLayout
 			'data-plugin' => 'Field.Fieldset.Row',
 			'data-element-namespace' => $this->hasParentFieldset() ? '.' . $this->fieldsetName : null,
 		])));
+		$result .= $this->renderHiddenFields($hidden, $values);
 
-		foreach ($fields as $fieldKey => $field)
+		foreach ($editable as $fieldKey => $field)
 		{
 			$value = Pay\Utils\BracketChain::get($values, $fieldKey);
 
@@ -220,7 +222,7 @@ class SummaryLayout extends AbstractLayout
 			$control = $this->prepareFieldControl($row['CONTROL'], $fieldKey, $field);
 			$control = UserField\Helper\Attributes::delayPluginInitialization($control);
 
-			$titleCell = $field['NAME'];
+			$titleCell = $field['NAME'] ?? $field['EDIT_FORM_LABEL'] ?? $field['LIST_COLUMN_LABEL'] ?? $field['LIST_FILTER_LABEL'];
 
 			if (!empty($field['HELP_MESSAGE']))
 			{
@@ -259,5 +261,49 @@ class SummaryLayout extends AbstractLayout
 		$result .= '</table>';
 
 		return $result;
+	}
+
+	protected function renderHiddenFields(array $fields, array $values) : string
+	{
+		if (empty($fields)) { return ''; }
+
+		$controls = '';
+
+		foreach ($fields as $fieldKey => $field)
+		{
+			$value = Pay\Utils\BracketChain::get($values, $fieldKey);
+			$attributes = [
+				'type' => 'hidden',
+				'name' => $field['FIELD_NAME'],
+				'value' => (string)$value,
+			];
+
+			$control = sprintf('<input %s />', UserField\Helper\Attributes::stringify($attributes));
+			$control = $this->prepareFieldControl($control, $fieldKey, $field);
+
+			$controls .= $control;
+		}
+
+		return sprintf('<tr><td colspan="2">%s</td></tr>', $controls);
+	}
+
+	protected function splitHiddenFields(array $fields) : array
+	{
+		$editable = [];
+		$hidden = [];
+
+		foreach ($fields as $key => $field)
+		{
+			if (!empty($field['HIDDEN']) && $field['HIDDEN'] !== 'N')
+			{
+				$hidden[$key] = $field;
+			}
+			else
+			{
+				$editable[$key] = $field;
+			}
+		}
+
+		return [$editable, $hidden];
 	}
 }
