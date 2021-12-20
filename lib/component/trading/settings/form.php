@@ -69,6 +69,7 @@ class Form extends Pay\Component\Plain\Form
 		else
 		{
 			$result = $this->fillFieldsValueEmpty($result, $select);
+			$result['ID'] = $primary; // ignore defaults in user fields
 		}
 
 		return $result;
@@ -128,7 +129,7 @@ class Form extends Pay\Component\Plain\Form
 
 		if (!empty($values))
 		{
-			$fields = $this->getAllFields();
+			$fields = $this->getComponentResult('FIELDS');
 
 			$values = $this->applyUserFieldsOnBeforeSave($fields, $values);
 			$values = $this->sliceFieldsDependHidden($fields, $values);
@@ -142,6 +143,7 @@ class Form extends Pay\Component\Plain\Form
 		}
 
 		$setup->save();
+		$setup->getSettings()->save();
 
 		return new Main\ORM\Data\UpdateResult();
 	}
