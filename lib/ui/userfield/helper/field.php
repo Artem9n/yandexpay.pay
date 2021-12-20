@@ -1,8 +1,8 @@
 <?php
 
-namespace YandexPay\Pay\Ui\Userfield\Helper;
+namespace YandexPay\Pay\Ui\UserField\Helper;
 
-use YandexPay\Pay\Ui\Userfield\Registry;
+use YandexPay\Pay\Ui\UserField\Registry;
 
 class Field
 {
@@ -12,9 +12,13 @@ class Field
 			'MULTIPLE' => 'N',
 			'EDIT_IN_LIST' => 'Y',
 			'EDIT_FORM_LABEL' => $field['NAME'],
-			'FIELD_NAME' => $name,
 			'SETTINGS' => [],
 		];
+
+		if ($name !== null)
+		{
+			$field['FIELD_NAME'] = $name;
+		}
 
 		if (!isset($field['USER_TYPE']) && isset($field['TYPE']))
 		{
