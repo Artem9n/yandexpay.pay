@@ -20,7 +20,7 @@ class PaySystem extends EntityReference\PaySystem
 		parent::__construct($environment);
 	}
 
-	public function getEnum(string $siteId = null, string $actionFile = null, string $separator = '=') : array
+	public function getEnum(string $siteId = null, array $dataFilter = []) : array
 	{
 		$result = [];
 
@@ -29,11 +29,9 @@ class PaySystem extends EntityReference\PaySystem
 			'=ENTITY_REGISTRY_TYPE' => Sale\Payment::getRegistryType(),
 		];
 
-		if ($actionFile !== null)
+		if (!empty($dataFilter))
 		{
-			$filter += [
-				$separator . 'ACTION_FILE' => $actionFile
-			];
+			$filter += $dataFilter;
 		}
 
 		$query = Sale\PaySystem\Manager::getList([

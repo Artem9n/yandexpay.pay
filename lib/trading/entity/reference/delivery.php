@@ -89,7 +89,7 @@ class Delivery
 	 * @return array
 	 * @throws \Bitrix\Main\NotImplementedException
 	 */
-	public function getPickupStores(Order $order, int $deliveryId) : array
+	public function getPickupStores(int $deliveryId, Order $order) : array
 	{
 		throw new NotImplementedException('getPickupStores is missing');
 	}

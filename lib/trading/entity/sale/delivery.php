@@ -158,7 +158,7 @@ class Delivery extends EntityReference\Delivery
 		return Sale\Delivery\Services\Manager::getEmptyDeliveryServiceId();
 	}
 
-	public function getPickupStores(EntityReference\Order $order, int $deliveryId) : array
+	public function getPickupStores(int $deliveryId, EntityReference\Order $order) : array
 	{
 		try
 		{
