@@ -5,6 +5,7 @@ use Bitrix\Iblock;
 use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Injection\Engine;
+use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 
 class Element extends AbstractBehavior
 {
@@ -38,33 +39,18 @@ class Element extends AbstractBehavior
 
 	protected function getIblockEnum() : array
 	{
-		if (!Main\Loader::includeModule('iblock')) { return []; }
+		$environment = EntityRegistry::getEnvironment();
 
-		$result = [];
-
-		$query = Iblock\IblockTable::getList([
-			'filter' => [
-				'=TYPE.LANG_MESSAGE.LANGUAGE_ID' => LANGUAGE_ID,
-			],
-			'select' => [
-				'ID',
-				'NAME',
-				'TYPE_NAME' => 'TYPE.LANG_MESSAGE.NAME',
-			],
-		]);
-
-		while ($row = $query->fetch())
-		{
-			$result[] = [
-				'ID' => $row['ID'],
-				'VALUE' => sprintf('[%s] %s', $row['ID'], $row['NAME']),
-				'GROUP' => $row['TYPE_NAME'],
-			];
-		}
-
-		return $result;
+		return $environment->getCatalog()->getEnumIblock();
 	}
 
+	public function getDefaults(string $siteId, array $parameters = []) : ?array
+	{
+		return $parameters + [
+			'SELECTOR' => '.product-item-detail-slider-container',
+			'POSITION' => 'beforeend'
+		];
+	}
 
 	public function getIblock() : ?int
 	{
@@ -85,7 +71,7 @@ class Element extends AbstractBehavior
 	{
 		return [
 			'IBLOCK' => $this->getIblock(),
-			'URL_TEMPLATE' => $this->getUrlTemplate(),
+			//'URL_TEMPLATE' => $this->getUrlTemplate(),
 		];
 	}
 }
