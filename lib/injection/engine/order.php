@@ -9,7 +9,7 @@ class Order extends AbstractEngine
 {
 	public static function onEpilog(int $injectionId, array $settings) : void
 	{
-		if (!static::isOrderPath($settings['PATH'])) { return; }
+		if (!isset($settings['PATH']) || !static::isOrderPath($settings['PATH'])) { return; }
 
 		static::render($injectionId);
 	}

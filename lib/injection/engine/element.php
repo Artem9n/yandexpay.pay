@@ -12,6 +12,8 @@ class Element extends AbstractEngine
 	{
 		$url = static::getUrl();
 
+		if (!isset($settings['IBLOCK'])) { return; }
+
 		$element = static::getDetailPageUtlTemplate($settings['IBLOCK'], $url);
 
 		if (empty($element)) { return; }
