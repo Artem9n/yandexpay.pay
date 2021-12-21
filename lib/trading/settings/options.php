@@ -54,6 +54,11 @@ class Options extends Reference\Skeleton
 		return $this->getProperty('EMAIL') !== null;
 	}
 
+	public function getSuccessUrl() : string
+	{
+		return $this->requireValue('URL_SUCCESS');
+	}
+
 	public function useBuyerName() : bool
 	{
 		$result = false;
@@ -295,7 +300,7 @@ class Options extends Reference\Skeleton
 				'GROUP' => self::getMessage('YANDEX_PAY'),
 				'SORT' => 4000,
 				'SETTINGS' => [
-					'DEFAULT_VALUE' => Utils\Url::absolutizePath('/personal/order/make/?ORDER_ID=#ORDER_ID#'),
+					'DEFAULT_VALUE' => '/personal/order/make/',
 				],
 			],
 		];
@@ -326,8 +331,8 @@ class Options extends Reference\Skeleton
 	protected function makeInjectionDefaults(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return array_merge(
-			$this->makeInjectionOrderDefaults($environment, $siteId)
-			//$this->makeInjectionCatalogDefaults($environment, $siteId)
+			$this->makeInjectionOrderDefaults($environment, $siteId),
+			$this->makeInjectionCatalogDefaults($environment, $siteId)
 		);
 	}
 
@@ -359,21 +364,22 @@ class Options extends Reference\Skeleton
 	{
 		$result = [];
 		$type = Injection\Behavior\Registry::ELEMENT;
+		$iblockId = $environment->getCatalog()->getIblock($siteId);
 
-		foreach ($environment->getCatalog()->getIblocks() as $iblockId)
-		{
-			$injection = Injection\Behavior\Registry::getInstance($type);
-			$defaults = $injection->getDefaults($siteId, [
-				'IBLOCK_ID' => $iblockId,
-			]);
+		if ($iblockId === null) { return $result; }
 
-			if ($defaults === null) { continue; }
+		$injection = Injection\Behavior\Registry::getInstance($type);
 
-			$result[] = [
-				'BEHAVIOR' => $type,
-				'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $defaults),
-			];
-		}
+		$defaults = $injection->getDefaults($siteId, [
+			'IBLOCK' => $iblockId,
+		]);
+
+		if ($defaults === null) { return $result; }
+
+		$result[] = [
+			'BEHAVIOR' => $type,
+			'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $defaults),
+		];
 
 		return $result;
 	}
