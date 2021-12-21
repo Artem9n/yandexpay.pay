@@ -40,4 +40,9 @@ class Environment extends EntityCommon\Environment
 	{
 		return new UserRegistry($this);
 	}
+
+	protected function createCatalog() : EntityReference\Catalog
+	{
+		return new Catalog($this);
+	}
 }

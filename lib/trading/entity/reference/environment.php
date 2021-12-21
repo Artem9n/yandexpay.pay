@@ -13,6 +13,7 @@ abstract class Environment
 	protected $paySystem;
 	protected $personType;
 	protected $property;
+	protected $catalog;
 
 	public function getOrderRegistry() : OrderRegistry
 	{
@@ -140,6 +141,24 @@ abstract class Environment
 	 */
 	protected function createUserRegistry() : UserRegistry
 	{
-		throw new Main\NotImplementedEntity('UserRegistry is missing');
+		throw new Main\NotImplementedException('UserRegistry is missing');
+	}
+
+	public function getCatalog() : Catalog
+	{
+		if ($this->catalog === null)
+		{
+			$this->catalog = $this->createCatalog();
+		}
+
+		return $this->catalog;
+	}
+
+	/**
+	 * @return Catalog
+	 */
+	protected function createCatalog() : Catalog
+	{
+		throw new Main\NotImplementedException('catalog is missing');
 	}
 }
