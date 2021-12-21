@@ -14,7 +14,7 @@ use YandexPay\Pay\Trading\Setup as TradingSetup;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
-use YandexPay\Pay\Utils\JsonBodyFilter;
+use YandexPay\Pay\Utils;
 
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
 
@@ -59,7 +59,7 @@ class Purchase extends \CBitrixComponent
 
 	protected function parseRequest() : void
 	{
-		$this->request->addFilter(new JsonBodyFilter());
+		$this->request->addFilter(new Utils\JsonBodyFilter());
 	}
 
 	protected function makeRequest($className) : TradingAction\Incoming\Common
@@ -454,12 +454,35 @@ class Purchase extends \CBitrixComponent
 
 		[$paymentId, $paySystemId] = $this->getPayment($saveData['ID']);
 
+		$redirect = $this->getRedirectUrl($saveData['ID'], $paySystemId);
+
 		$result = [
 			'externalId' => $paymentId,
-			'paySystemId' => $paySystemId
+			'paySystemId' => $paySystemId,
+			'redirect' => $redirect
 		];
 
 		$this->sendResponse($result);
+	}
+
+	protected function getRedirectUrl(int $orderId, int $paySystemId) : ?string
+	{
+		$result = null;
+
+		$options = $this->options;
+		$isCashPaySystem = ($options->getPaymentCash() === $paySystemId);
+		$url = Utils\Url::absolutizePath($this->options->getSuccessUrl()) . '?ORDER_ID=' . $orderId;
+
+		if ($isCashPaySystem)
+		{
+			$result = $url;
+		}
+		else
+		{
+			$_SESSION['yabehaviorbackurl'] = $url;
+		}
+
+		return $result;
 	}
 
 	protected function getPayment(int $orderId) : array

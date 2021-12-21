@@ -46,10 +46,7 @@ class TradingCart extends \CBitrixComponent
 		{
 			$this->loadModules();
 			$this->bootstrap();
-
 			$this->setParameters();
-			$this->setRedirectUrl(); // todo временное решение установки backurl, надо будет пофиксить
-
 			$this->includeComponentTemplate();
 		}
 		catch (Main\SystemException $exception)
@@ -108,17 +105,6 @@ class TradingCart extends \CBitrixComponent
 				'total' => '0'
 			]
 		];
-	}
-
-	protected function setRedirectUrl() : void
-	{
-		global $APPLICATION;
-
-		$server = Main\Context::getCurrent()->getServer();
-		$request = Main\Context::getCurrent()->getRequest();
-		$host = $request->isHttps() ? 'https' : 'http';
-		$url = $host . '://' . $server->get('SERVER_NAME') . $APPLICATION->GetCurPage();
-		$_SESSION['yabehaviorbackurl'] = $url;
 	}
 
 	public function getCardNetworks() : array

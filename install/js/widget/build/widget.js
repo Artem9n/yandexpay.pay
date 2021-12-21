@@ -806,6 +806,10 @@ this.BX = this.BX || {};
 	              });
 	            } else {
 	              payment.complete(YaPay$1.CompleteReason.Success);
+
+	              if (result.redirect !== null) {
+	                window.location.href = result.redirect;
+	              }
 	            }
 	          });
 	        }); // Подписаться на событие error.

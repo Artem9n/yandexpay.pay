@@ -160,7 +160,12 @@ export default class Cart extends AbstractStep {
 								payment.complete(YaPay.CompleteReason.Success);
 							});
 						} else {
+
 							payment.complete(YaPay.CompleteReason.Success);
+
+							if (result.redirect !== null) {
+								window.location.href = result.redirect;
+							}
 						}
 					});
 
