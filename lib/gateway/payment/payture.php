@@ -95,10 +95,8 @@ class Payture extends Gateway\Base
 		];
 	}
 
-	public function startPay(Sale\Payment $payment) : array
+	public function startPay() : array
 	{
-		$this->setPayment($payment);
-
 		$result = [
 			'PS_INVOICE_ID'     => $this->getExternalId(),
 			'PS_SUM'            => $this->getPaymentSum()
@@ -218,9 +216,8 @@ class Payture extends Gateway\Base
 		return $this->request->get('paymentId');
 	}
 
-	public function refund(Sale\Payment $payment): void
+	public function refund(): void
 	{
-		$this->setPayment($payment);
 		$httpClient = new HttpClient();
 		$url = $this->getUrl('refund');
 

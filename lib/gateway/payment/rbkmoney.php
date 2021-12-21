@@ -179,29 +179,27 @@ class Rbkmoney extends Base
 		return $result;
 	}
 
-	public function startPay(Sale\Payment $payment) : array
+	public function startPay() : array
 	{
-		$this->setPayment($payment);
-
 		$result = [];
 
 		if ($this->isSecure3ds())
 		{
-			$invoiceId = (string)$this->request->get('invoiceId');
+			$invoiceId = $this->request->get('invoiceId');
 
 			if ($invoiceId !== null)
 			{
 				$paymentInvoice = $this->checkInvoiceEvents($invoiceId);
 
 				if ($paymentInvoice !== null)
-			{
-				return [
+				{
+					return [
 						'PS_INVOICE_ID'     => $invoiceId . '#' . $paymentInvoice['paymentID'],
 						'PS_STATUS_CODE'    => $paymentInvoice['status'],
-					'PS_SUM'            => $this->getPaymentSum()
-				];
+						'PS_SUM'            => $this->getPaymentSum()
+					];
+				}
 			}
-		}
 		}
 
 		$fields = $this->processWebHook();
@@ -508,10 +506,8 @@ class Rbkmoney extends Base
 		return Main\Web\Json::decode($data);
 	}
 
-	public function refund(Sale\Payment $payment): void
+	public function refund(): void
 	{
-		$this->setPayment($payment);
-
 		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 
 		[$invoiceId, $paymentId] = explode('#', $this->getPaymentField('PS_INVOICE_ID'));

@@ -12,5 +12,5 @@ interface IGateway
 
 	public function getParams(): array;
 
-	public function startPay(Sale\Payment $payment) : array;
+	public function startPay() : array;
 }

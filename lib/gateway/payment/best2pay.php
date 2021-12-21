@@ -103,10 +103,8 @@ class Best2pay extends Gateway\Base
 		];
 	}
 
-	public function startPay(Sale\Payment $payment) : array
+	public function startPay() : array
 	{
-		$this->setPayment($payment);
-
 		$result = [];
 
 		if ($this->isSecure3ds())
@@ -380,10 +378,8 @@ class Best2pay extends Gateway\Base
 		return Main\Text\Encoding::convertEncoding($message, 'WINDOWS-1251', 'UTF-8');
 	}
 
-	public function refund(Sale\Payment $payment): void
+	public function refund(): void
 	{
-		$this->setPayment($payment);
-
 		$httpClient = new HttpClient();
 
 		$invoiceId = $this->getPaymentField('PS_INVOICE_ID');

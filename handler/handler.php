@@ -174,7 +174,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		{
 			$gateway = $this->getGateway();
 			$gateway->setParameters($this->getParamsBusValue($payment));
-			$gateway->refund($payment);
+			$gateway->setPayment($payment);
+			$gateway->refund();
 
 			$result->setOperationType(PaySystem\ServiceResult::MONEY_LEAVING);
 		}
@@ -214,8 +215,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			$gatewayProvider = $this->getGateway();
 
 			$gatewayProvider->setParameters($this->getParamsBusValue($payment));
-
-			$resultData = $gatewayProvider->startPay($payment);
+			$gatewayProvider->setPayment($payment);
+			$resultData = $gatewayProvider->startPay();
 
 			if (!empty($resultData))
 			{

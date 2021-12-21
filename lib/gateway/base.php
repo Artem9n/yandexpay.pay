@@ -33,7 +33,7 @@ abstract class Base implements IGateway
 
 	abstract public function getPaymentIdFromRequest(): ?int;
 
-	abstract public function refund(Sale\Payment $payment): void;
+	abstract public function refund(): void;
 
 	abstract protected function getUrlList(): array;
 
@@ -106,7 +106,7 @@ abstract class Base implements IGateway
 		return Config::getLangPrefix();
 	}
 
-	public function startPay(Sale\Payment $payment) : array
+	public function startPay() : array
 	{
 		return [];
 	}
