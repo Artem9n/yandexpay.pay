@@ -72,11 +72,104 @@ class EnumerationType
 
 	public static function getAdminListViewHTML($arUserField, $arHtmlControl)
 	{
-		return static::callParent('getAdminListViewHTML', [$arUserField, $arHtmlControl]);
+		$result = '&nbsp;';
+
+		if (!empty($arHtmlControl['VALUE']))
+		{
+			$value = $arHtmlControl['VALUE'];
+			$query = call_user_func([ $arUserField['USER_TYPE']['CLASS_NAME'], 'getList' ], $arUserField);
+			$enum = $query ? static::toArray($query) : [];
+			$enumMap = array_column($enum, 'VALUE', 'ID');
+
+			if (isset($enumMap[$value]))
+			{
+				$result = $enumMap[$value];
+			}
+			else if (
+				isset($arUserField['SETTINGS']['DESCRIPTION_FIELD'])
+				&& !empty($arUserField['ROW'][$arUserField['SETTINGS']['DESCRIPTION_FIELD']])
+			)
+			{
+				$result = $arUserField['ROW'][$arUserField['SETTINGS']['DESCRIPTION_FIELD']];
+			}
+			else
+			{
+				$result = sprintf('[%s]', $value);
+			}
+
+			$result = static::htmlEscape($result);
+		}
+
+		return $result;
 	}
 
 	public static function getAdminListViewHTMLMulty($arUserField, $arHtmlControl)
 	{
-		return static::callParent('getAdminListViewHTMLMulty', [$arUserField, $arHtmlControl]);
+		$result = '&nbsp;';
+
+		if (!empty($arHtmlControl['VALUE']))
+		{
+			$query = call_user_func([ $arUserField['USER_TYPE']['CLASS_NAME'], 'getList' ], $arUserField);
+			$enum = $query ? static::toArray($query) : [];
+			$enumMap = array_column($enum, 'VALUE', 'ID');
+			$displayValues = [];
+
+			foreach ((array)$arHtmlControl['VALUE'] as $value)
+			{
+				if (isset($enumMap[$value]))
+				{
+					$displayValues[] = $enumMap[$value];
+				}
+				else
+				{
+					$displayValues[] = sprintf('[%s]', $value);
+				}
+			}
+
+			$result = implode(' / ', $displayValues);
+			$result = static::htmlEscape($result);
+		}
+
+		return $result;
+	}
+
+	public static function toArray($enum)
+	{
+		if (is_array($enum))
+		{
+			$result = $enum;
+
+			foreach ($result as &$option)
+			{
+				foreach ($option as $key => $value)
+				{
+					$option[$key] = htmlspecialcharsbx($value, ENT_COMPAT, false);
+				}
+			}
+			unset($option);
+		}
+		else if ($enum instanceof \CDBResult)
+		{
+			$result = [];
+
+			while ($option = $enum->GetNext())
+			{
+				$result[] = $option;
+			}
+		}
+		else
+		{
+			$result = [];
+		}
+
+		return $result;
+	}
+
+	public static function htmlEscape($string)
+	{
+		static $search = [ '"', '<', '>' ];
+		static $replace = [ '&quot;', '&lt;', '&gt;' ];
+
+		return str_replace($search, $replace, $string);
 	}
 }
