@@ -24,9 +24,40 @@ class SetupTabGrid extends SetupGrid
 				if ($item['ICON'] === 'btn_new') { $item['ICON'] = 'btn_sub_new'; }
 				return $item;
 			}, $common['CONTEXT_MENU']),
+			'ROW_ACTIONS' => $this->extendRowActions($common['ROW_ACTIONS']),
 		];
 
-		return $local + $common;
+		return array_diff_key($local + $common, [
+			'EDIT_URL' => true,
+		]);
+	}
+
+	protected function extendRowActions(array $actions) : array
+	{
+		foreach ($actions as $key => &$action)
+		{
+			if ($key === 'SETUP')
+			{
+				$action['URL'] .= '&' . http_build_query(['view' => 'dialog']);
+				$action['MODAL_FORM'] = 'Y';
+				$action['MODAL_PARAMETERS'] = [
+					'width' => 800,
+					'height' => 600,
+				];
+			}
+			else if ($key === 'EDIT')
+			{
+				$action['URL'] .= '&' . http_build_query(['view' => 'dialog']);
+				$action['MODAL_FORM'] = 'Y';
+				$action['MODAL_PARAMETERS'] = [
+					'width' => 450,
+					'height' => 250,
+				];
+			}
+		}
+		unset($action);
+
+		return $actions;
 	}
 
 	protected function getBaseQuery() : array

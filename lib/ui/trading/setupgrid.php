@@ -50,12 +50,14 @@ class SetupGrid extends Pay\Ui\Reference\Page
 					'URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_setup', $baseQuery) . '&id=#ID#',
 					'ICON' => 'setting',
 					'TEXT' => self::getMessage('ACTION_SETUP'),
+					'MODAL_TITLE' => self::getMessage('MODAL_SETUP'),
 					'DEFAULT' => true,
 				],
 				'EDIT' => [
 					'URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_edit', $baseQuery) . '&id=#ID#',
 					'ICON' => 'edit',
-					'TEXT' => self::getMessage('ACTION_EDIT')
+					'TEXT' => self::getMessage('ACTION_EDIT'),
+					'MODAL_TITLE' => self::getMessage('MODAL_EDIT'),
 				],
 				'COPY' => [
 					'URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_edit', $baseQuery) . '&id=#ID#&copy=Y',

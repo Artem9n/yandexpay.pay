@@ -898,7 +898,13 @@ class AdminGrid extends \CBitrixComponent
 
 	            if ($defaultAction !== false)
 	            {
-	            	if (isset($defaultAction['URL']))
+	            	if (
+						isset($defaultAction['URL'])
+						&& (
+							empty($defaultAction['ACTION'])
+							|| preg_match('/BX.adminPanel.Redirect/', $defaultAction['ACTION'])
+						)
+		            )
 		            {
 			            $link = $defaultAction['URL'];
 			            $item['ROW_URL'] = $defaultAction['URL'];
@@ -1138,7 +1144,26 @@ class AdminGrid extends \CBitrixComponent
 					}
 
 					$actionMethod = sprintf(
-						'(new BX.YandexMarket.Dialog(%s)).Show();',
+						'(new BX.CAdminDialog(%s)).Show();',
+						\CUtil::PhpToJSObject($modalParameters)
+					);
+				}
+				else if (isset($action['MODAL_FORM']) && $action['MODAL_FORM'] === 'Y')
+				{
+					Main\UI\Extension::load('yandexpaypay.admin.ui.modalform');
+
+					$modalParameters = array_merge(
+						[ 'url' => $actionUrl, 'unescapeUrl' => true ],
+						(array)($action['MODAL_PARAMETERS'] ?? [])
+					);
+
+					if (isset($action['MODAL_TITLE']))
+					{
+						$modalParameters['title'] = str_replace($replacesFrom, $replacesTo, $action['MODAL_TITLE']);
+					}
+
+					$actionMethod = sprintf(
+						'(new BX.YandexPay.Ui.ModalForm(null, %s)).activate();',
 						\CUtil::PhpToJSObject($modalParameters)
 					);
 				}
