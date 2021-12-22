@@ -6,6 +6,14 @@ use YandexPay\Pay\Trading\Entity\Common as EntityCommon;
 
 class Environment extends EntityCommon\Environment
 {
+	protected function getRequiredModules() : array
+	{
+		return [
+			'catalog',
+			'sale',
+		];
+	}
+
 	protected function createOrderRegistry() : EntityReference\OrderRegistry
 	{
 		return new OrderRegistry($this);

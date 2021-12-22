@@ -12,11 +12,18 @@ class SetupGrid extends Pay\Ui\Reference\Page
 	{
 		global $APPLICATION;
 
-		$baseQuery = [
-			'lang' => LANGUAGE_ID,
-		];
+		$APPLICATION->IncludeComponent(
+			'yandexpay.pay:admin.grid',
+			'',
+			$this->getShowParameters()
+		);
+	}
 
-		$APPLICATION->IncludeComponent('yandexpay.pay:admin.grid', '', [
+	protected function getShowParameters() : array
+	{
+		$baseQuery = $this->getBaseQuery();
+
+		return [
 			'GRID_ID' => 'YANDEX_PAY_TRADING_SETUP_GRID',
 			'ALLOW_SAVE' => Pay\Ui\Access::hasRights($this->getReadRights()),
 			'PROVIDER_CLASS_NAME' => Pay\Component\Model\Grid::class,
@@ -76,6 +83,13 @@ class SetupGrid extends Pay\Ui\Reference\Page
 				'activate' => self::getMessage('ACTION_ACTIVATE'),
 				'deactivate' => self::getMessage('ACTION_DEACTIVATE'),
 			],
-		]);
+		];
+	}
+
+	protected function getBaseQuery() : array
+	{
+		return [
+			'lang' => LANGUAGE_ID,
+		];
 	}
 }

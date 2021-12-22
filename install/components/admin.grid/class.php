@@ -688,9 +688,7 @@ class AdminGrid extends \CBitrixComponent
 
     protected function loadTotalCount(array $queryParams) : ?int
     {
-        $provider = $this->getProvider();
-
-        return $provider->loadTotalCount($queryParams);
+	    return $this->getProvider()->loadTotalCount($queryParams);
     }
 
     protected function loadFilter() : void
@@ -721,7 +719,6 @@ class AdminGrid extends \CBitrixComponent
                 'fieldName' => $fieldName,
                 'value' => null,
                 'name' => $this->getFirstNotEmpty($field, array('LIST_COLUMN_LABEL', 'EDIT_FORM_LABEL', 'LIST_FILTER_LABEL')),
-                'type' => null,
 	            'filterable' => '',
             ];
 
@@ -1042,11 +1039,12 @@ class AdminGrid extends \CBitrixComponent
 			else if ($type === 'DELETE' || isset($action['ACTION']))
 			{
 				$actionMethod = $action['ACTION'] ?? 'delete';
+				$actionPrimaryKey = $this->isSubList() ? 'SUB_ID' : 'ID';
 
 				$queryParams = [
 					'sessid' => bitrix_sessid(),
 					'action_button' => $actionMethod,
-					'ID' => $item['ID'],
+					$actionPrimaryKey => $item['ID'],
 				];
 
 				if ($this->useUiView())
@@ -1062,10 +1060,20 @@ class AdminGrid extends \CBitrixComponent
 				}
 				else
 				{
-					$url = $APPLICATION->GetCurPageParam(
-						http_build_query($queryParams),
-						array_keys($queryParams)
-					);
+					if (!empty($this->arParams['AJAX_URL']))
+					{
+						$url =
+							$this->arParams['AJAX_URL']
+							. (mb_strpos($this->arParams['AJAX_URL'], '?') === false ? '?' : '&')
+							. http_build_query($queryParams);
+					}
+					else
+					{
+						$url = $APPLICATION->GetCurPageParam(
+							http_build_query($queryParams),
+							array_keys($queryParams)
+						);
+					}
 
 					$actionMethod = $this->arParams['GRID_ID'] . '.GetAdminList("' . \CUtil::addslashes($url) . '");';
 				}
@@ -1082,14 +1090,24 @@ class AdminGrid extends \CBitrixComponent
 					}
 					unset($actionUrlQueryParameter);
 
-					$actionUrl = $APPLICATION->GetCurPageParam(
-						http_build_query($actionUrlQueryParameters),
-						array_merge(
-							array_keys($actionUrlQueryParameters),
-							$this->getUrlSystemParameters()
-						),
-						false
-					);
+					if (!empty($this->arParams['AJAX_URL']))
+					{
+						$actionUrl =
+							$this->arParams['AJAX_URL']
+							. (mb_strpos($this->arParams['AJAX_URL'], '?') === false ? '?' : '&')
+							. http_build_query($actionUrlQueryParameters);
+					}
+					else
+					{
+						$actionUrl = $APPLICATION->GetCurPageParam(
+							http_build_query($actionUrlQueryParameters),
+							array_merge(
+								array_keys($actionUrlQueryParameters),
+								$this->getUrlSystemParameters()
+							),
+							false
+						);
+					}
 				}
 				else
 				{
