@@ -15,6 +15,27 @@ abstract class Environment
 	protected $property;
 	protected $catalog;
 
+	public function load() : void
+	{
+		$this->loadModules();
+	}
+
+	protected function loadModules() : void
+	{
+		foreach ($this->getRequiredModules() as $module)
+		{
+			if (!Main\Loader::includeModule($module))
+			{
+				throw new Main\SystemException('Cant load required module ' . $module);
+			}
+		}
+	}
+
+	protected function getRequiredModules() : array
+	{
+		return [];
+	}
+
 	public function getOrderRegistry() : OrderRegistry
 	{
 		if ($this->orderRegisty === null)

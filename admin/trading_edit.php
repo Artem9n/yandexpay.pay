@@ -3,7 +3,21 @@
 use Bitrix\Main;
 use YandexPay\Pay;
 
-require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin.php';
+require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
+
+$request = Main\Context::getCurrent()->getRequest();
+$assets = Main\Page\Asset::getInstance();
+$requestView = $request->get('view');
+
+if ($requestView === 'dialog')
+{
+	$assets = $assets->setAjax();
+	$APPLICATION->oAsset = $assets;
+}
+else
+{
+	require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_after.php';
+}
 
 try
 {
@@ -17,6 +31,11 @@ try
 	$controller->checkReadAccess();
 	$controller->loadModules();
 
+	if ($requestView === 'dialog')
+	{
+		$controller->setLayout('raw');
+	}
+
 	$controller->show();
 }
 catch (Main\SystemException $exception)
@@ -27,4 +46,14 @@ catch (Main\SystemException $exception)
 	]);
 }
 
-require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin.php';
+if ($requestView === 'dialog')
+{
+	echo $assets->getCss();
+	echo $assets->getJs();
+}
+else
+{
+	require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin_before.php';
+}
+
+require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/epilog_admin_after.php';

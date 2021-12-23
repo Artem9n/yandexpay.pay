@@ -39,7 +39,7 @@
 		},
 
 		handleContentUpdate: function(dir) {
-			BX[dir ? 'addCustomEvent' : 'removeCustomEvent']('onYaMarketContentUpdate', BX.proxy(this.onContentUpdate, this));
+			BX[dir ? 'addCustomEvent' : 'removeCustomEvent']('onYaPayContentUpdate', BX.proxy(this.onContentUpdate, this));
 		},
 
 		handlePluginClick: function() {

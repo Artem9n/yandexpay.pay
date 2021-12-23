@@ -688,9 +688,7 @@ class AdminGrid extends \CBitrixComponent
 
     protected function loadTotalCount(array $queryParams) : ?int
     {
-        $provider = $this->getProvider();
-
-        return $provider->loadTotalCount($queryParams);
+	    return $this->getProvider()->loadTotalCount($queryParams);
     }
 
     protected function loadFilter() : void
@@ -721,7 +719,6 @@ class AdminGrid extends \CBitrixComponent
                 'fieldName' => $fieldName,
                 'value' => null,
                 'name' => $this->getFirstNotEmpty($field, array('LIST_COLUMN_LABEL', 'EDIT_FORM_LABEL', 'LIST_FILTER_LABEL')),
-                'type' => null,
 	            'filterable' => '',
             ];
 
@@ -856,9 +853,23 @@ class AdminGrid extends \CBitrixComponent
 		)
 		{
 			$view = $this->getViewList();
+			$menuItems = $this->makeContextActions($menuItems);
+
 			$view->AddAdminContextMenu($menuItems, $this->arParams['CONTEXT_MENU_EXCEL'], $this->arParams['CONTEXT_MENU_SETTINGS']);
 		}
     }
+
+	protected function makeContextActions(array $actions) : array
+	{
+		foreach ($actions as &$action)
+		{
+			$type = $action['TYPE'] ?? 'UNKNOWN';
+			$action = $this->makeAction($type, $action);
+		}
+		unset($action);
+
+		return $actions;
+	}
 
     protected function buildHeaders() : void
     {
@@ -901,7 +912,13 @@ class AdminGrid extends \CBitrixComponent
 
 	            if ($defaultAction !== false)
 	            {
-	            	if (isset($defaultAction['URL']))
+	            	if (
+						isset($defaultAction['URL'])
+						&& (
+							empty($defaultAction['ACTION'])
+							|| preg_match('/BX.adminPanel.Redirect/', $defaultAction['ACTION'])
+						)
+		            )
 		            {
 			            $link = $defaultAction['URL'];
 			            $item['ROW_URL'] = $defaultAction['URL'];
@@ -995,26 +1012,11 @@ class AdminGrid extends \CBitrixComponent
 
 	protected function makeRowActions(array $item, array $actions) : array
 	{
-		global $APPLICATION;
-
 		$result = [];
-		$replacesFrom = [];
-		$replacesTo = [];
-
-		foreach ($item as $key => $value)
-		{
-			if (is_scalar($value))
-			{
-				$replacesFrom[] ='#' . $key . '#';
-				$replacesTo[] = $value;
-			}
-		}
 
 		foreach ($actions as $type => $action)
 		{
 			if (!$this->isMatchRowType($item, $action)) { continue; }
-
-			// menu
 
 			if (isset($action['MENU']))
 			{
@@ -1030,129 +1032,7 @@ class AdminGrid extends \CBitrixComponent
 				continue;
 			}
 
-			// action
-
-			$actionMethod = null;
-			$actionUrl = null;
-
-			if (isset($action['METHOD']))
-			{
-				$actionMethod = str_replace($replacesFrom, $replacesTo, $action['METHOD']);
-			}
-			else if ($type === 'DELETE' || isset($action['ACTION']))
-			{
-				$actionMethod = $action['ACTION'] ?? 'delete';
-
-				$queryParams = [
-					'sessid' => bitrix_sessid(),
-					'action_button' => $actionMethod,
-					'ID' => $item['ID'],
-				];
-
-				if ($this->useUiView())
-				{
-					$queryParams['action'] = $actionMethod;
-					unset($queryParams['action_button']);
-
-					$actionMethod = sprintf(
-						'BX.Main.gridManager.getById("%s").instance.reloadTable("POST", %s)',
-						$this->arParams['GRID_ID'],
-						Main\Web\Json::encode($queryParams)
-					);
-				}
-				else
-				{
-					$url = $APPLICATION->GetCurPageParam(
-						http_build_query($queryParams),
-						array_keys($queryParams)
-					);
-
-					$actionMethod = $this->arParams['GRID_ID'] . '.GetAdminList("' . \CUtil::addslashes($url) . '");';
-				}
-			}
-			else
-			{
-				if (isset($action['QUERY']))
-				{
-					$actionUrlQueryParameters = $action['QUERY'];
-
-					foreach ($actionUrlQueryParameters as &$actionUrlQueryParameter)
-					{
-						$actionUrlQueryParameter = str_replace($replacesFrom, $replacesTo, $actionUrlQueryParameter);
-					}
-					unset($actionUrlQueryParameter);
-
-					$actionUrl = $APPLICATION->GetCurPageParam(
-						http_build_query($actionUrlQueryParameters),
-						array_merge(
-							array_keys($actionUrlQueryParameters),
-							$this->getUrlSystemParameters()
-						),
-						false
-					);
-				}
-				else
-				{
-					$actionUrl = str_replace($replacesFrom, $replacesTo, $action['URL']);
-				}
-
-				if (mb_strpos($actionUrl, 'lang=') === false)
-				{
-					$actionUrl .=
-						(mb_strpos($actionUrl, '?') === false ? '?' : '&')
-						. 'lang=' . LANGUAGE_ID;
-				}
-
-				if (isset($action['MODAL']) && $action['MODAL'] === 'Y')
-				{
-					$modalParameters = array_merge(
-						[ 'content_url' => $actionUrl ],
-						isset($action['MODAL_PARAMETERS']) ? (array)$action['MODAL_PARAMETERS'] : [],
-						[
-							'draggable' => true,
-							'resizable' => true,
-						]
-					);
-
-					if (isset($action['MODAL_TITLE']))
-					{
-						$modalParameters['title'] = str_replace($replacesFrom, $replacesTo, $action['MODAL_TITLE']);
-					}
-
-					$actionMethod = sprintf(
-						'(new BX.YandexMarket.Dialog(%s)).Show();',
-						\CUtil::PhpToJSObject($modalParameters)
-					);
-				}
-				else if (isset($action['WINDOW']) && $action['WINDOW'] === 'Y')
-				{
-					$actionMethod = 'jsUtils.OpenWindow("' . \CUtil::AddSlashes($actionUrl) . '", 1250, 800);';
-				}
-				else
-				{
-					$actionMethod = "BX.adminPanel.Redirect([], '".\CUtil::AddSlashes($actionUrl)."', event);";
-				}
-			}
-
-			if ($actionMethod !== null)
-			{
-				if (!empty($action['CONFIRM']))
-				{
-					$confirmMessage = !empty($action['CONFIRM_MESSAGE']) ? $action['CONFIRM_MESSAGE'] : $this->getLang('ROW_ACTION_CONFIRM');
-					$actionMethod = 'if (confirm("' . \CUtil::AddSlashes($confirmMessage) . '")) ' . $actionMethod;
-				}
-
-				$result[] = array_filter([
-					'URL' => $actionUrl,
-					'ACTION' => $actionMethod,
-					'ONCLICK' => $actionMethod, // submenu for main.ui.grid
-					'ICON' => $action['ICON'] ?? null,
-					'DEFAULT' => $action['DEFAULT'] ?? null,
-					'FILTER' => $action['FILTER'] ?? null,
-					'TEXT' => $action['TEXT'],
-					'TYPE' => $type,
-				]);
-			}
+			$result[] = $this->makeAction($type, $action, $item);
 		}
 
 		return $result;
@@ -1174,6 +1054,184 @@ class AdminGrid extends \CBitrixComponent
 
     	return $result;
     }
+
+	protected function makeAction(string $type, array $action, array $item = null) : array
+	{
+		global $APPLICATION;
+
+		$replacesFrom = [];
+		$replacesTo = [];
+
+		if ($item !== null)
+		{
+			foreach ($item as $key => $value)
+			{
+				if (is_scalar($value))
+				{
+					$replacesFrom[] ='#' . $key . '#';
+					$replacesTo[] = $value;
+				}
+			}
+		}
+
+		$actionUrl = null;
+
+		if (isset($action['METHOD']))
+		{
+			$actionMethod = str_replace($replacesFrom, $replacesTo, $action['METHOD']);
+		}
+		else if ($type === 'DELETE' || isset($action['ACTION']))
+		{
+			$actionMethod = $action['ACTION'] ?? 'delete';
+			$actionPrimaryKey = $this->isSubList() ? 'SUB_ID' : 'ID';
+
+			$queryParams = [
+				'sessid' => bitrix_sessid(),
+				'action_button' => $actionMethod,
+				$actionPrimaryKey => $item['ID'],
+			];
+
+			if ($this->useUiView())
+			{
+				$queryParams['action'] = $actionMethod;
+				unset($queryParams['action_button']);
+
+				$actionMethod = sprintf(
+					'BX.Main.gridManager.getById("%s").instance.reloadTable("POST", %s)',
+					$this->arParams['GRID_ID'],
+					Main\Web\Json::encode($queryParams)
+				);
+			}
+			else
+			{
+				if (!empty($this->arParams['AJAX_URL']))
+				{
+					$url =
+						$this->arParams['AJAX_URL']
+						. (mb_strpos($this->arParams['AJAX_URL'], '?') === false ? '?' : '&')
+						. http_build_query($queryParams);
+				}
+				else
+				{
+					$url = $APPLICATION->GetCurPageParam(
+						http_build_query($queryParams),
+						array_keys($queryParams)
+					);
+				}
+
+				$actionMethod = $this->arParams['GRID_ID'] . '.GetAdminList("' . \CUtil::addslashes($url) . '");';
+			}
+		}
+		else
+		{
+			if (isset($action['QUERY']))
+			{
+				$actionUrlQueryParameters = $action['QUERY'];
+
+				foreach ($actionUrlQueryParameters as &$actionUrlQueryParameter)
+				{
+					$actionUrlQueryParameter = str_replace($replacesFrom, $replacesTo, $actionUrlQueryParameter);
+				}
+				unset($actionUrlQueryParameter);
+
+				if (!empty($this->arParams['AJAX_URL']))
+				{
+					$actionUrl =
+						$this->arParams['AJAX_URL']
+						. (mb_strpos($this->arParams['AJAX_URL'], '?') === false ? '?' : '&')
+						. http_build_query($actionUrlQueryParameters);
+				}
+				else
+				{
+					$actionUrl = $APPLICATION->GetCurPageParam(
+						http_build_query($actionUrlQueryParameters),
+						array_merge(
+							array_keys($actionUrlQueryParameters),
+							$this->getUrlSystemParameters()
+						),
+						false
+					);
+				}
+			}
+			else
+			{
+				$actionUrl = str_replace($replacesFrom, $replacesTo, $action['URL'] ?? $action['LINK']);
+			}
+
+			if (mb_strpos($actionUrl, 'lang=') === false)
+			{
+				$actionUrl .=
+					(mb_strpos($actionUrl, '?') === false ? '?' : '&')
+					. 'lang=' . LANGUAGE_ID;
+			}
+
+			if (isset($action['MODAL']) && $action['MODAL'] === 'Y')
+			{
+				$modalParameters = array_merge(
+					[ 'content_url' => $actionUrl ],
+					isset($action['MODAL_PARAMETERS']) ? (array)$action['MODAL_PARAMETERS'] : [],
+					[
+						'draggable' => true,
+						'resizable' => true,
+					]
+				);
+
+				if (isset($action['MODAL_TITLE']))
+				{
+					$modalParameters['title'] = str_replace($replacesFrom, $replacesTo, $action['MODAL_TITLE']);
+				}
+
+				$actionMethod = sprintf(
+					'(new BX.CAdminDialog(%s)).Show();',
+					\CUtil::PhpToJSObject($modalParameters)
+				);
+			}
+			else if (isset($action['MODAL_FORM']) && $action['MODAL_FORM'] === 'Y')
+			{
+				Main\UI\Extension::load('yandexpaypay.admin.ui.modalform');
+
+				$modalParameters = array_merge(
+					[ 'url' => $actionUrl, 'unescapeUrl' => true ],
+					(array)($action['MODAL_PARAMETERS'] ?? [])
+				);
+
+				if (isset($action['MODAL_TITLE']))
+				{
+					$modalParameters['title'] = str_replace($replacesFrom, $replacesTo, $action['MODAL_TITLE']);
+				}
+
+				$actionMethod = sprintf(
+					'(new BX.YandexPay.Ui.ModalForm(null, %s)).activate();',
+					\CUtil::PhpToJSObject($modalParameters)
+				);
+			}
+			else if (isset($action['WINDOW']) && $action['WINDOW'] === 'Y')
+			{
+				$actionMethod = 'jsUtils.OpenWindow("' . \CUtil::AddSlashes($actionUrl) . '", 1250, 800);';
+			}
+			else
+			{
+				$actionMethod = "BX.adminPanel.Redirect([], '".\CUtil::AddSlashes($actionUrl)."', event);";
+			}
+		}
+
+		if (!empty($action['CONFIRM']))
+		{
+			$confirmMessage = !empty($action['CONFIRM_MESSAGE']) ? $action['CONFIRM_MESSAGE'] : $this->getLang('ROW_ACTION_CONFIRM');
+			$actionMethod = 'if (confirm("' . \CUtil::AddSlashes($confirmMessage) . '")) ' . $actionMethod;
+		}
+
+		return array_filter([
+			'URL' => $actionUrl,
+			'ACTION' => $actionMethod,
+			'ONCLICK' => $actionMethod, // submenu for main.ui.grid
+			'ICON' => $action['ICON'] ?? null,
+			'DEFAULT' => $action['DEFAULT'] ?? null,
+			'FILTER' => $action['FILTER'] ?? null,
+			'TEXT' => $action['TEXT'],
+			'TYPE' => $type,
+		]);
+	}
 
     protected function buildNavString(array $queryParams) : void
     {

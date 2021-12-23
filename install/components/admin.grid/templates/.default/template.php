@@ -36,6 +36,8 @@ $adminList->EndPrologContent();
 
 $adminList->CheckListMode();
 
+include __DIR__ . '/partials/reload-events.php';
+
 if ($arParams['USE_FILTER'])
 {
 	include __DIR__ . '/partials/filter.php';
