@@ -22,6 +22,9 @@ class SetupTabGrid extends SetupGrid
 			'AJAX_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_tab_grid', $this->getBaseQuery()),
 			'CONTEXT_MENU' => $this->extendContextMenu($common['CONTEXT_MENU']),
 			'ROW_ACTIONS' => $this->extendRowActions($common['ROW_ACTIONS']),
+			'RELOAD_EVENTS' => [
+				'yapayFormSave',
+			],
 		];
 
 		return array_diff_key($local + $common, [
