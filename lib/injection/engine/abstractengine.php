@@ -37,7 +37,9 @@ abstract class AbstractEngine extends Event\Base
 			'MODE' => $options->getMode(),
 			'SELECTOR' => $options->getSelector(),
 			'POSITION' => $options->getPosition(),
-			'TRADING_ID' => $setup->getTradingId()
+			'TRADING_ID' => $setup->getTradingId(),
+			'VARIANT_BUTTON' => $options->getVariant(),
+			'WIDTH_BUTTON' => $options->getWidth(),
 		];
 	}
 

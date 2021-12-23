@@ -31,10 +31,12 @@ class Order extends AbstractBehavior
 
 	public function getDefaults(string $siteId, array $parameters = []) : ?array
 	{
-		return [
+		return $parameters + [
 			'SELECTOR' => '#bx-soa-total',
 			'POSITION' => 'beforeend',
 			'PATH' => '/personal/order/make/',
+			'VARIANT_BUTTON' => 'BLACK',
+			'WIDTH_BUTTON'  => 'AUTO'
 		];
 	}
 

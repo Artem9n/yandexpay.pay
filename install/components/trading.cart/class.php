@@ -35,6 +35,8 @@ class TradingCart extends \CBitrixComponent
 		$arParams['PRODUCT_ID'] = !empty($arParams['PRODUCT_ID']) ? (int)$arParams['PRODUCT_ID'] : null;
 		$arParams['TRADING_ID'] = !empty($arParams['TRADING_ID']) ? (int)$arParams['TRADING_ID'] : null;
 		$arParams['POSITION'] = !empty($arParams['POSITION']) ? (string)$arParams['POSITION'] : null;
+		$arParams['VARIANT_BUTTON'] = !empty($arParams['VARIANT_BUTTON']) ? (string)$arParams['VARIANT_BUTTON'] : null;
+		$arParams['WIDTH_BUTTON'] = !empty($arParams['WIDTH_BUTTON']) ? (string)$arParams['WIDTH_BUTTON'] : null;
 		$arParams['SELECTOR'] = !empty($arParams['SELECTOR']) ? (string)$arParams['SELECTOR'] : null;
 		$arParams['MODE'] = !empty($arParams['MODE']) ? (string)$arParams['MODE'] : null;
 
@@ -85,8 +87,8 @@ class TradingCart extends \CBitrixComponent
 			'env'               => $this->handler->isTestMode() ? 'SANDBOX' : 'PRODUCTION',
 			'merchantId'        => $params['YANDEX_PAY_MERCHANT_ID'],
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
-			'buttonTheme'       => $params['YANDEX_PAY_VARIANT_BUTTON'],
-			'buttonWidth'       => $params['YANDEX_PAY_WIDTH_BUTTON'],
+			'buttonTheme'       => $this->arParams['VARIANT_BUTTON'],
+			'buttonWidth'       => $this->arParams['WIDTH_BUTTON'],
 			'gateway'           => $gateway,
 			'gatewayMerchantId' => $gatewayMerchantId,
 			'useEmail'          => $options->useBuyerEmail(),

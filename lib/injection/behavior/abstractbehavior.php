@@ -17,19 +17,78 @@ abstract class AbstractBehavior implements BehaviorInterface
 		'beforeend' => true,
 		'afterend' => true,
 	];
+	protected $variantButton = [
+		'white' => true,
+		'black' => true,
+		'white_outlined' => true
+	];
+	protected $widthButton = [
+		'auto' => true,
+		'max' => true,
+	];
 
 	abstract public function getEngineReference();
 
 	public function getFields() : array
 	{
 		return [
+			'VARIANT_BUTTON' => [
+				'TITLE' => self::getMessage('VARIANT_BUTTON'),
+				'TYPE' => 'enumeration',
+				'MANDATORY' => 'Y',
+				'VALUES' => $this->getVariantButtonEnum(),
+			],
+			'WIDTH_BUTTON' => [
+				'TITLE' => self::getMessage('WIDTH_BUTTON'),
+				'TYPE' => 'enumeration',
+				'MANDATORY' => 'Y',
+				'VALUES' => $this->getWidthButtonEnum(),
+			],
 			'POSITION' => [
 				'TITLE' => self::getMessage('POSITION'),
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
 				'VALUES' => $this->getPositionsEnum(),
-			]
+			],
 		];
+	}
+
+	public function getVariantButtonEnum() : array
+	{
+		$result = [];
+
+		foreach ($this->variantButton as $code => $enable)
+		{
+			if (!$enable) { continue; }
+
+			$code = mb_strtoupper($code);
+
+			$result[] = [
+				'ID' => str_replace('_', '-', $code),
+				'VALUE' => self::getMessage('BUTTON_' . $code)
+			];
+		}
+
+		return $result;
+	}
+
+	public function getWidthButtonEnum() : array
+	{
+		$result = [];
+
+		foreach ($this->widthButton as $code => $enable)
+		{
+			if (!$enable) { continue; }
+
+			$code = mb_strtoupper($code);
+
+			$result[] = [
+				'ID' => $code,
+				'VALUE' => self::getMessage('BUTTON_' . $code)
+			];
+		}
+
+		return $result;
 	}
 
 	public function getDefaults(string $siteId, array $parameters = []) : ?array
@@ -86,6 +145,16 @@ abstract class AbstractBehavior implements BehaviorInterface
 	public function getPosition() : string
 	{
 		return $this->requireValue('POSITION');
+	}
+
+	public function getVariant() : string
+	{
+		return $this->requireValue('VARIANT_BUTTON');
+	}
+
+	public function getWidth() : string
+	{
+		return $this->requireValue('WIDTH_BUTTON');
 	}
 
 	protected function eventSettings() : array

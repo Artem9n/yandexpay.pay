@@ -49,7 +49,9 @@ class Element extends AbstractBehavior
 	{
 		return $parameters + [
 			'SELECTOR' => '.product-item-detail-slider-container',
-			'POSITION' => 'beforeend'
+			'POSITION' => 'beforeend',
+			'VARIANT_BUTTON' => 'BLACK',
+			'WIDTH_BUTTON'  => 'AUTO'
 		];
 	}
 
