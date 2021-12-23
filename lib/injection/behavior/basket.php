@@ -33,7 +33,7 @@ class Basket extends AbstractBehavior
 	{
 		return [
 			'SELECTOR' => '#basket-root',
-			'POSITION' => 'afterend',
+			'POSITION' => 'beforebegin',
 			'PATH' => '/personal/cart/',
 		];
 	}

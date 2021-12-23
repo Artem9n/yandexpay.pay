@@ -26,6 +26,7 @@ class Element extends AbstractBehavior
 			],
 			'IBLOCK' => [
 				'TYPE' => 'enumeration',
+				'MANDATORY' => 'Y',
 				'TITLE' => self::getMessage('IBLOCK'),
 				'VALUES' => $this->getIblockEnum(),
 			],
