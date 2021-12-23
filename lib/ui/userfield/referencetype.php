@@ -1,12 +1,16 @@
 <?php
 namespace YandexPay\Pay\Ui\UserField;
 
+use YandexPay\Pay\Injection;
 use YandexPay\Pay\Exceptions\Facade;
 use YandexPay\Pay\Reference\Assert;
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Reference\Storage;
 
 class ReferenceType extends FieldsetType
 {
+	use Concerns\HasMessage;
+
 	public static function onBeforeSave($userField, $value)
 	{
 		if (isset($userField['MULTIPLE']) && $userField['MULTIPLE'] !== 'N')
@@ -195,5 +199,42 @@ class ReferenceType extends FieldsetType
 		$primary = array_filter($primary);
 
 		return [$primary, $data];
+	}
+
+	public static function checkFields(array $userFields, $value) : array
+	{
+		$result = [];
+
+		if (empty($value['SETTINGS'])) { return $result; }
+
+		$type = $value['BEHAVIOR'];
+		$instance = Injection\Behavior\Registry::getInstance($type);
+		$fields = $instance->getFields();
+
+		$prefix = mb_strtoupper($type) . '_';
+		$prefixLength = mb_strlen($prefix);
+
+		foreach ($value['SETTINGS'] as $code => $val)
+		{
+			if (mb_strpos($code, $prefix) !== 0) { continue; }
+
+			$optionName = mb_substr($code, $prefixLength);
+
+			if (
+				isset($fields[$optionName])
+				&& $fields[$optionName]['MANDATORY'] === 'Y'
+				&& empty(trim($val))
+			)
+			{
+				$result[] = [
+					'text' => static::getMessage('INJECTION_FIELD', [
+						'#FIELD#' => $fields[$optionName]['TITLE'],
+						'#BEHAVIOR#' => $instance->getTitle()
+					])
+				];
+			}
+		}
+
+		return $result;
 	}
 }
