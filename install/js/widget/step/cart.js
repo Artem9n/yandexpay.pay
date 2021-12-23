@@ -189,13 +189,13 @@ export default class Cart extends AbstractStep {
 
 				// Подписаться на событие setup.
 				payment.on(YaPay.PaymentEventType.Setup, (event) => {
-					// Передаем данные для инициализации формы
-					if (event.pickupPoints) {
+					// Передаем данные для инициализации формы //todo setup pick points geo position user
+					/*if (event.pickupPoints) {
 
 						this.getPickupOptions(event.pickupBounds).then((result) => {
 							payment.setup({pickupPoints: result})
 						});
-					}
+					}*/
 				});
 
 				// Подписаться на событие change.

@@ -828,15 +828,13 @@ this.BX = this.BX || {};
 	        payment.on(YaPay$1.PaymentEventType.Abort, function (event) {// Предложить пользователю другой способ оплаты.
 	        }); // Подписаться на событие setup.
 
-	        payment.on(YaPay$1.PaymentEventType.Setup, function (event) {
-	          // Передаем данные для инициализации формы
-	          if (event.pickupPoints) {
-	            _this4.getPickupOptions(event.pickupBounds).then(function (result) {
-	              payment.setup({
-	                pickupPoints: result
-	              });
-	            });
-	          }
+	        payment.on(YaPay$1.PaymentEventType.Setup, function (event) {// Передаем данные для инициализации формы //todo setup pick points geo position user
+
+	          /*if (event.pickupPoints) {
+	          			this.getPickupOptions(event.pickupBounds).then((result) => {
+	          		payment.setup({pickupPoints: result})
+	          	});
+	          }*/
 	        }); // Подписаться на событие change.
 
 	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
