@@ -5,6 +5,7 @@ namespace YandexPay\Pay\Components;
 use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Main\Localization\Loc;
+use YandexPay\Pay\Gateway\Manager;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading;
 use YandexPay\Pay\Injection;
@@ -72,8 +73,13 @@ class TradingCart extends \CBitrixComponent
 		$this->getHandler($paySystemId);
 
 		$params = $this->handler->getParamsBusValue();
-		$cardNetworks = $this->getCardNetworks();
 		$gateway = $this->handler->getHandlerMode();
+		$gatewayMerchantId = $params['YANDEX_PAY_' . $gateway . '_PAYMENT_GATEWAY_MERCHANT_ID'];
+
+		if ($gateway === Manager::RBS_MTS)
+		{
+			$gateway = Manager::RBS_ALFA;
+		}
 
 		$this->arResult['PARAMS'] = [
 			'env'               => $this->handler->isTestMode() ? 'SANDBOX' : 'PRODUCTION',
@@ -81,9 +87,8 @@ class TradingCart extends \CBitrixComponent
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
 			'buttonTheme'       => $params['YANDEX_PAY_VARIANT_BUTTON'],
 			'buttonWidth'       => $params['YANDEX_PAY_WIDTH_BUTTON'],
-			'cardNetworks'      => $cardNetworks,
 			'gateway'           => $gateway,
-			'gatewayMerchantId' => $params['YANDEX_PAY_' . $gateway . '_PAYMENT_GATEWAY_MERCHANT_ID'],
+			'gatewayMerchantId' => $gatewayMerchantId,
 			'useEmail'          => $options->useBuyerEmail(),
 			'useName'           => $options->useBuyerName(),
 			'usePhone'          => $options->useBuyerPhone(),
@@ -105,28 +110,6 @@ class TradingCart extends \CBitrixComponent
 				'total' => '0'
 			]
 		];
-	}
-
-	public function getCardNetworks() : array
-	{
-		$result = [];
-
-		$parameters = $this->handler->getParamsBusValue();
-		$str = 'YANDEX_CARD_NETWORK_';
-		$strLength = mb_strlen($str);
-
-		foreach ($parameters as $code => $value)
-		{
-			$position = mb_strpos($code, $str);
-
-			if ($position !== false && $value === 'Y')
-			{
-				$cardName = mb_substr($code, $strLength);
-				$result[] = $cardName;
-			}
-		}
-
-		return $result;
 	}
 
 	protected function getSetup() : Trading\Setup\Model
