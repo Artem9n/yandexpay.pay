@@ -80,10 +80,10 @@
 		},
 
 		onFormSave: function(data) {
-			this.activateEnd(data);
-
-			this.getModal().Close();
 			BX.closeWait();
+
+			this.activateEnd(data);
+			this.getModal().Close();
 		},
 
 		onPostAction: function(evt) {
@@ -157,6 +157,11 @@
 		},
 
 		activateEnd: function(data) {
+			if (data.next) {
+				const next = new constructor(this.$el, data.next);
+				next.activate();
+			}
+
 			if (this._activateDeferred == null) { return; }
 
 			this._activateDeferred.resolve(data);

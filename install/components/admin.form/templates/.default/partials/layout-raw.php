@@ -22,6 +22,18 @@ if ($arResult['SUCCESS'])
 		'data' => $arResult['ITEM'],
 	];
 
+	if (!empty($arParams['NEXT_URL']))
+	{
+		$data['next'] = [
+			'url' => str_replace('#ID#', $arResult['PRIMARY'], $arParams['NEXT_URL']),
+		];
+
+		if (!empty($arParams['NEXT_PARAMETERS']))
+		{
+			$data['next'] += $arParams['NEXT_PARAMETERS'];
+		}
+	}
+
 	?>
 	<script>
 		top.BX.onCustomEvent('yapayFormSave', [<?= Json::encode($data) ?>]);

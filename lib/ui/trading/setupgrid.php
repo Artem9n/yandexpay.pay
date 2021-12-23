@@ -41,8 +41,10 @@ class SetupGrid extends Pay\Ui\Reference\Page
 			'CONTEXT_MENU' => [
 				[
 					'TEXT' => self::getMessage('ACTION_ADD'),
+					'MODAL_TITLE' => self::getMessage('MODAL_ADD'),
 					'LINK' => Pay\Ui\Admin\Path::getModuleUrl('trading_edit', $baseQuery),
 					'ICON' => 'btn_new',
+					'TYPE' => 'ADD',
 				],
 			],
 			'ROW_ACTIONS' => [

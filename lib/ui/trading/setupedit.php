@@ -32,6 +32,12 @@ class SetupEdit extends Pay\Ui\Reference\Page
 			'ALLOW_SAVE' => Pay\Ui\Access::hasRights($this->getWriteRights()),
 			'LIST_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_grid', $baseQuery),
 			'SAVE_URL' => $isNew ? Pay\Ui\Admin\Path::getModuleUrl('trading_setup', $baseQuery) . '&id=#ID#' : null,
+			'NEXT_URL' => $isNew ? Pay\Ui\Admin\Path::getModuleUrl('trading_setup', $baseQuery) . '&view=dialog&id=#ID#' : null,
+			'NEXT_PARAMETERS' => [
+				'width' => 800,
+				'height' => 600,
+				'title' => self::getMessage('NEXT_TITLE'),
+			],
 			'PRIMARY' => $primary,
 			'COPY' => $useCopy,
 			'CONTEXT_MENU' => [

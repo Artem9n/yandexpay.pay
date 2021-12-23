@@ -20,16 +20,35 @@ class SetupTabGrid extends SetupGrid
 			'SUBLIST' => 'Y',
 			'SUBLIST_TARGET' => $this->isTarget ? 'Y' : 'N',
 			'AJAX_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_tab_grid', $this->getBaseQuery()),
-			'CONTEXT_MENU' => array_map(static function(array $item) {
-				if ($item['ICON'] === 'btn_new') { $item['ICON'] = 'btn_sub_new'; }
-				return $item;
-			}, $common['CONTEXT_MENU']),
+			'CONTEXT_MENU' => $this->extendContextMenu($common['CONTEXT_MENU']),
 			'ROW_ACTIONS' => $this->extendRowActions($common['ROW_ACTIONS']),
 		];
 
 		return array_diff_key($local + $common, [
 			'EDIT_URL' => true,
 		]);
+	}
+
+	protected function extendContextMenu(array $actions) : array
+	{
+		foreach ($actions as &$action)
+		{
+			if (!isset($action['TYPE'])) { continue; }
+
+			if ($action['TYPE'] === 'ADD')
+			{
+				$action['ICON'] = 'btn_sub_new';
+				$action['LINK'] .= '&' . http_build_query(['view' => 'dialog']);
+				$action['MODAL_FORM'] = 'Y';
+				$action['MODAL_PARAMETERS'] = [
+					'width' => 450,
+					'height' => 250,
+				];
+			}
+		}
+		unset($action);
+
+		return $actions;
 	}
 
 	protected function extendRowActions(array $actions) : array
