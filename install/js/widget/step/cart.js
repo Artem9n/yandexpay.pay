@@ -90,7 +90,7 @@ export default class Cart extends AbstractStep {
 					gateway: this.getOption('gateway'),
 					gatewayMerchantId: this.getOption('gatewayMerchantId'),
 					allowedAuthMethods: [YaPay.AllowedAuthMethod.PanOnly],
-					allowedCardNetworks: this.getOption('cardNetworks') || [
+					allowedCardNetworks: [
 						YaPay.AllowedCardNetwork.UnionPay,
 						YaPay.AllowedCardNetwork.Uzcard,
 						YaPay.AllowedCardNetwork.Discover,

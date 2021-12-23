@@ -533,7 +533,7 @@ this.BX = this.BX || {};
 	          gateway: this.getOption('gateway'),
 	          gatewayMerchantId: this.getOption('gatewayMerchantId'),
 	          allowedAuthMethods: [YaPay.AllowedAuthMethod.PanOnly],
-	          allowedCardNetworks: this.getOption('cardNetworks') || [YaPay.AllowedCardNetwork.UnionPay, YaPay.AllowedCardNetwork.Uzcard, YaPay.AllowedCardNetwork.Discover, YaPay.AllowedCardNetwork.AmericanExpress, YaPay.AllowedCardNetwork.Visa, YaPay.AllowedCardNetwork.Mastercard, YaPay.AllowedCardNetwork.Mir, YaPay.AllowedCardNetwork.Maestro, YaPay.AllowedCardNetwork.VisaElectron]
+	          allowedCardNetworks: [YaPay.AllowedCardNetwork.UnionPay, YaPay.AllowedCardNetwork.Uzcard, YaPay.AllowedCardNetwork.Discover, YaPay.AllowedCardNetwork.AmericanExpress, YaPay.AllowedCardNetwork.Visa, YaPay.AllowedCardNetwork.Mastercard, YaPay.AllowedCardNetwork.Mir, YaPay.AllowedCardNetwork.Maestro, YaPay.AllowedCardNetwork.VisaElectron]
 	        }]
 	      };
 	    }
@@ -747,7 +747,7 @@ this.BX = this.BX || {};
 	          gateway: this.getOption('gateway'),
 	          gatewayMerchantId: this.getOption('gatewayMerchantId'),
 	          allowedAuthMethods: [YaPay$1.AllowedAuthMethod.PanOnly],
-	          allowedCardNetworks: this.getOption('cardNetworks') || [YaPay$1.AllowedCardNetwork.UnionPay, YaPay$1.AllowedCardNetwork.Uzcard, YaPay$1.AllowedCardNetwork.Discover, YaPay$1.AllowedCardNetwork.AmericanExpress, YaPay$1.AllowedCardNetwork.Visa, YaPay$1.AllowedCardNetwork.Mastercard, YaPay$1.AllowedCardNetwork.Mir, YaPay$1.AllowedCardNetwork.Maestro, YaPay$1.AllowedCardNetwork.VisaElectron]
+	          allowedCardNetworks: [YaPay$1.AllowedCardNetwork.UnionPay, YaPay$1.AllowedCardNetwork.Uzcard, YaPay$1.AllowedCardNetwork.Discover, YaPay$1.AllowedCardNetwork.AmericanExpress, YaPay$1.AllowedCardNetwork.Visa, YaPay$1.AllowedCardNetwork.Mastercard, YaPay$1.AllowedCardNetwork.Mir, YaPay$1.AllowedCardNetwork.Maestro, YaPay$1.AllowedCardNetwork.VisaElectron]
 	        }],
 	        requiredFields: {
 	          billingContact: {
