@@ -64,21 +64,21 @@ class Best2pay extends Gateway\Base
 		];
 	}
 
-	public function extraParams(string $code = '') : array
+	public function extraParams() : array
 	{
 		return [
-			$code . '_PAYMENT_GATEWAY_SECTOR_ID' => [
+			'PAYMENT_GATEWAY_SECTOR_ID' => [
 				'NAME'      => static::getMessage('SECTOR_ID'),
 				'GROUP'     => $this->getName(),
 				'SORT'      => 650,
 			],
-			$code . '_PAYMENT_GATEWAY_PASSWORD' => [
+			'PAYMENT_GATEWAY_PASSWORD' => [
 				'NAME'          => static::getMessage('MERCHANT_PASSWORD'),
 				'DESCRIPTION'   => static::getMessage('MERCHANT_PASSWORD_DESCRIPTION'),
 				'GROUP'         => $this->getName(),
 				'SORT'          => 700,
 			],
-			$code . '_PAYMENT_GATEWAY_TAX' => [
+			'PAYMENT_GATEWAY_TAX' => [
 				'NAME'          => static::getMessage('MERCHANT_TAX'),
 				'DESCRIPTION'   => static::getMessage('MERCHANT_TAX_DESCRIPTION'),
 				'GROUP'         => $this->getName(),
@@ -124,6 +124,14 @@ class Best2pay extends Gateway\Base
 
 		$orderData = $this->buildRegisterOrder();
 		$this->createPurchase($orderData['order']['id']);
+
+		if ($this->isTestHandlerMode())
+		{
+			$result = [
+				'PS_INVOICE_ID'     => implode('#', $orderData['order']['id']),
+				'PS_SUM'            => $this->getPaymentSum()
+			];
+		}
 
 		return $result;
 	}
@@ -293,9 +301,12 @@ class Best2pay extends Gateway\Base
 
 		} catch (\Exception $exception)
 		{
-			$result = [
-				'secure3ds' => true
-			];
+			if (!$this->isTestHandlerMode())
+			{
+				$result = [
+					'secure3ds' => true
+				];
+			}
 		}
 
 		return $result;

@@ -58,12 +58,12 @@ class Rbkmoney extends Base
 	public function extraParams(string $code = '') : array
 	{
 		return [
-			$code . '_PAYMENT_GATEWAY_SHOP_ID' => [
+			'PAYMENT_GATEWAY_SHOP_ID' => [
 				'NAME' => static::getMessage('MERCHANT_SHOP_ID'),
 				'GROUP' => $this->getName(),
 				'SORT' => 650,
 			],
-			$code . '_PAYMENT_GATEWAY_API_KEY' => [
+			'PAYMENT_GATEWAY_API_KEY' => [
 				'NAME' => static::getMessage('MERCHANT_API_KEY'),
 				'GROUP' => $this->getName(),
 				'SORT' => 700,
@@ -72,7 +72,7 @@ class Rbkmoney extends Base
 					'SIZE' => null,
 				]
 			],
-			$code . '_WEBHOOK_PROCESSED_KEY' => [
+			'WEBHOOK_PROCESSED_KEY' => [
 				'NAME' => static::getMessage('WEBHOOK_PROCESSED_KEY'),
 				'GROUP'=> $this->getName(),
 				'SORT' => 750,

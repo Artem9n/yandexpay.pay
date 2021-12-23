@@ -79,15 +79,15 @@ class Payture extends Gateway\Base
 		return $this->getParameter('PAYMENT_GATEWAY_PASSWORD');
 	}
 
-	public function extraParams(string $code = '') : array
+	public function extraParams() : array
 	{
 		return [
-			$code . '_PAYMENT_GATEWAY_API_KEY' => [
+			'PAYMENT_GATEWAY_API_KEY' => [
 				'NAME' => static::getMessage('MERCHANT_API_KEY'),
 				'GROUP' => $this->getName(),
 				'SORT' => 650
 			],
-			$code . '_PAYMENT_GATEWAY_PASSWORD' => [
+			'PAYMENT_GATEWAY_PASSWORD' => [
 				'NAME' => static::getMessage('MERCHANT_PASSWORD'),
 				'GROUP' => $this->getName(),
 				'SORT' => 700

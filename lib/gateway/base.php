@@ -57,7 +57,7 @@ abstract class Base implements IGateway
 		return static::getMessage('DESCRIPTION');
 	}
 
-	public function extraParams(string $code = ''): array
+	public function extraParams(): array
 	{
 		return [];
 	}
@@ -86,6 +86,15 @@ abstract class Base implements IGateway
 		$code = $prefix . $this->getId();
 
 		$extraParams = $this->extraParams($code);
+		$result = [];
+
+		if (!empty($extraParams))
+		{
+			foreach ($extraParams as $key => $value)
+			{
+				$result[$code . '_' . $key] = $value;
+			}
+		}
 
 		return [
 			$code .'_PAYMENT_GATEWAY_MERCHANT_ID' => [
@@ -93,7 +102,7 @@ abstract class Base implements IGateway
 				'GROUP' => $this->getName(),
 				'SORT'  => 600
 			],
-		] + $extraParams;
+		] + $result;
 	}
 
 	public function getMerchantId(): string
