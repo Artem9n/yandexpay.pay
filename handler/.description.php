@@ -2,13 +2,13 @@
 
 use Bitrix\Main\Localization\Loc;
 use YandexPay\Pay\Gateway;
+use YandexPay\Pay\Utils;
 
 /** @var $this \Sale\Handlers\PaySystem\YandexPayHandler */
 
 if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) { die(); }
 
 $request = \Bitrix\Main\Application::getInstance()->getContext()->getRequest();
-$host = $request->isHttps() ? 'https' : 'http';
 
 Loc::loadMessages(__FILE__);
 
@@ -27,7 +27,7 @@ $data = [
 			],
 			'DEFAULT'       => [
 				'PROVIDER_KEY'      => 'INPUT',
-				'PROVIDER_VALUE'    => 'N'
+				'PROVIDER_VALUE'    => 'Y'
 			]
 		],
 		'YANDEX_PAY_MERCHANT_ID' => [
@@ -80,7 +80,7 @@ $data = [
 			'SORT' => 350,
 			'DEFAULT' => [
 				'PROVIDER_KEY'      => 'VALUE',
-				'PROVIDER_VALUE'    => $host.'://'.$request->getHttpHost().'/bitrix/tools/yandexpay.pay/sale_ps_yandexpay_result.php'
+				'PROVIDER_VALUE'    => Utils\Url::absolutizePath(BX_ROOT . '/tools/yandexpay.pay/sale_ps_yandexpay_result.php')
 			]
 		],
 	],
