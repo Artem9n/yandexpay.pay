@@ -6,4 +6,5 @@ return [
 		'yandexpaypay.admin.plugin.manager',
 	],
 	'js' => 'index.js',
+	'css' => 'index.css',
 ];
