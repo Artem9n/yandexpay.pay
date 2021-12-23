@@ -14,13 +14,17 @@ class Manager
 	public const PAYTURE = 'payture';
 	public const BEST2PAY = 'best2pay';
 	public const RBKMONEY = 'rbkmoney';
+	public const RBS_ALFA = 'alfabank';
+	public const RBS_MTS = 'mts';
 
 	public static function getGatewayList() : array
 	{
 		return [
 			static::PAYTURE,
 			static::BEST2PAY,
-			static::RBKMONEY
+			static::RBKMONEY,
+			static::RBS_ALFA,
+			static::RBS_MTS,
 		];
 	}
 
