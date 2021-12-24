@@ -54,9 +54,11 @@ class TradingCart extends \CBitrixComponent
 		}
 		catch (Main\SystemException $exception)
 		{
-			echo '<pre>';
+			//todo show errors, may be loggers
+
+			/*echo '<pre>';
 			print_r($exception->getMessage());
-			echo '</pre>';
+			echo '</pre>';*/
 		}
 	}
 

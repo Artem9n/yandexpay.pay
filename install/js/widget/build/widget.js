@@ -929,8 +929,6 @@ this.BX = this.BX || {};
 	        orderAmount: event.orderAmount
 	      };
 	      var data = babelHelpers.objectSpread({}, this.defaultBody, orderData, delivery);
-	      console.log(event);
-	      console.log(data);
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {

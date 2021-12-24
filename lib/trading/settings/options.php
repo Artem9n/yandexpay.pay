@@ -36,12 +36,16 @@ class Options extends Reference\Skeleton
 
 	public function getPaymentCash() : ?int
 	{
-		return $this->getValue('PAYSYSTEM_CASH');
+		$result = (int)$this->getValue('PAYSYSTEM_CASH');
+
+		return $result > 0 ? $result : null;
 	}
 
-	public function getPaymentCard() : int
+	public function getPaymentCard() : ?int
 	{
-		return $this->requireValue('PAYSYSTEM_CARD');
+		$result = (int)$this->getValue('PAYSYSTEM_CARD');
+
+		return $result > 0 ? $result : null;
 	}
 
 	public function useBuyerPhone() : bool
@@ -99,6 +103,14 @@ class Options extends Reference\Skeleton
 		{
 			$result->addError(new Main\Error(self::getMessage('VALIDATE_ONE_OF_EMAIL_PHONE')));
 		}
+
+		/*if (
+			!$this->getPaymentCash()
+			&& !$this->getPaymentCard()
+		)
+		{
+			$result->addError(new Main\Error('¬ыберите одну из платежных систем дл€ оплаты'));
+		}*/
 
 		return $result;
 	}

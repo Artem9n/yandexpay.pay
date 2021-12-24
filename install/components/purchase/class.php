@@ -47,13 +47,13 @@ class Purchase extends \CBitrixComponent
 			$this->sendResponse([
 				'code' => (string)$exception->getCode(),
 				'message' => $exception->getMessage(),
-				'trace' => $exception->getTraceAsString()
+				//'trace' => $exception->getTraceAsString()
 			]);
 
 			/*pr($exception->getMessage(), 1);
 			die;*/
 
-			// todo show error
+			// todo show error, may be loggers
 		}
 	}
 
@@ -120,6 +120,8 @@ class Purchase extends \CBitrixComponent
 
 		foreach ($basket as $basketItem)
 		{
+			if ($basketItem->getFinalPrice() <= 0) { continue; }
+
 			$result['items'][] = $this->collectBasketItem($basketItem);
 		}
 
@@ -406,10 +408,14 @@ class Purchase extends \CBitrixComponent
 		$products = $request->getItems()->getProducts();
 		$basket = $order->getBasket();
 
+		$order->finalize();
+
 		/** @var \Bitrix\Sale\BasketItemBase $basketItem */
 		foreach ($basket as $basketItem)
 		{
 			$productId = $basketItem->getProductId();
+
+			if ($basketItem->getFinalPrice() <= 0) { continue; }
 
 			if (!isset($products[$productId]))
 			{
@@ -422,6 +428,8 @@ class Purchase extends \CBitrixComponent
 				$basketItem->setFieldNoDemand('QUANTITY', $products[$productId]);
 			}
 		}
+
+		$order->initialize();
 	}
 
 	protected function fillCoupon(EntityReference\Order $order) : void

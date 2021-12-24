@@ -293,9 +293,6 @@ export default class Cart extends AbstractStep {
 
 		let data = {...this.defaultBody, ...orderData, ...delivery };
 
-		console.log(event);
-		console.log(data);
-
 		return this.query(this.getOption('purchaseUrl'), data);
 	}
 
