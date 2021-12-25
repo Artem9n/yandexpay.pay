@@ -148,7 +148,7 @@ class Purchase extends \CBitrixComponent
 		$order->initialize();
 
 		$this->fillPersonType($order);
-		$this->fillBasket($order, $request->getItems());
+		$this->fillIncomingBasket($order, $request->getItems());
 		$this->fillLocation($order, $request->getAddress());
 
 		$order->finalize();
@@ -263,7 +263,7 @@ class Purchase extends \CBitrixComponent
 		$order->initialize();
 
 		$this->fillPersonType($order);
-		$this->fillBasket($order, $request->getItems());
+		$this->fillIncomingBasket($order, $request->getItems());
 
 		$order->finalize();
 
@@ -339,7 +339,7 @@ class Purchase extends \CBitrixComponent
 		$this->fillPersonType($order);
 		$this->fillStatus($order);
 		$this->fillProperties($order, $request);
-		$this->fillBasket($order, $request->getItems());
+		$this->fillIncomingBasket($order, $request->getItems());
 
 		if ($request->getDeliveryType() === EntitySale\Delivery::PICKUP_TYPE)
 		{
@@ -411,7 +411,7 @@ class Purchase extends \CBitrixComponent
 		Exceptions\Facade::handleResult($addProductResult);
 	}
 
-	protected function fillBasket(EntityReference\Order $order, TradingAction\Incoming\Items $request) : void
+	protected function fillIncomingBasket(EntityReference\Order $order, TradingAction\Incoming\Items $request) : void
 	{
 		$products = $request->getProducts();
 
