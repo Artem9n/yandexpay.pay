@@ -23,7 +23,7 @@ abstract class AbstractEngine extends Event\Base
 
 		$parameters = static::getComponentParameters($setup, $data);
 
-		$APPLICATION->IncludeComponent('yandexpay.pay:trading.cart', '', $parameters, false);
+		$APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
 	}
 
 	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
