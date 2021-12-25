@@ -764,8 +764,8 @@ class Order extends EntityReference\Order
 	{
 		$result = new Main\Result();
 
-		/*$this->syncOrderPrice();
-		$this->syncOrderPaymentSum();*/
+		/*$this->syncOrderPrice();*/
+		//$this->syncOrderPaymentSum();
 
 		$orderResult = $this->internalOrder->save();
 
@@ -783,6 +783,50 @@ class Order extends EntityReference\Order
 		}
 
 		return $result;
+	}
+
+	/*protected function syncOrderPrice()
+	{
+		$currentPrice = $this->internalOrder->getPrice();
+		$calculatedPrice = $this->getCalculatedOrderPrice();
+
+		if (Market\Data\Price::round($currentPrice) !== Market\Data\Price::round($calculatedPrice))
+		{
+			$this->internalOrder->setField('PRICE', $calculatedPrice);
+		}
+	}*/
+
+	protected function syncOrderPaymentSum() : void
+	{
+		$paymentCollection = $this->internalOrder->getPaymentCollection();
+
+		if ($paymentCollection)
+		{
+			$lastPayment = null;
+			$orderSum = $this->internalOrder->getPrice();
+			$paymentSum = 0;
+
+			/** @var Sale\Payment $payment*/
+			foreach ($paymentCollection as $payment)
+			{
+				$paymentSum += $payment->getSum();
+
+				if (!$payment->isPaid() && !$payment->isInner())
+				{
+					$lastPayment = $payment;
+				}
+			}
+
+			if (
+				$lastPayment !== null
+				&& $orderSum !== $paymentSum
+			)
+			{
+				$newPaymentSum = $orderSum - ($paymentSum - $lastPayment->getSum());
+
+				$payment->setField('SUM', $newPaymentSum);
+			}
+		}
 	}
 
 	public function getId()
