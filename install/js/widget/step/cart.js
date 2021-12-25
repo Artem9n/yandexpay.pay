@@ -8,7 +8,6 @@ export default class Cart extends AbstractStep {
 	render(node, data) {
 		this.element = node;
 		this.paymentData = this.getPaymentData(data);
-		this.defaultBody = this.getDefaultBody();
 
 		this.setupPaymentCash();
 
@@ -25,21 +24,8 @@ export default class Cart extends AbstractStep {
 		return Template.compile(this.options.template, data);
 	}
 
-	getDefaultBody() {
-		return {
-			siteId: this.getOption('siteId'),
-			fUserId: this.getOption('fUserId'),
-			userId: this.getOption('userId'),
-			setupId: this.getOption('setupId'),
-			mode: this.getOption('mode')
-		}
-	}
-
 	catalogElementChangeOffer() {
-
-		if (!BX) { return; }
-
-		if (!window.JCCatalogElement) { return; }
+		if (typeof BX === 'undefined' || typeof JCCatalogElement === 'undefined') { return; }
 
 		BX.addCustomEvent('onCatalogElementChangeOffer', (eventData) => {
 			this.setOption('productId', eventData.newId);
@@ -50,8 +36,7 @@ export default class Cart extends AbstractStep {
 	}
 
 	basketChange() {
-
-		if (!BX) { return; }
+		if (typeof BX === 'undefined') { return; }
 
 		BX.addCustomEvent('OnBasketChange', () => {
 			this.getProducts().then((result) => {
@@ -80,10 +65,7 @@ export default class Cart extends AbstractStep {
 				name: this.getOption('merchantName'),
 				url: this.getOption('siteUrl')
 			},
-			order: {
-				id: data.id,
-				total: { amount: data.total }
-			},
+			order: { id: '0' },
 			paymentMethods: [
 				{
 					type: YaPay.PaymentMethodType.Card,
@@ -127,7 +109,7 @@ export default class Cart extends AbstractStep {
 	createPayment(node, paymentData) {
 		// Создать платеж.
 		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
-			.then( (payment) => {
+			.then((payment) => {
 				// Создать экземпляр кнопки.
 				let button = payment.createButton({
 					type: YaPay.ButtonType.Pay,
@@ -153,11 +135,11 @@ export default class Cart extends AbstractStep {
 							this.notify(result, event).then(result => {
 								if (result.success === true) {
 									this.widget.go(result.state, result);
+									payment.complete(YaPay.CompleteReason.Success);
 								} else {
 									this.widget.go('error', result);
+									payment.complete(YaPay.CompleteReason.Error);
 								}
-
-								payment.complete(YaPay.CompleteReason.Success);
 							});
 						} else {
 
@@ -172,30 +154,9 @@ export default class Cart extends AbstractStep {
 				});
 
 				// Подписаться на событие error.
-				payment.on(YaPay.PaymentEventType.Error, function onPaymentError(event) {
-					// Вывести информацию о недоступности оплаты в данный момент
-					// и предложить пользователю другой способ оплаты.
-
-					// Закрыть форму Yandex.Pay.
-					console.log({'errors': event});
+				payment.on(YaPay.PaymentEventType.Error, (event) => {
+					this.showError('service temporary unavailable');
 					payment.complete(YaPay.CompleteReason.Error);
-				});
-
-				// Подписаться на событие abort.
-				// Это когда пользователь закрыл форму Yandex Pay.
-				payment.on(YaPay.PaymentEventType.Abort, (event) => {
-					// Предложить пользователю другой способ оплаты.
-				});
-
-				// Подписаться на событие setup.
-				payment.on(YaPay.PaymentEventType.Setup, (event) => {
-					// Передаем данные для инициализации формы //todo setup pick points geo position user
-					/*if (event.pickupPoints) {
-
-						this.getPickupOptions(event.pickupBounds).then((result) => {
-							payment.setup({pickupPoints: result})
-						});
-					}*/
 				});
 
 				// Подписаться на событие change.
@@ -227,9 +188,8 @@ export default class Cart extends AbstractStep {
 
 				});
 			})
-			.catch(function (err) {
-				// Платеж не создан.
-				console.log({'payment not create': err});
+			.catch((err) => {
+				this.showError('payment not created', err);
 			});
 	}
 
@@ -239,12 +199,12 @@ export default class Cart extends AbstractStep {
 
 	getProducts(){
 
-		let expandData = {
+		let data = {
 			yapayAction: 'getProducts',
 			productId: this.getOption('productId'),
+			mode: this.getOption('mode'),
+			setupId: this.getOption('setupId')
 		};
-
-		let data = {...this.defaultBody, ...expandData };
 
 		return this.query(this.getOption('purchaseUrl'), data);
 	}
@@ -281,45 +241,41 @@ export default class Cart extends AbstractStep {
 		}
 
 		let orderData = {
+			setupId: this.getOption('setupId'),
 			items: this.paymentData.order.items,
 			payment: event.paymentMethodInfo,
 			contact: event.shippingContact,
 			yapayAction: 'orderAccept',
-			productId: this.getOption('productId'),
 			deliveryType: deliveryType,
 			paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
 			orderAmount: event.orderAmount
 		};
 
-		let data = {...this.defaultBody, ...orderData, ...delivery };
+		let data = {...orderData, ...delivery };
 
 		return this.query(this.getOption('purchaseUrl'), data);
 	}
 
 	getShippingOptions(address) {
 
-		let expandData = {
+		let data = {
 			address: address,
 			yapayAction: 'deliveryOptions',
-			productId: this.getOption('productId'),
-			deliveryType: 'delivery'
+			items: this.paymentData.order.items,
+			setupId: this.getOption('setupId'),
 		};
-
-		let data = {...this.defaultBody, ...expandData };
 
 		return this.query(this.getOption('purchaseUrl'), data);
 	}
 
 	getPickupOptions(bounds) {
 
-		let expandData = {
+		let data = {
 			bounds: bounds,
 			yapayAction: 'pickupOptions',
-			productId: this.getOption('productId'),
-			deliveryType: 'pickup'
+			items: this.paymentData.order.items,
+			setupId: this.getOption('setupId'),
 		};
-
-		let data = {...this.defaultBody, ...expandData };
 
 		return this.query(this.getOption('purchaseUrl'), data);
 	}
@@ -381,5 +337,15 @@ export default class Cart extends AbstractStep {
 
 	amountSum(amountA, amountB) {
 		return (Number(amountA) + Number(amountB)).toFixed(2);
+	}
+
+	showError(message, err = null) {
+		let notify = message;
+
+		if (err) {
+			notify += ' ' + err;
+		}
+
+		alert(notify);
 	}
 }

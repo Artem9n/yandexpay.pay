@@ -128,8 +128,7 @@ this.BX = this.BX || {};
 	    key: "renderElement",
 	    value: function renderElement(anchor, position) {
 	      var result = Template.toElement(this.defaults.template);
-	      anchor.insertAdjacentElement(position, result); // todo choose position
-
+	      anchor.insertAdjacentElement(position, result);
 	      return result;
 	    }
 	  }]);
@@ -651,7 +650,6 @@ this.BX = this.BX || {};
 
 	      this.element = node;
 	      this.paymentData = this.getPaymentData(data);
-	      this.defaultBody = this.getDefaultBody();
 	      this.setupPaymentCash();
 	      this.getProducts().then(function (result) {
 	        _this.combineOrderWithProducts(result);
@@ -667,26 +665,11 @@ this.BX = this.BX || {};
 	      return Template.compile(this.options.template, data);
 	    }
 	  }, {
-	    key: "getDefaultBody",
-	    value: function getDefaultBody() {
-	      return {
-	        siteId: this.getOption('siteId'),
-	        fUserId: this.getOption('fUserId'),
-	        userId: this.getOption('userId'),
-	        setupId: this.getOption('setupId'),
-	        mode: this.getOption('mode')
-	      };
-	    }
-	  }, {
 	    key: "catalogElementChangeOffer",
 	    value: function catalogElementChangeOffer() {
 	      var _this2 = this;
 
-	      if (!BX) {
-	        return;
-	      }
-
-	      if (!window.JCCatalogElement) {
+	      if (typeof BX === 'undefined' || typeof JCCatalogElement === 'undefined') {
 	        return;
 	      }
 
@@ -703,7 +686,7 @@ this.BX = this.BX || {};
 	    value: function basketChange() {
 	      var _this3 = this;
 
-	      if (!BX) {
+	      if (typeof BX === 'undefined') {
 	        return;
 	      }
 
@@ -737,10 +720,7 @@ this.BX = this.BX || {};
 	          url: this.getOption('siteUrl')
 	        },
 	        order: {
-	          id: data.id,
-	          total: {
-	            amount: data.total
-	          }
+	          id: '0'
 	        },
 	        paymentMethods: [{
 	          type: YaPay$1.PaymentMethodType.Card,
@@ -798,11 +778,13 @@ this.BX = this.BX || {};
 	              _this4.notify(result, event).then(function (result) {
 	                if (result.success === true) {
 	                  _this4.widget.go(result.state, result);
+
+	                  payment.complete(YaPay$1.CompleteReason.Success);
 	                } else {
 	                  _this4.widget.go('error', result);
-	                }
 
-	                payment.complete(YaPay$1.CompleteReason.Success);
+	                  payment.complete(YaPay$1.CompleteReason.Error);
+	                }
 	              });
 	            } else {
 	              payment.complete(YaPay$1.CompleteReason.Success);
@@ -814,27 +796,10 @@ this.BX = this.BX || {};
 	          });
 	        }); // Подписаться на событие error.
 
-	        payment.on(YaPay$1.PaymentEventType.Error, function onPaymentError(event) {
-	          // Вывести информацию о недоступности оплаты в данный момент
-	          // и предложить пользователю другой способ оплаты.
-	          // Закрыть форму Yandex.Pay.
-	          console.log({
-	            'errors': event
-	          });
+	        payment.on(YaPay$1.PaymentEventType.Error, function (event) {
+	          _this4.showError('service temporary unavailable');
+
 	          payment.complete(YaPay$1.CompleteReason.Error);
-	        }); // Подписаться на событие abort.
-	        // Это когда пользователь закрыл форму Yandex Pay.
-
-	        payment.on(YaPay$1.PaymentEventType.Abort, function (event) {// Предложить пользователю другой способ оплаты.
-	        }); // Подписаться на событие setup.
-
-	        payment.on(YaPay$1.PaymentEventType.Setup, function (event) {// Передаем данные для инициализации формы //todo setup pick points geo position user
-
-	          /*if (event.pickupPoints) {
-	          			this.getPickupOptions(event.pickupBounds).then((result) => {
-	          		payment.setup({pickupPoints: result})
-	          	});
-	          }*/
 	        }); // Подписаться на событие change.
 
 	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
@@ -867,10 +832,7 @@ this.BX = this.BX || {};
 	          }
 	        });
 	      }).catch(function (err) {
-	        // Платеж не создан.
-	        console.log({
-	          'payment not create': err
-	        });
+	        _this4.showError('payment not created', err);
 	      });
 	    }
 	  }, {
@@ -881,11 +843,12 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "getProducts",
 	    value: function getProducts() {
-	      var expandData = {
+	      var data = {
 	        yapayAction: 'getProducts',
-	        productId: this.getOption('productId')
+	        productId: this.getOption('productId'),
+	        mode: this.getOption('mode'),
+	        setupId: this.getOption('setupId')
 	      };
-	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
@@ -919,40 +882,38 @@ this.BX = this.BX || {};
 	      }
 
 	      var orderData = {
+	        setupId: this.getOption('setupId'),
 	        items: this.paymentData.order.items,
 	        payment: event.paymentMethodInfo,
 	        contact: event.shippingContact,
 	        yapayAction: 'orderAccept',
-	        productId: this.getOption('productId'),
 	        deliveryType: deliveryType,
 	        paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
 	        orderAmount: event.orderAmount
 	      };
-	      var data = babelHelpers.objectSpread({}, this.defaultBody, orderData, delivery);
+	      var data = babelHelpers.objectSpread({}, orderData, delivery);
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
 	    key: "getShippingOptions",
 	    value: function getShippingOptions(address) {
-	      var expandData = {
+	      var data = {
 	        address: address,
 	        yapayAction: 'deliveryOptions',
-	        productId: this.getOption('productId'),
-	        deliveryType: 'delivery'
+	        items: this.paymentData.order.items,
+	        setupId: this.getOption('setupId')
 	      };
-	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
 	    key: "getPickupOptions",
 	    value: function getPickupOptions(bounds) {
-	      var expandData = {
+	      var data = {
 	        bounds: bounds,
 	        yapayAction: 'pickupOptions',
-	        productId: this.getOption('productId'),
-	        deliveryType: 'pickup'
+	        items: this.paymentData.order.items,
+	        setupId: this.getOption('setupId')
 	      };
-	      var data = babelHelpers.objectSpread({}, this.defaultBody, expandData);
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
@@ -1001,6 +962,18 @@ this.BX = this.BX || {};
 	    key: "amountSum",
 	    value: function amountSum(amountA, amountB) {
 	      return (Number(amountA) + Number(amountB)).toFixed(2);
+	    }
+	  }, {
+	    key: "showError",
+	    value: function showError(message) {
+	      var err = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+	      var notify = message;
+
+	      if (err) {
+	        notify += ' ' + err;
+	      }
+
+	      alert(notify);
 	    }
 	  }]);
 	  return Cart;
