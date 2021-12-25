@@ -138,7 +138,7 @@ class Options extends Reference\Skeleton
 			+ $this->getInjectionFields($environment, $siteId);
 	}
 
-	public static function getPurchaseUrl() : string
+	public function getPurchaseUrl() : string
 	{
 		return Utils\Url::absolutizePath(BX_ROOT . '/tools/' . Config::getModuleName() . '/purchase.php');
 	}
