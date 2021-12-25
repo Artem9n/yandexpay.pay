@@ -73,13 +73,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	protected function getParams(Payment $payment) : array
 	{
-		$gatewayType = $this->getHandlerMode();
-		$gatewayMerchantId = $this->getParamValue($payment, $gatewayType. '_PAYMENT_GATEWAY_MERCHANT_ID');
-
-		if ($gatewayType === Gateway\Manager::RBS_MTS)
-		{
-			$gatewayType = Gateway\Manager::RBS_ALFA;
-		}
+		$gateway = $this->wakeUpGateway($payment);
 
 		return [
 			'requestSign'           => static::REQUEST_SIGN,
@@ -89,8 +83,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'merchantName'          => $this->getParamValue($payment, 'MERCHANT_NAME'),
 			'buttonTheme'           => $this->getParamValue($payment, 'VARIANT_BUTTON'),
 			'buttonWidth'           => $this->getParamValue($payment, 'WIDTH_BUTTON'),
-			'gateway'               => mb_strtolower($gatewayType),
-			'gatewayMerchantId'     => $gatewayMerchantId,
+			'gateway'               => $gateway->getGatewayId(),
+			'gatewayMerchantId'     => $gateway->getMerchantId(),
 			'externalId'            => $payment->getId(),
 			'paySystemId'           => $this->service->getField('ID'),
 			'currency'              => $payment->getField('CURRENCY')
@@ -156,9 +150,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		try
 		{
-			$gateway = $this->getGateway();
-			$gateway->setParameters($this->getParamsBusValue($payment));
-			$gateway->setPayment($payment);
+			$gateway = $this->wakeUpGateway($payment);
 			$gateway->refund();
 
 			$result->setOperationType(PaySystem\ServiceResult::MONEY_LEAVING);
@@ -181,7 +173,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return ($this->getBusinessValue($payment, Config::getLangPrefix() . 'TEST_MODE') === 'Y');
 	}
 
-	protected function getGateway(): Gateway\Base
+	public function getGateway(): Gateway\Base
 	{
 		$type = $this->getHandlerMode();
 
@@ -190,17 +182,30 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return Gateway\Manager::getProvider($type);
 	}
 
+	public function wakeUpGateway(Payment $payment) : Gateway\Base
+	{
+		$type = $this->getHandlerMode();
+
+		Assert::notNull($type, 'gatewayType');
+
+		$gateway = Gateway\Manager::getProvider($type);
+
+		$params = $this->getParamsBusValue($payment);
+
+		$gateway->setParameters($params);
+		$gateway->setPayment($payment);
+
+		return $gateway;
+	}
+
 	public function processRequest(Payment $payment, Request $request): ServiceResult
 	{
 		$result = new PaySystem\ServiceResult();
 
 		try
 		{
-			$gatewayProvider = $this->getGateway();
-
-			$gatewayProvider->setParameters($this->getParamsBusValue($payment));
-			$gatewayProvider->setPayment($payment);
-			$resultData = $gatewayProvider->startPay();
+			$gateway = $this->wakeUpGateway($payment);
+			$resultData = $gateway->startPay();
 
 			if (!empty($resultData))
 			{
