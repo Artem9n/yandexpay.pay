@@ -1,7 +1,5 @@
 <?php
-namespace YandexPay\Pay\Trading\Action\Incoming\OrderAccept;
-
-use YandexPay\Pay\Trading\Action\Incoming\Skeleton;
+namespace YandexPay\Pay\Trading\Action\Incoming;
 
 class Item extends Skeleton
 {
@@ -23,5 +21,10 @@ class Item extends Skeleton
 	public function getQuantity() : int
 	{
 		return (float)$this->requireField('count');
+	}
+
+	public function getBasketId() : ?int
+	{
+		return (int)$this->getField('basketId');
 	}
 }

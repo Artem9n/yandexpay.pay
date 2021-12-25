@@ -7,4 +7,9 @@ class Product extends Common
 	{
 		return $this->getField('productId');
 	}
+
+	public function getMode() : string
+	{
+		return $this->requireField('mode');
+	}
 }

@@ -38,7 +38,7 @@ class OrderAccept extends Common
 		return $this->getChildModel('contact');
 	}
 
-	public function getItems() : OrderAccept\Items
+	public function getItems() : Items
 	{
 		return $this->getChildCollection('items');
 	}
@@ -56,7 +56,7 @@ class OrderAccept extends Common
 	protected function collectionMap() : array
 	{
 		return [
-			'items' => OrderAccept\Items::class,
+			'items' => Items::class,
 		];
 	}
 }

@@ -1,5 +1,5 @@
 <?php
-namespace YandexPay\Pay\Trading\Action\Incoming\OrderAccept;
+namespace YandexPay\Pay\Trading\Action\Incoming;
 
 use YandexPay\Pay\Reference\Common\Collection;
 
@@ -17,9 +17,9 @@ class Items extends Collection
 	{
 		$result = [];
 
-		foreach ($this->collection as $item)
+		foreach ($this->collection as $model)
 		{
-			$result[$item->getId()] = $item->getQuantity();
+			$result[] = $model;
 		}
 
 		return $result;

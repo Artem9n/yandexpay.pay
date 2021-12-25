@@ -1,8 +1,6 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Incoming;
 
-use YandexPay\Pay\Reference\Common\Model;
-
 class DeliveryOptions extends Common
 {
 	public function getAddress() : Address
@@ -10,10 +8,22 @@ class DeliveryOptions extends Common
 		return $this->getChildModel('address');
 	}
 
+	public function getItems() : Items
+	{
+		return $this->getChildCollection('items');
+	}
+
 	protected function modelMap() : array
 	{
 		return [
 			'address' => Address::class,
+		];
+	}
+
+	protected function collectionMap() : array
+	{
+		return [
+			'items' => Items::class,
 		];
 	}
 }
