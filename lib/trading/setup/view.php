@@ -17,11 +17,11 @@ class View extends Storage\View
 			'OVERRIDES' => [
 				'SITE_ID' => [
 					'TYPE' => 'enumeration',
-					'VALUES' => $environment->getSite()->getOptions(), // todo
+					'VALUES' => $environment->getSite()->getOptions(),
 				],
 				'PERSON_TYPE_ID' => [
 					'TYPE' => 'enumeration',
-					'VALUES' => $environment->getPersonType()->getEnum(), // todo
+					'VALUES' => $environment->getPersonType()->getEnum(),
 				],
 			],
 		]);

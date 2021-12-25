@@ -55,7 +55,7 @@ class Delivery extends Fieldset
 						'ID' => Entity\Sale\Delivery::DELIVERY_TYPE,
 						'VALUE' => self::getMessage('TYPE_DELIVERY'),
 					],
-				], // todo
+				],
 			],
 		];
 	}
