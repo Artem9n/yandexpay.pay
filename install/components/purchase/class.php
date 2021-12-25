@@ -28,8 +28,6 @@ class Purchase extends \CBitrixComponent
 	protected $options;
 	/** @var TradingSetup\Model */
 	protected $setup;
-	/** @var int */
-	protected $userId;
 
 	public function executeComponent(): void
 	{
@@ -47,11 +45,7 @@ class Purchase extends \CBitrixComponent
 			$this->sendResponse([
 				'code' => (string)$exception->getCode(),
 				'message' => $exception->getMessage(),
-				//'trace' => $exception->getTraceAsString()
 			]);
-
-			/*pr($exception->getMessage(), 1);
-			die;*/
 
 			// todo show error, may be loggers
 		}
@@ -75,15 +69,14 @@ class Purchase extends \CBitrixComponent
 	{
 		$request = $this->request->get('yapayAction');
 
-		return $request !== null ? (string)$request : 'view';
+		Assert::notNull($request, 'yapayAction');
+
+		return (string)$request;
 	}
 
 	protected function callAction(string $action) : void
 	{
 		$action = trim($action);
-
-		if ($action === '') { throw new Main\ArgumentException('action is empty'); }
-
 		$method = $action . 'Action';
 
 		if (!method_exists($this, $method)) { throw new Main\ArgumentException('unknown action'); }
@@ -99,13 +92,16 @@ class Purchase extends \CBitrixComponent
 
 	protected function getProductsAction() : void
 	{
-		$order = $this->getOrder();
+		$userId = $this->searchUser();
+		$order = $this->getOrder($userId);
+
+		/** @var TradingAction\Incoming\Product $request */
+		$request = $this->makeRequest(TradingAction\Incoming\Product::class);
 
 		$order->initialize();
 
 		$this->fillPersonType($order);
-		$this->fillBasket($order);
-		//$this->fillCoupon($order);
+		$this->wakeUpBasket($order, $request);
 
 		$order->finalize();
 
@@ -134,7 +130,8 @@ class Purchase extends \CBitrixComponent
 			'id' => $basketItem->getProductId(),
 			'count' => (string)$basketItem->getQuantity(),
 			'label' => $basketItem->getField('NAME'),
-			'amount' => (string)$basketItem->getFinalPrice() //number_format($basketItem->getFinalPrice(), 2, '.', '')
+			'amount' => (string)$basketItem->getFinalPrice(), //number_format($basketItem->getFinalPrice(), 2, '.', '')
+			'basketId' => $basketItem->getId()// todo basketId
 		];
 	}
 
@@ -142,15 +139,16 @@ class Purchase extends \CBitrixComponent
 	{
 		$result = [];
 
+		$userId = $this->searchUser();
+		$order = $this->getOrder($userId);
+
 		/** @var TradingAction\Incoming\DeliveryOptions $request */
 		$request = $this->makeRequest(TradingAction\Incoming\DeliveryOptions::class);
-		$order = $this->getOrder();
 
 		$order->initialize();
 
 		$this->fillPersonType($order);
-		$this->fillBasket($order);
-		//$this->fillCoupon($order); //todo
+		$this->fillBasket($order, $request->getItems());
 		$this->fillLocation($order, $request->getAddress());
 
 		$order->finalize();
@@ -180,7 +178,7 @@ class Purchase extends \CBitrixComponent
 			'amount'    => (string)$calculationResult->getPrice(),
 			'provider'  => 'custom', //todo
 			'category'  => $calculationResult->getCategory(),
-			'date'      => $calculationResult->getDateFrom()->getTimestamp()
+			'date'      => $calculationResult->getDateFrom()->getTimestamp(),
 		];
 	}
 
@@ -256,13 +254,16 @@ class Purchase extends \CBitrixComponent
 	{
 		$result = [];
 
-		$order = $this->getOrder();
+		$userId = $this->searchUser();
+		$order = $this->getOrder($userId);
+
+		/** @var TradingAction\Incoming\PickupOptions $request */
+		$request = $this->makeRequest(TradingAction\Incoming\PickupOptions::class);
 
 		$order->initialize();
 
 		$this->fillPersonType($order);
-		$this->fillBasket($order);
-		//$this->fillCoupon($order);
+		$this->fillBasket($order, $request->getItems());
 
 		$order->finalize();
 
@@ -296,10 +297,10 @@ class Purchase extends \CBitrixComponent
 	protected function collectPickupOption(array $store, EntityReference\Delivery\CalculationResult $calculationResult, int $locationId = null) : array
 	{
 		return [
-			'id'        => [
-				'deliveryId' => $calculationResult->getDeliveryId(), //todo пока что нельзя передавать дополнительные данные
+			'id' => [
+				'deliveryId' => $calculationResult->getDeliveryId(),
 				'storeId' => (int)$store['ID'],
-				'locationId' => $locationId
+				'locationId' => $locationId,
 			],
 			'label'     => $store['TITLE'],
 			'provider'  => 'pickpoint', //todo
@@ -314,14 +315,14 @@ class Purchase extends \CBitrixComponent
 			'coordinates' =>  [
 				'latitude' => (float)$store['GPS_N'],
 				'longitude' => (float)$store['GPS_S'],
-			]
+			],
 		];
 	}
 
 	protected function couponAction() : void
 	{
 		$order = $this->getOrder();
-		$this->fillBasket($order);
+		//$this->fillBasket($order);
 		$this->fillCoupon($order);
 	}
 
@@ -329,7 +330,6 @@ class Purchase extends \CBitrixComponent
 	{
 		/** @var TradingAction\Incoming\OrderAccept $request */
 		$request = $this->makeRequest(TradingAction\Incoming\OrderAccept::class);
-		$paySystemId = $request->getPaySystemId();
 
 		$userId = $this->createUser($request);
 		$order = $this->getOrder($userId);
@@ -339,9 +339,7 @@ class Purchase extends \CBitrixComponent
 		$this->fillPersonType($order);
 		$this->fillStatus($order);
 		$this->fillProperties($order, $request);
-		$this->fillBasket($order);
-
-		$this->excludeProductsForBasket($order, $request);
+		$this->fillBasket($order, $request->getItems());
 
 		if ($request->getDeliveryType() === EntitySale\Delivery::PICKUP_TYPE)
 		{
@@ -353,13 +351,25 @@ class Purchase extends \CBitrixComponent
 			$this->fillDelivery($order, $request->getDelivery());
 		}
 
-		//$this->fillCoupon($order);
-
-		$this->fillPaySystem($order, $paySystemId, $request->getOrderAmount());
+		$this->fillPaySystem($order, $request);
 
 		$order->finalize();
 
-		$this->addOrder($order);
+		// todo check prices
+
+		$orderId = $this->addOrder($order);
+
+		[$paymentId, $paySystemId] = $this->getPayment($orderId);
+
+		$redirect = $this->getRedirectUrl($orderId, $paySystemId);
+
+		$result = [
+			'externalId' => $paymentId,
+			'paySystemId' => $paySystemId,
+			'redirect' => $redirect,
+		];
+
+		$this->sendResponse($result);
 	}
 
 	protected function fillPickup(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Pickup $pickup) : void
@@ -378,10 +388,8 @@ class Purchase extends \CBitrixComponent
 		$order->createShipment($deliveryId, $price, $storeId);
 	}
 
-	protected function fillBasket(EntityReference\Order $order) : void
+	protected function wakeUpBasket(EntityReference\Order $order, TradingAction\Incoming\Product $request) : void
 	{
-		/** @var TradingAction\Incoming\Product $request */
-		$request = $this->makeRequest(TradingAction\Incoming\Product::class);
 		$mode = $request->getMode();
 
 		if ($mode === Pay\Injection\Behavior\Registry::ELEMENT)
@@ -403,33 +411,25 @@ class Purchase extends \CBitrixComponent
 		Exceptions\Facade::handleResult($addProductResult);
 	}
 
-	protected function excludeProductsForBasket(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request) : void
+	protected function fillBasket(EntityReference\Order $order, TradingAction\Incoming\Items $request) : void
 	{
-		$products = $request->getItems()->getProducts();
-		$basket = $order->getBasket();
+		$products = $request->getProducts();
 
-		$order->finalize();
-
-		/** @var \Bitrix\Sale\BasketItemBase $basketItem */
-		foreach ($basket as $basketItem)
+		/** @var TradingAction\Incoming\Item $product */
+		foreach ($products as $product)
 		{
-			$productId = $basketItem->getProductId();
+			$productId = $product->getId();
+			$quantity = $product->getQuantity();
 
-			if ($basketItem->getFinalPrice() <= 0) { continue; }
+			$fields = [
+				'PRICE' => $product->getAmount(),
+				'CUSTOM_PRICE' => 'Y'
+			];
 
-			if (!isset($products[$productId]))
-			{
-				$basketItem->delete();
-			}
-			else if ($products[$productId] > 0
-				&& $products[$productId]!== $basketItem->getQuantity()
-			)
-			{
-				$basketItem->setFieldNoDemand('QUANTITY', $products[$productId]);
-			}
+			$addProductResult = $order->addProduct($productId, $quantity, $fields);
+
+			Exceptions\Facade::handleResult($addProductResult);
 		}
-
-		$order->initialize();
 	}
 
 	protected function fillCoupon(EntityReference\Order $order) : void
@@ -445,8 +445,10 @@ class Purchase extends \CBitrixComponent
 		}
 	}
 
-	protected function addOrder(EntityReference\Order $order) : void
+	protected function addOrder(EntityReference\Order $order) : int
 	{
+		global $USER;
+
 		$externalId = $order->getId();
 		$saveResult = $order->add($externalId);
 
@@ -460,17 +462,17 @@ class Purchase extends \CBitrixComponent
 			throw new Main\SystemException($errorMessage);
 		}
 
-		[$paymentId, $paySystemId] = $this->getPayment($saveData['ID']);
+		if (!$USER->IsAuthorized())
+		{
+			if (!is_array($_SESSION['SALE_ORDER_ID']))
+			{
+				$_SESSION['SALE_ORDER_ID'] = [];
+			}
 
-		$redirect = $this->getRedirectUrl($saveData['ID'], $paySystemId);
+			$_SESSION['SALE_ORDER_ID'][] = (int)$saveData['ID'];
+		}
 
-		$result = [
-			'externalId' => $paymentId,
-			'paySystemId' => $paySystemId,
-			'redirect' => $redirect
-		];
-
-		$this->sendResponse($result);
+		return (int)$saveData['ID'];
 	}
 
 	protected function getRedirectUrl(int $orderId, int $paySystemId) : ?string
@@ -516,8 +518,11 @@ class Purchase extends \CBitrixComponent
 		return [$paymentId, $paySystemId];
 	}
 
-	protected function fillPaySystem(EntityReference\Order $order, int $paySystemId, float $price = null) : void
+	protected function fillPaySystem(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request) : void
 	{
+		$paySystemId = $request->getPaySystemId();
+		$price = $request->getOrderAmount();
+
 		if ($paySystemId > 0)
 		{
 			$order->createPayment($paySystemId, $price);
@@ -565,21 +570,32 @@ class Purchase extends \CBitrixComponent
 		Exceptions\Facade::handleResult($statusResult);
 	}
 
+	protected function searchUser() : ?int
+	{
+		global $USER;
+
+		if ($USER->IsAuthorized())
+		{
+			$result = (int)$USER->GetID();
+		}
+		else
+		{
+			$result = Sale\Fuser::getId(true);
+		}
+
+		return $result;
+	}
+
 	protected function createUser(TradingAction\Incoming\OrderAccept $request) : int
 	{
 		global $USER;
 
-		$userId = $request->getUserId();
-
-		if ($userId > 0)
+		if ($USER->IsAuthorized())
 		{
-			$this->userId = $userId;
-
-			return $this->userId;
+			return (int)$USER->GetID();
 		}
 
 		$userData = $request->getUser();
-		$allowAppendOrder = true;
 
 		$user = $this->environment->getUserRegistry()->getUser([
 			'EMAIL' => $userData->getEmail(),
@@ -590,16 +606,11 @@ class Purchase extends \CBitrixComponent
 			'SITE_ID' => $this->setup->getSiteId(),
 		]);
 
-		if ($allowAppendOrder)
+		$userId = $user->getId(); //todo allowAppendOrder options and add sale order id session
+
+		if ($userId !== null)
 		{
-			$this->userId = $user->getId();
-
-			if ($this->userId !== null)
-			{
-				$USER->Authorize($this->userId);
-
-				return $this->userId;
-			}
+			return $userId;
 		}
 
 		/** @var Main\ORM\Data\AddResult $installResult */
@@ -607,21 +618,16 @@ class Purchase extends \CBitrixComponent
 
 		Exceptions\Facade::handleResult($installResult);
 
-		$this->userId = $installResult->getId();
+		$userId = $installResult->getId();
+		$USER->Authorize($userId);
 
-		$USER->Authorize($this->userId);
-
-		return $this->userId;
+		return $userId;
 	}
 
 	protected function getOrder(int $userId = null) : EntityReference\Order
 	{
-		$requestUser = $this->request->get('userId') ?? $this->request->get('fUserId');
-		$userId = $userId ?? (int)$requestUser;
-		$siteId = $this->setup->getSiteId() ?? SITE_ID;
-
 		return $this->environment->getOrderRegistry()->createOrder(
-			$siteId,
+			$this->setup->getSiteId(),
 			$userId,
 			$this->request->get('currency')
 		);
@@ -790,10 +796,9 @@ class Purchase extends \CBitrixComponent
 		$this->environment = EntityRegistry::getEnvironment();
 
 		$this->setup = $this->loadSetup();
-		$this->setup->wakeupOptions();
 		$this->setup->fill();
 
-		$this->options = $this->setup->getOptions();
+		$this->options = $this->setup->wakeupOptions();
 	}
 
 	protected function loadSetup() : TradingSetup\Model
