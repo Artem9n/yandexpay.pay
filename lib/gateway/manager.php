@@ -16,6 +16,7 @@ class Manager
 	public const RBKMONEY = 'rbkmoney';
 	public const RBS_ALFA = 'alfabank';
 	public const RBS_MTS = 'mts';
+	public const RBS_RSHB = 'rshb';
 
 	public static function getGatewayList() : array
 	{
@@ -25,6 +26,7 @@ class Manager
 			static::RBKMONEY,
 			static::RBS_ALFA,
 			static::RBS_MTS,
+			static::RBS_RSHB,
 		];
 	}
 

@@ -37,6 +37,11 @@ abstract class Base implements IGateway
 
 	abstract protected function getUrlList(): array;
 
+	public function getGatewayId() : string
+	{
+		return $this->getId();
+	}
+
 	public function getId() : string
 	{
 		return '';
@@ -105,7 +110,7 @@ abstract class Base implements IGateway
 		] + $result;
 	}
 
-	public function getMerchantId(): string
+	public function getMerchantId(): ?string
 	{
 		return $this->getParameter('PAYMENT_GATEWAY_MERCHANT_ID');
 	}

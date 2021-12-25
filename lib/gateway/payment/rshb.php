@@ -5,38 +5,44 @@ namespace Yandexpay\Pay\Gateway\Payment;
 use Bitrix\Main;
 use Bitrix\Currency;
 use Bitrix\Main\Web\HttpClient;
-use Yandexpay\Pay\Gateway;
-use Yandexpay\Pay\Reference\Concerns;
 
-abstract class RbsSkeleton extends Gateway\Base
+class Rshb extends RbsSkeleton
 {
-	use Concerns\HasMessage;
-
-	protected const STATUS_FAILED = false;
-	protected const STATUS_SUCCESS = 2;
-
-	protected static $currencyMap = [];
-
-	public function extraParams(): array
+	public function getId(): string
 	{
-		return [
-			'PAYMENT_GATEWAY_USERNAME' => [
-				'NAME' => static::getMessage('USERNAME'),
-				'GROUP' => $this->getName(),
-				'SORT' => 650
-			],
-			'PAYMENT_GATEWAY_PASSWORD' => [
-				'NAME' => static::getMessage('MERCHANT_PASSWORD'),
-				'DESCRIPTION' => static::getMessage('MERCHANT_PASSWORD_DESCRIPTION'),
-				'GROUP' => $this->getName(),
-				'SORT' => 700
-			]
-		];
+		return 'rshb';
 	}
 
-	public function getGatewayId() : string
+	public function getName(): string
 	{
-		return 'alfabank';
+		return 'Rosselkhozbank(Rbs)';
+	}
+
+	protected function getUrlList(): array
+	{
+		$testUrl = 'https://web.rbsuat.com/rshbbank';
+		$activeUrl = 'https://pay.alfabank.ru/payment'; // todo rshb
+
+		return [
+			'registration' => [
+				static::TEST_URL => $testUrl . '/rest/register.do',
+				static::ACTIVE_URL => $activeUrl . '/rest/register.do',
+			],
+
+			'yandexpayment' => [
+				static::TEST_URL => $testUrl . '/yandex/payment.do',
+				static::ACTIVE_URL => $activeUrl . '/yandex/payment.do',
+			],
+
+			'refund' => [
+				static::TEST_URL => $testUrl . '/rest/refund.do',
+				static::ACTIVE_URL => $activeUrl . '/rest/refund.do',
+			],
+			'statusExtend' => [
+				static::TEST_URL => $testUrl . '/rest/getOrderStatusExtended.do',
+				static::ACTIVE_URL => $activeUrl . '/reset/getOrderStatusExtended.do',
+			]
+		];
 	}
 
 	public function getPaymentIdFromRequest(): ?int
@@ -87,12 +93,22 @@ abstract class RbsSkeleton extends Gateway\Base
 			'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
 			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
 			'amount' => $this->getPaymentAmount(),
-			//'currency' => $this->getCurrencyFormatted($this->getPaymentField('CURRENCY')),
+			'currency' => $this->getCurrencyFormatted($this->getPaymentField('CURRENCY')),
 			'orderNumber' => $this->getExternalId(),
 			'returnUrl' => $this->getRedirectUrl(),
 		];
 
 		$httpClient->post($url, $data);
+		echo '<pre>';
+		print_r($url);
+		echo '</pre>';
+		echo '<pre>';
+		print_r($data);
+		echo '</pre>';
+		echo '<pre>';
+		print_r(Main\Text\Encoding::convertEncodingToCurrent($httpClient->getResult()));
+		echo '</pre>';
+		die;
 
 		return Main\Web\Json::decode($httpClient->getResult());
 	}
@@ -116,6 +132,16 @@ abstract class RbsSkeleton extends Gateway\Base
 		$urlYandex = $this->getUrl('yandexpayment');
 		$httpClient->post($urlYandex, $data);
 		$resultPay = Main\Web\Json::decode($httpClient->getResult());
+
+		echo '<pre>';
+		print_r($data);
+		echo '</pre>';
+
+		echo '<pre>';
+		print_r(Main\Text\Encoding::convertEncodingToCurrent($httpClient->getResult()));
+		echo '</pre>';
+		die;
+
 		$this->checkResult($resultPay, $httpClient->getStatus());
 	}
 
@@ -158,13 +184,12 @@ abstract class RbsSkeleton extends Gateway\Base
 
 	public function refund() : void
 	{
-		$dataRefund =
-			[
-				'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
-				'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
-				'orderId' => $this->getPaymentField('PS_INVOICE_ID'),
-				'amount' => $this->getPaymentAmount(),
-			];
+		$dataRefund = [
+			'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
+			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
+			'orderId' => $this->getPaymentField('PS_INVOICE_ID'),
+			'amount' => $this->getPaymentAmount(),
+		];
 
 		$httpClient = new HttpClient();
 		$this->setHeaders($httpClient);
@@ -206,6 +231,11 @@ abstract class RbsSkeleton extends Gateway\Base
 	{
 		$currency = Currency\CurrencyClassifier::getCurrency($code, []);
 		return self::$currencyMap[$code] ?? $currency['NUM_CODE'];
+	}
+
+	protected function isSecure3ds() : bool
+	{
+		return $this->request->get('secure3ds') !== null;
 	}
 
 }

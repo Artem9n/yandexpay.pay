@@ -128,7 +128,7 @@ class Mts extends RbsSkeleton
 		echo '</pre>';
 
 		echo '<pre>';
-		print_r(Main\Text\Encoding::convertEncodingToCurrent($httpClient->getResult()));
+		print_r(Main\Text\Encoding::convertEncodingToCurrent(Main\Web\Json::decode($httpClient->getResult())));
 		echo '</pre>';
 		die;
 
