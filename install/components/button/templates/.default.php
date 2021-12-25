@@ -17,9 +17,7 @@ $widgetOptions = array_diff_key($arResult['PARAMS'], [ 'order' => true , 'select
 $order = $arResult['PARAMS']['order'];
 $selector = $arResult['PARAMS']['selector'];
 $position = $arResult['PARAMS']['position'];
-?>
 
-<?php
 if (!empty($selector))
 {
 	?>

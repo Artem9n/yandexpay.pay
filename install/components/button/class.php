@@ -12,12 +12,13 @@ use YandexPay\Pay\Injection;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 use YandexPay\Pay\Utils;
+use Sale\Handlers\PaySystem\YandexPayHandler;
 
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
 
 Loc::loadMessages(__FILE__);
 
-class TradingCart extends \CBitrixComponent
+class TradingButton extends \CBitrixComponent
 {
 	/** @var \Sale\Handlers\PaySystem\YandexPayHandler */
 	protected $handler;
@@ -54,7 +55,7 @@ class TradingCart extends \CBitrixComponent
 		}
 		catch (Main\SystemException $exception)
 		{
-			//todo show errors, may be loggers
+			// todo  loggers
 
 			/*echo '<pre>';
 			print_r($exception->getMessage());
@@ -74,45 +75,36 @@ class TradingCart extends \CBitrixComponent
 
 		$paySystemId = $options->getPaymentCard();
 
-		$this->getHandler($paySystemId);
+		$handler = $this->getHandler($paySystemId);
 
-		$params = $this->handler->getParamsBusValue();
-		$gateway = $this->handler->getHandlerMode();
-		$gatewayMerchantId = $params['YANDEX_PAY_' . $gateway . '_PAYMENT_GATEWAY_MERCHANT_ID'];
+		$params = $handler->getParamsBusValue(); // todo make dummy payment with PERSON_TYPE
 
-		if ($gateway === Manager::RBS_MTS)
-		{
-			$gateway = Manager::RBS_ALFA;
-		}
+		$gateway = $handler->getGateway();
+		$gateway->setParameters($params);
+		$gatewayType = $gateway->getGatewayId();
 
 		$this->arResult['PARAMS'] = [
-			'env'               => $this->handler->isTestMode() ? 'SANDBOX' : 'PRODUCTION',
+			'env'               => $handler->isTestMode() ? 'SANDBOX' : 'PRODUCTION',
 			'merchantId'        => $params['YANDEX_PAY_MERCHANT_ID'],
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
 			'buttonTheme'       => $this->arParams['VARIANT_BUTTON'],
 			'buttonWidth'       => $this->arParams['WIDTH_BUTTON'],
-			'gateway'           => $gateway,
-			'gatewayMerchantId' => $gatewayMerchantId,
+			'gateway'           => $gatewayType,
+			'gatewayMerchantId' => $gateway->getMerchantId(),
 			'useEmail'          => $options->useBuyerEmail(),
 			'useName'           => $options->useBuyerName(),
 			'usePhone'          => $options->useBuyerPhone(),
-			'purchaseUrl'       => $options::getPurchaseUrl(),
+			'purchaseUrl'       => $options->getPurchaseUrl(),
 			'notifyUrl'         => $params['YANDEX_PAY_NOTIFY_URL'],
 			'siteUrl'           => Utils\Url::absolutizePath(),
 			'productId'         => $this->arParams['PRODUCT_ID'],
 			'siteId'            => $setup->getSiteId(),
-			'userId'            => $USER->GetID(),
 			'setupId'           => $setup->getId(),
-			'fUserId'           => Sale\Fuser::getId(true),
 			'paySystemId'       => $options->getPaymentCard(),
 			'paymentCash'       => $options->getPaymentCash(),
 			'mode'              => $this->arParams['MODE'],
 			'selector'          => $this->arParams['SELECTOR'],
 			'position'          => $this->arParams['POSITION'],
-			'order'             => [
-				'id' => '0',
-				'total' => '0'
-			]
 		];
 	}
 
@@ -132,7 +124,8 @@ class TradingCart extends \CBitrixComponent
 			'filter' => [
 				'ID' => $this->arParams['TRADING_ID'],
 				'ACTIVE' => true
-			]
+			],
+			'limit' => 1,
 		])->fetchObject();
 
 		Assert::notNull($result, 'setup');
@@ -142,13 +135,14 @@ class TradingCart extends \CBitrixComponent
 		return $result;
 	}
 
-	protected function getHandler(int $paySystemId) : Sale\PaySystem\BaseServiceHandler
+	protected function getHandler(int $paySystemId) : YandexPayHandler
 	{
-		$this->handler = $this->environment->getPaySystem()->getHandler($paySystemId);
+		/** @var YandexPayHandler $result */
+		$result = $this->environment->getPaySystem()->getHandler($paySystemId);
 
-		Assert::typeOf($this->handler, \Sale\Handlers\PaySystem\YandexPayHandler::class, 'handler');
+		Assert::typeOf($result, YandexPayHandler::class, 'handler');
 
-		return $this->handler;
+		return $result;
 	}
 
 	protected function loadModules(): void
@@ -181,6 +175,6 @@ class TradingCart extends \CBitrixComponent
 
 	protected function getLang(string $code, $replace = null, $language = null): string
 	{
-		return Main\Localization\Loc::getMessage('YANDEX_PAY_TRADING_CART_' . $code, $replace, $language);
+		return Main\Localization\Loc::getMessage('YANDEX_PAY_BUTTON_' . $code, $replace, $language);
 	}
 }
