@@ -11,6 +11,7 @@ $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_PRODUCT_NAME'] = 'Номер заказа № #ORD
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_REFUNDED_STATUS'] = 'По данному заказу был совершен возврат';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_FAILED_STATUS'] = 'Ошибка оплаты';
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_ORDER_DELIVERY'] = 'Доставка';
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_ambiguousPartyID'] = 'Невозможно однозначно определить идентификатор участника, укажите идентификатор в запросе явно.';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_changesetConflict'] = 'Попытка внести изменения участника, конфликтующие с изменениями в других заявках, ожидающих рассмотрения.';

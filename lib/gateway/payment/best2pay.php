@@ -373,7 +373,7 @@ class Best2pay extends Gateway\Base
 				'quantity'  => 1,
 				'price'     => round($deliveryPrice * 100),
 				'tax'       => $this->getParameter('PAYMENT_GATEWAY_TAX'),
-				'text'      => 'delivery'
+				'text'      => static::getMessage('ORDER_DELIVERY')
 			];
 		}
 

@@ -65,8 +65,6 @@ class TradingButton extends \CBitrixComponent
 
 	protected function setParameters() : void
 	{
-		global $USER;
-
 		$setup = $this->getSetup();
 
 		$setup->wakeupOptions();
@@ -81,7 +79,6 @@ class TradingButton extends \CBitrixComponent
 
 		$gateway = $handler->getGateway();
 		$gateway->setParameters($params);
-		$gatewayType = $gateway->getGatewayId();
 
 		$this->arResult['PARAMS'] = [
 			'env'               => $handler->isTestMode() ? 'SANDBOX' : 'PRODUCTION',
@@ -89,7 +86,7 @@ class TradingButton extends \CBitrixComponent
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
 			'buttonTheme'       => $this->arParams['VARIANT_BUTTON'],
 			'buttonWidth'       => $this->arParams['WIDTH_BUTTON'],
-			'gateway'           => $gatewayType,
+			'gateway'           => $gateway->getGatewayId(),
 			'gatewayMerchantId' => $gateway->getMerchantId(),
 			'useEmail'          => $options->useBuyerEmail(),
 			'useName'           => $options->useBuyerName(),

@@ -123,7 +123,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		if ($deliveryPrice > 0)
 		{
 			$result['items'][] = [
-				'label'     => 'delivery',
+				'label'     => Main\Localization\Loc::getMessage('ORDER_DELIVERY'),
 				'amount'    => number_format($deliveryPrice, 2, '.', '')
 			];
 		}

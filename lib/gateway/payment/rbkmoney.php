@@ -259,7 +259,7 @@ class Rbkmoney extends Base
 		if ($deliveryPrice > 0)
 		{
 			$cart[] = [
-				'product'   => 'delivery',
+				'product'   => static::getMessage('ORDER_DELIVERY'),
 				'quantity'  => 1,
 				'price'     => round($deliveryPrice * 100)
 			];
