@@ -4,9 +4,10 @@ namespace Yandexpay\Pay\Gateway\Payment;
 
 use Bitrix\Main;
 use Bitrix\Currency;
-use Bitrix\Main\Web\HttpClient;
+use Bitrix\Main\Web;
 use Yandexpay\Pay\Gateway;
 use Yandexpay\Pay\Reference\Concerns;
+use Yandexpay\Pay\Exceptions;
 
 abstract class RbsSkeleton extends Gateway\Base
 {
@@ -16,6 +17,11 @@ abstract class RbsSkeleton extends Gateway\Base
 	protected const STATUS_SUCCESS = 2;
 
 	protected static $currencyMap = [];
+
+	public function getGatewayId() : string
+	{
+		return 'rbs';
+	}
 
 	public function extraParams(): array
 	{
@@ -34,11 +40,6 @@ abstract class RbsSkeleton extends Gateway\Base
 		];
 	}
 
-	public function getGatewayId() : string
-	{
-		return 'alfabank';
-	}
-
 	public function getPaymentIdFromRequest(): ?int
 	{
 		return $this->request->get('paymentId');
@@ -46,89 +47,126 @@ abstract class RbsSkeleton extends Gateway\Base
 
 	public function startPay(): array
 	{
-		if($this->request->get('orderId') !== null)
-		{
-			$orderStatus = $this->statusExtend();
-			$orderId = $orderStatus['attributes']['0']['value'];
-			$result = [
-				'PS_INVOICE_ID' => $orderId,
-				'PS_SUM' => $this->getPaymentSum()
-			];
+		$result = [];
 
-			if ($orderStatus['orderStatus'] === self::STATUS_SUCCESS)
-			{
-				return $result;
-			}
-
-		}
-		else
+		if ($this->isSecure3ds())
 		{
-			$regOrder = $this->registerOrder();
-			$orderId = $regOrder['orderId'];
-			$result = [
+			$orderData = $this->getOrder();
+			$orderId = $this->getOrderNumber($orderData);
+
+			return [
 				'PS_INVOICE_ID' => $orderId,
 				'PS_SUM' => $this->getPaymentSum()
 			];
 		}
 
-		$data = $this->buildDataResource($orderId);
-		$this->yandexPayment($data);
+		$orderId = $this->buildRegisterOrder();
+		$this->createPayment($orderId);
 
 		return $result;
 	}
 
-	protected function registerOrder() : array
+	protected function createPayment(string $orderId) : void
 	{
-		$httpClient = new HttpClient();
+		$httpClient = new Web\HttpClient();
+		$this->setHeaders($httpClient, 'json');
+		$url = $this->getUrl('payment');
+
+		$data = [
+			'username' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
+			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
+			'orderId' => $orderId,
+			'paymentToken' => $this->getYandexToken(),
+		];
+
+		$resultData = $httpClient->post($url, Web\Json::encode($data));
+		$resultData = $this->convertResult($resultData);
+
+		$this->validate($resultData);
+	}
+
+	protected function buildRegisterOrder() : string
+	{
+		$registeredOrderId = $this->getRegisteredOrder();
+
+		if ($registeredOrderId !== null) { return $registeredOrderId; }
+
+		return $this->registerOrder();
+	}
+
+	protected function getOrder() : array
+	{
+		$httpClient = new Web\HttpClient();
 		$this->setHeaders($httpClient);
-		$url = $this->getUrl('registration');
+		$url = $this->getUrl('order');
 
 		$data = [
 			'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
 			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
-			'amount' => $this->getPaymentAmount(),
-			//'currency' => $this->getCurrencyFormatted($this->getPaymentField('CURRENCY')),
 			'orderNumber' => $this->getExternalId(),
-			'returnUrl' => $this->getRedirectUrl(),
 		];
 
-		$httpClient->post($url, $data);
+		$resultData = $this->convertResult($httpClient->post($url, $data));
+		$this->validate($resultData);
 
-		return Main\Web\Json::decode($httpClient->getResult());
+		return $resultData;
 	}
 
-	protected function buildDataResource($orderID) : string
+	protected function getRegisteredOrder() : ?string
 	{
-		$buildData = [
-			'username' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
+		$httpClient = new Web\HttpClient();
+		$this->setHeaders($httpClient);
+		$url = $this->getUrl('order');
+
+		$data = [
+			'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
 			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
-			'orderId' => $orderID,
-			'paymentToken' => $this->getYandexToken()
+			'orderNumber' => $this->getExternalId(),
 		];
 
-		return Main\Web\Json::encode($buildData);
+		$resultData = $this->convertResult($httpClient->post($url, $data));
+
+		if (!isset($resultData['orderStatus'])) { return null; }
+
+		return $this->getOrderNumber($resultData);
 	}
 
-	protected function yandexPayment($data) : void
+	protected function getOrderNumber(array $resultData) : string
 	{
-		$httpClient = new HttpClient();
-		$this->setHeaders($httpClient, 'json');
-		$urlYandex = $this->getUrl('yandexpayment');
-		$httpClient->post($urlYandex, $data);
-		$resultPay = Main\Web\Json::decode($httpClient->getResult());
-		$this->checkResult($resultPay, $httpClient->getStatus());
-	}
+		$result = null;
+		$attributes = $resultData['attributes'];
 
-	protected function checkResult(array $resultData, int $status) : void
-	{
-		if ($status !== 200)
+		foreach ($attributes as $value)
 		{
-			throw new Main\SystemException('Error status code: ' . $status);
+			if ($value['name'] !== 'mdOrder') { continue; }
+
+			$result = $value['value'];
+			break;
 		}
 
-		if (!empty($resultData['data']['paReq']))
+		return $result;
+	}
+
+	protected function validate(array $resultData) : void
+	{
+		if (
+			isset($resultData['errorCode'], $resultData['errorMessage'])
+			&& (int)$resultData['errorCode'] !== 0
+		)
 		{
-			throw new \Yandexpay\Pay\Exceptions\Secure3dRedirect(
+			$message = $resultData['errorMessage'];
+			throw new Main\SystemException($message);
+		}
+
+		if (isset($resultData['success']) && !(bool)$resultData['success'])
+		{
+			$message = $resultData['error']['message'];
+			throw new Main\SystemException($message);
+		}
+
+		if (isset($resultData['success'], $resultData['data']['paReq']))
+		{
+			throw new Exceptions\Secure3dRedirect(
 				$resultData['data']['acsUrl'],
 				[
 					'PaReq' => $resultData['data']['paReq'],
@@ -139,57 +177,56 @@ abstract class RbsSkeleton extends Gateway\Base
 		}
 
 		if (
-			isset($resultData['success'])
-			&& $resultData['success'] === self::STATUS_FAILED
-		)
-		{
-			$message = $resultData['errorCode'] ? $resultData['errorMessage'] : $resultData['error']['message'];
-			throw new Main\SystemException('' . $message);
-		}
-
-		if (
 			isset($resultData['orderStatus'])
-			&& $resultData['orderStatus'] !== self::STATUS_SUCCESS
+			&& $resultData['orderStatus'] !== static::STATUS_SUCCESS
 		)
 		{
 			throw new Main\SystemException(self::getMessage('ERROR_' . $resultData['orderStatus']));
 		}
 	}
 
-	public function refund() : void
+	protected function convertResult(string $data): array
 	{
-		$dataRefund =
-			[
-				'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
-				'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
-				'orderId' => $this->getPaymentField('PS_INVOICE_ID'),
-				'amount' => $this->getPaymentAmount(),
-			];
-
-		$httpClient = new HttpClient();
-		$this->setHeaders($httpClient);
-		$url = $this->getUrl('refund');
-		$httpClient->post($url, $dataRefund);
-		$requestSecurity = Main\Web\Json::decode($httpClient->getResult());
-
-		$this->checkResult($requestSecurity, $httpClient->getStatus());
+		return Main\Text\Encoding::convertEncodingToCurrent(Main\Web\Json::decode($data));
 	}
 
-	protected function statusExtend() : array
+	protected function registerOrder() : string
 	{
-		$httpClient = new HttpClient();
+		$httpClient = new Web\HttpClient();
+		$this->setHeaders($httpClient);
+		$url = $this->getUrl('register');
+
 		$data = [
 			'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
 			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
+			'amount' => $this->getPaymentAmount(),
 			'orderNumber' => $this->getExternalId(),
+			'returnUrl' => $this->getRedirectUrl(),
 		];
-		$url = $this->getUrl('statusExtend');
-		$this->setHeaders($httpClient);
-		$httpClient->post($url, $data);
-		$resultStatus = Main\Web\Json::decode($httpClient->getResult());
-		$this->checkResult($resultStatus, $httpClient->getStatus());
 
-		return $resultStatus;
+		$resultData = $httpClient->post($url, $data);
+		$resultData = $this->convertResult($resultData);
+		$this->validate($resultData);
+
+		return (string)$resultData['orderId'];
+	}
+
+	public function refund() : void
+	{
+		$httpClient = new Web\HttpClient();
+		$this->setHeaders($httpClient);
+		$url = $this->getUrl('refund');
+
+		$dataRefund = [
+			'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
+			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
+			'orderId' => $this->getPaymentField('PS_INVOICE_ID'),
+			'amount' => $this->getPaymentAmount(),
+		];
+
+		$resultData = $httpClient->post($url, $dataRefund);
+		$resultData = $this->convertResult($resultData);
+		$this->validate($resultData);
 	}
 
 	protected function getHeaders(string $key = '') : array
@@ -206,6 +243,11 @@ abstract class RbsSkeleton extends Gateway\Base
 	{
 		$currency = Currency\CurrencyClassifier::getCurrency($code, []);
 		return self::$currencyMap[$code] ?? $currency['NUM_CODE'];
+	}
+
+	protected function isSecure3ds() : bool
+	{
+		return $this->request->get('secure3ds') !== null;
 	}
 
 }
