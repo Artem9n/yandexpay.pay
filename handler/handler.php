@@ -184,12 +184,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function wakeUpGateway(Payment $payment) : Gateway\Base
 	{
-		$type = $this->getHandlerMode();
-
-		Assert::notNull($type, 'gatewayType');
-
-		$gateway = Gateway\Manager::getProvider($type);
-
+		$gateway = $this->getGateway();
 		$params = $this->getParamsBusValue($payment);
 
 		$gateway->setParameters($params);

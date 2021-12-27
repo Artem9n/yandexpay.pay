@@ -606,7 +606,7 @@ class Purchase extends \CBitrixComponent
 			'SITE_ID' => $this->setup->getSiteId(),
 		]);
 
-		$userId = $user->getId(); //todo allowAppendOrder options and add sale order id session
+		$userId = $user->getId(); //todo allowAppendOrder options
 
 		if ($userId !== null)
 		{
