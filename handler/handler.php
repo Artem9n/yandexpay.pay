@@ -12,6 +12,7 @@ use YandexPay\Pay\Config;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Reference\Assert;
+use YandexPay\Pay\Utils\Url;
 
 Loader::includeModule('yandexpay.pay');
 
@@ -64,11 +65,12 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		global $APPLICATION;
 
-		$server = Main\Context::getCurrent()->getServer();
-		$request = Main\Context::getCurrent()->getRequest();
-		$host = $request->isHttps() ? 'https' : 'http';
-		$url = $host . '://' . $server->get('SERVER_NAME') . $APPLICATION->GetCurPage() . '?ORDER_ID=' . $payment->getOrderId();
-		$_SESSION['yabackurl'] = $url;
+		$params = [
+			'ORDER_ID' => $payment->getOrderId(),
+			'PAYMENT_ID' => $payment->getOrder()->getField('ACCOUNT_NUMBER')
+		];
+
+		$_SESSION['yabackurl'] = Url::absolutizePath() . $APPLICATION->GetCurPage() . '?' . http_build_query($params);
 	}
 
 	protected function getParams(Payment $payment) : array
