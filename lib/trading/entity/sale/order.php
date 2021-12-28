@@ -131,7 +131,33 @@ class Order extends EntityReference\Order
 			'NAME' => $basketItem->getField('NAME'),
 			'PRICE' => $basketItem->getPriceWithVat(),
 			'QUANTITY' => $basketItem->canBuy() ? $basketItem->getQuantity() : 0,
+			'PROPS' => $this->collectBasketItemProps($basketItem),
 		]);
+
+		return $result;
+	}
+
+	protected function collectBasketItemProps(Sale\BasketItem $basketItem) : array
+	{
+		$result = [];
+
+		/** @var \Bitrix\Sale\BasketPropertyItem $property */
+		foreach ($basketItem->getPropertyCollection() as $property)
+		{
+			$id = $property->getId();
+			$data = [
+				'NAME' => $property->getField('NAME'),
+				'CODE' => $property->getField('CODE'),
+				'VALUE' => $property->getField('VALUE'),
+			];
+
+			if ($id !== null)
+			{
+				$data['ID'] = $id;
+			}
+
+			$result[] = $data;
+		}
 
 		return $result;
 	}

@@ -13,6 +13,11 @@ class Item extends Skeleton
 		return (float)$this->requireField('amount');
 	}
 
+	public function getProps() : ?array
+	{
+		return $this->getField('props');
+	}
+
 	public function getId() : int
 	{
 		return (int)$this->requireField('id');

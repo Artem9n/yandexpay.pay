@@ -14,6 +14,7 @@ abstract class Environment
 	protected $personType;
 	protected $property;
 	protected $catalog;
+	protected $product;
 
 	public function load() : void
 	{
@@ -179,6 +180,21 @@ abstract class Environment
 	 * @return Catalog
 	 */
 	protected function createCatalog() : Catalog
+	{
+		throw new Main\NotImplementedException('catalog is missing');
+	}
+
+	public function getProduct() : Product
+	{
+		if ($this->product === null)
+		{
+			$this->product = $this->createProduct();
+		}
+
+		return $this->product;
+	}
+
+	protected function createProduct() : Product
 	{
 		throw new Main\NotImplementedException('catalog is missing');
 	}

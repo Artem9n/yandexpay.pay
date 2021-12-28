@@ -133,6 +133,7 @@ class Purchase extends \CBitrixComponent
 			'label' => (string)$basketItem['NAME'],
 			'amount' => (string)($basketItem['PRICE'] * $basketItem['QUANTITY']),
 			'basketId' => $basketItem['BASKET_ID'] ?? null,
+			'props' => $basketItem['PROPS'],
 		];
 	}
 
@@ -395,22 +396,42 @@ class Purchase extends \CBitrixComponent
 
 		if ($mode === Pay\Injection\Behavior\Registry::ELEMENT)
 		{
+			$productId = $request->getProductId();
+
 			$order->initEmptyBasket();
-			$addProductResult = $order->addProduct($request->getProductId());
+
+			$basketData = $this->getProductBasketData($productId);
+			$addResult = $order->addProduct($productId, 1, $basketData);
 		}
 		elseif (
 			$mode === Pay\Injection\Behavior\Registry::BASKET
 			|| $mode === Pay\Injection\Behavior\Registry::ORDER
 		)
 		{
-			$addProductResult = $order->initUserBasket();
+			$addResult = $order->initUserBasket();
 		}
 		else
 		{
 			throw new Main\ArgumentException('not found mode');
 		}
 
-		Exceptions\Facade::handleResult($addProductResult);
+		Exceptions\Facade::handleResult($addResult);
+	}
+
+	protected function getProductBasketData(int $productId) : array
+	{
+		$environmentProduct = $this->environment->getProduct();
+		$fewData = $environmentProduct->getBasketData([$productId]);
+		$itemData = $fewData[$productId] ?? null;
+
+		Assert::notNull($itemData, '$enviromentProduct->getBasketData()');
+
+		if (isset($itemData['ERROR']))
+		{
+			throw new Main\SystemException($itemData['ERROR']);
+		}
+
+		return $itemData;
 	}
 
 	protected function fillBasket(EntityReference\Order $order, TradingAction\Incoming\Items $request) : void
@@ -426,6 +447,7 @@ class Purchase extends \CBitrixComponent
 			$quantity = $product->getQuantity();
 			$data = [
 				'BASKET_ID' => $product->getBasketId(),
+				'PROPS' => $product->getProps(),
 			];
 
 			$addResult = $order->addProduct($productId, $quantity, $data);
