@@ -105,33 +105,34 @@ class Purchase extends \CBitrixComponent
 
 		$order->finalize();
 
-		$basket = $order->getBasket();
+		// collect response
 
-		if ($basket->isEmpty())
+		$result['amount'] = (string)$order->getOrderPrice();
+
+		foreach ($order->getOrderableItems() as $basketCode)
 		{
-			throw new Main\ArgumentException('empty basket');
-		}
+			$itemResult = $order->getBasketItemData($basketCode);
+			$itemData = $itemResult->getData();
 
-		$result['amount'] = (string)$basket->getPrice();//number_format($basket->getPrice(), 2, '.', '');
+			Exceptions\Facade::handleResult($itemResult);
+			Assert::notNull($itemData['QUANTITY'], '$itemData[QUANTITY]');
 
-		foreach ($basket as $basketItem)
-		{
-			if ($basketItem->getFinalPrice() <= 0) { continue; }
+			if ($itemData['QUANTITY'] <= 0) { continue; }
 
-			$result['items'][] = $this->collectBasketItem($basketItem);
+			$result['items'][] = $this->collectBasketItem($itemData);
 		}
 
 		$this->sendResponse($result);
 	}
 
-	protected function collectBasketItem(\Bitrix\Sale\BasketItemBase $basketItem) : array
+	protected function collectBasketItem(array $basketItem) : array
 	{
 		return [
-			'id' => $basketItem->getProductId(),
-			'count' => (string)$basketItem->getQuantity(),
-			'label' => $basketItem->getField('NAME'),
-			'amount' => (string)$basketItem->getFinalPrice(), //number_format($basketItem->getFinalPrice(), 2, '.', '')
-			'basketId' => $basketItem->getId()// todo basketId
+			'id' => $basketItem['PRODUCT_ID'],
+			'count' => (string)$basketItem['QUANTITY'],
+			'label' => (string)$basketItem['NAME'],
+			'amount' => (string)($basketItem['PRICE'] * $basketItem['QUANTITY']),
+			'basketId' => $basketItem['BASKET_ID'] ?? null,
 		];
 	}
 
@@ -148,8 +149,8 @@ class Purchase extends \CBitrixComponent
 		$order->initialize();
 
 		$this->fillPersonType($order);
-		$this->fillIncomingBasket($order, $request->getItems());
 		$this->fillLocation($order, $request->getAddress());
+		$this->fillBasket($order, $request->getItems());
 
 		$order->finalize();
 
@@ -263,7 +264,7 @@ class Purchase extends \CBitrixComponent
 		$order->initialize();
 
 		$this->fillPersonType($order);
-		$this->fillIncomingBasket($order, $request->getItems());
+		$this->fillBasket($order, $request->getItems());
 
 		$order->finalize();
 
@@ -339,15 +340,17 @@ class Purchase extends \CBitrixComponent
 		$this->fillPersonType($order);
 		$this->fillStatus($order);
 		$this->fillProperties($order, $request);
-		$this->fillIncomingBasket($order, $request->getItems());
 
 		if ($request->getDeliveryType() === EntitySale\Delivery::PICKUP_TYPE)
 		{
+			$this->setLocation($order, $request->getPickup()->getLocationId());
+			$this->fillBasket($order, $request->getItems());
 			$this->fillPickup($order, $request->getPickup());
 		}
 		else
 		{
 			$this->fillLocation($order, $request->getAddress());
+			$this->fillBasket($order, $request->getItems());
 			$this->fillDelivery($order, $request->getDelivery());
 		}
 
@@ -374,8 +377,6 @@ class Purchase extends \CBitrixComponent
 
 	protected function fillPickup(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Pickup $pickup) : void
 	{
-		$this->setLocation($order, $pickup->getLocationId());
-
 		$deliveryId = $pickup->getId();
 		$price = $pickup->getAmount();
 		$storeId = $pickup->getStoreId();
@@ -394,6 +395,7 @@ class Purchase extends \CBitrixComponent
 
 		if ($mode === Pay\Injection\Behavior\Registry::ELEMENT)
 		{
+			$order->initEmptyBasket();
 			$addProductResult = $order->addProduct($request->getProductId());
 		}
 		elseif (
@@ -401,7 +403,7 @@ class Purchase extends \CBitrixComponent
 			|| $mode === Pay\Injection\Behavior\Registry::ORDER
 		)
 		{
-			$addProductResult = $order->loadUserBasket();
+			$addProductResult = $order->initUserBasket();
 		}
 		else
 		{
@@ -411,24 +413,24 @@ class Purchase extends \CBitrixComponent
 		Exceptions\Facade::handleResult($addProductResult);
 	}
 
-	protected function fillIncomingBasket(EntityReference\Order $order, TradingAction\Incoming\Items $request) : void
+	protected function fillBasket(EntityReference\Order $order, TradingAction\Incoming\Items $request) : void
 	{
 		$products = $request->getProducts();
+
+		$order->initEmptyBasket();
 
 		/** @var TradingAction\Incoming\Item $product */
 		foreach ($products as $product)
 		{
 			$productId = $product->getId();
 			$quantity = $product->getQuantity();
-
-			$fields = [
-				'PRICE' => $product->getAmount(),
-				'CUSTOM_PRICE' => 'Y'
+			$data = [
+				'BASKET_ID' => $product->getBasketId(),
 			];
 
-			$addProductResult = $order->addProduct($productId, $quantity, $fields);
+			$addResult = $order->addProduct($productId, $quantity, $data);
 
-			Exceptions\Facade::handleResult($addProductResult);
+			Exceptions\Facade::handleResult($addResult);
 		}
 	}
 
@@ -574,16 +576,7 @@ class Purchase extends \CBitrixComponent
 	{
 		global $USER;
 
-		if ($USER->IsAuthorized())
-		{
-			$result = (int)$USER->GetID();
-		}
-		else
-		{
-			$result = Sale\Fuser::getId(true);
-		}
-
-		return $result;
+		return $USER->IsAuthorized() ? (int)$USER->GetID() : null;
 	}
 
 	protected function createUser(TradingAction\Incoming\OrderAccept $request) : int

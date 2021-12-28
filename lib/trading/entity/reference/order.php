@@ -28,9 +28,14 @@ abstract class Order
 		throw new Main\NotImplementedException('finalize is missing');
 	}
 
-	public function loadUserBasket() : Main\Result
+	public function initUserBasket() : Main\Result
 	{
-		throw new Main\NotImplementedException('loadUserBasket is missing');
+		throw new Main\NotImplementedException('initUserBasket is missing');
+	}
+
+	public function initEmptyBasket() : Main\Result
+	{
+		throw new Main\NotImplementedException('initEmptyBasket is missing');
 	}
 
 	/**
@@ -156,10 +161,13 @@ abstract class Order
 		throw new Main\NotImplementedException('add is missing');
 	}
 
-	/**
-	 * @return Main\Result
-	 */
-	public function getBasketItemsData() : Main\Result
+	/** @return string[] */
+	public function getOrderableItems() : array
+	{
+		throw new Main\NotImplementedException('getOrderableItems is missing');
+	}
+
+	public function getBasketItemData($basketCode) : Main\Result
 	{
 		throw new Main\NotImplementedException('getBasketItemsData is missing');
 	}

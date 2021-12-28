@@ -24,7 +24,6 @@ class Order extends EntityReference\Order
 		Sale\DiscountCouponsManager::init(Sale\DiscountCouponsManager::MODE_EXTERNAL);
 
 		$this->freeze();
-		$this->getBasket(); // initialize basket (fix clear shipmentCollection)
 	}
 
 	public function finalize() : Main\Result
@@ -73,17 +72,14 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	public function loadUserBasket() : Main\Result
+	public function initUserBasket() : Main\Result
 	{
 		try
 		{
-			$fuserId = \CSaleBasket::GetBasketUserID(true); // $this->internalOrder->getUserId();
+			$fuserId = $this->getFUserId();
 			$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
 			/** @var Sale\BasketBase $basketClassName */
 			$basketClassName = $registry->getBasketClassName();
-
-			Assert::notNull($fuserId, 'fUserId');
-
 			$basket = $basketClassName::loadItemsForFUser($fuserId, $this->internalOrder->getSiteId());
 
 			if ($basket->count() === 0)
@@ -97,6 +93,61 @@ class Order extends EntityReference\Order
 		{
 			$result = new Main\Result();
 			$result->addError(new Main\Error($exception->getMessage(), $exception->getCode()));
+		}
+
+		return $result;
+	}
+
+	public function initEmptyBasket() : Main\Result
+	{
+		$siteId = $this->internalOrder->getSiteId();
+		$fUserId = $this->getFUserId();
+
+		$registry = Sale\Registry::getInstance(Sale\Registry::ENTITY_ORDER);
+		$basketClassName = $registry->getBasketClassName();
+		$basket = $basketClassName::create($siteId);
+		$basket->setFUserId($fUserId);
+
+		return $this->internalOrder->setBasket($basket);
+	}
+
+	public function getBasketItemData($basketCode) : Main\Result
+	{
+		$result = new Main\Result();
+		$basket = $this->getBasket();
+		$basketItem = $basket->getItemByBasketCode($basketCode);
+
+		if ($basketItem === null)
+		{
+			$errorMessage = 'TRADING_ENTITY_SALE_ENTITY_ORDER_BASKET_ITEM_NOT_FOUND'; // todo get message
+			$result->addError(new Main\Error($errorMessage));
+
+			return $result;
+		}
+
+		$result->setData([
+			'BASKET_ID' => $basketItem->getId(),
+			'PRODUCT_ID' => $basketItem->getProductId(),
+			'NAME' => $basketItem->getField('NAME'),
+			'PRICE' => $basketItem->getPriceWithVat(),
+			'QUANTITY' => $basketItem->canBuy() ? $basketItem->getQuantity() : 0,
+		]);
+
+		return $result;
+	}
+
+	public function getOrderableItems() : array
+	{
+		$basket = $this->getBasket();
+		$result = [];
+
+		/** @var Sale\BasketItem $basketItem */
+		foreach ($basket as $basketItem)
+		{
+			if (!$basketItem->canBuy()) { continue; }
+			if ($basketItem->getFinalPrice() <= 0) { continue; }
+
+			$result[] = $basketItem->getBasketCode();
 		}
 
 		return $result;
@@ -220,32 +271,27 @@ class Order extends EntityReference\Order
 		$order = $this->internalOrder;
 		$basket = $order->getBasket();
 
-		if ($basket === null)
-		{
-			$basket = $this->createBasket($order);
-			$order->setBasket($basket);
-		}
+		Assert::notNull($basket, '$order->getBasket()');
 
 		return $basket;
 	}
 
-	protected function createBasket(Sale\OrderBase $order)
+	protected function getFUserId() : int
 	{
-		$siteId = $order->getSiteId();
-		$userId = $order->getUserId();
-		$fUserId = null;
+		$userId = (int)$this->internalOrder->getUserId();
 
-		if ($userId > 0)
+		if ($userId === (int)\CSaleUser::GetAnonymousUserID())
 		{
-			$fUserId = Sale\Fuser::getIdByUserId($userId);
+			$result = Sale\Fuser::getId();
+		}
+		else
+		{
+			$result = Sale\Fuser::getIdByUserId($userId) ?: null; // false to null
 		}
 
-		$registry = Sale\Registry::getInstance(Sale\Registry::ENTITY_ORDER);
-		$basketClassName = $registry->getBasketClassName();
-		$basket = $basketClassName::create($siteId);
-		$basket->setFUserId($fUserId);
+		Assert::notNull($result, 'fUserId');
 
-		return $basket;
+		return $result;
 	}
 
 	public function addProduct($productId, $count = 1, array $data = null) : Main\Result
@@ -279,23 +325,6 @@ class Order extends EntityReference\Order
 			'MODULE' => true,
 			'PRODUCT_ID' => true,
 		];
-
-		// apply limits
-
-		if (isset($basketFields['AVAILABLE_QUANTITY']))
-		{
-			$siblingsQuantity = $this->getBasketProductSiblingsFilledQuantity($basketItem);
-
-			if ($siblingsQuantity > 0)
-			{
-				$basketFields['AVAILABLE_QUANTITY'] -= $siblingsQuantity;
-			}
-
-			if ($basketFields['AVAILABLE_QUANTITY'] < $basketFields['QUANTITY'])
-			{
-				$basketFields['QUANTITY'] = $basketFields['AVAILABLE_QUANTITY'];
-			}
-		}
 
 		// properties
 
@@ -331,15 +360,6 @@ class Order extends EntityReference\Order
 		if ($result->isSuccess())
 		{
 			$providerData = $providerResult->getData();
-
-			if (
-				isset($providerData['AVAILABLE_QUANTITY'], $basketFields['AVAILABLE_QUANTITY'])
-				&& $providerData['AVAILABLE_QUANTITY'] < $basketFields['AVAILABLE_QUANTITY']
-			)
-			{
-				$basketFields['AVAILABLE_QUANTITY'] = $providerData['AVAILABLE_QUANTITY'];
-			}
-
 			$basketFields += $providerData;
 		}
 		else
@@ -363,8 +383,6 @@ class Order extends EntityReference\Order
 
 		if (!$setQuantityResult->isSuccess())
 		{
-			$this->fillBasketItemAvailableQuantity($basketItem, $basketFields);
-
 			$result->addErrors($setQuantityResult->getErrors());
 		}
 
@@ -391,55 +409,9 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	protected function fillBasketItemAvailableQuantity(Sale\BasketItemBase $basketItem, $fields)
-	{
-		$currentQuantity = $basketItem->getQuantity();
-		$requestedQuantity = (float)$fields['QUANTITY'];
-
-		if ($currentQuantity < $requestedQuantity && isset($fields['AVAILABLE_QUANTITY']))
-		{
-			$siblingsQuantity = $this->getBasketProductSiblingsFilledQuantity($basketItem);
-			$availableQuantity = (float)$fields['AVAILABLE_QUANTITY'] - $siblingsQuantity;
-
-			if ($availableQuantity > $currentQuantity && $availableQuantity < $requestedQuantity)
-			{
-				$basketItem->setField('QUANTITY', $availableQuantity);
-			}
-		}
-	}
-
-	protected function getBasketProductSiblingsFilledQuantity(Sale\BasketItemBase $basketItem)
-	{
-		$result = 0;
-		$searchProductId = (string)$basketItem->getProductId();
-
-		if ($searchProductId !== '')
-		{
-			$basket = $basketItem->getCollection();
-
-			/** @var Sale\BasketItemBase $basketItem*/
-			foreach ($basket as $siblingItem)
-			{
-				if (
-					$siblingItem !== $basketItem
-					&& (string)$siblingItem->getProductId() === $searchProductId
-					&& $siblingItem->canBuy()
-				)
-				{
-					$result += $siblingItem->getQuantity();
-				}
-			}
-		}
-
-		return $result;
-	}
-
 	protected function getBasketItemProviderData(Sale\BasketBase $basket, Sale\BasketItemBase $basketItem, $basketFields)
 	{
 		$result = new Main\Result();
-		$initialQuantity = $basketItem->getField('QUANTITY');
-
-		$basketItem->setFieldNoDemand('QUANTITY', $basketFields['QUANTITY']); // required for get available quantity
 
 		$providerData = Sale\Provider::getProductData($basket, ['PRICE', 'AVAILABLE_QUANTITY'], $basketItem);
 		$basketCode = $basketItem->getBasketCode();
@@ -473,8 +445,6 @@ class Order extends EntityReference\Order
 
 			$result->setData($providerData[$basketCode]);
 		}
-
-		$basketItem->setFieldNoDemand('QUANTITY', $initialQuantity); // reset initial quantity
 
 		return $result;
 	}

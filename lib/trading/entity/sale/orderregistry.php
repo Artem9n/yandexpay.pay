@@ -17,6 +17,8 @@ class OrderRegistry extends EntityReference\OrderRegistry
 
 	public function createOrder($siteId, $userId, $currency) : EntityReference\Order
 	{
+		if ($userId === null) { $userId = \CSaleUser::GetAnonymousUserID(); }
+
 		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
 		$orderClassName = $registry->getOrderClassName();
 		$internalOrder = $orderClassName::create($siteId, $userId, $currency);
