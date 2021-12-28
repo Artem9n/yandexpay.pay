@@ -193,10 +193,29 @@ abstract class Order
 
 	/**
 	 * @param string $basketCode
+	 * @param float $price
+	 *
+	 * @return Main\Result
+	 */
+	public function setBasketItemPrice(string $basketCode, float $price) : Main\Result
+	{
+		throw new Main\NotImplementedException('setBasketItemPrice is missing');
+	}
+
+	/**
+	 * @param string $basketCode
 	 * @return Main\Result
 	 */
 	public function deleteBasketItem(string $basketCode) : Main\Result
 	{
 		throw new Main\NotImplementedException('deleteBasketItem is missing');
+	}
+
+	/**
+	 * @return float
+	 */
+	public function getBasketPrice()
+	{
+		throw new Main\NotImplementedException('getBasketPrice is missing');
 	}
 }

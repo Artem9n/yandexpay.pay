@@ -361,7 +361,7 @@ class Purchase extends \CBitrixComponent
 
 		$order->finalize();
 
-		// todo check prices
+		$this->checkPrice($order, $request->getItems());
 
 		$orderId = $this->addOrder($order);
 
@@ -376,6 +376,92 @@ class Purchase extends \CBitrixComponent
 		];
 
 		$this->sendResponse($result);
+	}
+
+	protected function checkPrice(EntityReference\Order $order, TradingAction\Incoming\Items $items) : void
+	{
+		$validationResult = $this->validatePrice($order, $items);
+		$allowModifyPrice = false;
+		$result = new Main\Result();
+
+		if (!$validationResult->isSuccess())
+		{
+			$checkPriceData = $validationResult->getData();
+
+			if ($checkPriceData['SIGN'] > 0) // requested price more then basket price
+			{
+				$allowModifyPrice = true;
+			}
+
+			if ($allowModifyPrice)
+			{
+				$modifyPrice = $this->modifyPrice($order, $items);
+
+				if (!$modifyPrice->isSuccess())
+				{
+					$result->addErrors($modifyPrice->getErrors());
+				}
+			}
+			else
+			{
+				$result->addErrors($validationResult->getErrors());
+			}
+		}
+	}
+
+	protected function modifyPrice(EntityReference\Order $order, TradingAction\Incoming\Items $items) : Main\Result
+	{
+		$result = new Main\Result();
+		$basketMap = array_flip($order->getOrderableItems());
+
+		/** @var TradingAction\Incoming\Item $item */
+		foreach ($items as $item)
+		{
+			$basketCode = $item->getBasketId();
+
+			if (!isset($basketMap[$basketCode])) { continue; }
+
+			$price = $item->getAmount();
+			$basketResult = $order->setBasketItemPrice($basketCode, $price);
+
+			if (!$basketResult->isSuccess())
+			{
+				$result->addErrors($basketResult->getErrors());
+			}
+		}
+
+		return $result;
+	}
+
+	protected function validatePrice(EntityReference\Order $order, TradingAction\Incoming\Items $items) : Main\Result
+	{
+		$requestPrice = $this->getItemsSum($items);
+		$basketPrice = $order->getBasketPrice();
+
+		$result = new Main\Result();
+
+		if ((float)$requestPrice !== (float)$basketPrice)
+		{
+			$result->addError(new Main\Error('PRICE_NOT_MATCH'));
+			$result->setData([
+				'SIGN' => $requestPrice < $basketPrice ? -1 : 1,
+			]);
+		}
+
+		return $result;
+	}
+
+	protected function getItemsSum(TradingAction\Incoming\Items $items)
+	{
+		$result = 0;
+
+		/** @var TradingAction\Incoming\Item $item */
+		foreach ($items as $item)
+		{
+			$result += $item->getAmount();
+		}
+
+		return $result;
 	}
 
 	protected function fillPickup(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Pickup $pickup) : void

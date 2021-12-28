@@ -126,13 +126,40 @@ class Order extends EntityReference\Order
 		}
 
 		$result->setData([
-			'BASKET_ID' => $basketItem->getId(),
+			'BASKET_ID' => $basketItem->getBasketCode(),
 			'PRODUCT_ID' => $basketItem->getProductId(),
 			'NAME' => $basketItem->getField('NAME'),
 			'PRICE' => $basketItem->getPriceWithVat(),
 			'QUANTITY' => $basketItem->canBuy() ? $basketItem->getQuantity() : 0,
 			'PROPS' => $this->collectBasketItemProps($basketItem),
 		]);
+
+		return $result;
+	}
+
+	public function setBasketItemPrice($basketCode, $price) : Main\Result
+	{
+		$result = new Main\Result();
+		$basket = $this->getBasket();
+		$basketItem = $basket->getItemByBasketCode($basketCode);
+
+		if ($basketItem === null)
+		{
+			$errorMessage = 'BASKET_ITEM_NOT_FOUND';
+			$result->addError(new Main\Error($errorMessage));
+		}
+		else
+		{
+			$setResult = $basketItem->setFields([
+				'CUSTOM_PRICE' => 'Y',
+				'PRICE' => $price
+			]);
+
+			if (!$setResult->isSuccess())
+			{
+				$result->addErrors($setResult->getErrors());
+			}
+		}
 
 		return $result;
 	}
@@ -225,6 +252,11 @@ class Order extends EntityReference\Order
 		}
 
 		return $result;
+	}
+
+	public function getBasketPrice()
+	{
+		return $this->getBasket()->getPrice();
 	}
 
 	public function setLocation($locationId) : Main\Result
