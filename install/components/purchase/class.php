@@ -43,8 +43,10 @@ class Purchase extends \CBitrixComponent
 		catch (Main\SystemException $exception)
 		{
 			$this->sendResponse([
-				'code' => (string)$exception->getCode(),
-				'message' => $exception->getMessage(),
+				'error' => [
+					'code' => (string)$exception->getCode(),
+					'message' => $exception->getMessage(),
+				],
 			]);
 
 			// todo show error, may be loggers
@@ -434,19 +436,92 @@ class Purchase extends \CBitrixComponent
 		return $itemData;
 	}
 
-	protected function fillBasket(EntityReference\Order $order, TradingAction\Incoming\Items $request) : void
+	protected function fillBasket(EntityReference\Order $order, TradingAction\Incoming\Items $products) : void
 	{
-		$products = $request->getProducts();
+		[$exists, $new] = $this->splitBasketAlreadyExists($products);
 
-		$order->initEmptyBasket();
+		if (!empty($exists))
+		{
+			$order->initUserBasket();
 
+			[$notFound, $needDelete] = $this->syncBasketExistProducts($order, $exists);
+
+			$this->deleteBasketProducts($order, $needDelete);
+			$this->addBasketNewProducts($order, $notFound);
+		}
+		else
+		{
+			$order->initEmptyBasket();
+		}
+
+		$this->addBasketNewProducts($order, $new);
+	}
+
+	protected function splitBasketAlreadyExists(TradingAction\Incoming\Items $products) : array
+	{
+		$exists = [];
+		$new = [];
+
+		/** @var TradingAction\Incoming\Item $product */
+		foreach ($products as $product)
+		{
+			if ($product->getBasketId() > 0)
+			{
+				$exists[] = $product;
+			}
+			else
+			{
+				$new[] = $product;
+			}
+		}
+
+		return [$exists, $new];
+	}
+
+	protected function syncBasketExistProducts(EntityReference\Order $order, array $products) : array
+	{
+		$productCodes = array_map(static function(TradingAction\Incoming\Item $item) { return $item->getBasketId(); }, $products);
+		$existsCodes = $order->getOrderableItems();
+		$existsMap = array_flip($existsCodes);
+		$notFound = [];
+		$needDelete = array_diff($existsCodes, $productCodes);
+
+		/** @var TradingAction\Incoming\Item $product */
+		foreach ($products as $product)
+		{
+			$basketCode = $product->getBasketId();
+
+			if (!isset($existsMap[$basketCode]))
+			{
+				$notFound[] = $product;
+				continue;
+			}
+
+			$quantityResult = $order->setBasketItemQuantity($basketCode, $product->getQuantity());
+
+			Exceptions\Facade::handleResult($quantityResult);
+		}
+
+		return [$notFound, $needDelete];
+	}
+
+	protected function deleteBasketProducts(EntityReference\Order $order, array $basketCodes) : void
+	{
+		foreach ($basketCodes as $basketCode)
+		{
+			$result = $order->deleteBasketItem($basketCode);
+			Exceptions\Facade::handleResult($result);
+		}
+	}
+
+	protected function addBasketNewProducts(EntityReference\Order $order, array $products) : void
+	{
 		/** @var TradingAction\Incoming\Item $product */
 		foreach ($products as $product)
 		{
 			$productId = $product->getId();
 			$quantity = $product->getQuantity();
 			$data = [
-				'BASKET_ID' => $product->getBasketId(),
 				'PROPS' => $product->getProps(),
 			];
 

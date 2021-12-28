@@ -326,7 +326,7 @@ class Product extends EntityReference\Product
 		return $result;
 	}
 
-	protected function fillElementProperties(array $properties) : array
+	protected function fillElementProperties(array $properties = null) : array
 	{
 		$result = [];
 

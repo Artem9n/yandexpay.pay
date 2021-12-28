@@ -179,4 +179,24 @@ abstract class Order
 	{
 		throw new Main\NotImplementedException('getBasket is missing');
 	}
+
+	/**
+	 * @param string $basketCode
+	 * @param float $quantity
+	 *
+	 * @return Main\Result
+	 */
+	public function setBasketItemQuantity(string $basketCode, float $quantity) : Main\Result
+	{
+		throw new Main\NotImplementedException('setBasketItemQuantity is missing');
+	}
+
+	/**
+	 * @param string $basketCode
+	 * @return Main\Result
+	 */
+	public function deleteBasketItem(string $basketCode) : Main\Result
+	{
+		throw new Main\NotImplementedException('deleteBasketItem is missing');
+	}
 }

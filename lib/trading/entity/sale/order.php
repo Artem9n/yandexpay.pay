@@ -179,6 +179,54 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
+	public function setBasketItemQuantity($basketCode, $quantity) : Main\Result
+	{
+		$result = new Main\Result();
+		$basket = $this->getBasket();
+		$basketItem = $basket->getItemByBasketCode($basketCode);
+
+		if ($basketItem === null)
+		{
+			$errorMessage = 'BASKET_ITEM_NOT_FOUND';
+			$result->addError(new Main\Error($errorMessage));
+		}
+		else if ((float)$quantity !== (float)$basketItem->getQuantity())
+		{
+			$setResult = $basketItem->setField('QUANTITY', $quantity);
+
+			if (!$setResult->isSuccess())
+			{
+				$result->addErrors($setResult->getErrors());
+			}
+		}
+
+		return $result;
+	}
+
+	public function deleteBasketItem(string $basketCode) : Main\Result
+	{
+		$result = new Main\Result();
+		$basket = $this->getBasket();
+		$basketItem = $basket->getItemByBasketCode($basketCode);
+
+		if ($basketItem === null)
+		{
+			$errorMessage = 'BASKET_ITEM_NOT_FOUND';
+			$result->addError(new Main\Error($errorMessage));
+		}
+		else
+		{
+			$deleteResult = $basketItem->delete();
+
+			if (!$deleteResult->isSuccess())
+			{
+				$result->addErrors($deleteResult->getErrors());
+			}
+		}
+
+		return $result;
+	}
+
 	public function setLocation($locationId) : Main\Result
 	{
 		$locationCode = \CSaleLocation::getLocationCODEbyID($locationId);
