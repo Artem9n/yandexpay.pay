@@ -1,21 +1,19 @@
 import Template from '../utils/template';
 import AbstractStep from './abstractstep';
+import { ready } from "../utils/ready";
 
 const YaPay = window.YaPay;
 
 export default class Cart extends AbstractStep {
 
 	render(node, data) {
+		this.isBootstrap = false;
 		this.element = node;
 		this.paymentData = this.getPaymentData(data);
 
 		this.setupPaymentCash();
 
-		this.getProducts().then((result) => {
-			this.combineOrderWithProducts(result);
-			this.createPayment(this.element, this.paymentData);
-		});
-
+		this.delayBootstrap();
 		this.catalogElementChangeOffer();
 		this.basketChange();
 	}
@@ -28,11 +26,53 @@ export default class Cart extends AbstractStep {
 		if (typeof BX === 'undefined' || typeof JCCatalogElement === 'undefined') { return; }
 
 		BX.addCustomEvent('onCatalogElementChangeOffer', (eventData) => {
-			this.setOption('productId', eventData.newId);
+			let newProductId = parseInt(eventData.newId, 10);
+
+			if (isNaN(newProductId)) { return; }
+
+			this.delayChangeOffer(newProductId);
+		});
+	}
+
+	delayChangeOffer(productId) {
+		this.delay('changeOffer', [productId]);
+	}
+
+	delayBootstrap() {
+		ready(() => {
+			this.delay('bootstrap');
+		});
+	}
+
+	bootstrap() {
+		this.isBootstrap = true;
+
+		this.getProducts()
+			.then((result) => {
+
+				if (result.error) { throw new Error(result.error.message, result.error.code); }
+
+				this.combineOrderWithProducts(result);
+				this.createPayment(this.element, this.paymentData);
+
+			})
+			.catch((error) => {
+				this.showError('', error);
+			});
+	}
+
+	changeOffer(newProductId) {
+
+		if (!this.isBootstrap) { return; }
+
+		let productId = this.getOption('productId');
+
+		if (productId !== newProductId) { // todo in items
+			this.setOption('productId', newProductId);
 			this.getProducts().then((result) => {
 				this.combineOrderWithProducts(result);
 			});
-		});
+		}
 	}
 
 	basketChange() {
@@ -131,6 +171,8 @@ export default class Cart extends AbstractStep {
 					// Получить платежный токен.
 					this.orderAccept(event).then((result) => {
 
+						if (result.error) { throw new Error(result.error.message, result.error.code); }
+
 						if(!this.isPaymentTypeCash(event)) {
 							this.notify(result, event).then(result => {
 								if (result.success === true) {
@@ -149,6 +191,10 @@ export default class Cart extends AbstractStep {
 								window.location.href = result.redirect;
 							}
 						}
+					})
+					.catch((error) => {
+						this.showError('', error); // todo test it
+						payment.complete(YaPay.CompleteReason.Error);
 					});
 
 				});
@@ -327,8 +373,7 @@ export default class Cart extends AbstractStep {
 			...order,
 			items: products.items,
 			total: {
-				...order.total,
-				amount: this.amountSum(0, products.amount),
+				amount: products.amount,
 			},
 		};
 

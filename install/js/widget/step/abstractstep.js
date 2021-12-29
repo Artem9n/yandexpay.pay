@@ -14,6 +14,7 @@ export default class AbstractStep {
 	constructor(options = {}) {
 		this.options = Object.assign({}, this.constructor.defaults, options);
 		this.widget = null;
+		this.delayTimeouts = {};
 	}
 
 	/**
@@ -116,6 +117,18 @@ export default class AbstractStep {
 		}
 
 		return context[method](selector);
+	}
+
+	clearDelay(name) {
+		if (this.delayTimeouts[name] === null) { return; }
+
+		clearTimeout(this.delayTimeouts[name]);
+		this.delayTimeouts[name] = null;
+	}
+
+	delay(name, args = [], timeout = 300) {
+		this.clearDelay(name);
+		this.delayTimeouts[name] = setTimeout(this[name].bind(this, ...args), timeout);
 	}
 
 }
