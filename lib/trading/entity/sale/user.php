@@ -3,12 +3,12 @@
 namespace YandexPay\Pay\Trading\Entity\Sale;
 
 use Bitrix\Main;
-//use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 
 class User extends EntityReference\User
 {
-	//use Concerns\HasLang;
+	use Concerns\HasMessage;
 
 	/** @var Environment */
 	protected $environment;
@@ -127,7 +127,7 @@ class User extends EntityReference\User
 
 		if ($userId === null)
 		{
-			$error = new Main\Error(static::getLang('TRADING_ENTITY_SALE_USER_NEED_INSTALL_BEFORE_ATTACH_GROUP'));
+			$error = new Main\Error(self::getMessage('NEED_INSTALL_BEFORE_ATTACH_GROUP'));
 			$result->addError($error);
 		}
 		else
@@ -233,7 +233,7 @@ class User extends EntityReference\User
 		}
 		else
 		{
-			$message = 'TRADING_ENTITY_SALE_USER_FAIL_AUTO_REGISTER_USER';//static::getLang('TRADING_ENTITY_SALE_USER_FAIL_AUTO_REGISTER_USER');
+			$message = self::getMessage('FAIL_AUTO_REGISTER_USER');
 			$error = new Main\Error($message);
 
 			$result->addError($error);

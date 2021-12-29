@@ -356,9 +356,7 @@ class Delivery extends EntityReference\Delivery
 
 		if ($deliveryService === null)
 		{
-			$message = 'TRADING_ENTITY_SALE_DELIVERY_SERVICE_NOT_FOUND';/*static::getLang('TRADING_ENTITY_SALE_DELIVERY_SERVICE_NOT_FOUND', [
-				'#ID#' => $deliveryId,
-			]);*/
+			$message = self::getMessage('DELIVERY_SERVICE_NOT_FOUND', [ '#ID#' => $deliveryId ]);
 			throw new Main\SystemException($message);
 		}
 
@@ -391,7 +389,7 @@ class Delivery extends EntityReference\Delivery
 
 		if ($result === null)
 		{
-			$message = 'TRADING_ENTITY_SALE_DELIVERY_CALCULATED_SHIPMENT_NOT_FOUND';//static::getLang('');
+			$message = self::getMessage('CALCULATED_SHIPMENT_NOT_FOUND');
 			throw new Main\SystemException($message);
 		}
 

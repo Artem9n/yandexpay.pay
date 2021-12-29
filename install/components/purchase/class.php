@@ -28,6 +28,8 @@ class Purchase extends \CBitrixComponent
 	protected $options;
 	/** @var TradingSetup\Model */
 	protected $setup;
+	/** @var array<int, string> $productIndex => $basketCode  */
+	protected $basketMap = [];
 
 	public function executeComponent(): void
 	{
@@ -361,7 +363,7 @@ class Purchase extends \CBitrixComponent
 
 		$order->finalize();
 
-		$this->checkPrice($order, $request->getItems());
+		$this->check($order, $request);
 
 		$orderId = $this->addOrder($order);
 
@@ -378,90 +380,73 @@ class Purchase extends \CBitrixComponent
 		$this->sendResponse($result);
 	}
 
-	protected function checkPrice(EntityReference\Order $order, TradingAction\Incoming\Items $items) : void
+	protected function check(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request) : void
 	{
-		$validationResult = $this->validatePrice($order, $items);
-		$allowModifyPrice = false;
-		$result = new Main\Result();
-
-		if (!$validationResult->isSuccess())
-		{
-			$checkPriceData = $validationResult->getData();
-
-			if ($checkPriceData['SIGN'] > 0) // requested price more then basket price
-			{
-				$allowModifyPrice = true;
-			}
-
-			if ($allowModifyPrice)
-			{
-				$modifyPrice = $this->modifyPrice($order, $items);
-
-				if (!$modifyPrice->isSuccess())
-				{
-					$result->addErrors($modifyPrice->getErrors());
-				}
-			}
-			else
-			{
-				$result->addErrors($validationResult->getErrors());
-			}
-		}
+		$this->checkBasket($order, $request->getItems());
+		$this->checkDelivery($order, $request);
+		$this->checkTotal($order, $request);
 	}
 
-	protected function modifyPrice(EntityReference\Order $order, TradingAction\Incoming\Items $items) : Main\Result
+	protected function checkTotal(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request) : void
 	{
-		$result = new Main\Result();
-		$basketMap = array_flip($order->getOrderableItems());
+		$orderPrice = $order->getOrderPrice();
+		$requestPrice = $request->getOrderAmount();
 
-		/** @var TradingAction\Incoming\Item $item */
-		foreach ($items as $item)
+		if (Pay\Data\Price::round($orderPrice) !== Pay\Data\Price::round($requestPrice))
 		{
-			$basketCode = $item->getBasketId();
-
-			if (!isset($basketMap[$basketCode])) { continue; }
-
-			$price = $item->getAmount();
-			$basketResult = $order->setBasketItemPrice($basketCode, $price);
-
-			if (!$basketResult->isSuccess())
-			{
-				$result->addErrors($basketResult->getErrors());
-			}
-		}
-
-		return $result;
-	}
-
-	protected function validatePrice(EntityReference\Order $order, TradingAction\Incoming\Items $items) : Main\Result
-	{
-		$requestPrice = $this->getItemsSum($items);
-		$basketPrice = $order->getBasketPrice();
-
-		$result = new Main\Result();
-
-		if ((float)$requestPrice !== (float)$basketPrice)
-		{
-			$result->addError(new Main\Error('PRICE_NOT_MATCH'));
-			$result->setData([
-				'SIGN' => $requestPrice < $basketPrice ? -1 : 1,
+			$message = $this->getLang('ORDER_PRICE_NOT_MATCH', [
+				'#REQUEST_PRICE#' => $requestPrice,
+				'#ORDER_PRICE#' => $orderPrice
 			]);
+			throw new Main\SystemException($message);
 		}
-
-		return $result;
 	}
 
-	protected function getItemsSum(TradingAction\Incoming\Items $items)
+	protected function checkDelivery(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request) : void
 	{
-		$result = 0;
+		$delivery = $request->getDeliveryType() === EntitySale\Delivery::PICKUP_TYPE ? $request->getPickup() : $request->getDelivery();
+		$shipmentPrice = $order->getShipmentPrice($delivery->getId());
 
-		/** @var TradingAction\Incoming\Item $item */
-		foreach ($items as $item)
+		Assert::notNull($shipmentPrice, '$shipmentPrice');
+
+		if (Pay\Data\Price::round($shipmentPrice) !== Pay\Data\Price::round($delivery->getAmount()))
 		{
-			$result += $item->getAmount();
+			$priceResult = $order->setShipmentPrice($delivery->getId(), $delivery->getAmount());
+			Exceptions\Facade::handleResult($priceResult);
 		}
+	}
 
-		return $result;
+	protected function checkBasket(EntityReference\Order $order, TradingAction\Incoming\Items $items) : void
+	{
+		/** @var TradingAction\Incoming\Item $item */
+		foreach ($items as $index => $item)
+		{
+			$basketCode = $this->basketMap[$index] ?? null;
+
+			Assert::notNull($basketCode, '$basketMap[$index]');
+
+			$basketResult = $order->getBasketItemData($basketCode);
+			$basketData = $basketResult->getData();
+
+			Exceptions\Facade::handleResult($basketResult);
+
+			Assert::notNull($basketData['QUANTITY'], '$basketData[QUANTITY]');
+			Assert::notNull($basketData['PRICE'], '$basketData[PRICE]');
+
+			$productPrice = $basketData['PRICE'] * $basketData['QUANTITY'];
+
+			if (Pay\Data\Price::round($productPrice) !== Pay\Data\Price::round($item->getAmount()))
+			{
+				$priceResult = $order->setBasketItemPrice($basketCode, $item->getAmount());
+				Exceptions\Facade::handleResult($priceResult);
+			}
+
+			if (Pay\Data\Quantity::round($basketData['QUANTITY']) !== Pay\Data\Quantity::round($item->getQuantity()))
+			{
+				$quantityResult = $order->setBasketItemQuantity($basketCode, $item->getQuantity());
+				Exceptions\Facade::handleResult($quantityResult);
+			}
+		}
 	}
 
 	protected function fillPickup(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Pickup $pickup) : void
@@ -549,15 +534,15 @@ class Purchase extends \CBitrixComponent
 		$new = [];
 
 		/** @var TradingAction\Incoming\Item $product */
-		foreach ($products as $product)
+		foreach ($products as $index => $product)
 		{
-			if ($product->getBasketId() > 0)
+			if ((int)$product->getBasketId() > 0)
 			{
-				$exists[] = $product;
+				$exists[$index] = $product;
 			}
 			else
 			{
-				$new[] = $product;
+				$new[$index] = $product;
 			}
 		}
 
@@ -573,19 +558,21 @@ class Purchase extends \CBitrixComponent
 		$needDelete = array_diff($existsCodes, $productCodes);
 
 		/** @var TradingAction\Incoming\Item $product */
-		foreach ($products as $product)
+		foreach ($products as $index => $product)
 		{
 			$basketCode = $product->getBasketId();
 
 			if (!isset($existsMap[$basketCode]))
 			{
-				$notFound[] = $product;
+				$notFound[$index] = $product;
 				continue;
 			}
 
 			$quantityResult = $order->setBasketItemQuantity($basketCode, $product->getQuantity());
 
 			Exceptions\Facade::handleResult($quantityResult);
+
+			$this->basketMap[$index] = $basketCode;
 		}
 
 		return [$notFound, $needDelete];
@@ -603,7 +590,7 @@ class Purchase extends \CBitrixComponent
 	protected function addBasketNewProducts(EntityReference\Order $order, array $products) : void
 	{
 		/** @var TradingAction\Incoming\Item $product */
-		foreach ($products as $product)
+		foreach ($products as $index => $product)
 		{
 			$productId = $product->getId();
 			$quantity = $product->getQuantity();
@@ -612,8 +599,12 @@ class Purchase extends \CBitrixComponent
 			];
 
 			$addResult = $order->addProduct($productId, $quantity, $data);
+			$addData = $addResult->getData();
 
 			Exceptions\Facade::handleResult($addResult);
+			Assert::notNull($addData['BASKET_CODE'], '$addData[BASKET_CODE]');
+
+			$this->basketMap[$index] = $addData['BASKET_CODE'];
 		}
 	}
 
@@ -643,7 +634,7 @@ class Purchase extends \CBitrixComponent
 
 		if (!isset($saveData['ID']))
 		{
-			$errorMessage = 'TRADING_ACTION_ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET';//static::getLang('TRADING_ACTION_ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET');
+			$errorMessage = $this->getLang('ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET');
 			throw new Main\SystemException($errorMessage);
 		}
 

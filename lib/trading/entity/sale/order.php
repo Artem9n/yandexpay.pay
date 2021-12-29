@@ -3,6 +3,7 @@
 namespace YandexPay\Pay\Trading\Entity\Sale;
 
 use YandexPay\Pay\Reference\Assert;
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use Bitrix\Main;
 use Bitrix\Sale;
@@ -10,6 +11,8 @@ use Bitrix\Catalog;
 
 class Order extends EntityReference\Order
 {
+	use Concerns\HasMessage;
+
 	/** @var Sale\OrderBase */
 	protected $calculatable;
 	protected $isStartField;
@@ -84,7 +87,8 @@ class Order extends EntityReference\Order
 
 			if ($basket->count() === 0)
 			{
-				throw new Main\SystemException('empty basket'); // todo
+				$message = self::getMessage('EMPTY_BASKET');
+				throw new Main\SystemException($message);
 			}
 
 			$result = $this->internalOrder->setBasket($basket);
@@ -119,7 +123,7 @@ class Order extends EntityReference\Order
 
 		if ($basketItem === null)
 		{
-			$errorMessage = 'TRADING_ENTITY_SALE_ENTITY_ORDER_BASKET_ITEM_NOT_FOUND'; // todo get message
+			$errorMessage = self::getMessage('BASKET_ITEM_NOT_FOUND');
 			$result->addError(new Main\Error($errorMessage));
 
 			return $result;
@@ -145,7 +149,7 @@ class Order extends EntityReference\Order
 
 		if ($basketItem === null)
 		{
-			$errorMessage = 'BASKET_ITEM_NOT_FOUND';
+			$errorMessage = self::getMessage('BASKET_ITEM_NOT_FOUND');
 			$result->addError(new Main\Error($errorMessage));
 		}
 		else
@@ -214,7 +218,7 @@ class Order extends EntityReference\Order
 
 		if ($basketItem === null)
 		{
-			$errorMessage = 'BASKET_ITEM_NOT_FOUND';
+			$errorMessage = self::getMessage('BASKET_ITEM_NOT_FOUND');
 			$result->addError(new Main\Error($errorMessage));
 		}
 		else if ((float)$quantity !== (float)$basketItem->getQuantity())
@@ -238,7 +242,7 @@ class Order extends EntityReference\Order
 
 		if ($basketItem === null)
 		{
-			$errorMessage = 'BASKET_ITEM_NOT_FOUND';
+			$errorMessage = self::getMessage('BASKET_ITEM_NOT_FOUND');
 			$result->addError(new Main\Error($errorMessage));
 		}
 		else
@@ -279,7 +283,7 @@ class Order extends EntityReference\Order
 
 		if ($locationProperty === null)
 		{
-			$errorMessage = 'not property type location';//static::getLang('TRADING_ENTITY_SALE_ORDER_HASNT_LOCATION_PROPERTY');
+			$errorMessage = self::getMessage('HASNT_LOCATION_PROPERTY');
 			$result->addError(new Main\Error($errorMessage));
 
 			return $result;
@@ -421,6 +425,50 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
+	public function getShipmentPrice(int $deliveryId) : ?float
+	{
+		$shipment = $this->getDeliveryShipment($deliveryId);
+
+		return $shipment !== null ? $shipment->getPrice() : null;
+	}
+
+	public function setShipmentPrice(int $deliveryId, float $price) : Main\Result
+	{
+		$shipment = $this->getDeliveryShipment($deliveryId);
+
+		if ($shipment === null)
+		{
+			$result = new Main\Result();
+			$result->addError(new Main\Error(
+				sprintf('cant find shipment with delivery service %s', $deliveryId)
+			));
+		}
+		else
+		{
+			$result = $this->fillShipmentPrice($shipment, $price);
+		}
+
+		return $result;
+	}
+
+	protected function getDeliveryShipment(int $deliveryId) : ?Sale\Shipment
+	{
+		$deliveryId = (int)$deliveryId;
+		$result = null;
+
+		/** @var Sale\Shipment $shipment */
+		foreach ($this->internalOrder->getShipmentCollection() as $shipment)
+		{
+			if ((int)$shipment->getDeliveryId() === $deliveryId)
+			{
+				$result = $shipment;
+				break;
+			}
+		}
+
+		return $result;
+	}
+
 	protected function createBasketItem(Sale\BasketBase $basket, $basketFields)
 	{
 		/** @var Sale\BasketItemBase $basketItem */
@@ -524,7 +572,7 @@ class Order extends EntityReference\Order
 
 		if (empty($providerData[$basketCode]))
 		{
-			$errorMessage = 'TRADING_ENTITY_SALE_ORDER_PRODUCT_NO_PROVIDER_DATA';//static::getLang('TRADING_ENTITY_SALE_ORDER_PRODUCT_NO_PROVIDER_DATA');
+			$errorMessage = self::getMessage('PRODUCT_NO_PROVIDER_DATA');
 			$result->addError(new Main\Error($errorMessage));
 		}
 		else
@@ -583,7 +631,7 @@ class Order extends EntityReference\Order
 
 		if(!Sale\DiscountCouponsManager::add($coupon))
 		{
-			$message = 'TRADING_ENTITY_SALE_ORDER_PRODUCT_NO_APPLY_COUPON';
+			$message = self::getMessage('PRODUCT_NO_APPLY_COUPON');
 			$result->addError(new Main\Error($message));
 		}
 		else

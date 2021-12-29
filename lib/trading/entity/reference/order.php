@@ -51,6 +51,27 @@ abstract class Order
 	}
 
 	/**
+	 * @param int $deliveryId
+	 *
+	 * @return float|null
+	 */
+	public function getShipmentPrice(int $deliveryId) : ?float
+	{
+		throw new Main\NotImplementedException('getShipmentPrice is missing');
+	}
+
+	/**
+	 * @param int $deliveryId
+	 * @param float $price
+	 *
+	 * @return Main\Result
+	 */
+	public function setShipmentPrice(int $deliveryId, float $price) : Main\Result
+	{
+		throw new Main\NotImplementedException('setShipmentPrice is missing');
+	}
+
+	/**
 	 * @param string $coupon
 	 *
 	 * @return Main\Result

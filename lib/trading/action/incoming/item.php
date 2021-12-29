@@ -28,8 +28,8 @@ class Item extends Skeleton
 		return (float)$this->requireField('count');
 	}
 
-	public function getBasketId() : ?int
+	public function getBasketId() : ?string
 	{
-		return (int)$this->getField('basketId');
+		return $this->getField('basketId');
 	}
 }
