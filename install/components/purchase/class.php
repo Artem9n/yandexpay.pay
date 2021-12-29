@@ -90,6 +90,10 @@ class Purchase extends \CBitrixComponent
 
 	protected function sendResponse(array $response) : void
 	{
+		global $APPLICATION;
+
+		$APPLICATION->RestartBuffer();
+
 		$json = Main\Web\Json::encode($response);
 		\CMain::FinalActions($json);
 	}
@@ -470,11 +474,12 @@ class Purchase extends \CBitrixComponent
 		if ($mode === Pay\Injection\Behavior\Registry::ELEMENT)
 		{
 			$productId = $request->getProductId();
+			$offerId = $this->environment->getProduct()->resolveOffer($productId);
 
 			$order->initEmptyBasket();
 
-			$basketData = $this->getProductBasketData($productId);
-			$addResult = $order->addProduct($productId, 1, $basketData);
+			$basketData = $this->getProductBasketData($offerId);
+			$addResult = $order->addProduct($offerId, 1, $basketData);
 		}
 		elseif (
 			$mode === Pay\Injection\Behavior\Registry::BASKET

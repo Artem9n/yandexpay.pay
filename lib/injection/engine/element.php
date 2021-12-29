@@ -2,35 +2,51 @@
 namespace YandexPay\Pay\Injection\Engine;
 
 use Bitrix\Main;
-use Bitrix\Iblock\ElementTable;
+use Bitrix\Iblock;
 use YandexPay\Pay\Injection;
-use YandexPay\Pay\Reference\Assert;
+use YandexPay\Pay\Trading\Entity as TradingEntity;
 
 class Element extends AbstractEngine
 {
+	protected static $environment;
+
 	public static function onEpilog(int $injectionId, array $settings) : void
 	{
 		$url = static::getUrl();
 
 		if (!isset($settings['IBLOCK'])) { return; }
 
-		$element = static::getDetailPageUtlTemplate($settings['IBLOCK'], $url);
+		$variables = static::getDetailPageUrlTemplate($settings['IBLOCK'], $url);
 
-		if (empty($element)) { return; }
+		if (empty($variables)) { return; }
 
-		$elementId = static::getElementId($settings['IBLOCK'], $element);
+		$elementFilter = static::elementFilter($settings['IBLOCK'], $variables);
+		$elementId = static::getElementId($elementFilter);
 
 		if ($elementId === null) { return; }
+
+		if (static::isSku($elementId))
+		{
+			$offerFilter = static::offerFilter($settings['IBLOCK']);
+			$offerId = static::searchOffer($settings['IBLOCK'], $elementId, $offerFilter);
+
+			if ($offerId !== null)
+			{
+				$elementId = $offerId;
+			}
+		}
 
 		static::render($injectionId, ['PRODUCT_ID' => $elementId]);
 	}
 
 	protected static function getUrl() : string
 	{
-		return Main\Context::getCurrent()->getRequest()->getRequestedPage();
+		$request = static::getRequest();
+
+		return $request->getRequestedPage();
 	}
 
-	protected static function getDetailPageUtlTemplate(int $iblockId, string $url) : ?array
+	protected static function getDetailPageUrlTemplate(int $iblockId, string $url) : ?array
 	{
 		if (!Main\Loader::includeModule('iblock')) { return null; }
 
@@ -60,7 +76,7 @@ class Element extends AbstractEngine
 			'SECTION_ID',
 			'SECTION_CODE',
 			'ELEMENT_ID',
-			'ELEMENT_CODE'
+			'ELEMENT_CODE',
 		];
 
 		\CComponentEngine::initComponentVariables(false, $componentVariables, [], $variables);
@@ -68,29 +84,123 @@ class Element extends AbstractEngine
 		return $variables;
 	}
 
-	protected static function getElementId(int $iblockId, array $element) : ?int
+	protected static function elementFilter(int $iblockId, array $variables = []) : array
 	{
-		$filter = ['ACTIVE' => 'Y', 'IBLOCK_ID' => $iblockId];
+		$filter = ['IBLOCK_ID' => $iblockId, '=ACTIVE' => 'Y'];
 
-		if (isset($element['ELEMENT_CODE']))
+		if (isset($variables['ELEMENT_CODE']))
 		{
-			$filter['=CODE'] = $element['ELEMENT_CODE'];
+			$filter['=CODE'] = $variables['ELEMENT_CODE'];
 		}
 
-		if (isset($element['ELEMENT_ID']))
+		if (isset($variables['ELEMENT_ID']))
 		{
-			$filter['=ID'] = $element['ELEMENT_ID'];
+			$filter['=ID'] = $variables['ELEMENT_ID'];
 		}
 
-		$query = ElementTable::getList([
-			'filter' => $filter,
-			'select' => ['ID']
-		]);
+		if (isset($variables['SECTION_CODE']))
+		{
+			$filter['=SECTION_CODE'] = $variables['SECTION_CODE'];
+		}
 
-		$row = $query->fetchObject();
+		if (isset($variables['SECTION_ID']))
+		{
+			$filter['=SECTION_ID'] = $variables['SECTION_ID'];
+		}
+
+		return $filter;
+	}
+
+	protected static function getElementId(array $filter = []) : ?int
+	{
+		if (empty($filter)) { return null; }
+
+		$query = \CIBlockElement::GetList([], $filter, false, false, ['ID']);
+
+		$row = $query->Fetch();
 
 		if (!$row) { return null; }
 
-		return $row->getId();
+		return $row['ID'];
+	}
+
+	protected static function isSku(int $elementId) : bool
+	{
+		$environment = static::getEnvironment();
+		$productEnvironment = $environment->getProduct();
+
+		return $productEnvironment->isSku($elementId);
+	}
+
+	protected static function offerFilter(int $catalogIblockId) : array
+	{
+		$catalogIblockData = \CCatalogSKU::GetInfoByProductIBlock($catalogIblockId);
+		$offerIblockId = $catalogIblockData ? $catalogIblockData['IBLOCK_ID'] : null;
+		$code = null;
+		$template = null;
+
+		if ($offerIblockId === null) { return []; }
+
+		$detailPageUrl = \CIBlock::GetArrayByID($offerIblockId, 'DETAIL_PAGE_URL');
+
+		$symbolPos = mb_strpos($detailPageUrl, '?');
+
+		if ($symbolPos !== false)
+		{
+			$queryParamOffer = mb_substr($detailPageUrl, $symbolPos + 1);
+			[$code, $template] = explode('=', $queryParamOffer);
+		}
+
+		$request = static::getRequest(); // todo use iblock url template
+		$filter = [];
+
+		if ($code !== null && $template !== null && $request->get($code) !== null)
+		{
+			foreach (['ID', 'CODE'] as $key)
+			{
+				if (mb_strpos($template, $key) !== false)
+				{
+					$filter[$key] = $request->get($code);
+					break;
+				}
+			}
+		}
+
+		if (empty($filter))
+		{
+			$filter = [
+				'ID' => $request->get('OFFER_ID'),
+				'CODE' => $request->get('OFFER_CODE'),
+			];
+		}
+
+		return array_filter($filter);
+	}
+
+	protected static function searchOffer(int $iblockId, int $elementId, array $filter = []) : ?int
+	{
+		if (empty($filter)) { return null; }
+
+		$environment = static::getEnvironment();
+		$productEnvironment = $environment->getProduct();
+
+		$offers = $productEnvironment->searchOffers($elementId, $iblockId, $filter);
+
+		return !empty($offers) ? (int)reset($offers) : null;
+	}
+
+	protected static function getRequest()
+	{
+		return Main\Context::getCurrent()->getRequest();
+	}
+
+	protected static function getEnvironment() : TradingEntity\Reference\Environment
+	{
+		if (static::$environment === null)
+		{
+			static::$environment = TradingEntity\Registry::getEnvironment();
+		}
+
+		return static::$environment;
 	}
 }

@@ -12,6 +12,35 @@ class Product extends EntityReference\Product
 {
 	use Concerns\HasMessage;
 
+	public function isSku(int $productId) : bool
+	{
+		$products = $this->loadProducts([$productId], [ 'TYPE' ]);
+
+		if (!isset($products[$productId])) { return false; }
+
+		$product = $products[$productId];
+
+		return (int)$product['TYPE'] === Catalog\ProductTable::TYPE_SKU;
+	}
+
+	public function searchOffers(int $productId, int $iblockId = 0, array $filter = []) : array
+	{
+		$offers = \CCatalogSku::getOffersList($productId, $iblockId, $filter, [ 'ID' ], [], [], [ 'SORT' => 'ASC', 'AVAILABLE' => 'DESC']);
+
+		if (empty($offers[$productId])) { return []; }
+
+		return array_column($offers[$productId], 'ID');
+	}
+
+	public function resolveOffer(int $productId) : int
+	{
+		if (!$this->isSku($productId)) { return $productId; }
+
+		$offers = $this->searchOffers($productId);
+
+		return !empty($offers) ? reset($offers) : $productId;
+	}
+
 	public function getBasketData(array $productIds) : array
 	{
 		$elements = $this->loadElements($productIds, [ 'XML_ID', 'IBLOCK_ID', 'IBLOCK_XML_ID' => 'IBLOCK.XML_ID' ]);
@@ -104,7 +133,7 @@ class Product extends EntityReference\Product
 		return $result;
 	}
 
-	protected function loadProducts(array $productIds, array $select = []) : array
+	public function loadProducts(array $productIds, array $select = []) : array
 	{
 		$result = [];
 
