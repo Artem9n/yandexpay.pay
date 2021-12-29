@@ -131,7 +131,7 @@ abstract class RbsSkeleton extends Gateway\Base
 		return $this->getOrderNumber($resultData);
 	}
 
-	protected function getOrderNumber(array $resultData) : string
+	protected function getOrderNumber(array $resultData) : ?string
 	{
 		$result = null;
 		$attributes = $resultData['attributes'];
@@ -187,7 +187,7 @@ abstract class RbsSkeleton extends Gateway\Base
 
 	protected function convertResult(string $data): array
 	{
-		return Main\Text\Encoding::convertEncodingToCurrent(Main\Web\Json::decode($data));
+		return Main\Web\Json::decode($data);
 	}
 
 	protected function registerOrder() : string
