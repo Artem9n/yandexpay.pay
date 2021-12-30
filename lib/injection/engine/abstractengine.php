@@ -10,6 +10,30 @@ abstract class AbstractEngine extends Event\Base
 {
 	protected static $handlerDisallowYaPay = false;
 
+	protected static function loadModule(string $name) : void
+	{
+		if (!Main\Loader::includeModule($name))
+		{
+			throw new Main\SystemException(sprintf('missing %s module', $name));
+		}
+	}
+
+	protected static function testRequest() : bool
+	{
+		$request = static::getRequest();
+
+		return (
+			!$request->isAdminSection()
+			&& !$request->isAjaxRequest()
+			&& mb_strpos($request->getRequestedPage(), '/bitrix/') !== 0
+		);
+	}
+
+	protected static function getRequest()
+	{
+		return Main\Context::getCurrent()->getRequest();
+	}
+
 	protected static function render(int $injectionId, array $data = []) : void
 	{
 		global $APPLICATION;

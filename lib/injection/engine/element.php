@@ -2,8 +2,8 @@
 namespace YandexPay\Pay\Injection\Engine;
 
 use Bitrix\Main;
-use Bitrix\Iblock;
 use YandexPay\Pay\Injection;
+use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Entity as TradingEntity;
 
 class Element extends AbstractEngine
@@ -12,116 +12,213 @@ class Element extends AbstractEngine
 
 	public static function onEpilog(int $injectionId, array $settings) : void
 	{
-		$url = static::getUrl();
+		if (!static::testRequest()) { return; }
 
-		if (!isset($settings['IBLOCK'])) { return; }
-
-		$variables = static::getDetailPageUrlTemplate($settings['IBLOCK'], $url);
-
-		if (empty($variables)) { return; }
-
-		$elementFilter = static::elementFilter($settings['IBLOCK'], $variables);
-		$elementId = static::getElementId($elementFilter);
+		$elementId = static::findProduct($settings);
 
 		if ($elementId === null) { return; }
-
-		if (static::isSku($elementId))
-		{
-			$offerFilter = static::offerFilter($settings['IBLOCK']);
-			$offerId = static::searchOffer($settings['IBLOCK'], $elementId, $offerFilter);
-
-			if ($offerId !== null)
-			{
-				$elementId = $offerId;
-			}
-		}
 
 		static::render($injectionId, ['PRODUCT_ID' => $elementId]);
 	}
 
-	protected static function getUrl() : string
+	protected static function findProduct(array $settings) : ?int
 	{
-		$request = static::getRequest();
+		try
+		{
+			$template = static::iblockTemplate($settings['IBLOCK']);
+			$variables = static::parseTemplate($template);
+			$elementFilter = static::elementFilter($settings['IBLOCK'], $variables);
+			$elementId = static::searchElement($elementFilter);
+			$offerId = static::resolveOffer($settings['IBLOCK'], $elementId, [
+				'PRODUCT_URL' => \CComponentEngine::makePathFromTemplate($template, $variables),
+			]);
 
-		return $request->getRequestedPage();
+			$result = $offerId ?? $elementId;
+		}
+		catch (Main\SystemException $exception)
+		{
+			$result = null;
+		}
+
+		return $result;
 	}
 
-	protected static function getDetailPageUrlTemplate(int $iblockId, string $url) : ?array
+	protected static function iblockTemplate(int $iblockId = null, string $default = null) : string
 	{
-		if (!Main\Loader::includeModule('iblock')) { return null; }
+		static::loadModule('iblock');
 
-		$result = [];
-		$variables = [];
+		$template = \CIBlock::GetArrayByID($iblockId, 'DETAIL_PAGE_URL');
+		$template = trim($template);
 
-		$listPageUrl = \CIBlock::GetArrayByID($iblockId, 'LIST_PAGE_URL');
-		$detailPageUrl = \CIBlock::GetArrayByID($iblockId, 'DETAIL_PAGE_URL');
+		if ($template === '')
+		{
+			$template = $default ?? null;
+		}
 
-		if (!$listPageUrl || !$detailPageUrl) { return null; }
+		Assert::notNull($template, 'template');
 
-		$result['SEF_FOLDER'] = mb_substr($listPageUrl, mb_strlen('#SITE_DIR#'));
-		$result['SEF_URL_TEMPLATES']['element'] = mb_substr($detailPageUrl, mb_strlen($listPageUrl));
+		return $template;
+	}
 
-		$engine = new \CComponentEngine();
-
-		$engine->guessComponentPath(
-			$result['SEF_FOLDER'],
-			$result['SEF_URL_TEMPLATES'],
-			$variables,
-			$url
-		);
-
-		if (!empty($variables)) { return $variables; }
-
-		$componentVariables = [
-			'SECTION_ID',
-			'SECTION_CODE',
-			'ELEMENT_ID',
-			'ELEMENT_CODE',
-		];
-
-		\CComponentEngine::initComponentVariables(false, $componentVariables, [], $variables);
-
-		return $variables;
+	protected static function defaultOfferTemplate() : string
+	{
+		return '#PRODUCT_URL#?OFFER_ID=#ELEMENT_ID#&OFFER_CODE=#ELEMENT_CODE#';
 	}
 
 	protected static function elementFilter(int $iblockId, array $variables = []) : array
 	{
-		$filter = ['IBLOCK_ID' => $iblockId, '=ACTIVE' => 'Y'];
+		$required = [
+			'ELEMENT_ID' => true,
+			'ELEMENT_CODE' => true,
+		];
 
-		if (isset($variables['ELEMENT_CODE']))
+		if (count(array_intersect_key($variables, $required)) === 0)
 		{
-			$filter['=CODE'] = $variables['ELEMENT_CODE'];
+			throw new Main\SystemException('cant build element filter');
 		}
 
-		if (isset($variables['ELEMENT_ID']))
-		{
-			$filter['=ID'] = $variables['ELEMENT_ID'];
-		}
+		$map = [
+			'ELEMENT_CODE' => '=CODE',
+			'ELEMENT_ID' => '=ID',
+			'SECTION_CODE' => '=SECTION_CODE',
+			'SECTION_ID' => '=SECTION_ID',
+		];
+		$filter = [
+			'IBLOCK_ID' => $iblockId,
+			'=ACTIVE' => 'Y',
+		];
 
-		if (isset($variables['SECTION_CODE']))
+		foreach ($map as $from => $to)
 		{
-			$filter['=SECTION_CODE'] = $variables['SECTION_CODE'];
-		}
+			if (!array_key_exists($from, $variables)) { continue; }
 
-		if (isset($variables['SECTION_ID']))
-		{
-			$filter['=SECTION_ID'] = $variables['SECTION_ID'];
+			$filter[$to] = $variables[$from];
 		}
 
 		return $filter;
 	}
 
-	protected static function getElementId(array $filter = []) : ?int
+	protected static function searchElement(array $filter = []) : int
 	{
-		if (empty($filter)) { return null; }
-
-		$query = \CIBlockElement::GetList([], $filter, false, false, ['ID']);
-
+		$query = \CIBlockElement::GetList([], $filter, false, ['nTopCount' => 1], ['ID']);
 		$row = $query->Fetch();
 
-		if (!$row) { return null; }
+		if (!$row)
+		{
+			throw new Main\SystemException('cant find element');
+		}
 
-		return $row['ID'];
+		return (int)$row['ID'];
+	}
+
+	protected static function resolveOffer(int $productIblockId, int $productId, array $defined = []) : ?int
+	{
+		try
+		{
+			$offerIblock = static::offerIblock($productIblockId);
+			$offerTemplate = static::iblockTemplate($offerIblock, static::defaultOfferTemplate());
+			$offerVariables = static::parseTemplate($offerTemplate, $defined);
+			$offerFilter = static::elementFilter($offerIblock, $offerVariables);
+
+			if (!static::isSku($productId)) { return null; }
+
+			$result = static::searchOffer($productIblockId, $productId, $offerFilter);
+		}
+		catch (Main\SystemException $exception)
+		{
+			$result = null;
+		}
+
+		return $result;
+	}
+
+	protected static function offerIblock(int $catalogIblockId) : int
+	{
+		static::loadModule('catalog');
+
+		$catalogIblockData = \CCatalogSKU::GetInfoByProductIBlock($catalogIblockId);
+
+		if (!isset($catalogIblockData['IBLOCK_ID']))
+		{
+			throw new Main\ArgumentException('has not offer iblock');
+		}
+
+		return (int)$catalogIblockData['IBLOCK_ID'];
+	}
+
+	protected static function parseTemplate(string $template, array $defined = []) : ?array
+	{
+		$template = static::compileUrlTemplate($template, $defined);
+		[$templatePage, $templateQuery] = explode('?', $template, 2);
+
+		$pageVariables = static::parsePageTemplate((string)$templatePage);
+		$queryVariables = static::parseQueryTemplate((string)$templateQuery);
+
+		return $pageVariables + $queryVariables;
+	}
+
+	protected static function parsePageTemplate(string $templatePage) : array
+	{
+		$engine = new \CComponentEngine();
+
+		if (Main\Loader::includeModule('iblock'))
+		{
+			$engine->addGreedyPart('#SECTION_CODE_PATH#');
+			$engine->setResolveCallback(['CIBlockFindTools', 'resolveComponentEngine']);
+		}
+
+		$sefFolder = '/';
+		$templatePage = mb_substr($templatePage, mb_strlen($sefFolder));
+		$request = static::getRequest();
+
+		$matched = $engine->guessComponentPath(
+			$sefFolder,
+			[ 'target' => $templatePage ],
+			$variables,
+			$request->getRequestedPage()
+		);
+
+		if ($matched !== 'target')
+		{
+			throw new Main\SystemException('page not matched');
+		}
+
+		return $variables;
+	}
+
+	protected static function parseQueryTemplate(string $templateQuery) : array
+	{
+		$request = static::getRequest();
+		$result = [];
+
+		foreach (explode('&', $templateQuery) as $queryTemplate)
+		{
+			[$name, $valueTemplate] = explode('=', $queryTemplate, 2);
+
+			if (!preg_match('/^#([A-Z_]+)#$/', $valueTemplate, $valueMatches)) { continue; }
+
+			$value = $request->get($name);
+
+			if (!is_scalar($value) || trim($value) === '') { continue; }
+
+			$result[$valueMatches[1]] = $value;
+		}
+
+		return $result;
+	}
+
+	protected static function compileUrlTemplate(string $template, array $defined = []) : string
+	{
+		$template = \CComponentEngine::makePathFromTemplate($template);
+
+		foreach ($defined as $key => $value)
+		{
+			$template = str_replace('#' . $key . '#', $value, $template);
+		}
+
+		$template = str_replace('//', '/', $template);
+
+		return $template;
 	}
 
 	protected static function isSku(int $elementId) : bool
@@ -130,51 +227,6 @@ class Element extends AbstractEngine
 		$productEnvironment = $environment->getProduct();
 
 		return $productEnvironment->isSku($elementId);
-	}
-
-	protected static function offerFilter(int $catalogIblockId) : array
-	{
-		$catalogIblockData = \CCatalogSKU::GetInfoByProductIBlock($catalogIblockId);
-		$offerIblockId = $catalogIblockData ? $catalogIblockData['IBLOCK_ID'] : null;
-		$code = null;
-		$template = null;
-
-		if ($offerIblockId === null) { return []; }
-
-		$detailPageUrl = \CIBlock::GetArrayByID($offerIblockId, 'DETAIL_PAGE_URL');
-
-		$symbolPos = mb_strpos($detailPageUrl, '?');
-
-		if ($symbolPos !== false)
-		{
-			$queryParamOffer = mb_substr($detailPageUrl, $symbolPos + 1);
-			[$code, $template] = explode('=', $queryParamOffer);
-		}
-
-		$request = static::getRequest(); // todo use iblock url template
-		$filter = [];
-
-		if ($code !== null && $template !== null && $request->get($code) !== null)
-		{
-			foreach (['ID', 'CODE'] as $key)
-			{
-				if (mb_strpos($template, $key) !== false)
-				{
-					$filter[$key] = $request->get($code);
-					break;
-				}
-			}
-		}
-
-		if (empty($filter))
-		{
-			$filter = [
-				'ID' => $request->get('OFFER_ID'),
-				'CODE' => $request->get('OFFER_CODE'),
-			];
-		}
-
-		return array_filter($filter);
 	}
 
 	protected static function searchOffer(int $iblockId, int $elementId, array $filter = []) : ?int
@@ -187,11 +239,6 @@ class Element extends AbstractEngine
 		$offers = $productEnvironment->searchOffers($elementId, $iblockId, $filter);
 
 		return !empty($offers) ? (int)reset($offers) : null;
-	}
-
-	protected static function getRequest()
-	{
-		return Main\Context::getCurrent()->getRequest();
 	}
 
 	protected static function getEnvironment() : TradingEntity\Reference\Environment
