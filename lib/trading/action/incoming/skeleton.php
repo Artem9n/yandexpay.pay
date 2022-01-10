@@ -58,15 +58,6 @@ abstract class Skeleton extends Model
 		$className = $classMap[$fieldKey];
 		$data = $this->requireField($fieldKey);
 
-		/*if (!is_array($data))
-		{
-			$result = [];
-
-			$result[$fieldKey] = $data;
-
-			$data = $result;
-		}*/
-
 		return new $className($data);
 	}
 
