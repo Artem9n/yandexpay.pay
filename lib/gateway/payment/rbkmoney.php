@@ -62,6 +62,10 @@ class Rbkmoney extends Base
 				'NAME' => static::getMessage('MERCHANT_SHOP_ID'),
 				'GROUP' => $this->getName(),
 				'SORT' => 650,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
 			],
 			'PAYMENT_GATEWAY_API_KEY' => [
 				'NAME' => static::getMessage('MERCHANT_API_KEY'),
@@ -69,7 +73,7 @@ class Rbkmoney extends Base
 				'SORT' => 700,
 				'INPUT' => [
 					'TYPE' => 'STRING',
-					'SIZE' => null,
+					'SIZE' => 40,
 				]
 			],
 			'WEBHOOK_PROCESSED_KEY' => [

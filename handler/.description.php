@@ -33,12 +33,20 @@ $data = [
 		'YANDEX_PAY_MERCHANT_ID' => [
 			'NAME'          => Loc::getMessage('YANDEX_PAY_MERCHANT_ID_NAME'),
 			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_MERCHANT_ID_DESCRIPTION'),
-			'SORT'          => 150
+			'SORT'          => 150,
+			'INPUT' => [
+				'TYPE' => 'STRING',
+				'SIZE' => 40,
+			]
 		],
 		'YANDEX_PAY_MERCHANT_NAME' => [
 			'NAME'          => Loc::getMessage('YANDEX_PAY_MERCHANT_NAME_NAME'),
 			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_MERCHANT_NAME_DESCRIPTION'),
-			'SORT'          => 200
+			'SORT'          => 200,
+			'INPUT' => [
+				'TYPE' => 'STRING',
+				'SIZE' => 40,
+			]
 		],
 		'YANDEX_PAY_VARIANT_BUTTON' => [
 			'NAME'          => Loc::getMessage('YANDEX_PAY_VARIANT_BUTTON_NAME'),
@@ -78,10 +86,11 @@ $data = [
 		'YANDEX_PAY_NOTIFY_URL' => [
 			'NAME' => Loc::getMessage('YANDEX_PAY_NOTIFY_URL'),
 			'SORT' => 350,
-			'DEFAULT' => [
-				'PROVIDER_KEY'      => 'VALUE',
-				'PROVIDER_VALUE'    => Utils\Url::absolutizePath(BX_ROOT . '/tools/yandexpay.pay/sale_ps_yandexpay_result.php')
-			]
+			'INPUT' => [
+				'TYPE' => 'STRING',
+				'SIZE' => 40,
+				'VALUE' => Utils\Url::absolutizePath(BX_ROOT . '/tools/yandexpay.pay/sale_ps_yandexpay_result.php')
+			],
 		],
 	],
 ];

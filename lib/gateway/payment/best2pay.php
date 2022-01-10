@@ -71,12 +71,20 @@ class Best2pay extends Gateway\Base
 				'NAME'      => static::getMessage('SECTOR_ID'),
 				'GROUP'     => $this->getName(),
 				'SORT'      => 650,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
 			],
 			'PAYMENT_GATEWAY_PASSWORD' => [
 				'NAME'          => static::getMessage('MERCHANT_PASSWORD'),
 				'DESCRIPTION'   => static::getMessage('MERCHANT_PASSWORD_DESCRIPTION'),
 				'GROUP'         => $this->getName(),
 				'SORT'          => 700,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
 			],
 			'PAYMENT_GATEWAY_TAX' => [
 				'NAME'          => static::getMessage('MERCHANT_TAX'),

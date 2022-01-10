@@ -85,12 +85,20 @@ class Payture extends Gateway\Base
 			'PAYMENT_GATEWAY_API_KEY' => [
 				'NAME' => static::getMessage('MERCHANT_API_KEY'),
 				'GROUP' => $this->getName(),
-				'SORT' => 650
+				'SORT' => 650,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
 			],
 			'PAYMENT_GATEWAY_PASSWORD' => [
 				'NAME' => static::getMessage('MERCHANT_PASSWORD'),
 				'GROUP' => $this->getName(),
-				'SORT' => 700
+				'SORT' => 700,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
 			]
 		];
 	}

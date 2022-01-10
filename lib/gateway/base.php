@@ -97,6 +97,12 @@ abstract class Base implements IGateway
 		{
 			foreach ($extraParams as $key => $value)
 			{
+				$value += [
+					'DESCRIPTION' => self::getMessage('FIELD_DESCRIPTION', [
+						'#GATEWAY#' => $this->getName()
+					]),
+				];
+
 				$result[$code . '_' . $key] = $value;
 			}
 		}
@@ -104,8 +110,15 @@ abstract class Base implements IGateway
 		return [
 			$code .'_PAYMENT_GATEWAY_MERCHANT_ID' => [
 				'NAME'  => static::getMessage('MERCHANT_ID'),
+				'DESCRIPTION' => self::getMessage('FIELD_DESCRIPTION', [
+					'#GATEWAY#' => $this->getName()
+				]),
 				'GROUP' => $this->getName(),
-				'SORT'  => 600
+				'SORT'  => 600,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
 			],
 		] + $result;
 	}

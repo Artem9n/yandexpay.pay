@@ -29,13 +29,20 @@ abstract class RbsSkeleton extends Gateway\Base
 			'PAYMENT_GATEWAY_USERNAME' => [
 				'NAME' => static::getMessage('USERNAME'),
 				'GROUP' => $this->getName(),
-				'SORT' => 650
+				'SORT' => 650,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
 			],
 			'PAYMENT_GATEWAY_PASSWORD' => [
 				'NAME' => static::getMessage('MERCHANT_PASSWORD'),
-				'DESCRIPTION' => static::getMessage('MERCHANT_PASSWORD_DESCRIPTION'),
 				'GROUP' => $this->getName(),
-				'SORT' => 700
+				'SORT' => 700,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
 			]
 		];
 	}
