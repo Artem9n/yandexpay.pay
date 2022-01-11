@@ -23,7 +23,7 @@ class Product extends EntityReference\Product
 		return (int)$product['TYPE'] === Catalog\ProductTable::TYPE_SKU;
 	}
 
-	public function searchOffers(int $productId, int $iblockId = 0, array $filter = []) : array
+	public function searchOffers(int $productId, int $iblockId = 0, array $filter = ['CATALOG_AVAILABLE' => 'Y']) : array
 	{
 		$offers = \CCatalogSku::getOffersList($productId, $iblockId, $filter, [ 'ID' ], [], [], [ 'SORT' => 'ASC', 'AVAILABLE' => 'DESC']);
 
