@@ -1,5 +1,6 @@
 <?php
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBS_SKELETON_DESCRIPTION'] = '<a target="_blank" href="https://alfabank.ru/">RBS</a> Ц международна€ платежна€ платформа, </br>предоставл€юща€ услуги дл€ онлайн-компаний и частных лиц в более чем 60 странах.';
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBS_SKELETON_ORDER_DESCRIPTION'] = 'Ќомер заказа є #ORDER_ID#';
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBS_SKELETON_MERCHANT_ID'] = '»дентификатор продавца';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBS_SKELETON_USERNAME'] = 'Ћогин учетной записи';

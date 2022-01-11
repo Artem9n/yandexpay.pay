@@ -209,6 +209,7 @@ abstract class RbsSkeleton extends Gateway\Base
 			'amount' => $this->getPaymentAmount(),
 			'orderNumber' => $this->getExternalId(),
 			'returnUrl' => $this->getRedirectUrl(),
+			'description' => $this->convertEncoding(self::getMessage('ORDER_DESCRIPTION', ['#ORDER_ID#' => $this->getOrderId()])),
 		];
 
 		$resultData = $httpClient->post($url, $data);
@@ -216,6 +217,15 @@ abstract class RbsSkeleton extends Gateway\Base
 		$this->validate($resultData);
 
 		return (string)$resultData['orderId'];
+	}
+
+	protected function convertEncoding(string $message) : string
+	{
+		$isUtf8Config = Main\Application::isUtfMode();
+
+		if ($isUtf8Config) { return $message; }
+
+		return Main\Text\Encoding::convertEncoding($message, 'WINDOWS-1251', 'UTF-8');
 	}
 
 	public function refund() : void
