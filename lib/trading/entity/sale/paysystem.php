@@ -25,7 +25,7 @@ class PaySystem extends EntityReference\PaySystem
 		$result = [];
 
 		$filter = [
-			'=ACTIVE' => 'Y',
+			//'=ACTIVE' => 'Y',
 			'=ENTITY_REGISTRY_TYPE' => Sale\Payment::getRegistryType(),
 		];
 
