@@ -143,7 +143,7 @@ class Form extends Pay\Component\Plain\Form
 		}
 
 		$setup->save();
-		$setup->getSettings()->save();
+		$setup->getSettings()->save(); // for update settings values
 
 		return new Main\ORM\Data\UpdateResult();
 	}
