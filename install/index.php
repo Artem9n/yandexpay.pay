@@ -54,6 +54,7 @@ class yandexpay_pay extends CModule
 				$this->InstallEvents();
 				$this->InstallAgents();
 				$this->InstallFiles();
+				$this->InstallPaySystem();
 			}
 			else
 			{
@@ -133,6 +134,16 @@ class yandexpay_pay extends CModule
 	public function UnInstallAgents(): void
 	{
 		Pay\Reference\Agent\Controller::deleteAll();
+	}
+
+	public function InstallPaySystem() : void
+	{
+		Pay\Ui\UseCase\AutoInstallPaySystem::install();
+	}
+
+	public function UnInstallPaySystem() : void
+	{
+		Pay\Ui\UseCase\AutoInstallPaySystem::unInstall();
 	}
 
 	public function InstallFiles(): void
