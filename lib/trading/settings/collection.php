@@ -28,4 +28,12 @@ class Collection extends EO_Repository_Collection
 
 		return $result;
 	}
+
+	public function delete() : void
+	{
+		foreach ($this->getAll() as $model)
+		{
+			$model->delete();
+		}
+	}
 }

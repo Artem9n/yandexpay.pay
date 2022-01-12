@@ -77,6 +77,7 @@ class Model extends EO_Repository
 	public function deleteAction() : void
 	{
 		$this->fillInjection()->delete();
+		$this->fillSettings()->delete();
 		$this->delete();
 	}
 
