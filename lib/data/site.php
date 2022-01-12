@@ -68,6 +68,8 @@ class Site
 
 		while ($row = $query->fetch())
 		{
+			if (static::isCrm($row['LID'])) { continue; }
+
 			$result[] = [
 				'ID' => (string)$row['LID'],
 				'VALUE' => '[' . $row['LID'] . '] ' . $row['NAME'],
@@ -105,5 +107,32 @@ class Site
 		}
 
 		return $result;
+	}
+
+	public static function isCrm($siteId)
+	{
+		if (defined('BX24_HOST_NAME'))
+		{
+			$result = ($siteId === SiteDomain::getSite(BX24_HOST_NAME));
+		}
+		else
+		{
+			$result = static::hasCrmTemplate($siteId);
+		}
+
+		return $result;
+	}
+
+	protected static function hasCrmTemplate($siteId)
+	{
+		$query = Main\SiteTemplateTable::getList([
+			'filter' => [
+				'=SITE_ID' => $siteId,
+				'%TEMPLATE' => 'bitrix24',
+			],
+			'limit' => 1,
+		]);
+
+		return (bool)$query->fetch();
 	}
 }

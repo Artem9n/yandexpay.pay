@@ -28,11 +28,16 @@ abstract class Site
 	 */
 	public function getTitle(string $siteId) : string
     {
-	    throw new Main\NotImplementedMethod('getTitle is missing');
+	    throw new Main\NotImplementedException('getTitle is missing');
     }
 
 	public function getOptions() : array
 	{
-		throw new Main\NotImplementedMethod('getOptions is missing');
+		throw new Main\NotImplementedException('getOptions is missing');
+	}
+
+	public function getDefault() : string
+	{
+		throw new Main\NotImplementedException('getDefault is missing');
 	}
 }

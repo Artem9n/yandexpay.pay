@@ -20,4 +20,9 @@ class Site extends Pay\Trading\Entity\Reference\Site
 	{
 		return Pay\Data\Site::getOptions();
 	}
+
+	public function getDefault() : string
+	{
+		return Pay\Data\Site::getDefault();
+	}
 }
