@@ -43,17 +43,47 @@ class StringType
 		return static::callParent('getFilterData', [$arUserField, $arHtmlControl]);
 	}
 
-	public static function getEditFormHtmlMulty($userField, $htmlControl)
+	public static function GetEditFormHtmlMulty($userField, $htmlControl)
 	{
-		return static::callParent('getEditFormHtmlMulty', [$userField, $htmlControl]);
+		$values = Helper\Value::asMultiple($userField, $htmlControl);
+		$tableAttributes = Fieldset\Helper::makeChildAttributes($userField);
+		$inputAttributes = Helper\Attributes::extractFromSettings($userField['SETTINGS']);
+		$valueIndex = 0;
+		$minCount = isset($userField['SETTINGS']['MIN_COUNT']) ? max(1, (int)$userField['SETTINGS']['MIN_COUNT']) : 1;
+		$inputCount = max(count($values), $minCount);
+
+		$result = sprintf('<table %s>', Helper\Attributes::stringify($tableAttributes));
+
+		for ($i = 0; $i < $inputCount; $i++)
+		{
+			$value = $values[$i] ?? null;
+
+			$result .= '<tr><td>';
+			$result .= static::getEditInput($userField, [
+				'NAME' => $userField['FIELD_NAME'] . '[' . $valueIndex . ']',
+				'VALUE' => $value,
+			], $inputAttributes);
+			$result .= '</td></tr>';
+
+			++$valueIndex;
+		}
+
+		$result .= '</table>';
+
+		return $result;
 	}
 
 	public static function getEditFormHTML($userField, $htmlControl) : string
 	{
+		if ($userField['MULTIPLE'] === 'Y')
+		{
+			return static::GetEditFormHtmlMulty($userField, $htmlControl); // TODO why version 20 not found multiple
+		}
+
+		$htmlControl['VALUE'] = Helper\Value::asSingle($userField, $htmlControl);
 		$attributes = Helper\Attributes::extractFromSettings($userField['SETTINGS']);
 
-		$result = static::getEditInput($userField, $htmlControl);
-		return Helper\Attributes::insert($result, $attributes);
+		return static::getEditInput($userField, $htmlControl, $attributes);
 	}
 
 	public static function GetAdminListViewHtml($userField, $htmlControl) : string
@@ -63,17 +93,12 @@ class StringType
 		return $value !== '' ? $value : '&nbsp;';
 	}
 
-	protected static function getEditInput($userField, $htmlControl) : string
+	protected static function getEditInput($userField, $htmlControl, array $attributes = []) : string
 	{
-		if ($userField['ENTITY_VALUE_ID'] < 1 && (string)$userField['SETTINGS']['DEFAULT_VALUE'] !== '')
-		{
-			$htmlControl['VALUE'] = htmlspecialcharsbx($userField['SETTINGS']['DEFAULT_VALUE']);
-		}
-
 		if ($userField['SETTINGS']['ROWS'] < 2)
 		{
 			$htmlControl['VALIGN'] = 'middle';
-			$attributes = [
+			$attributes += [
 				'type' => 'text',
 				'name' => $htmlControl['NAME'],
 			];
@@ -91,7 +116,7 @@ class StringType
 			);
 		}
 
-		$attributes = [
+		$attributes += [
 			'name' => $htmlControl['NAME'],
 		];
 		$attributes += array_filter([
