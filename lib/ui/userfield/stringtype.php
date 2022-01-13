@@ -25,7 +25,9 @@ class StringType
 
 	public static function getUserTypeDescription()
 	{
-		return static::callParent('getUserTypeDescription');
+		return array_diff_key(static::callParent('getUserTypeDescription'), [
+			'USE_FIELD_COMPONENT' => true,
+		]);
 	}
 
 	public static function checkFields($arUserField, $value)
@@ -75,11 +77,6 @@ class StringType
 
 	public static function getEditFormHTML($userField, $htmlControl) : string
 	{
-		if ($userField['MULTIPLE'] === 'Y')
-		{
-			return static::GetEditFormHtmlMulty($userField, $htmlControl); // TODO why version 20 not found multiple
-		}
-
 		$htmlControl['VALUE'] = Helper\Value::asSingle($userField, $htmlControl);
 		$attributes = Helper\Attributes::extractFromSettings($userField['SETTINGS']);
 
