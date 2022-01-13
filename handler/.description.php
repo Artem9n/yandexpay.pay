@@ -1,18 +1,27 @@
 <?php
 
+use Bitrix\Main;
 use Bitrix\Main\Localization\Loc;
 use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Utils;
+use YandexPay\Pay\Ui as PayUi;
 
 /** @var $this \Sale\Handlers\PaySystem\YandexPayHandler */
 
 if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) { die(); }
 
-$request = \Bitrix\Main\Application::getInstance()->getContext()->getRequest();
-
 Loc::loadMessages(__FILE__);
 
-\Bitrix\Main\Loader::includeModule('yandexpay.pay');
+if (!Main\Loader::includeModule('yandexpay.pay'))
+{
+	trigger_error(E_USER_WARNING, 'Module yandexpay.pay is required');
+	$data = [];
+	return;
+}
+
+PayUi\SaleInput\Registry::register();
+
+// common
 
 $data = [
 	'NAME'        => Loc::getMessage('YANDEX_PAY_TITLE'),
@@ -35,9 +44,9 @@ $data = [
 			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_MERCHANT_ID_DESCRIPTION'),
 			'SORT'          => 150,
 			'INPUT' => [
-				'TYPE' => 'STRING',
-				'SIZE' => 40,
-			]
+				'TYPE' => PayUi\SaleInput\Registry::type(PayUi\SaleInput\Registry::TYPE_MERCHANT),
+				'SIZE' => 40
+			],
 		],
 		'YANDEX_PAY_MERCHANT_NAME' => [
 			'NAME'          => Loc::getMessage('YANDEX_PAY_MERCHANT_NAME_NAME'),
@@ -95,9 +104,12 @@ $data = [
 	],
 ];
 
+// gateway
+
 try
 {
 	$gateway = null;
+	$request = Main\Application::getInstance()->getContext()->getRequest();
 
 	if (isset($paySystem['PS_MODE']))
 	{
