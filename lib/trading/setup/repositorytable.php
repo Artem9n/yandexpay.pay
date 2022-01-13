@@ -46,7 +46,7 @@ class RepositoryTable extends ORM\Data\DataManager
 			new ORM\Fields\BooleanField('ACTIVE', Pay\Ui\Userfield\BooleanType::getTableFieldDescription(true) + [
 				'required' => true,
 			]),
-            new ORM\Fields\Relations\OneToMany('SETTINGS', Pay\Trading\Settings\RepositoryTable::class, 'SETUP'),
+            new Pay\Reference\Storage\Field\OneToMany('SETTINGS', Pay\Trading\Settings\RepositoryTable::class, 'SETUP'),
 
             new ORM\Fields\Relations\OneToMany(
                 'INJECTION',

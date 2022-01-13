@@ -49,6 +49,19 @@ class RepositoryTable extends ORM\Data\DataManager
 		];
 	}
 
+
+	public static function onAfterUpdate(ORM\Event $event)
+	{
+		$fields = $event->getParameter('fields');
+
+		if (array_key_exists('SETUP_ID', $fields) && empty($fields['SETUP_ID']))
+		{
+			$primary = $event->getParameter('primary');
+
+			static::delete($primary);
+		}
+	}
+
 	public static function validateName() : array
 	{
 		return [
