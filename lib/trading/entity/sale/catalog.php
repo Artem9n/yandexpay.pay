@@ -16,7 +16,7 @@ class Catalog extends EntityReference\Catalog
 
 		$query = Iblock\IblockSiteTable::getList([
 			'filter' => [
-				'=SITE_ID' => 's1',
+				'=SITE_ID' => $siteId,
 				'=IBLOCK.TYPE.LANG_MESSAGE.LANGUAGE_ID' => LANGUAGE_ID,
 				'=IBLOCK.TYPE.ID' => 'catalog',
 			],
