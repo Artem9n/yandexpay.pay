@@ -14,18 +14,16 @@ class Catalog extends EntityReference\Catalog
 
 		$result = null;
 
-		$query = Iblock\IblockTable::getList([
+		$query = Iblock\IblockSiteTable::getList([
 			'filter' => [
-				'=TYPE.LANG_MESSAGE.LANGUAGE_ID' => LANGUAGE_ID,
-				'=TYPE.ID' => 'catalog',
-				'=LID' => $siteId
+				'=SITE_ID' => 's1',
+				'=IBLOCK.TYPE.LANG_MESSAGE.LANGUAGE_ID' => LANGUAGE_ID,
+				'=IBLOCK.TYPE.ID' => 'catalog',
 			],
 			'select' => [
-				'ID',
-				'NAME',
-				'TYPE_NAME' => 'TYPE.LANG_MESSAGE.NAME',
+				'ID' => 'IBLOCK.ID',
 			],
-			'limit' => 1
+			'limit' => 1,
 		]);
 
 		if ($row = $query->fetch())
