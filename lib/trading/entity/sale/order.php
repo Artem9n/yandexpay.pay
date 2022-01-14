@@ -85,13 +85,12 @@ class Order extends EntityReference\Order
 			$basketClassName = $registry->getBasketClassName();
 			$basket = $basketClassName::loadItemsForFUser($fuserId, $this->internalOrder->getSiteId());
 
+			$result = $this->internalOrder->setBasket($basket);
+
 			if ($basket->count() === 0)
 			{
-				$message = self::getMessage('EMPTY_BASKET');
-				throw new Main\SystemException($message);
+				$result->addError(new Main\Error(self::getMessage('EMPTY_BASKET')));
 			}
-
-			$result = $this->internalOrder->setBasket($basket);
 		}
 		catch (Main\SystemException $exception)
 		{
@@ -390,13 +389,13 @@ class Order extends EntityReference\Order
 	{
 		$userId = (int)$this->internalOrder->getUserId();
 
-		if ($userId === (int)\CSaleUser::GetAnonymousUserID())
+		if ($userId <= 0 || $userId === (int)\CSaleUser::GetAnonymousUserID())
 		{
 			$result = Sale\Fuser::getId();
 		}
 		else
 		{
-			$result = Sale\Fuser::getIdByUserId($userId) ?: null; // false to null
+			$result = Sale\Fuser::getId(true) ?: Sale\Fuser::getIdByUserId($userId) ?: null; // false to null
 		}
 
 		Assert::notNull($result, 'fUserId');
