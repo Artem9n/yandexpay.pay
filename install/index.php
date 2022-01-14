@@ -141,11 +141,6 @@ class yandexpay_pay extends CModule
 		Pay\Ui\UseCase\AutoInstallPaySystem::install();
 	}
 
-	public function UnInstallPaySystem() : void
-	{
-		Pay\Ui\UseCase\AutoInstallPaySystem::unInstall();
-	}
-
 	public function InstallFiles(): void
 	{
 		$moduleSafe = str_replace('.', '', $this->MODULE_ID);
