@@ -670,6 +670,7 @@ class Purchase extends \CBitrixComponent
 		}
 		else
 		{
+			unset($_SESSION['yabackurl'], $_SESSION['yabehaviorbackurl']);
 			$_SESSION['yabehaviorbackurl'] = $url;
 		}
 

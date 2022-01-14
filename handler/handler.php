@@ -70,6 +70,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'PAYMENT_ID' => $payment->getOrder()->getField('ACCOUNT_NUMBER')
 		];
 
+		unset($_SESSION['yabackurl']);
 		$_SESSION['yabackurl'] = Url::absolutizePath() . $APPLICATION->GetCurPage() . '?' . http_build_query($params);
 	}
 
