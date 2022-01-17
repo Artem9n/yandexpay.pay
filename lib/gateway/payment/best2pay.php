@@ -136,7 +136,7 @@ class Best2pay extends Gateway\Base
 		if ($this->isTestHandlerMode())
 		{
 			$result = [
-				'PS_INVOICE_ID'     => implode('#', $orderData['order']['id']),
+				'PS_INVOICE_ID'     => implode('#', [$orderData['order']['id']]),
 				'PS_SUM'            => $this->getPaymentSum()
 			];
 		}
