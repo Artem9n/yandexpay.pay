@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Trading\Entity\Sale;
 
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use Bitrix\Sale;
+use Bitrix\Main;
 
 /**
  * @property Environment $environment
@@ -29,5 +30,10 @@ class OrderRegistry extends EntityReference\OrderRegistry
 	protected function makeOrder(Sale\OrderBase $order) : Order
 	{
 		return new Order($this->environment, $order);
+	}
+
+	public static function useAccountNumber() : bool
+	{
+		return (string)Main\Config\Option::get('sale', 'account_number_template') !== '';
 	}
 }

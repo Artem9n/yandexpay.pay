@@ -626,7 +626,7 @@ class Purchase extends \CBitrixComponent
 		}
 	}
 
-	protected function addOrder(EntityReference\Order $order) : int
+	protected function addOrder(EntityReference\Order $order) : string
 	{
 		global $USER;
 
@@ -650,13 +650,13 @@ class Purchase extends \CBitrixComponent
 				$_SESSION['SALE_ORDER_ID'] = [];
 			}
 
-			$_SESSION['SALE_ORDER_ID'][] = (int)$saveData['ID'];
+			$_SESSION['SALE_ORDER_ID'][] = (int)$saveData['INTERNAL_ID'];
 		}
 
-		return (int)$saveData['ID'];
+		return (string)$saveData['ID'];
 	}
 
-	protected function getRedirectUrl(int $orderId, int $paySystemId) : ?string
+	protected function getRedirectUrl(string $orderId, int $paySystemId) : ?string
 	{
 		$result = null;
 
@@ -677,9 +677,16 @@ class Purchase extends \CBitrixComponent
 		return $result;
 	}
 
-	protected function getPayment(int $orderId) : array
+	protected function getPayment(string $orderId) : array
 	{
-		$order = Sale\Order::load($orderId);
+		if (EntitySale\OrderRegistry::useAccountNumber())
+		{
+			$order = Sale\Order::loadByAccountNumber($orderId);
+		}
+		else
+		{
+			$order = Sale\Order::load($orderId);
+		}
 
 		if ($order === null) { return []; }
 

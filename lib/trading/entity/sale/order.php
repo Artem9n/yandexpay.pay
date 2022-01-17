@@ -899,9 +899,17 @@ class Order extends EntityReference\Order
 		else
 		{
 			$orderId = $orderResult->getId();
+			$orderExportId = $orderId;
+			$orderAccountNumber = (string)$this->internalOrder->getField('ACCOUNT_NUMBER');
+
+			if ($orderAccountNumber !== '' && OrderRegistry::useAccountNumber())
+			{
+				$orderExportId = $orderAccountNumber;
+			}
 
 			$result->setData([
-				'ID' => $orderId
+				'ID' => $orderExportId,
+				'INTERNAL_ID' => $orderId
 			]);
 		}
 

@@ -66,7 +66,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		global $APPLICATION;
 
 		$params = [
-			'ORDER_ID' => $payment->getOrderId(),
+			'ORDER_ID' => $payment->getOrder()->getField('ACCOUNT_NUMBER'),
 			'PAYMENT_ID' => $payment->getOrder()->getField('ACCOUNT_NUMBER')
 		];
 
