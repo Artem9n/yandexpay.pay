@@ -21,7 +21,7 @@ class Rshb extends RbsSkeleton
 	protected function getUrlList(): array
 	{
 		$testUrl = 'https://web.rbsuat.com/rshb/payment';
-		$activeUrl = 'https://pay.alfabank.ru/payment'; // todo rshb
+		$activeUrl = 'https://pay.rshb.ru/payment'; // todo rshb
 
 		return [
 			'register' => [
@@ -40,7 +40,7 @@ class Rshb extends RbsSkeleton
 			],
 			'order' => [
 				static::TEST_URL => $testUrl . '/rest/getOrderStatusExtended.do',
-				static::ACTIVE_URL => $activeUrl . '/reset/getOrderStatusExtended.do',
+				static::ACTIVE_URL => $activeUrl . '/rest/getOrderStatusExtended.do',
 			]
 		];
 	}

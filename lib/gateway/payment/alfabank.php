@@ -41,7 +41,7 @@ class Alfabank extends RbsSkeleton
 	        ],
 	        'order' => [
 		        static::TEST_URL => $testUrl . '/rest/getOrderStatusExtended.do',
-		        static::ACTIVE_URL => $activeUrl . '/reset/getOrderStatusExtended.do',
+		        static::ACTIVE_URL => $activeUrl . '/rest/getOrderStatusExtended.do',
 	        ]
         ];
     }
