@@ -4,11 +4,10 @@ namespace YandexPay\Pay\Ui\UseCase;
 use Bitrix\Main;
 use Bitrix\Sale;
 use YandexPay\Pay\Exceptions;
-use YandexPay\Pay\Reference;
 use YandexPay\Pay\Trading;
 use YandexPay\Pay\Gateway;
 
-class AutoInstallPaySystem extends Reference\Event\Regular
+class AutoInstallPaySystem
 {
 	public static function install() : void
 	{
