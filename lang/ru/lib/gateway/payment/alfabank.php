@@ -1,5 +1,6 @@
 <?php
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_DESCRIPTION'] = '<a target="_blank" href="https://alfabank.ru/">RBS</a> Ц международна€ платежна€ платформа, </br>предоставл€юща€ услуги дл€ онлайн-компаний и частных лиц в более чем 60 странах.';
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_NAME'] = 'RBS јльфа-Ѕанк';
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_MERCHANT_ID'] = '»дентификатор продавца';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_USERNAME'] = 'Ћогин учетной записи';

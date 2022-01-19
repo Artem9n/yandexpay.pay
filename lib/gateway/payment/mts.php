@@ -2,20 +2,15 @@
 
 namespace Yandexpay\Pay\Gateway\Payment;
 
-use Bitrix\Main;
-use Bitrix\Currency;
-use Bitrix\Main\Web\HttpClient;
+use YandexPay\Pay\Reference\Concerns;
 
 class Mts extends RbsSkeleton
 {
+	use Concerns\HasMessage;
+
 	public function getId(): string
 	{
 		return 'mts';
-	}
-
-	public function getName(): string
-	{
-		return 'Mtsbank(Rbs)';
 	}
 
 	protected function getUrlList(): array

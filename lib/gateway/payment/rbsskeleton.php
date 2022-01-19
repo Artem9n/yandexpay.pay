@@ -23,11 +23,21 @@ abstract class RbsSkeleton extends Gateway\Base
 		return 'rbs';
 	}
 
+	public function getName() : string
+	{
+		return static::getMessage('NAME');
+	}
+
+	public function getDescription() : string
+	{
+		return self::getMessage('DESCRIPTION');
+	}
+
 	public function extraParams(): array
 	{
 		return [
 			'PAYMENT_GATEWAY_USERNAME' => [
-				'NAME' => static::getMessage('USERNAME'),
+				'NAME' => self::getMessage('USERNAME'),
 				'GROUP' => $this->getName(),
 				'SORT' => 650,
 				'INPUT' => [
@@ -36,7 +46,7 @@ abstract class RbsSkeleton extends Gateway\Base
 				],
 			],
 			'PAYMENT_GATEWAY_PASSWORD' => [
-				'NAME' => static::getMessage('MERCHANT_PASSWORD'),
+				'NAME' => self::getMessage('MERCHANT_PASSWORD'),
 				'GROUP' => $this->getName(),
 				'SORT' => 700,
 				'INPUT' => [

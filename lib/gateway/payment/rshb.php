@@ -2,20 +2,15 @@
 
 namespace Yandexpay\Pay\Gateway\Payment;
 
-use Bitrix\Main;
-use Bitrix\Currency;
-use Bitrix\Main\Web\HttpClient;
+use YandexPay\Pay\Reference\Concerns;
 
 class Rshb extends RbsSkeleton
 {
+	use Concerns\HasMessage;
+
 	public function getId(): string
 	{
 		return 'rshb';
-	}
-
-	public function getName(): string
-	{
-		return 'Rosselkhozbank(Rbs)';
 	}
 
 	protected function getUrlList(): array

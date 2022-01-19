@@ -2,16 +2,15 @@
 
 namespace Yandexpay\Pay\Gateway\Payment;
 
+use YandexPay\Pay\Reference\Concerns;
+
 class Alfabank extends RbsSkeleton
 {
+	use Concerns\HasMessage;
+
     public function getId(): string
     {
         return 'alfabank';
-    }
-
-    public function getName(): string
-    {
-        return 'Alfabank(Rbs)';
     }
 
 	public function getGatewayId() : string
