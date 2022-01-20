@@ -12,11 +12,12 @@
 			formWidth: 500,
 			formHeight: 350,
 
-			confirmUrl: 'https://i1k11.csb.app/yandex-pay-console.html',
-			confirmWidth: 600,
-			confirmHeight: 400,
+			confirmUrl: 'https://console.pay.yandex.ru/cms/onboard',
+			confirmWidth: 960,
+			confirmHeight: 700,
 			confirmMessageSource: 'yandex-pay',
-			confirmMessageType: 'merchant-data',
+			confirmMessageTypeSuccess: 'merchant-data',
+			confirmMessageTypeFailure: 'error',
 
 			fieldsetElement: 'table',
 			fieldElement: 'td',
@@ -33,22 +34,24 @@
 		onConfirmMessage: function(evt) {
 			const data = this.toObject(evt.originalEvent.data);
 
-			if (
-				data.source === this.options.confirmMessageSource
-				&& data.type === this.options.confirmMessageType
-			) {
+			if (data.source === this.options.confirmMessageSource) {
 				this.handleConfirmMessage(false);
 				this.popup.close();
 				this.popup = null;
 
-				this.confirmDeferred.resolve(data);
+				if (data.type === this.options.confirmMessageTypeSuccess) {
+					this.confirmDeferred.resolve(data);
+				} else if (data.type === this.options.confirmMessageTypeFailure){
+					this.confirmDeferred.reject(data);
+				}
 			}
 		},
 
 		activate: function() {
 			this.requestForm()
 				.then(this.confirmWindow.bind(this))
-				.then(this.fillData.bind(this));
+				.then(this.fillData.bind(this))
+				.catch(data => alert(data.error));
 		},
 
 		requestForm: function() {
