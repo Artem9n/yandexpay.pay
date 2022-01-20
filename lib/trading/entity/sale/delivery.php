@@ -4,8 +4,8 @@ namespace YandexPay\Pay\Trading\Entity\Sale;
 
 use Bitrix\Main;
 use Bitrix\Sale;
+use Bitrix\Catalog;
 use Bitrix\Sale\Delivery\Restrictions\BySite;
-use Sale\Handlers as SaleHandlers;
 use YandexPay\Pay;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
@@ -516,5 +516,38 @@ class Delivery extends EntityReference\Delivery
 		return [
 			static::PICKUP_TYPE
 		];
+	}
+
+	public function testAdminPickupCoords(string $siteId) : Main\Result
+	{
+		$result = new Main\Result();
+
+		$query = Catalog\StoreTable::getList([
+			'filter' => [
+				'ACTIVE' => 'Y',
+				'SITE_ID' => $siteId,
+				[
+					'LOGIC' => 'OR',
+					[
+						'GPS_N' => false,
+					],
+					[
+						'GPS_S' => false,
+					],
+					[
+						'ADDRESS' => false,
+					]
+
+				],
+			],
+			'select' => ['ID']
+		]);
+
+		if ($row = $query->fetch())
+		{
+			$result->addError(new Main\Error(static::getMessage('TEST_PICKUP_COORDS')));
+		}
+
+		return $result;
 	}
 }

@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Trading\Entity\Reference;
 
+use Bitrix\Main;
 use Bitrix\Main\NotImplementedException;
 
 class Delivery
@@ -92,5 +93,17 @@ class Delivery
 	public function getPickupStores(int $deliveryId, Order $order) : array
 	{
 		throw new NotImplementedException('getPickupStores is missing');
+	}
+
+
+	/**
+	 * @param string $siteId
+	 *
+	 * @return Main\Result
+	 * @throws \Bitrix\Main\NotImplementedException
+	 */
+	public function testAdminPickupCoords(string $siteId) : Main\Result
+	{
+		throw new NotImplementedException('testAdminPickupCoords is missing');
 	}
 }

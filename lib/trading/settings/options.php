@@ -146,7 +146,8 @@ class Options extends Reference\Skeleton
 	protected function getDeliveryFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		$deliveryOptions = $this->getDeliveryOptions();
-		
+		$coordsResult = $environment->getDelivery()->testAdminPickupCoords($siteId);
+
 		return [
 			'DELIVERY_STRICT' => [
 				'TYPE' => 'boolean',
@@ -158,6 +159,7 @@ class Options extends Reference\Skeleton
 				'TYPE' => 'fieldset',
 				'NAME' => self::getMessage('DELIVERY_OPTIONS'),
 				'SORT' => 1010,
+				'NOTE' => implode('<br />', $coordsResult->getErrorMessages()),
 			],
 		];
 	}

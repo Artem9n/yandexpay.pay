@@ -10,7 +10,7 @@ use Bitrix\Main;
 $rowAttributes = [];
 $fieldControl = $component->getFieldControl($field);
 $hasDescription = isset($field['DESCRIPTION']);
-$hasNote = isset($field['NOTE']);
+$hasNote = isset($field['NOTE']) && !empty(trim($field['NOTE']));
 $hasAdditionalRow = ($hasDescription || $hasNote);
 
 if (isset($field['DEPEND']))
