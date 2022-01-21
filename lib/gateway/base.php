@@ -87,6 +87,8 @@ abstract class Base implements IGateway
 
 	public function getParams() : array
 	{
+		if ($this->getGatewayId() === Manager::OTHER) { return []; }
+
 		$prefix = static::getPrefix();
 		$code = $prefix . $this->getId();
 
@@ -250,10 +252,12 @@ abstract class Base implements IGateway
 			'paymentId' => $this->getPaymentId(),
 			'paySystemId' => $this->payment->getPaymentSystemId(),
 			'backurl'   => $_SESSION['yabackurl'] ?? $_SESSION['yabehaviorbackurl']
-		] + $extraParams;
+		];
+
+		$extraParams += $params;
 
 		$secure = [
-			'secure3ds' => static::generateParams($params)
+			'secure3ds' => static::generateParams($extraParams)
 		];
 
 		return $this->getParameter('YANDEX_PAY_NOTIFY_URL', true) . '?' . http_build_query($secure);
