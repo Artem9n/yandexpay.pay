@@ -1,6 +1,10 @@
 <?php
 
-$MESS['YANDEX_PAY_GATEWAY_PAYMENT_BEST2PAY_DESCRIPTION'] = '<a target="_blank" href="https://best2pay.net/">Best2Pay</a> - является процессинговым центром, агрегирующим онлайн-платежи для компаний. </br>За свои услуги компания берет комиссию с компании или платильщика.';
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_BEST2PAY_DESCRIPTION'] = 'Для текущих клиентов<br />
+Для заполнения формы &laquo;Настройка обработчика&nbsp;ПС&raquo; понадобится уникальный идентификатор учетной записи и&nbsp;пароль для формирования электронной подписи. Также вы&nbsp;можете отправить запрос на&nbsp;<a href="mailto:helpline@best2pay.net">helpline@best2pay.net</a>. Сервис гарантирует 4&nbsp;часа на&nbsp;ответ, 48&nbsp;часов на&nbsp;решение.<br />
+<br />
+Для новых клиентов<br />
+Заполните форму: <a target="_blank" href="https://best2pay.net/#main_form_container">https://best2pay.net/#main_form_container</a>. С&nbsp;вами свяжется менеджер сервиса.';
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_BEST2PAY_MERCHANT_ID'] = 'Идентификатор продавца';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_BEST2PAY_SECTOR_ID'] = 'Уникальный идентификатор учетной записи';
