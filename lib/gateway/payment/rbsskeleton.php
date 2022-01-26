@@ -128,7 +128,6 @@ abstract class RbsSkeleton extends Gateway\Base
 		$orderId = $this->buildRegisterOrder();
 
 		$this->payment->setField('PS_INVOICE_ID', $orderId);
-		$this->payment->save();
 
 		$this->createPayment($orderId);
 
