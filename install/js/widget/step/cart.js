@@ -57,7 +57,7 @@ export default class Cart extends AbstractStep {
 
 			})
 			.catch((error) => {
-				this.showError('', error);
+				//this.showError('bootstrap', '', error);
 			});
 	}
 
@@ -152,7 +152,7 @@ export default class Cart extends AbstractStep {
 			.then((payment) => {
 				// Создать экземпляр кнопки.
 				let button = payment.createButton({
-					type: YaPay.ButtonType.Pay,
+					type: YaPay.ButtonType.Checkout,
 					theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
 					width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
 				});
@@ -193,7 +193,7 @@ export default class Cart extends AbstractStep {
 						}
 					})
 					.catch((error) => {
-						this.showError('', error); // todo test it
+						this.showError('yapayProcess', '', error); // todo test it
 						payment.complete(YaPay.CompleteReason.Error);
 					});
 
@@ -201,7 +201,7 @@ export default class Cart extends AbstractStep {
 
 				// Подписаться на событие error.
 				payment.on(YaPay.PaymentEventType.Error, (event) => {
-					this.showError('service temporary unavailable');
+					this.showError('yapayError', 'service temporary unavailable');
 					payment.complete(YaPay.CompleteReason.Error);
 				});
 
@@ -235,7 +235,7 @@ export default class Cart extends AbstractStep {
 				});
 			})
 			.catch((err) => {
-				this.showError('payment not created', err);
+				this.showError('yapayPayment','payment not created', err);
 			});
 	}
 
@@ -384,8 +384,8 @@ export default class Cart extends AbstractStep {
 		return (Number(amountA) + Number(amountB)).toFixed(2);
 	}
 
-	showError(message, err = null) {
-		let notify = message;
+	showError(type, message, err = null) {
+		let notify = type + ' - ' + message;
 
 		if (err) {
 			notify += ' ' + err;
