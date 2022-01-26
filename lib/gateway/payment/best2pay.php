@@ -23,7 +23,7 @@ class Best2pay extends Gateway\Base
 
 	public function getId() : string
 	{
-		return 'best2pay';
+		return Gateway\Manager::BEST2PAY;
 	}
 
 	public function getName() : string

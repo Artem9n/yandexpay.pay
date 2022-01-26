@@ -32,7 +32,7 @@ class Payture extends Gateway\Base
 
 	public function getId() : string
 	{
-		return 'payture';
+		return Gateway\Manager::PAYTURE;
 	}
 
 	public function getName() : string
@@ -294,12 +294,5 @@ class Payture extends Gateway\Base
 	protected function isSecure3ds() : bool
 	{
 		return $this->request->get('secure3ds') !== null;
-		/*return (
-			($this->request->get('MD') !== null && $this->request->get('PaRes') !== null)
-			|| (
-				$this->request->get('threeDSSessionData') !== null
-				&& ($this->request->get('cres') !== null || $this->request->get('CRes') !== null)
-			)
-		);*/
 	}
 }

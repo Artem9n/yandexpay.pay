@@ -3,10 +3,10 @@
 namespace YandexPay\Pay\Gateway\Payment;
 
 use Bitrix\Main;
-use Bitrix\Sale;
 use Bitrix\Main\Web\HttpClient;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway\Base;
+use YandexPay\Pay\Gateway\Manager;
 use YandexPay\Pay\Reference\Concerns\HasMessage;
 
 class Rbkmoney extends Base
@@ -33,7 +33,7 @@ class Rbkmoney extends Base
 
 	public function getId() : string
 	{
-		return 'rbkmoney';
+		return Manager::RBKMONEY;
 	}
 
 	public function getName() : string
