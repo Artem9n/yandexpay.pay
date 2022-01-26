@@ -82,6 +82,15 @@ class Payture extends Gateway\Base
 	public function extraParams() : array
 	{
 		return [
+			'PAYMENT_GATEWAY_MERCHANT_ID' => [
+				'NAME'  => static::getMessage('MERCHANT_ID'),
+				'GROUP' => $this->getName(),
+				'SORT'  => 600,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
+			],
 			'PAYMENT_GATEWAY_API_KEY' => [
 				'NAME' => static::getMessage('MERCHANT_API_KEY'),
 				'GROUP' => $this->getName(),

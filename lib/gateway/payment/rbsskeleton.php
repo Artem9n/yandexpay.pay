@@ -35,6 +35,19 @@ abstract class RbsSkeleton extends Gateway\Base
 		return static::getMessage('DESCRIPTION');
 	}
 
+	public function getMerchantId() : ?string
+	{
+		$merchant = parent::getMerchantId();
+
+		if ($merchant !== null) { return $merchant; }
+
+		$login = $this->getParameter('PAYMENT_GATEWAY_USERNAME');
+
+		$merchant = str_replace(self::getMessage('SYMBOL_MERCHANT'), '', $login);
+
+		return $merchant;
+	}
+
 	protected function getTestUrl() : string
 	{
 		return '';
@@ -111,7 +124,7 @@ abstract class RbsSkeleton extends Gateway\Base
 
 		if ($this->isSecure3ds())
 		{
-			if ($this->request->get('version') === 2)
+			if ($this->request->get('version') == '2')
 			{
 				$this->createPaymentFinish($this->request->get('tDsTransId'));
 			}
@@ -149,14 +162,6 @@ abstract class RbsSkeleton extends Gateway\Base
 		{
 			throw new Main\SystemException('error finish pay');
 		}
-
-		$redirectParams = array_intersect_key($this->request->getPostList()->toArray(), [
-			'paymentId' => true,
-			'paySystemId' => true,
-			'backurl' => true
-		]);
-
-		LocalRedirect($this->getRedirectUrl($redirectParams), true);
 	}
 
 	protected function createPayment(string $orderId) : void
@@ -219,7 +224,7 @@ abstract class RbsSkeleton extends Gateway\Base
 		$data = [
 			'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
 			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
-			'orderNumber' => $this->getExternalId(),
+			'orderId' => $orderId,
 		];
 
 		$resultData = $this->convertResult($httpClient->post($url, $data));
@@ -306,7 +311,7 @@ abstract class RbsSkeleton extends Gateway\Base
 					'paymentToken' => $this->getYandexToken(),
 					'orderId' => $data['orderId'],
 					'threeDSServerTransId' => $data['threeDSServerTransId'],
-					//'threeDSVer2FinishUrl' => $this->getRedirectUrl(['version' => 2, 'tDsTransId' => $data['threeDSServerTransId']]),
+					'threeDSVer2FinishUrl' => $this->getRedirectUrl(['version' => '2', 'tDsTransId' => $data['threeDSServerTransId']]),
 				],
 				'notify' => [
 					'externalId' => $this->getPaymentId(),

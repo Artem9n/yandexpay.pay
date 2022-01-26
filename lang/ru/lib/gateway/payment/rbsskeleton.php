@@ -14,3 +14,6 @@ $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBS_SKELETON_ERROR_3'] ='3DS Авторизация отмен
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBS_SKELETON_ERROR_4'] ='По транзакции была проведена операция возврата';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBS_SKELETON_ERROR_5'] ='Инициирована авторизация через ACS банка-эмитента';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBS_SKELETON_ERROR_6'] ='3DS Авторизация отклонена';
+
+
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBS_SKELETON_SYMBOL_MERCHANT'] = '-api';

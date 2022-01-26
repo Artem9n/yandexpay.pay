@@ -109,20 +109,7 @@ abstract class Base implements IGateway
 			}
 		}
 
-		return [
-			$code .'_PAYMENT_GATEWAY_MERCHANT_ID' => [
-				'NAME'  => static::getMessage('MERCHANT_ID'),
-				'DESCRIPTION' => self::getMessage('FIELD_DESCRIPTION', [
-					'#GATEWAY#' => $this->getName()
-				]),
-				'GROUP' => $this->getName(),
-				'SORT'  => 600,
-				'INPUT' => [
-					'TYPE' => 'STRING',
-					'SIZE' => 40,
-				],
-			],
-		] + $result;
+		return $result;
 	}
 
 	public function getMerchantId(): ?string

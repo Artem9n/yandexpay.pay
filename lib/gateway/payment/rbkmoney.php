@@ -58,6 +58,15 @@ class Rbkmoney extends Base
 	public function extraParams(string $code = '') : array
 	{
 		return [
+			'PAYMENT_GATEWAY_MERCHANT_ID' => [
+				'NAME'  => static::getMessage('MERCHANT_ID'),
+				'GROUP' => $this->getName(),
+				'SORT'  => 600,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
+			],
 			'PAYMENT_GATEWAY_SHOP_ID' => [
 				'NAME' => static::getMessage('MERCHANT_SHOP_ID'),
 				'GROUP' => $this->getName(),

@@ -67,6 +67,15 @@ class Best2pay extends Gateway\Base
 	public function extraParams() : array
 	{
 		return [
+			'PAYMENT_GATEWAY_MERCHANT_ID' => [
+				'NAME'  => static::getMessage('MERCHANT_ID'),
+				'GROUP' => $this->getName(),
+				'SORT'  => 600,
+				'INPUT' => [
+					'TYPE' => 'STRING',
+					'SIZE' => 40,
+				],
+			],
 			'PAYMENT_GATEWAY_SECTOR_ID' => [
 				'NAME'      => static::getMessage('SECTOR_ID'),
 				'GROUP'     => $this->getName(),
