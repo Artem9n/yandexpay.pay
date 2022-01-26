@@ -251,16 +251,17 @@ abstract class Base implements IGateway
 		$params = [
 			'paymentId' => $this->getPaymentId(),
 			'paySystemId' => $this->payment->getPaymentSystemId(),
-			'backurl'   => $_SESSION['yabackurl'] ?? $_SESSION['yabehaviorbackurl']
+			'backurl'   => $_SESSION['yabackurl'] ?? $_SESSION['yabehaviorbackurl'],
+			'secure3ds' => 'Y'
 		];
 
 		$extraParams += $params;
 
-		$secure = [
+		/*$secure = [
 			'secure3ds' => static::generateParams($extraParams)
-		];
+		];*/
 
-		return $this->getParameter('YANDEX_PAY_NOTIFY_URL', true) . '?' . http_build_query($secure);
+		return $this->getParameter('YANDEX_PAY_NOTIFY_URL', true) . '?' . http_build_query($extraParams);
 	}
 
 	protected function getHeaders(string $key = '') : array
