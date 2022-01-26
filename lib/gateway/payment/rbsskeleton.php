@@ -6,6 +6,7 @@ use Bitrix\Main;
 use Bitrix\Currency;
 use Bitrix\Main\Web;
 use Yandexpay\Pay\Gateway;
+use YandexPay\Pay\Gateway\Manager;
 use Yandexpay\Pay\Reference\Concerns;
 use Yandexpay\Pay\Exceptions;
 
@@ -15,12 +16,13 @@ abstract class RbsSkeleton extends Gateway\Base
 
 	protected const STATUS_FAILED = false;
 	protected const STATUS_SUCCESS = 2;
+	protected const THREE_DS_VERSION_2 = 'is3DSVer2';
 
 	protected static $currencyMap = [];
 
 	public function getGatewayId() : string
 	{
-		return 'rbs';
+		return Manager::RBS;
 	}
 
 	public function getName() : string
@@ -30,7 +32,48 @@ abstract class RbsSkeleton extends Gateway\Base
 
 	public function getDescription() : string
 	{
-		return self::getMessage('DESCRIPTION');
+		return static::getMessage('DESCRIPTION');
+	}
+
+	protected function getTestUrl() : string
+	{
+		return '';
+	}
+
+	protected function getActiveUrl() : string
+	{
+		return '';
+	}
+
+	protected function getUrlList(): array
+	{
+		$testUrl = $this->getTestUrl();
+		$activeUrl = $this->getActiveUrl();
+
+		return [
+			'register' => [
+				static::TEST_URL => $testUrl . '/rest/register.do',
+				static::ACTIVE_URL => $activeUrl . '/rest/register.do',
+			],
+
+			'payment' => [
+				static::TEST_URL => $testUrl . '/yandex/payment.do',
+				static::ACTIVE_URL => $activeUrl . '/yandex/payment.do',
+			],
+
+			'refund' => [
+				static::TEST_URL => $testUrl . '/rest/refund.do',
+				static::ACTIVE_URL => $activeUrl . '/rest/refund.do',
+			],
+			'order' => [
+				static::TEST_URL => $testUrl . '/rest/getOrderStatusExtended.do',
+				static::ACTIVE_URL => $activeUrl . '/rest/getOrderStatusExtended.do',
+			],
+			'finish' => [
+				static::TEST_URL => $testUrl . '/rest/finish3dsVer2.do',
+				static::ACTIVE_URL => $activeUrl . '/rest/finish3dsVer2.do',
+			]
+		];
 	}
 
 	public function extraParams(): array
@@ -68,6 +111,11 @@ abstract class RbsSkeleton extends Gateway\Base
 
 		if ($this->isSecure3ds())
 		{
+			if ($this->request->get('version') === 2)
+			{
+				$this->createPaymentFinish($this->request->get('tDsTransId'));
+			}
+
 			$orderData = $this->getOrder();
 			$orderId = $this->getOrderNumber($orderData);
 
@@ -78,9 +126,38 @@ abstract class RbsSkeleton extends Gateway\Base
 		}
 
 		$orderId = $this->buildRegisterOrder();
+
+		$this->payment->setField('PS_INVOICE_ID', $orderId);
+		$this->payment->save();
+
 		$this->createPayment($orderId);
 
 		return $result;
+	}
+
+	protected function createPaymentFinish(string $transId) : void
+	{
+		$httpClient = new Web\HttpClient();
+		$url = $this->getUrl('finish');
+
+		$data = [
+			'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
+			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
+			'tDsTransId' => $transId,
+		];
+
+		if (!$httpClient->post($url, $data))
+		{
+			throw new Main\SystemException('error finish pay');
+		}
+
+		$redirectParams = array_intersect_key($this->request->getPostList()->toArray(), [
+			'paymentId' => true,
+			'paySystemId' => true,
+			'backurl' => true
+		]);
+
+		LocalRedirect($this->getRedirectUrl($redirectParams), true);
 	}
 
 	protected function createPayment(string $orderId) : void
@@ -89,7 +166,7 @@ abstract class RbsSkeleton extends Gateway\Base
 		$this->setHeaders($httpClient, 'json');
 		$url = $this->getUrl('payment');
 
-		$data = [
+		$data = $this->request->get('secure') ?? [
 			'username' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
 			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
 			'orderId' => $orderId,
@@ -113,6 +190,7 @@ abstract class RbsSkeleton extends Gateway\Base
 
 	protected function getOrder() : array
 	{
+		$orderId = $this->payment->getField('PS_INVOICE_ID');
 		$httpClient = new Web\HttpClient();
 		$this->setHeaders($httpClient);
 		$url = $this->getUrl('order');
@@ -120,7 +198,7 @@ abstract class RbsSkeleton extends Gateway\Base
 		$data = [
 			'userName' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
 			'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
-			'orderNumber' => $this->getExternalId(),
+			'orderId' => $orderId,
 		];
 
 		$resultData = $this->convertResult($httpClient->post($url, $data));
@@ -131,6 +209,10 @@ abstract class RbsSkeleton extends Gateway\Base
 
 	protected function getRegisteredOrder() : ?string
 	{
+		$orderId = $this->payment->getField('PS_INVOICE_ID');
+
+		if ($orderId === null) { return null; }
+
 		$httpClient = new Web\HttpClient();
 		$this->setHeaders($httpClient);
 		$url = $this->getUrl('order');
@@ -181,16 +263,9 @@ abstract class RbsSkeleton extends Gateway\Base
 			throw new Main\SystemException($message);
 		}
 
-		if (isset($resultData['success'], $resultData['data']['paReq']))
+		if (isset($resultData['success']))
 		{
-			throw new Exceptions\Secure3dRedirect(
-				$resultData['data']['acsUrl'],
-				[
-					'PaReq' => $resultData['data']['paReq'],
-					'MD' => $resultData['data']['orderId'],
-					'TermUrl' => $resultData['data']['termUrl']
-				]
-			);
+			$this->resultSecure($resultData['data']);
 		}
 
 		if (
@@ -199,6 +274,89 @@ abstract class RbsSkeleton extends Gateway\Base
 		)
 		{
 			throw new Main\SystemException(self::getMessage('ERROR_' . $resultData['orderStatus']));
+		}
+	}
+
+	protected function resultSecure(array $resultData) : void
+	{
+		$methods = [
+			'secureAuthVersion2',
+			'securePayVersion2',
+			'securePayVersion1'
+		];
+
+		foreach ($methods as $methodName)
+		{
+			if (!method_exists($this, $methodName)) { continue; }
+
+			$this->{$methodName}($resultData);
+		}
+	}
+
+	protected function secureAuthVersion2(array $data) : void
+	{
+		if (
+			isset($data[self::THREE_DS_VERSION_2], $data['threeDSMethodURLServer'])
+			&& (bool)$data[self::THREE_DS_VERSION_2]
+		)
+		{
+			$params = [
+				'secure' => [
+					'username' => $this->getParameter('PAYMENT_GATEWAY_USERNAME'),
+					'password' => $this->getParameter('PAYMENT_GATEWAY_PASSWORD'),
+					'paymentToken' => $this->getYandexToken(),
+					'orderId' => $data['orderId'],
+					'threeDSServerTransId' => $data['threeDSServerTransId'],
+					//'threeDSVer2FinishUrl' => $this->getRedirectUrl(['version' => 2, 'tDsTransId' => $data['threeDSServerTransId']]),
+				],
+				'notify' => [
+					'externalId' => $this->getPaymentId(),
+					'paySystemId' => $this->payment->getPaymentSystemId(),
+				]
+			];
+
+			throw new Exceptions\Secure3dRedirect(
+				$data['threeDSMethodURLServer'],
+				$params,
+				false,
+				'POST',
+				'iframerbs'
+			);
+		}
+	}
+
+	protected function securePayVersion2(array $data) : void
+	{
+		if (
+			isset($data[self::THREE_DS_VERSION_2], $data['acsUrl'], $data['packedCReq'])
+			&& (bool)$data[self::THREE_DS_VERSION_2]
+		)
+		{
+			$params = [
+				'creq' => $data['packedCReq']
+			];
+
+			throw new Exceptions\Secure3dRedirect(
+				$data['acsUrl'],
+				$params
+			);
+		}
+	}
+
+	protected function securePayVersion1(array $data) : void
+	{
+		if(isset($data['paReq'], $data['acsUrl']) && !(bool)$data[self::THREE_DS_VERSION_2])
+		{
+			$params = [
+				'PaReq' => $data['paReq'],
+				'MD' => $data['orderId'],
+				'TermUrl' => $data['termUrl']
+			];
+
+			throw new Exceptions\Secure3dRedirect(
+				$data['acsUrl'],
+				$params
+			);
 		}
 	}
 

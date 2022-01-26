@@ -2,6 +2,7 @@
 
 namespace Yandexpay\Pay\Gateway\Payment;
 
+use YandexPay\Pay\Gateway\Manager;
 use YandexPay\Pay\Reference\Concerns;
 
 class Mts extends RbsSkeleton
@@ -10,33 +11,16 @@ class Mts extends RbsSkeleton
 
 	public function getId(): string
 	{
-		return 'mts';
+		return Manager::RBS_MTS;
 	}
 
-	protected function getUrlList(): array
+	protected function getTestUrl() : string
 	{
-		$testUrl = 'https://web.rbsuat.com/mtsbank';
-		$activeUrl = 'https://pay.mts.ru/payment'; // todo mts
+		return 'https://web.rbsuat.com/mtsbank';
+	}
 
-		return [
-			'register' => [
-				static::TEST_URL => $testUrl . '/rest/register.do',
-				static::ACTIVE_URL => $activeUrl . '/rest/register.do',
-			],
-
-			'payment' => [
-				static::TEST_URL => $testUrl . '/yandex/payment.do',
-				static::ACTIVE_URL => $activeUrl . '/yandex/payment.do',
-			],
-
-			'refund' => [
-				static::TEST_URL => $testUrl . '/rest/refund.do',
-				static::ACTIVE_URL => $activeUrl . '/rest/refund.do',
-			],
-			'order' => [
-				static::TEST_URL => $testUrl . '/rest/getOrderStatusExtended.do',
-				static::ACTIVE_URL => $activeUrl . '/rest/getOrderStatusExtended.do',
-			]
-		];
+	protected function getActiveUrl() : string
+	{
+		return 'https://oplata.mtsbank.ru/payment';
 	}
 }
