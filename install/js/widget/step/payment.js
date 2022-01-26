@@ -117,7 +117,7 @@ export default class Payment extends AbstractStep {
 	}
 
 	notify(payment, yandexPayData) {
-		return fetch(this.getOption('YANDEX_PAY_NOTIFY_URL'), {
+		return fetch(this.getOption('notifyUrl'), {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
