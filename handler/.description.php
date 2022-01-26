@@ -111,13 +111,13 @@ try
 	$gateway = null;
 	$request = Main\Application::getInstance()->getContext()->getRequest();
 
-	if (isset($paySystem['PS_MODE']))
-	{
-		$gateway = Gateway\Manager::getProvider($paySystem['PS_MODE']);
-	}
-	else if ($request->get('PS_MODE') !== null) // pay_system_edit.php variable
+	if ($request->get('PS_MODE') !== null)
 	{
 		$gateway = Gateway\Manager::getProvider($request->get('PS_MODE'));
+	}
+	else if (isset($paySystem['PS_MODE'])) // pay_system_edit.php variable
+	{
+		$gateway = Gateway\Manager::getProvider($paySystem['PS_MODE']);
 	}
 	else if (isset($this) && $this instanceof \Sale\Handlers\PaySystem\YandexPayHandler)
 	{
