@@ -46,7 +46,7 @@ export default class Form extends Base {
 	}
 
 	makeTermUrl() {
-		let result = this.getOption('YANDEX_PAY_NOTIFY_URL');
+		let result = this.getOption('notifyUrl');
 		let backUrl = window.location.href;
 
 		result +=
