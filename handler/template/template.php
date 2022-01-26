@@ -27,7 +27,7 @@ $widgetOptions = array_intersect_key($params, [
 	'externalId' => true,
     'paySystemId' => true,
     'currency' => true,
-	'YANDEX_PAY_NOTIFY_URL' => true,
+	'notifyUrl' => true,
 ]);
 ?>
 

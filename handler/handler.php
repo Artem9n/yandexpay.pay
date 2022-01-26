@@ -65,13 +65,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		global $APPLICATION;
 
-		$params = [
-			'ORDER_ID' => $payment->getOrder()->getField('ACCOUNT_NUMBER'),
-			'PAYMENT_ID' => $payment->getOrder()->getField('ACCOUNT_NUMBER')
-		];
-
 		unset($_SESSION['yabackurl']);
-		$_SESSION['yabackurl'] = Url::absolutizePath() . $APPLICATION->GetCurPage() . '?' . http_build_query($params);
+		$_SESSION['yabackurl'] = Url::absolutizePath() . $APPLICATION->GetCurPageParam();
 	}
 
 	protected function getParams(Payment $payment) : array
@@ -90,7 +85,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'gatewayMerchantId'     => $gateway->getMerchantId(),
 			'externalId'            => $payment->getId(),
 			'paySystemId'           => $this->service->getField('ID'),
-			'currency'              => $payment->getField('CURRENCY')
+			'currency'              => $payment->getField('CURRENCY'),
+			'notifyUrl'             => $this->getParamValue($payment, 'NOTIFY_URL'),
 		];
 	}
 
