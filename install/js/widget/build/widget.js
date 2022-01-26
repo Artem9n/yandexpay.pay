@@ -388,7 +388,7 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "makeTermUrl",
 	    value: function makeTermUrl() {
-	      var result = this.getOption('YANDEX_PAY_NOTIFY_URL');
+	      var result = this.getOption('notifyUrl');
 	      var backUrl = window.location.href;
 	      result += (result.indexOf('?') === -1 ? '?' : '&') + 'backurl=' + encodeURIComponent(backUrl) + '&service=' + this.getOption('requestSign') + '&paymentId=' + this.getOption('externalId');
 	      return result;
@@ -444,6 +444,84 @@ this.BX = this.BX || {};
 	  template: '<iframe style="display: none;"></iframe>'
 	});
 
+	var IframeRbs = /*#__PURE__*/function (_Base) {
+	  babelHelpers.inherits(IframeRbs, _Base);
+
+	  function IframeRbs() {
+	    babelHelpers.classCallCheck(this, IframeRbs);
+	    return babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(IframeRbs).apply(this, arguments));
+	  }
+
+	  babelHelpers.createClass(IframeRbs, [{
+	    key: "render",
+	    value: function render(node, data) {
+	      this.insertIframe(node, data);
+	    }
+	  }, {
+	    key: "insertIframe",
+	    value: function insertIframe(node, data) {
+	      node.innerHTML = Template.compile(this.options.template, data);
+	      this.compile(node, data);
+	    }
+	  }, {
+	    key: "compile",
+	    value: function compile(node, data) {
+	      var _this = this;
+
+	      Promise.resolve().then(function () {
+	        return _this.renderIframe(node, data);
+	      }).then(function () {
+	        return _this.query(data);
+	      });
+	    }
+	  }, {
+	    key: "query",
+	    value: function query(data) {
+	      var _this2 = this;
+
+	      fetch(this.getOption('notifyUrl'), {
+	        method: 'POST',
+	        headers: {
+	          'Content-Type': 'application/json'
+	        },
+	        body: JSON.stringify({
+	          service: this.getOption('requestSign'),
+	          accept: 'json',
+	          secure: data.params.secure,
+	          externalId: data.params.notify.externalId,
+	          paySystemId: data.params.notify.paySystemId
+	        })
+	      }).then(function (response) {
+	        return response.json();
+	      }).then(function (result) {
+	        if (result.success === true) {
+	          _this2.widget.go(result.state, result);
+	        } else {
+	          _this2.widget.go('error', result);
+	        }
+	      }).catch(function (error) {
+	        return console.log(error);
+	      });
+	    }
+	  }, {
+	    key: "renderIframe",
+	    value: function renderIframe(node, data) {
+	      var iframe = node.querySelector('iframe');
+	      var contentIframe = iframe.contentWindow || iframe.contentDocument.document || iframe.contentDocument;
+	      var html = "<form name=\"form\" action=\"".concat(data.action, "\" method=\"POST\">");
+	      contentIframe.document.open();
+	      contentIframe.document.write(html);
+	      contentIframe.document.close();
+	      contentIframe.document.querySelector('form').submit();
+	    }
+	  }]);
+	  return IframeRbs;
+	}(Base);
+
+	babelHelpers.defineProperty(IframeRbs, "defaults", {
+	  template: '<iframe style="display: none;"></iframe>'
+	});
+
 	var Step3ds = /*#__PURE__*/function (_AbstractStep) {
 	  babelHelpers.inherits(Step3ds, _AbstractStep);
 
@@ -468,6 +546,8 @@ this.BX = this.BX || {};
 	        return new Form();
 	      } else if (view === 'iframe') {
 	        return new Iframe();
+	      } else if (view === 'iframerbs') {
+	        return new IframeRbs();
 	      }
 
 	      throw new Error('view secure3d missing');
@@ -621,7 +701,7 @@ this.BX = this.BX || {};
 	    value: function notify(payment, yandexPayData) {
 	      var _this2 = this;
 
-	      return fetch(this.getOption('YANDEX_PAY_NOTIFY_URL'), {
+	      return fetch(this.getOption('notifyUrl'), {
 	        method: 'POST',
 	        headers: {
 	          'Content-Type': 'application/json'
@@ -735,8 +815,7 @@ this.BX = this.BX || {};
 	        _this3.combineOrderWithProducts(result);
 
 	        _this3.createPayment(_this3.element, _this3.paymentData);
-	      }).catch(function (error) {
-	        _this3.showError('', error);
+	      }).catch(function (error) {//this.showError('bootstrap', '', error);
 	      });
 	    }
 	  }, {
@@ -836,7 +915,7 @@ this.BX = this.BX || {};
 	      }).then(function (payment) {
 	        // Создать экземпляр кнопки.
 	        var button = payment.createButton({
-	          type: YaPay$1.ButtonType.Pay,
+	          type: YaPay$1.ButtonType.Checkout,
 	          theme: _this6.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
 	          width: _this6.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
 	        }); // Смонтировать кнопку в DOM.
@@ -875,7 +954,7 @@ this.BX = this.BX || {};
 	              }
 	            }
 	          }).catch(function (error) {
-	            _this6.showError('', error); // todo test it
+	            _this6.showError('yapayProcess', '', error); // todo test it
 
 
 	            payment.complete(YaPay$1.CompleteReason.Error);
@@ -883,7 +962,7 @@ this.BX = this.BX || {};
 	        }); // Подписаться на событие error.
 
 	        payment.on(YaPay$1.PaymentEventType.Error, function (event) {
-	          _this6.showError('service temporary unavailable');
+	          _this6.showError('yapayError', 'service temporary unavailable');
 
 	          payment.complete(YaPay$1.CompleteReason.Error);
 	        }); // Подписаться на событие change.
@@ -918,7 +997,7 @@ this.BX = this.BX || {};
 	          }
 	        });
 	      }).catch(function (err) {
-	        _this6.showError('payment not created', err);
+	        _this6.showError('yapayPayment', 'payment not created', err);
 	      });
 	    }
 	  }, {
@@ -1051,9 +1130,9 @@ this.BX = this.BX || {};
 	    }
 	  }, {
 	    key: "showError",
-	    value: function showError(message) {
-	      var err = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-	      var notify = message;
+	    value: function showError(type, message) {
+	      var err = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+	      var notify = type + ' - ' + message;
 
 	      if (err) {
 	        notify += ' ' + err;

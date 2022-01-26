@@ -1,6 +1,7 @@
 import AbstractStep from "./abstractstep";
 import SecureForm from "../secure3d/form";
 import SecureIframe from "../secure3d/iframe";
+import SecureRbs from "../secure3d/iframerbs";
 
 export default class Step3ds extends AbstractStep {
 
@@ -17,6 +18,8 @@ export default class Step3ds extends AbstractStep {
 			return new SecureForm();
 		} else if (view === 'iframe') {
 			return new SecureIframe();
+		} else if (view === 'iframerbs') {
+			return new SecureRbs();
 		}
 
 		throw new Error('view secure3d missing')
