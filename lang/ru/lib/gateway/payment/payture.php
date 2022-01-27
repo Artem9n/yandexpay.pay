@@ -4,7 +4,7 @@ $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_DESCRIPTION'] = '<strong>Для текущих к
 Для заполнения формы внизу страницы &laquo;Настройка обработчика&nbsp;ПС&raquo; понадобится API-ключ для авторизации и&nbsp;пароль для API. Чтобы их&nbsp;получить обратитесь к&nbsp;своему менеджеру или напишите на&nbsp;почту <a href="mailto:business@payture.com">business@payture.com</a>.<br />
 <br />
 <strong>Для новых клиентов</strong><br />
-Заполните заявку <a target="_blank" href="https://payture.com/services/yandex-pay/?utm_source=pay&utm_medium=payture&utm_campaign=bitrix">на&nbsp;сайте</a> или напишите на&nbsp;почту <a href="mailto:business@payture.com">business@payture.com</a>. Вы&nbsp;получите скидку <strong>в размере&nbsp;25%</strong> на&nbsp;услуги провайдера, о&nbsp;которой вам расскажет менеджер. Время ответа в&nbsp;рабочие дни составляет 3-4&nbsp;часа.';
+Заполните заявку <a target="_blank" href="https://payture.com/services/yandex-pay-bitrix?utm_source=pay&utm_medium=payture&utm_campaign=bitrix">на&nbsp;сайте</a> или напишите на&nbsp;почту <a href="mailto:business@payture.com">business@payture.com</a>. Вы&nbsp;получите скидку <strong>в размере&nbsp;25%</strong> на&nbsp;услуги провайдера, о&nbsp;которой вам расскажет менеджер. Время ответа в&nbsp;рабочие дни составляет 3-4&nbsp;часа.';
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_MERCHANT_ID'] = 'Идентификатор продавца';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_MERCHANT_API_KEY'] = 'API-ключ для авторизации';
