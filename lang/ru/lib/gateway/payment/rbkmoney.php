@@ -1,7 +1,7 @@
 <?php
 
-$MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_DESCRIPTION'] = 'Для текущих клиентов<br />
-Для заполнения формы &laquo;Настройка обработчика&nbsp;ПС&raquo; понадобится ключ магазина и&nbsp;публичный ключ. Для заполнения этих полей напишите на&nbsp;почту <a href="mailto:support@rbkmoney.com">support@rbkmoney.com</a>. В&nbsp;теле письма укажите наименование CMS &laquo;Битрикс&raquo;, название модуля &laquo;Yandex.Pay&raquo; и&nbsp;кратко опишите суть вопроса.';
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_DESCRIPTION'] = '<strong>Для текущих клиентов</strong><br />
+Для заполнения формы внизу страницы &laquo;Настройка обработчика&nbsp;ПС&raquo; понадобится ключ магазина и&nbsp;публичный ключ. Для заполнения этих полей напишите на&nbsp;почту <a href="mailto: support@rbkmoney.com">support@rbkmoney.com</a>. В&nbsp;теле письма укажите наименование CMS &laquo;Битрикс&raquo;, название модуля &laquo;Yandex.Pay&raquo; и&nbsp;кратко опишите суть вопроса.';
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_MERCHANT_ID'] = 'Идентификатор продавца';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_RBKMONEY_MERCHANT_API_KEY'] = 'API-ключ для авторизации';

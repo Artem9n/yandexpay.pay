@@ -1,7 +1,9 @@
 <?php
-$MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_DESCRIPTION'] = 'Для текущих клиентов<br />
-Заполните в&nbsp;форме &laquo;Настройка обработчика&nbsp;ПС&raquo; свой логин учетной записи, который вы&nbsp;получали при подключении в&nbsp;письме от&nbsp;банка, а&nbsp;также пароль. Тема письма от&nbsp;банка: &laquo;Реквизиты для подключения к&nbsp;продуктивной среде (Интернет-эквайринг Альфа-Банк) [login]&raquo;.<br />
-<br />Для новых клиентов<br />Заполните форму: <a target="_blank" href="https://alfabank.ru/sme/payservice/internet-acquiring/#form">https://alfabank.ru/sme/payservice/internet-acquiring/#form</a>. С&nbsp;вами свяжется менеджер банка.';
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_DESCRIPTION'] = '<strong>Для текущих клиентов</strong><br />
+Заполните в&nbsp;форме внизу страницы &laquo;Настройка обработчика&nbsp;ПС&raquo; свой логин учетной записи, который вы&nbsp;получали при подключении в&nbsp;письме от&nbsp;банка, а&nbsp;также пароль. Тема письма от&nbsp;банка: &laquo;Реквизиты для подключения к&nbsp;продуктивной среде (Интернет-эквайринг Альфа-Банк) [login]&raquo;.<br />
+<br />
+<strong>Для новых клиентов</strong><br />
+<a target="_blank" href="https://alfabank.ru/sme/payservice/internet-acquiring/?utm_source=pay&utm_medium=alfa&utm_campaign=bitrix#form">Заполните форму</a>. С&nbsp;вами свяжется менеджер банка.';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_NAME'] = 'RBS Альфа-Банк';
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_ALFABANK_MERCHANT_ID'] = 'Идентификатор продавца';

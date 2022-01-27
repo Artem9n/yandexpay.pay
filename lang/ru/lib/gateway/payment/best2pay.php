@@ -1,10 +1,10 @@
 <?php
 
-$MESS['YANDEX_PAY_GATEWAY_PAYMENT_BEST2PAY_DESCRIPTION'] = 'Для текущих клиентов<br />
-Для заполнения формы &laquo;Настройка обработчика&nbsp;ПС&raquo; понадобится уникальный идентификатор учетной записи и&nbsp;пароль для формирования электронной подписи. Также вы&nbsp;можете отправить запрос на&nbsp;<a href="mailto:helpline@best2pay.net">helpline@best2pay.net</a>. Сервис гарантирует 4&nbsp;часа на&nbsp;ответ, 48&nbsp;часов на&nbsp;решение.<br />
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_BEST2PAY_DESCRIPTION'] = '<strong>Для текущих клиентов</strong><br />
+Для заполнения внизу страницы формы &laquo;Настройка обработчика&nbsp;ПС&raquo; понадобится уникальный идентификатор учетной записи и&nbsp;пароль для формирования электронной подписи. Если вы&nbsp;их&nbsp;не&nbsp;знаете, отправьте запрос на&nbsp;почту <a href="mailto:helpline@best2pay.net">helpline@best2pay.net</a>. Сервис гарантирует 4&nbsp;часа на&nbsp;ответ, 48&nbsp;часов на&nbsp;решение.<br />
 <br />
-Для новых клиентов<br />
-Заполните форму: <a target="_blank" href="https://best2pay.net/#main_form_container">https://best2pay.net/#main_form_container</a>. С&nbsp;вами свяжется менеджер сервиса.';
+<strong>Для новых клиентов</strong><br />
+<a target="_blank" href="http://best2pay.net/?utm_source=pay&utm_medium=best2pay&utm_campaign=bitrix#main_form_container">Заполните форму</a>. С&nbsp;вами свяжется менеджер сервиса.';
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_BEST2PAY_MERCHANT_ID'] = 'Идентификатор продавца';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_BEST2PAY_SECTOR_ID'] = 'Уникальный идентификатор учетной записи';
