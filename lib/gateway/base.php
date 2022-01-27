@@ -92,7 +92,7 @@ abstract class Base implements IGateway
 		$prefix = static::getPrefix();
 		$code = $prefix . $this->getId();
 
-		$extraParams = $this->extraParams($code);
+		$extraParams = $this->extraParams();
 		$result = [];
 
 		if (!empty($extraParams))
