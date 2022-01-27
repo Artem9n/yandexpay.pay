@@ -5,6 +5,7 @@ namespace YandexPay\Pay\Trading\Entity\Sale;
 use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
+use YandexPay\Pay\Utils\UserField;
 
 class User extends EntityReference\User
 {
@@ -159,6 +160,7 @@ class User extends EntityReference\User
 		$userData = $data + $this->data;
 		$registerData = $this->convertUserData($userData);
 		$registerData += $this->getDefaultData();
+		$registerData += $this->getRequiredData();
 
 		[$email, $registerData] = $this->extractEmailField($registerData);
 		[$payer, $registerData] = $this->extractPayerField($registerData);
@@ -172,6 +174,13 @@ class User extends EntityReference\User
 		}
 
 		return $addResult;
+	}
+
+	protected function getRequiredData()
+	{
+		$defaultValue = new UserField\DefaultValue('USER');
+
+		return $defaultValue->getValues('MANDATORY');
 	}
 
 	public function migrate($code)
