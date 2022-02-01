@@ -1,0 +1,192 @@
+/* link */
+
+.b-link-complex {
+	color: inherit !important;
+	text-decoration: none !important;
+
+	cursor: pointer;
+}
+
+.b-link,
+.b-link-complex__target {
+	border-bottom: 1px solid;
+
+	color: #2675d7;
+	text-decoration: none !important;
+
+	cursor: pointer;
+}
+
+.b-link.target--inside,
+.b-link-complex__target.target--inside {
+	border-bottom-style: dotted;
+}
+
+.b-link.action--heading,
+.b-link-complex__target.action--heading {
+	color: #24282b;
+	border-bottom-color: rgba(36, 40, 43, .3);
+}
+
+.b-link:hover,
+.b-link:focus,
+.b-link-complex:hover .b-link-complex__target,
+.b-link-complex:focus .b-link-complex__target {
+	border-bottom-color: transparent;
+}
+
+.b-link__icon,
+.b-link-complex__icon {
+	opacity: 0.75;
+}
+
+.b-link:hover .b-link__icon,
+.b-link:focus .b-link__icon,
+.b-link-complex:hover .b-link-complex__icon,
+.b-link-complex:focus .b-link-complex__icon {
+	opacity: 1;
+}
+
+
+/* pill-group */
+
+.b-form-pill-group.is--fill {
+	display: block;
+	padding: 24px;
+	border: 1px solid #cacfd8;
+	border-radius: 3px;
+	max-width: 700px;
+
+	position: relative;
+
+	background: #fff;
+}
+
+.b-form-pill-group.is--fill .b-form-pill-group__empty {
+	display: none;
+}
+
+/* pill */
+
+.b-form-pill {
+	display: block;
+	padding: 12px 16px;
+	border: 1px solid #cacfd8;
+	border-radius: 3px;
+	max-width: 600px;
+
+	position: relative;
+
+	background: #fff;
+}
+
+.b-form-pill + .b-form-pill {
+	margin-top: 9px;
+}
+
+.b-form-pill.dimension--gamma {
+	padding: 12px 24px;
+}
+
+/* field add */
+
+.b-field-add {
+	margin-top: 9px;
+}
+
+.b-field-add:first-child,
+.is--hidden + .b-field-add {
+	margin-top: 0;
+}
+
+/* form hidden row */
+
+.b-form-hidden-row {
+	height: 0;
+	padding: 0;
+	border: 0;
+}
+
+/* close */
+
+.b-close,
+.b-remove,
+.bx-core-adm-dialog a.b-remove {
+	display: inline-block;
+	vertical-align: middle;
+	width: 9px;
+	height: 10px;
+	padding: 3px 5px;
+	border: 0;
+
+	background: url('i/close.svg') no-repeat 50% 50%;
+	background-size: 9px 10px;
+}
+
+.b-close,
+.b-remove {
+	opacity: 0.75;
+	cursor: pointer;
+}
+
+.b-close {
+	padding: 10px;
+
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+
+.b-close:hover,
+.b-close:focus,
+.b-remove:hover,
+.b-remove:focus {
+	opacity: 1;
+}
+
+/* copy */
+
+.b-copy {
+	display: inline-block;
+	vertical-align: middle;
+	overflow: hidden;
+	width: 15px;
+	height: 15px;
+	padding: 4px;
+	border: 0;
+	box-sizing: content-box;
+
+	margin-top: -6px;
+	margin-bottom: -6px;
+
+	background: url('i/copy.svg') no-repeat 50% 50%;
+	background-size: 14px 14px;
+
+	opacity: 0.75;
+
+	white-space: nowrap;
+	text-indent: 30px;
+
+	cursor: pointer;
+}
+
+.b-close:hover,
+.b-close:focus {
+	opacity: 1;
+}
+
+/* utils */
+
+.is--hidden {
+	display: none !important;
+}
+
+.visible--hidden {
+	visibility: hidden !important;
+	pointer-events: none !important;
+	opacity: 0 !important;
+}
+
+.adm-workarea textarea[readonly], .adm-workarea input[readonly]{
+	opacity: 1 !important;
+}

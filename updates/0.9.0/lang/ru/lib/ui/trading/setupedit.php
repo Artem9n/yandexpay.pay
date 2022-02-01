@@ -1,0 +1,9 @@
+<?php
+
+$MESS['YANDEX_PAY_UI_TRADING_SETUP_EDIT_TITLE'] = 'Редактирования настройки';
+$MESS['YANDEX_PAY_UI_TRADING_SETUP_EDIT_TITLE_ADD'] = 'Новая настройка';
+$MESS['YANDEX_PAY_UI_TRADING_SETUP_EDIT_BTN_SAVE'] = 'Сохранить';
+$MESS['YANDEX_PAY_UI_TRADING_SETUP_EDIT_BTN_ADD'] = 'Включить и настроить';
+$MESS['YANDEX_PAY_UI_TRADING_SETUP_EDIT_CONTEXT_MENU_LIST'] = 'Настройки';
+$MESS['YANDEX_PAY_UI_TRADING_SETUP_EDIT_TAB_COMMON'] = 'Общие настройки';
+$MESS['YANDEX_PAY_UI_TRADING_SETUP_EDIT_NEXT_TITLE'] = 'Настройка обработки заказов';

@@ -1,0 +1,3 @@
+<?php
+
+$MESS['YANDEX_PAY_COMPONENT_PLAIN_FORM_FIELD_REQUIRED'] = 'Не заполнено поле #FIELD_NAME#';

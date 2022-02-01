@@ -1,0 +1,51 @@
+#bx-admin-prefix .yamarket-form td.adm-detail-content-cell-r > table[id^="table_"] {
+    border-spacing: 0;
+}
+
+#bx-admin-prefix .yamarket-form td.adm-detail-content-cell-r > table[id^="table_"] td {
+    padding: 0;
+}
+
+.yamarket-btn {
+	color: #3f4b54 !important;
+	text-decoration: none !important;
+
+	margin: 2px;
+}
+
+.yamarket-btn-additional {
+	float: right;
+}
+
+.yamarket-btn.adm-btn-load {
+	box-sizing: border-box;
+}
+
+.adm-btn {
+	padding: 1px 13px 3px;
+	background-position: 0 0;
+}
+
+.adm-workarea .adm-btn-save.adm-btn-disabled,
+.adm-workarea .adm-btn-save.adm-btn-disabled:hover,
+.adm-workarea .adm-btn-save.adm-btn-disabled:focus {
+	background: #86AD00 !important;
+	background: -webkit-linear-gradient(top, #97BA00, #729E00 ) !important;
+	background:    -moz-linear-gradient(top, #97BA00, #729E00 ) !important;
+	background:     -ms-linear-gradient(top, #97BA00, #729E00 ) !important;
+	background:      -o-linear-gradient(top, #97BA00, #729E00 )!important;
+	background:         linear-gradient(to bottom, #97BA00, #729E00) !important;
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25), 0 1px 0 #CBDC00 inset !important;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25), 0 1px 0 #CBDC00 inset !important;
+	border: 1px solid !important;
+	border-color: #97C004 #7EA502 #648900 !important;
+	color: #b5cc80 !important;
+	text-shadow: none !important;
+
+	cursor: not-allowed;
+}
+
+.adm-workarea .adm-btn.adm-btn-save:active, .adm-workarea button.adm-btn.adm-btn-save:active {
+	height: 29px!important;
+	padding: 1px 13px 2px!important;
+}

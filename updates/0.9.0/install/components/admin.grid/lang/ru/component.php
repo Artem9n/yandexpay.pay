@@ -1,0 +1,7 @@
+<?php
+
+$MESS['YANDEXPAY_PAY_COMPONENT_GRID_PARAM_REQUIRE'] = 'Необходим параметр #PARAM#';
+$MESS['YANDEXPAY_PAY_COMPONENT_GRID_MODULE_REQUIRE'] = 'Необходим модуль #PARAM#';
+$MESS['YANDEXPAY_PAY_COMPONENT_GRID_ACTION_EDIT'] = 'Редактировать';
+$MESS['YANDEXPAY_PAY_COMPONENT_GRID_ROW_ACTION_CONFIRM'] = 'Необходимо подтвердить действие';
+$MESS['YANDEXPAY_PAY_COMPONENT_GRID_ACTION_DISALLOW'] = 'Отсутствует доступ на запись';

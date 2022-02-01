@@ -1,0 +1,29 @@
+#yapay-paysystem-trading-container .adm-btn.adm-btn-add{
+	background-color: #86ad00!important;
+	-webkit-box-shadow: 0 1px 1px rgb(0 0 0 / 25%), inset 0 1px 0 #cbdc00;
+	box-shadow: 0 1px 1px rgb(0 0 0 / 25%), inset 0 1px 0 #cbdc00;
+	border: solid 1px;
+	border-color: #97c004 #7ea502 #648900;
+	background-image: -webkit-linear-gradient(bottom, #729e00, #97ba00)!important;
+	background-image: -moz-linear-gradient(bottom, #729e00, #97ba00)!important;
+	background-image: -ms-linear-gradient(bottom, #729e00, #97ba00)!important;
+	background-image: -o-linear-gradient(bottom, #729e00, #97ba00)!important;
+	background-image: linear-gradient(bottom, #729e00, #97ba00)!important;
+	color: #fff;
+	text-shadow: 0 1px rgb(0 0 0 / 10%);
+	-webkit-font-smoothing: antialiased;
+}
+
+#yapay-paysystem-trading-container .adm-btn.adm-btn-add:active{
+	background: #698f00!important;
+	-webkit-box-shadow: inset 0 2px 1px rgba(66,84,17,.71)!important;
+	box-shadow: inset 0 2px 1px rgb(66 84 17 / 71%) !important;
+	border-color: transparent #698f00 #698f00 !important;
+	border-top: none;
+	height: 17px!important;
+	padding: 6px 15px 5px !important;
+}
+
+#yapay-paysystem-trading-container .adm-btn.adm-btn-add::before{
+	background-position: 0 -672px;
+}
