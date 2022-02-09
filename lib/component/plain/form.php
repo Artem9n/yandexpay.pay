@@ -282,7 +282,7 @@ abstract class Form extends Pay\Component\Reference\Form
 
 		foreach ($fields as $fieldName => $field)
 		{
-			if (empty($field['DEPEND_HIDDEN'])) { continue; }
+			if (empty($field['DEPEND_HIDDEN']) || $field['FIELD_NAME'] === 'INJECTION') { continue; }
 
 			Pay\Utils\BracketChain::unset($result, $fieldName);
 		}

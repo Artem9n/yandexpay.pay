@@ -131,6 +131,7 @@ class Form extends Pay\Component\Plain\Form
 		{
 			$fields = $this->getComponentResult('FIELDS');
 
+			$values = $this->applySolutionInjection($values, $setup);
 			$values = $this->applyUserFieldsOnBeforeSave($fields, $values);
 			$values = $this->sliceFieldsDependHidden($fields, $values);
 			$values = $this->sliceEmptyValues($values);
@@ -146,6 +147,51 @@ class Form extends Pay\Component\Plain\Form
 		$setup->getSettings()->save(); // for update settings values
 
 		return new Main\ORM\Data\UpdateResult();
+	}
+
+	protected function applySolutionInjection(array $values, Pay\Trading\Setup\Model $setup) : array
+	{
+		if (empty($values['SOLUTION']))
+		{
+			$values['SOLUTION'] = 0;
+			return $values;
+		}
+
+		$result = [];
+
+		$solution = Pay\Injection\Solution\Registry::getInstance($values['SOLUTION']);
+
+		$environment = $setup->getEnvironment();
+
+		$map = $solution->getDefaults([
+			'SITE_ID' => $setup->getSiteId(),
+			'SITE_DIR' => $environment->getSite()->getDir($setup->getSiteId()),
+			'IBLOCK' => $environment->getCatalog()->getIblock($setup->getSiteId()),
+		]);
+
+		foreach ($map as $type => $options)
+		{
+			$result[] = [
+				'BEHAVIOR' => $type,
+				'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $options),
+			];
+		}
+
+		$values['INJECTION'] = $result;
+
+		return $values;
+	}
+
+	protected function prefixInjectionDefaults(string $prefix, array $values) : array
+	{
+		$result = [];
+
+		foreach ($values as $key => $value)
+		{
+			$result[$prefix . $key] = $value;
+		}
+
+		return $result;
 	}
 
 	protected function sliceEmptyValues(array $values) : array
