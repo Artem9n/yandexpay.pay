@@ -38,12 +38,56 @@ class Site
 		return $result;
 	}
 
+	public static function getTemplate(string $siteId = null) : array
+	{
+		$result = [];
+
+		$filter = [];
+
+		if ($siteId !== null)
+		{
+			$filter = ['=SITE_ID' => $siteId];
+		}
+
+		$query = Main\SiteTemplateTable::getList([
+			'filter' => $filter,
+			'select' => [
+				'TEMPLATE'
+			]
+		]);
+
+		while($site = $query->fetch())
+		{
+			$result[] = $site['TEMPLATE'];
+		}
+
+		return $result;
+	}
+
 	public static function getDefault()
 	{
 		$enum = static::getEnum();
 		$option = reset($enum);
 
 		return $option !== false ? $option['ID'] : null;
+	}
+
+	public static function getDir(string $siteId)
+	{
+		$result = null;
+
+		$query = Main\SiteTable::getList([
+			'filter' => [ '=LID' => $siteId ],
+			'limit' => 1,
+			'select' => [ 'LID', 'NAME', 'DIR' ]
+		]);
+
+		if ($row = $query->fetch())
+		{
+			$result = $row['DIR'];
+		}
+
+		return $result;
 	}
 
 	protected static function getEnum() : array

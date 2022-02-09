@@ -25,4 +25,14 @@ class Site extends Pay\Trading\Entity\Reference\Site
 	{
 		return Pay\Data\Site::getDefault();
 	}
+
+	public function getTemplate(string $siteId) : array
+	{
+		return Pay\Data\Site::getTemplate($siteId);
+	}
+
+	public function getDir(string $siteId)
+	{
+		return Pay\Data\Site::getDir($siteId);
+	}
 }
