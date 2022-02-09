@@ -18,13 +18,6 @@ class AsproMax extends Skeleton
 		return Registry::ASPRO_MAX;
 	}
 
-	public function isMatch(array $context = []) : bool
-	{
-		$templates = array_flip($context['TEMPLATES']);
-
-		return isset($templates[$this->getType()]);
-	}
-
 	public function getDefaults(array $context = []) : array
 	{
 		return [
