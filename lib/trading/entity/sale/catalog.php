@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Trading\Entity\Sale;
 
+use Bitrix\Catalog\CatalogIblockTable;
 use Bitrix\Main;
 use Bitrix\Iblock;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
@@ -10,18 +11,17 @@ class Catalog extends EntityReference\Catalog
 {
 	public function getIblock(string $siteId = null) : ?int
 	{
-		if (!Main\Loader::includeModule('iblock')) { return null; }
+		if (!Main\Loader::includeModule('catalog')) { return null; }
 
 		$result = null;
 
-		$query = Iblock\IblockSiteTable::getList([
+		$query = CatalogIblockTable::getList([
 			'filter' => [
-				'=SITE_ID' => $siteId,
+				'=IBLOCK.LID' => $siteId,
 				'=IBLOCK.TYPE.LANG_MESSAGE.LANGUAGE_ID' => LANGUAGE_ID,
-				'=IBLOCK.TYPE.ID' => 'catalog',
 			],
 			'select' => [
-				'ID' => 'IBLOCK.ID',
+				'ID' => 'IBLOCK.ID'
 			],
 			'limit' => 1,
 		]);
@@ -36,20 +36,19 @@ class Catalog extends EntityReference\Catalog
 
 	public function getEnumIblock(string $siteId = null) : array
 	{
-		if (!Main\Loader::includeModule('iblock')) { return []; }
+		if (!Main\Loader::includeModule('catalog')) { return []; }
 
 		$result = [];
 
-		$query = Iblock\IblockTable::getList([
+		$query = CatalogIblockTable::getList([
+			'order' => ['IBLOCK_ID' => 'ASC'],
 			'filter' => [
-				'=TYPE.LANG_MESSAGE.LANGUAGE_ID' => LANGUAGE_ID,
-				'=TYPE.ID' => 'catalog',
-				//'=LID' => $siteId
+				'=IBLOCK.TYPE.LANG_MESSAGE.LANGUAGE_ID' => LANGUAGE_ID,
 			],
 			'select' => [
-				'ID',
-				'NAME',
-				'TYPE_NAME' => 'TYPE.LANG_MESSAGE.NAME',
+				'ID' => 'IBLOCK.ID',
+				'NAME' => 'IBLOCK.NAME',
+				'TYPE_NAME' => 'IBLOCK.TYPE.LANG_MESSAGE.NAME',
 			],
 		]);
 
