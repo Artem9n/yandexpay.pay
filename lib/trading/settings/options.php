@@ -135,6 +135,7 @@ class Options extends Reference\Skeleton
 			+ $this->getAddressFields($environment, $siteId)
 			+ $this->getCommentFields($environment, $siteId)
 			+ $this->getSuccessUrlFields($environment, $siteId)
+			+ $this->getSolutionFields($environment, $siteId)
 			+ $this->getInjectionFields($environment, $siteId);
 	}
 
@@ -320,6 +321,66 @@ class Options extends Reference\Skeleton
 		];
 	}
 
+	protected function getSolutionFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		$solutions = $this->makeSolutions($environment, $siteId);
+		$solution = $this->makeSolutionDefault($environment, $siteId);
+
+		return [
+			'SOLUTION' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('SOLUTION'),
+				'SORT' => 4010,
+				'VALUES' => $solutions,
+				'SETTINGS' => [
+					'CAPTION_NO_VALUE' => self::getMessage('NO_DEFAULTS'),
+					'DEFAULT_VALUE' => $solution !== null ? $solution->getType() : null
+				]
+			]
+		];
+	}
+
+	protected function makeSolutions(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		$result = [];
+		$siteTemplates = $environment->getSite()->getTemplate($siteId);
+
+		foreach (Injection\Solution\Registry::getTypes() as $type)
+		{
+			$solution = Injection\Solution\Registry::getInstance($type);
+
+			$isMatch = $solution->isMatch(['TEMPLATES' => $siteTemplates]);
+
+			if (!$isMatch) { continue; }
+
+			$result[$type] = [
+				'ID' => $type,
+				'VALUE' => $solution->getTitle(),
+			];
+		}
+
+		return $result;
+	}
+
+	protected function makeSolutionDefault(Entity\Reference\Environment $environment, string $siteId) : ?Injection\Solution\Skeleton
+	{
+		$result = null;
+		$siteTemplates = $environment->getSite()->getTemplate($siteId);
+
+		foreach (Injection\Solution\Registry::getTypes() as $type)
+		{
+			$solution = Injection\Solution\Registry::getInstance($type);
+			$isMatch = $solution->isMatch(['TEMPLATES' => $siteTemplates]);
+
+			if (!$isMatch) { continue; }
+
+			$result = $solution;
+			break;
+		}
+
+		return $result;
+	}
+
 	protected function getInjectionFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return [
@@ -338,62 +399,36 @@ class Options extends Reference\Skeleton
 					'MODAL_WIDTH' => 600,
 					'MODAL_HEIGHT' => 450,
 				],
+				'DEPEND' => [
+					'SOLUTION' => [
+						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
+						'VALUE' => true,
+					],
+				],
 			],
 		];
 	}
 
 	protected function makeInjectionDefaults(Entity\Reference\Environment $environment, string $siteId) : array
 	{
-		return array_merge(
-			$this->makeInjectionOrderDefaults($environment, $siteId),
-			$this->makeInjectionCatalogDefaults($environment, $siteId)
-		);
-	}
+		$solution = $this->makeSolutionDefault($environment, $siteId);
 
-	protected function makeInjectionOrderDefaults(Entity\Reference\Environment $environment, string $siteId) : array
-	{
-		$orderTypes = [
-			Injection\Behavior\Registry::ORDER,
-			Injection\Behavior\Registry::BASKET,
-		];
+		if ($solution === null) { return []; }
+
 		$result = [];
-
-		foreach ($orderTypes as $type)
-		{
-			$injection = Injection\Behavior\Registry::getInstance($type);
-			$defaults = $injection->getDefaults($siteId);
-
-			if ($defaults === null) { continue; }
-
-			$result[] = [
-				'BEHAVIOR' => $type,
-				'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $defaults),
-			];
-		}
-
-		return $result;
-	}
-
-	protected function makeInjectionCatalogDefaults(Entity\Reference\Environment $environment, string $siteId) : array
-	{
-		$result = [];
-		$type = Injection\Behavior\Registry::ELEMENT;
-		$iblockId = $environment->getCatalog()->getIblock($siteId);
-
-		if ($iblockId === null) { return $result; }
-
-		$injection = Injection\Behavior\Registry::getInstance($type);
-
-		$defaults = $injection->getDefaults($siteId, [
-			'IBLOCK' => $iblockId,
+		$map = $solution->getDefaults([
+			'SITE_ID' => $siteId,
+			'SITE_DIR' => $environment->getSite()->getDir($siteId),
+			'IBLOCK' => $environment->getCatalog()->getIblock($siteId),
 		]);
 
-		if ($defaults === null) { return $result; }
-
-		$result[] = [
-			'BEHAVIOR' => $type,
-			'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $defaults),
-		];
+		foreach ($map as $type => $options)
+		{
+			$result[] = [
+				'BEHAVIOR' => $type,
+				'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $options),
+			];
+		}
 
 		return $result;
 	}
