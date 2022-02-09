@@ -18,8 +18,8 @@ abstract class AbstractBehavior implements BehaviorInterface
 		'afterend' => true,
 	];
 	protected $variantButton = [
-		'white' => true,
 		'black' => true,
+		'white' => true,
 		'white_outlined' => true
 	];
 	protected $widthButton = [
@@ -91,11 +91,6 @@ abstract class AbstractBehavior implements BehaviorInterface
 		return $result;
 	}
 
-	public function getDefaults(string $siteId, array $parameters = []) : ?array
-	{
-		return null;
-	}
-
 	protected function getPositionsEnum() : array
 	{
 		$result = [];
@@ -147,14 +142,14 @@ abstract class AbstractBehavior implements BehaviorInterface
 		return $this->requireValue('POSITION');
 	}
 
-	public function getVariant() : string
+	public function getVariant() : ?string
 	{
-		return $this->requireValue('VARIANT_BUTTON');
+		return $this->getValue('VARIANT_BUTTON');
 	}
 
-	public function getWidth() : string
+	public function getWidth() : ?string
 	{
-		return $this->requireValue('WIDTH_BUTTON');
+		return $this->getValue('WIDTH_BUTTON');
 	}
 
 	protected function eventSettings() : array

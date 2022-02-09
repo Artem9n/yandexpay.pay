@@ -1,8 +1,6 @@
 <?php
 namespace YandexPay\Pay\Injection\Behavior;
 
-use Bitrix\Iblock;
-use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Injection\Engine;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
@@ -43,16 +41,6 @@ class Element extends AbstractBehavior
 		$environment = EntityRegistry::getEnvironment();
 
 		return $environment->getCatalog()->getEnumIblock();
-	}
-
-	public function getDefaults(string $siteId, array $parameters = []) : ?array
-	{
-		return $parameters + [
-			'SELECTOR' => '.product-item-detail-slider-container',
-			'POSITION' => 'beforeend',
-			'VARIANT_BUTTON' => 'BLACK',
-			'WIDTH_BUTTON'  => 'AUTO'
-		];
 	}
 
 	public function getIblock() : ?int
