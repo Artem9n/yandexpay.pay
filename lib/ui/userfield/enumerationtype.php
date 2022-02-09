@@ -57,7 +57,47 @@ class EnumerationType
 			$arUserField['SETTINGS']['DISPLAY'] = 'LIST';
 		}
 
-		return static::callParent('getEditFormHTML', [$arUserField, $arHtmlControl]);
+		if ($arUserField['ENTITY_VALUE_ID'] < 1 && (string)$arUserField['SETTINGS']['DEFAULT_VALUE'] !== '')
+		{
+			$arHtmlControl['VALUE'] = $arUserField['SETTINGS']['DEFAULT_VALUE'];
+		}
+		else if ($arHtmlControl['VALUE'] === '' && array_key_exists('VALUE', $arUserField) && $arUserField['VALUE'] === null)
+		{
+			$arHtmlControl['VALUE'] = $arUserField['SETTINGS']['DEFAULT_VALUE'] ?? null;
+		}
+
+		$settings = static::makeSelectViewSettings($arUserField);
+		$enum = call_user_func([ $arUserField['USER_TYPE']['CLASS_NAME'], 'getList'], $arUserField);
+
+		$result = '<select name="'.$arHtmlControl["NAME"]. '">';
+
+		if ($settings['ALLOW_NO_VALUE'] === 'Y')
+		{
+			$noValueCaption =
+				(string)$settings['CAPTION_NO_VALUE'] !== ''
+					? $settings['CAPTION_NO_VALUE']
+					: '';
+
+			if (!empty($noValueCaption))
+			{
+				$result .= '<option value="">' . htmlspecialcharsbx($noValueCaption) . '</option>';
+			}
+		}
+
+		$useDefaultValue = ((string)$arHtmlControl['VALUE'] === '');
+		$valueMap = static::getValueMap($arHtmlControl['VALUE']);
+
+		foreach (static::toArray($enum) as $option)
+		{
+			$isSelected = $useDefaultValue ? $option['DEF'] === 'Y' : isset($valueMap[$option['ID']]);
+
+			$result .=
+				'<option value="' . $option['ID'] . '" ' . ($isSelected ? 'selected' : '') . '>'
+				. $option['VALUE']
+				. '</option>';
+		}
+
+		return $result;
 	}
 
 	public static function getEditFormHTMLMulty($userField, $htmlControl)
@@ -171,5 +211,35 @@ class EnumerationType
 		static $replace = [ '&quot;', '&lt;', '&gt;' ];
 
 		return str_replace($search, $replace, $string);
+	}
+
+	protected static function getValueMap($value)
+	{
+		if (is_array($value))
+		{
+			$result = array_flip($value);
+		}
+		else if ((string)$value !== '')
+		{
+			$result = [ $value => true ];
+		}
+		else
+		{
+			$result = [];
+		}
+
+		return $result;
+	}
+
+	protected static function makeSelectViewSettings($userField) : array
+	{
+		$settings = (array)$userField['SETTINGS'];
+
+		if (!isset($settings['ALLOW_NO_VALUE']) && $userField['MANDATORY'] !== 'Y')
+		{
+			$settings['ALLOW_NO_VALUE'] = 'Y';
+		}
+
+		return $settings;
 	}
 }
