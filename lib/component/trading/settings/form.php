@@ -151,11 +151,7 @@ class Form extends Pay\Component\Plain\Form
 
 	protected function applySolutionInjection(array $values, Pay\Trading\Setup\Model $setup) : array
 	{
-		if (empty($values['SOLUTION']))
-		{
-			$values['SOLUTION'] = 0;
-			return $values;
-		}
+		if (!$values['SOLUTION'] || $values['EDIT_SOLUTION']) { return $values; }
 
 		$result = [];
 

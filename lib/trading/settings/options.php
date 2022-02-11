@@ -141,6 +141,7 @@ class Options extends Reference\Skeleton
 			+ $this->getCommentFields($environment, $siteId)
 			+ $this->getSuccessUrlFields($environment, $siteId)
 			+ $this->getSolutionFields($environment, $siteId)
+			+ $this->getEditSolutionFields($environment, $siteId)
 			+ $this->getInjectionFields($environment, $siteId);
 	}
 
@@ -345,6 +346,20 @@ class Options extends Reference\Skeleton
 		];
 	}
 
+	protected function getEditSolutionFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return [
+			'EDIT_SOLUTION' => [
+				'TYPE' => 'boolean',
+				'NAME' => self::getMessage('EDIT_SOLUTION'),
+				'SORT' => 4020,
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_TRUE,
+				],
+			]
+		];
+	}
+
 	protected function makeSolutions(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		$result = [];
@@ -405,8 +420,8 @@ class Options extends Reference\Skeleton
 					'MODAL_HEIGHT' => 450,
 				],
 				'DEPEND' => [
-					'SOLUTION' => [
-						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
+					'EDIT_SOLUTION' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
 						'VALUE' => true,
 					],
 				],
