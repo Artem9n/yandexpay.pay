@@ -47,17 +47,84 @@ export default class Factory {
 	}
 
 	findElement(selector) {
-
-		let element;
+		let elementList;
 		let variant = selector.trim();
+		let result;
 
 		if (variant === '') { throw new Error('widget selector is empty'); }
 
-		element = document.querySelector(variant);
+		elementList = this.searchBySelector(variant) ?? this.searchById(selector) ?? this.searchByClassName(selector);
 
-		if (element != null) { return element; }
+		if (elementList == null) { return null; }
 
-		return document.getElementById(variant) || document.getElementsByClassName(variant)[0];
+		if (elementList.length > 1) {
+			result = this.reduceVisible(elementList);
+		}
+
+		if (result == null) {
+			result = elementList[0];
+		}
+
+		return result;
+	}
+
+	searchBySelector(selector) {
+		try {
+			const result = [];
+
+			for (const part of selector.split(',')) { // first selector
+				const partSanitized = part.trim();
+
+				if (partSanitized === '') { continue; }
+
+				const collection = document.querySelectorAll(partSanitized);
+
+				for (const element of collection) {
+					result.push(element);
+				}
+			}
+
+			return result.length > 0 ? result : null;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	searchById(selector) {
+		try {
+			const element = document.getElementById(selector);
+
+			return element != null ? [element] : null;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	searchByClassName(selector) {
+		try {
+			const collection = document.getElementsByClassName(selector);
+
+			return collection.length > 0 ? collection : null;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	reduceVisible(collection) {
+		let result = null;
+		
+		for (const element of collection) {
+			if (this.testVisible(element)) {
+				result = element;
+				break;
+			}
+		}
+
+		return result;
+	}
+	
+	testVisible(element) {
+		return (element.offsetWidth || element.offsetHeight || element.getClientRects().length );
 	}
 
 	isCssSelector(selector) {
