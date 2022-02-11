@@ -47,11 +47,15 @@ export default class Factory {
 	}
 
 	findElement(selector) {
-		if (this.isCssSelector(selector)) { return document.querySelector(selector); }
 
+		let element;
 		let variant = selector.trim();
 
 		if (variant === '') { throw new Error('widget selector is empty'); }
+
+		element = document.querySelector(variant);
+
+		if (element != null) { return element; }
 
 		return document.getElementById(variant) || document.getElementsByClassName(variant)[0];
 	}
