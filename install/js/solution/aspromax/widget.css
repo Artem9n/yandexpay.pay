@@ -1,0 +1,8 @@
+.product-info.product-info--type2 .shadowed-block .buy_block .yandex-pay-skeleton-loading,
+.product-info.product-info--type2 .shadowed-block .buy_block .ya-pay-button {
+	border-radius: 0;
+}
+
+.product-info.product-info--type2 .shadowed-block .buy_block .yandex-pay {
+	margin-bottom: 0;
+}
