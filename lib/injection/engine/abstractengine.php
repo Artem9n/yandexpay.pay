@@ -24,7 +24,7 @@ abstract class AbstractEngine extends Event\Base
 
 		return (
 			!$request->isAdminSection()
-			&& !$request->isAjaxRequest()
+			//&& !$request->isAjaxRequest()
 			&& mb_strpos($request->getRequestedPage(), '/bitrix/') !== 0
 		);
 	}
@@ -47,7 +47,11 @@ abstract class AbstractEngine extends Event\Base
 
 		$parameters = static::getComponentParameters($setup, $data);
 
+		ob_start();
 		$APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+		$contents = ob_get_clean();
+
+		Main\Page\Asset::getInstance()->addString($contents, false, Main\Page\AssetLocation::AFTER_JS);
 	}
 
 	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
