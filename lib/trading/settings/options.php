@@ -63,6 +63,11 @@ class Options extends Reference\Skeleton
 		return $this->requireValue('URL_SUCCESS');
 	}
 
+	public function getSolution() : ?string
+	{
+		return $this->getValue('SOLUTION') ?: null;
+	}
+
 	public function useBuyerName() : bool
 	{
 		$result = false;
