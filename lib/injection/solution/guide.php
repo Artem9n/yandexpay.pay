@@ -9,9 +9,10 @@ class Guide
 		$dir = rtrim($dir, '/');
 
 		return [
-			'SELECTOR' => '#bx-soa-total',
-			'POSITION' => 'beforeend',
+			'SELECTOR' => '#bx-soa-total .bx-soa-cart-total-ghost, #bx-soa-region',
+			'POSITION' => 'beforebegin',
 			'PATH' => $dir . $path,
+			'WIDTH_BUTTON' => 'MAX'
 		];
 	}
 

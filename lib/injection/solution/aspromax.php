@@ -27,9 +27,10 @@ class AsproMax extends Skeleton
 	{
 		return [
 			Behavior\Registry::ELEMENT => [
-				'SELECTOR' => '.buy_block',
+				'SELECTOR' => '.buy_block .counter_wrapp',
 				'POSITION' => 'beforeend',
 				'IBLOCK' => $context['IBLOCK'],
+				'WIDTH_BUTTON' => 'MAX'
 			],
 			Behavior\Registry::BASKET => Guide::getBitrixBasket($context, '/basket/'),
 			Behavior\Registry::ORDER => Guide::getBitrixOrder($context, '/order/'),
