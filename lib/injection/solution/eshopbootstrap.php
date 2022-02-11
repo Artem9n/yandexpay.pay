@@ -18,6 +18,11 @@ class EshopBootstrap extends Skeleton
 		return Registry::ESHOP_BOOTSTRAP;
 	}
 
+	public function isMatch(array $context = []) : bool
+	{
+		return Utils::matchTemplates('eshop_bootstrap', $context);
+	}
+
 	public function getDefaults(array $context = []) : array
 	{
 		return [
