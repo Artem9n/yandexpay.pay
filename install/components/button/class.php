@@ -102,6 +102,7 @@ class TradingButton extends \CBitrixComponent
 			'mode'              => $this->arParams['MODE'],
 			'selector'          => $this->arParams['SELECTOR'],
 			'position'          => $this->arParams['POSITION'],
+			'solution'          => $options->getSolution(),
 		];
 	}
 

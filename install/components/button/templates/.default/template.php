@@ -5,6 +5,8 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
  * @var array $arResult
  */
 
+use Bitrix\Main;
+use YandexPay\Pay\Injection\Solution;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Web\Json;
 use Bitrix\Main\UI\Extension;
@@ -12,6 +14,18 @@ use Bitrix\Main\UI\Extension;
 Loc::loadMessages(__FILE__);
 
 echo Extension::getHtml('yandexpaypay.widget');
+
+if (!empty($arResult['PARAMS']['solution']))
+{
+	try {
+		$solution = Solution\Registry::getInstance($arResult['PARAMS']['solution']);
+		echo $solution->getExtension();
+	}
+	catch (Main\SystemException $exception)
+	{
+		//nothing
+	}
+}
 
 $widgetOptions = array_diff_key($arResult['PARAMS'], [ 'order' => true , 'selector' => true, 'position' => true]);
 $order = $arResult['PARAMS']['order'];
@@ -24,7 +38,7 @@ if (!empty($selector))
 	<script>
 		(function() {
 			const factory = new BX.YandexPay.Factory();
-			const selector = '<?= $selector ?>';
+			const selector = '<?= htmlspecialcharsback($selector) ?>';
 			const position = '<?= $position?>';
 			const options = <?= Json::encode($widgetOptions) ?>;
 
