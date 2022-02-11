@@ -1,27 +1,28 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Incoming\OrderAccept;
 
+use Bitrix\Main\Web;
 use YandexPay\Pay\Trading\Action\Incoming;
 
 class Pickup extends Incoming\Skeleton
 {
 	public function getId() : int
 	{
-		$result = $this->requireField('id');
+		$result = Web\Json::decode($this->requireField('id'));
 
 		return (int)$result['deliveryId'];
 	}
 
 	public function getStoreId() : int
 	{
-		$result = $this->requireField('id');
+		$result = Web\Json::decode($this->requireField('id'));
 
 		return (int)$result['storeId'];
 	}
 
 	public function getLocationId() : int
 	{
-		$result = $this->requireField('id');
+		$result = Web\Json::decode($this->requireField('id'));
 
 		return (int)$result['locationId'];
 	}

@@ -183,7 +183,7 @@ class Purchase extends \CBitrixComponent
 	protected function collectDeliveryOption(EntityReference\Delivery\CalculationResult $calculationResult) : array
 	{
 		return [
-			'id'        => $calculationResult->getDeliveryId(),
+			'id'        => (string)$calculationResult->getDeliveryId(),
 			'label'     => $calculationResult->getServiceName(),
 			'amount'    => (string)$calculationResult->getPrice(),
 			'provider'  => 'custom', //todo
@@ -307,11 +307,11 @@ class Purchase extends \CBitrixComponent
 	protected function collectPickupOption(array $store, EntityReference\Delivery\CalculationResult $calculationResult, int $locationId = null) : array
 	{
 		return [
-			'id' => [
+			'id' => Main\Web\Json::encode([
 				'deliveryId' => $calculationResult->getDeliveryId(),
 				'storeId' => (int)$store['ID'],
 				'locationId' => $locationId,
-			],
+			]),
 			'label'     => $store['TITLE'],
 			'provider'  => 'pickpoint', //todo
 			'address'   => $store['ADDRESS'],
