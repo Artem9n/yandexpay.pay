@@ -12,26 +12,27 @@ export default class Cart extends AbstractStep {
 		this.paymentData = this.getPaymentData(data);
 
 		this.setupPaymentCash();
-
+		this.installSolution();
 		this.delayBootstrap();
-		this.catalogElementChangeOffer();
-		this.basketChange();
 	}
 
 	compile(data) {
 		return Template.compile(this.options.template, data);
 	}
 
-	catalogElementChangeOffer() {
-		if (typeof BX === 'undefined' || typeof JCCatalogElement === 'undefined') { return; }
+	installSolution() {
+		const type = this.getOption('solution');
 
-		BX.addCustomEvent('onCatalogElementChangeOffer', (eventData) => {
-			let newProductId = parseInt(eventData.newId, 10);
+		if (type == null) { return; }
 
-			if (isNaN(newProductId)) { return; }
+		const factory = window?.BX?.YandexPay?.Solution?.[type]?.factory;
 
-			this.delayChangeOffer(newProductId);
-		});
+		if (factory == null) {
+			console?.warn(`cant find solution ${type}`);
+			return;
+		}
+
+		factory.create(this);
 	}
 
 	delayChangeOffer(productId) {
@@ -73,16 +74,6 @@ export default class Cart extends AbstractStep {
 				this.combineOrderWithProducts(result);
 			});
 		}
-	}
-
-	basketChange() {
-		if (typeof BX === 'undefined') { return; }
-
-		BX.addCustomEvent('OnBasketChange', () => {
-			this.getProducts().then((result) => {
-				this.combineOrderWithProducts(result);
-			});
-		});
 	}
 
 	setupPaymentCash(){
