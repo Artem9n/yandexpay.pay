@@ -1,0 +1,5 @@
+{
+    "require": {
+        "firebase/php-jwt": "dev-add-ec-jwk-support"
+    }
+}
