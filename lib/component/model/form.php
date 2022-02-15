@@ -186,7 +186,10 @@ class Form extends Component\Reference\Form
 			$model->set($name, $value);
 		}
 
-		return $model->save();
+		/** @var \Bitrix\Main\ORM\Data\AddResult $addResult */
+		$addResult = $this->save($model);
+
+		return $addResult;
 	}
 
 	public function update($primary, array $values) : Main\ORM\Data\UpdateResult
@@ -206,10 +209,18 @@ class Form extends Component\Reference\Form
 			$model->set($name, $value);
 		}
 
+		/** @var \Bitrix\Main\ORM\Data\UpdateResult $updateResult */
+		$updateResult = $this->save($model);
+
+		return $updateResult;
+	}
+
+	protected function save(Main\ORM\Objectify\EntityObject $model) : Main\ORM\Data\Result
+	{
 		return $model->save();
 	}
 
-	/** @return Main\ORM\Data\DataManager  */
+	/** @return class-string<Main\ORM\Data\DataManager> */
 	protected function getDataClass() : string
 	{
 		return $this->getComponentParam('DATA_CLASS_NAME');

@@ -15,4 +15,9 @@ abstract class Environment extends EntityReference\Environment
 	{
 		return new Site($this);
 	}
+
+	protected function createRoute() : EntityReference\Route
+	{
+		return new Route($this);
+	}
 }

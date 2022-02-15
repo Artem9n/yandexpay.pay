@@ -68,6 +68,8 @@ class AutoInstallInjection extends Reference\Event\Regular
 
 		Exceptions\Facade::handleResult($saveResult);
 
+		$trading->install();
+
 		return $trading;
 	}
 

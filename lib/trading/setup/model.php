@@ -11,6 +11,14 @@ class Model extends EO_Repository
 	protected $environment;
 	protected $isOptionsReady = false;
 
+	public function install() : void
+	{
+		$siteId = $this->getSiteId();
+		$route = $this->getEnvironment()->getRoute();
+
+		$route->installPublic($siteId);
+	}
+
 	public function wakeupOptions() : Settings\Options
 	{
 		$options = $this->getOptions();

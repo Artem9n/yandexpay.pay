@@ -24,7 +24,7 @@ class SetupEdit extends Pay\Ui\Reference\Page
 		$APPLICATION->IncludeComponent('yandexpay.pay:admin.form', '', [
 			'LAYOUT' => $this->getLayout(),
 			'FORM_ID' => 'YANDEX_PAY_ADMIN_TRADING_ADD',
-			'PROVIDER_CLASS_NAME' => Pay\Component\Model\Form::class,
+			'PROVIDER_CLASS_NAME' => Pay\Component\Trading\Setup\Form::class,
 			'DATA_CLASS_NAME' => Pay\Trading\Setup\RepositoryTable::class,
 			'TITLE' => self::getMessage('TITLE'),
 			'TITLE_ADD' => self::getMessage('TITLE_ADD'),

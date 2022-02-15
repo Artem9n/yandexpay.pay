@@ -15,6 +15,7 @@ abstract class Environment
 	protected $property;
 	protected $catalog;
 	protected $product;
+	protected $route;
 
 	public function load() : void
 	{
@@ -197,5 +198,20 @@ abstract class Environment
 	protected function createProduct() : Product
 	{
 		throw new Main\NotImplementedException('catalog is missing');
+	}
+
+	public function getRoute() : Route
+	{
+		if ($this->route === null)
+		{
+			$this->route = $this->createRoute();
+		}
+
+		return $this->route;
+	}
+
+	protected function createRoute() : Route
+	{
+		throw new Main\NotImplementedException('route is missing');
 	}
 }
