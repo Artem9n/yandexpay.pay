@@ -354,7 +354,7 @@ class Options extends Reference\Skeleton
 				'NAME' => self::getMessage('EDIT_SOLUTION'),
 				'SORT' => 4020,
 				'SETTINGS' => [
-					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_TRUE,
+					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_FALSE,
 				],
 			]
 		];
