@@ -6,9 +6,17 @@ const YaPay = window.YaPay;
 
 export default class Cart extends AbstractStep {
 
+	static defaults = {
+		loaderTemplate:
+			'<div class="yandex-pay__label width--#WIDTH#"><em></em><span>#LABEL#</span></div>'
+			+ '<div class="yandex-pay-skeleton-loading width--#WIDTH#"></div>',
+		loaderSelector: '.yandex-pay-skeleton-loading',
+	}
+
 	render(node, data) {
 		this.isBootstrap = false;
 		this.element = node;
+		this.insertLoader();
 		this.paymentData = this.getPaymentData(data);
 
 		this.setupPaymentCash();
@@ -149,6 +157,7 @@ export default class Cart extends AbstractStep {
 				});
 
 				// Смонтировать кнопку в DOM.
+				this.removeLoader();
 				button.mount(node);
 
 				// Подписаться на событие click.
@@ -383,5 +392,21 @@ export default class Cart extends AbstractStep {
 		}
 
 		alert(notify);
+	}
+
+	insertLoader() {
+
+		const width = this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto;
+
+		this.element.innerHTML = Template.compile(this.getOption('loaderTemplate'), {
+			width: width.toLowerCase(),
+			label: this.getOption('label'),
+		});
+	}
+
+	removeLoader() {
+		const loader = this.element.querySelector(this.getOption('loaderSelector'));
+		if (loader == null) { return; }
+		loader.remove();
 	}
 }

@@ -1,5 +1,11 @@
-.yandex-pay{
-    margin: 20px 0
+.yandex-pay {
+	height: auto;
+	margin-bottom: 20px;
+	display: block !important;
+}
+
+.yandex-pay:first-child {
+	margin-top: 0;
 }
 
 .yandex-pay .alert {
@@ -22,41 +28,115 @@
     color: #3c763d;
 }
 
-.yandex-pay-modal{
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    overflow: auto;
-    color: #000;
-    background: rgba(0,0,0,0.8);
-    display: block;
+.yandex-pay-skeleton-loading {
+	display: inline-block;
+	vertical-align: top;
+
+	overflow: hidden;
+	box-sizing: border-box;
+	height: 54px;
+	min-width: 282px;
+	padding: 14px 28px;
+	border: 1px solid transparent;
+	border-radius: 8px;
+
+	position: relative;
+
+	background: #dcdcdd;
+	user-select: none;
 }
 
-.yandex-pay-modal-inner{
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
-    justify-content: center;
-    padding: 20px 0;
-    min-height: 100%;
-    position: relative;
-    z-index: 1001;
+.yandex-pay-skeleton-loading:before {
+	content: '';
+	display: block;
+	height: 100%;
+	width: 100%;
+
+	position: absolute;
+	top: 0;
+	left: 0;
+
+	background:  linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+	animation: yandex-pay-skeleton-loading 1.2s linear infinite;
 }
 
-.yandex-pay-modal-form{
-    background: #ffffff;
-    border-radius: 7px;
-    max-width: 900px;
-    width: 100%;
-    position: relative;
-    padding: 25px 30px 20px;
-    text-align: center;
+@keyframes yandex-pay-skeleton-loading {
+	0% {
+		transform: translateX(-100%);
+	}
+
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+.yandex-pay-skeleton-loading.width--max,
+.yandex-pay__label.width--max
+{
+	width: 100%;
+}
+
+.yandex-pay__label {
+
+	box-sizing: border-box;
+	width: 282px;
+
+	position:relative;
+	color:#9397ad;
+	font-size:16px;
+	text-align:center;
+	margin:10px 0 20px;
+
+	line-height: initial;
+}
+
+.yandex-pay__label em {
+	position:absolute;
+	left:0;
+	top:13px;
+	height:1px;
+	width:100%;
+	content:'';
+	right:0;
+}
+
+.yandex-pay__label em:before {
+	position:absolute;
+	left:0;
+	width:5px;
+	height:5px;
+	border-radius:100%;
+	content:'';
+	top:-2px;
+	background:#d0d4e0;
+}
+
+.yandex-pay__label em:after {
+	position:absolute;
+	right:0;
+	width:5px;
+	height:5px;
+	border-radius:100%;
+	content:'';
+	top:-2px;
+	background:#d0d4e0;
+}
+
+.yandex-pay__label:before {
+	background:#d0d4e0;
+	top:13px;
+	position:absolute;
+	z-index:1;
+	left:0;
+	right:0;
+	content:'';
+	height:1px;
+	width:100%
+}
+
+.yandex-pay__label span {
+	position:relative;
+	z-index:2;
+	background:#fff;
+	padding:0 10px;
 }

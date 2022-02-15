@@ -28,6 +28,7 @@ if (!empty($arResult['PARAMS']['solution']))
 }
 
 $widgetOptions = array_diff_key($arResult['PARAMS'], [ 'order' => true , 'selector' => true, 'position' => true]);
+$widgetOptions['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
 $order = $arResult['PARAMS']['order'];
 $selector = $arResult['PARAMS']['selector'];
 $position = $arResult['PARAMS']['position'];

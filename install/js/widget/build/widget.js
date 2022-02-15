@@ -47,6 +47,12 @@ this.BX = this.BX || {};
 	  return Template;
 	}();
 
+	function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+
+	function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+	function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 	var Factory = /*#__PURE__*/function () {
 	  function Factory() {
 	    babelHelpers.classCallCheck(this, Factory);
@@ -102,26 +108,132 @@ this.BX = this.BX || {};
 	        return;
 	      }
 
-	      setTimeout(this.waitElementLoop.bind(this, selector, resolve, reject));
+	      setTimeout(this.waitElementLoop.bind(this, selector, resolve, reject), 1000);
 	    }
 	  }, {
 	    key: "findElement",
 	    value: function findElement(selector) {
-	      var element;
+	      var _ref, _this$searchBySelecto;
+
+	      var elementList;
 	      var variant = selector.trim();
+	      var result;
 
 	      if (variant === '') {
 	        throw new Error('widget selector is empty');
-	      } //if (!this.isCssSelector(selector)) { return document.querySelector(selector); }
-
-
-	      element = document.querySelector(variant);
-
-	      if (element != null) {
-	        return element;
 	      }
 
-	      return document.getElementById(variant) || document.getElementsByClassName(variant)[0];
+	      elementList = (_ref = (_this$searchBySelecto = this.searchBySelector(variant)) !== null && _this$searchBySelecto !== void 0 ? _this$searchBySelecto : this.searchById(selector)) !== null && _ref !== void 0 ? _ref : this.searchByClassName(selector);
+
+	      if (elementList == null) {
+	        return null;
+	      }
+
+	      if (elementList.length > 1) {
+	        result = this.reduceVisible(elementList);
+	      }
+
+	      if (result == null) {
+	        result = elementList[0];
+	      }
+
+	      return result;
+	    }
+	  }, {
+	    key: "searchBySelector",
+	    value: function searchBySelector(selector) {
+	      try {
+	        var result = [];
+
+	        var _iterator = _createForOfIteratorHelper(selector.split(',')),
+	            _step;
+
+	        try {
+	          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+	            var part = _step.value;
+	            // first selector
+	            var partSanitized = part.trim();
+
+	            if (partSanitized === '') {
+	              continue;
+	            }
+
+	            var collection = document.querySelectorAll(partSanitized);
+
+	            var _iterator2 = _createForOfIteratorHelper(collection),
+	                _step2;
+
+	            try {
+	              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+	                var element = _step2.value;
+	                result.push(element);
+	              }
+	            } catch (err) {
+	              _iterator2.e(err);
+	            } finally {
+	              _iterator2.f();
+	            }
+	          }
+	        } catch (err) {
+	          _iterator.e(err);
+	        } finally {
+	          _iterator.f();
+	        }
+
+	        return result.length > 0 ? result : null;
+	      } catch (e) {
+	        return null;
+	      }
+	    }
+	  }, {
+	    key: "searchById",
+	    value: function searchById(selector) {
+	      try {
+	        var element = document.getElementById(selector);
+	        return element != null ? [element] : null;
+	      } catch (e) {
+	        return null;
+	      }
+	    }
+	  }, {
+	    key: "searchByClassName",
+	    value: function searchByClassName(selector) {
+	      try {
+	        var collection = document.getElementsByClassName(selector);
+	        return collection.length > 0 ? collection : null;
+	      } catch (e) {
+	        return null;
+	      }
+	    }
+	  }, {
+	    key: "reduceVisible",
+	    value: function reduceVisible(collection) {
+	      var result = null;
+
+	      var _iterator3 = _createForOfIteratorHelper(collection),
+	          _step3;
+
+	      try {
+	        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+	          var element = _step3.value;
+
+	          if (this.testVisible(element)) {
+	            result = element;
+	            break;
+	          }
+	        }
+	      } catch (err) {
+	        _iterator3.e(err);
+	      } finally {
+	        _iterator3.f();
+	      }
+
+	      return result;
+	    }
+	  }, {
+	    key: "testVisible",
+	    value: function testVisible(element) {
+	      return element.offsetWidth || element.offsetHeight || element.getClientRects().length;
 	    }
 	  }, {
 	    key: "isCssSelector",
@@ -761,6 +873,7 @@ this.BX = this.BX || {};
 	    value: function render(node, data) {
 	      this.isBootstrap = false;
 	      this.element = node;
+	      this.insertLoader();
 	      this.paymentData = this.getPaymentData(data);
 	      this.setupPaymentCash();
 	      this.installSolution();
@@ -910,6 +1023,8 @@ this.BX = this.BX || {};
 	          theme: _this4.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
 	          width: _this4.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
 	        }); // Смонтировать кнопку в DOM.
+
+	        _this4.removeLoader();
 
 	        button.mount(node); // Подписаться на событие click.
 
@@ -1131,9 +1246,34 @@ this.BX = this.BX || {};
 
 	      alert(notify);
 	    }
+	  }, {
+	    key: "insertLoader",
+	    value: function insertLoader() {
+	      var width = this.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto;
+	      this.element.innerHTML = Template.compile(this.getOption('loaderTemplate'), {
+	        width: width.toLowerCase(),
+	        label: this.getOption('label')
+	      });
+	    }
+	  }, {
+	    key: "removeLoader",
+	    value: function removeLoader() {
+	      var loader = this.element.querySelector(this.getOption('loaderSelector'));
+
+	      if (loader == null) {
+	        return;
+	      }
+
+	      loader.remove();
+	    }
 	  }]);
 	  return Cart;
 	}(AbstractStep);
+
+	babelHelpers.defineProperty(Cart, "defaults", {
+	  loaderTemplate: '<div class="yandex-pay__label width--#WIDTH#"><em></em><span>#LABEL#</span></div>' + '<div class="yandex-pay-skeleton-loading width--#WIDTH#"></div>',
+	  loaderSelector: '.yandex-pay-skeleton-loading'
+	});
 
 	var Factory$1 = /*#__PURE__*/function () {
 	  function Factory() {
