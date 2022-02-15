@@ -5,7 +5,7 @@ use Bitrix\Main;
 use Firebase\JWT;
 use YandexPay\Pay\Config;
 
-class JwtFilter implements Main\Type\IRequestFilter
+class JwtBodyFilter implements Main\Type\IRequestFilter
 {
 	protected $jwkEndpoint;
 
@@ -32,7 +32,7 @@ class JwtFilter implements Main\Type\IRequestFilter
 	protected function keys() : array
 	{
 		$cache = Main\Data\Cache::createInstance();
-		$cacheTtl = 86400;
+		$cacheTtl = 86400; // one day
 		$cacheId = 'jwk:' . md5($this->jwkEndpoint);
 
 		if ($cache->initCache($cacheTtl, $cacheId, Config::getModuleName()))
