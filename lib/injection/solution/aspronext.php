@@ -4,7 +4,7 @@ namespace YandexPay\Pay\Injection\Solution;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Injection\Behavior;
 
-class AsproMax extends Skeleton
+class AsproNext extends Skeleton
 {
 	use Concerns\HasMessage;
 
@@ -15,22 +15,22 @@ class AsproMax extends Skeleton
 
 	public function getType() : string
 	{
-		return Registry::ASPRO_MAX;
+		return Registry::ASPRO_NEXT;
 	}
 
 	public function isMatch(array $context = []) : bool
 	{
-		return Utils::matchTemplates('aspro_max', $context);
+		return Utils::matchTemplates('aspro_next', $context);
 	}
 
 	public function getDefaults(array $context = []) : array
 	{
 		return [
 			Behavior\Registry::ELEMENT => [
-				'SELECTOR' => '.buy_block .wrapp-one-click, .buy_block .offer_buy_block, .buy_block .counter_wrapp',
+				'SELECTOR' => '.buy_block .wrapp_one_click, .buy_block .offer_buy_block, .buy_block .counter_wrapp',
 				'POSITION' => 'afterend',
 				'IBLOCK' => $context['IBLOCK'],
-				'WIDTH_BUTTON' => 'MAX'
+				'WIDTH_BUTTON' => 'MAX',
 			],
 			Behavior\Registry::BASKET => Guide::getBitrixBasket($context, '/basket/'),
 			Behavior\Registry::ORDER => Guide::getBitrixOrder($context, '/order/'),
