@@ -23,6 +23,11 @@ class AsproMax extends Skeleton
 		return Utils::matchTemplates('aspro_max', $context);
 	}
 
+	public function getOrderPath(array $context = []) : string
+	{
+		return Guide::getBitrixOrderPath($context, '/order/');
+	}
+
 	public function getDefaults(array $context = []) : array
 	{
 		return [

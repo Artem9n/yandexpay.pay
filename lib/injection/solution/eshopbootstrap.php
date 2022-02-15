@@ -23,6 +23,11 @@ class EshopBootstrap extends Skeleton
 		return Utils::matchTemplates('eshop_bootstrap', $context);
 	}
 
+	public function getOrderPath(array $context = []) : string
+	{
+		return Guide::getBitrixOrderPath($context);
+	}
+
 	public function getDefaults(array $context = []) : array
 	{
 		return [

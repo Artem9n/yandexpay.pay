@@ -27,4 +27,12 @@ class Guide
 			'PATH' => $dir . $path,
 		];
 	}
+
+	public static function getBitrixOrderPath(array $context = [], string $path = '/personal/order/make/') : string
+	{
+		$dir = $context['SITE_DIR'] ?? '';
+		$dir = rtrim($dir, '/');
+
+		return $dir . $path;
+	}
 }

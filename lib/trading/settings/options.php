@@ -314,6 +314,11 @@ class Options extends Reference\Skeleton
 
 	protected function getSuccessUrlFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
+		$solution = $this->makeSolutionDefault($environment, $siteId);
+		$context = [
+			'SITE_DIR' => $environment->getSite()->getDir($siteId)
+		];
+
 		return [
 			'URL_SUCCESS' => [
 				'TYPE' => 'string',
@@ -321,7 +326,7 @@ class Options extends Reference\Skeleton
 				'GROUP' => self::getMessage('YANDEX_PAY'),
 				'SORT' => 4000,
 				'SETTINGS' => [
-					'DEFAULT_VALUE' => '/personal/order/make/',
+					'DEFAULT_VALUE' => $solution !== null ? $solution->getOrderPath($context) : '/personal/order/make/',
 				],
 			],
 		];

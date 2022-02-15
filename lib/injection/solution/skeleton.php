@@ -13,6 +13,8 @@ abstract class Skeleton
 
 	abstract public function getDefaults(array $context = []) : array;
 
+	abstract public function getOrderPath(array $context = []) : string;
+
 	public function getExtension() : ?string
 	{
 		$type = mb_strtolower($this->getType());
