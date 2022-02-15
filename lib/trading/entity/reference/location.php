@@ -12,7 +12,7 @@ abstract class Location
 		$this->environment = $environment;
 	}
 
-	public function getLocation(array $address) : int
+	public function getLocation(array $address) : ?int
 	{
 		throw new NotImplementedException('getLocationId is missing');
 	}

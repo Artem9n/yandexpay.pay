@@ -21,7 +21,7 @@ class Location extends EntityReference\Location
 		parent::__construct($environment);
 	}
 
-	public function getLocation($address): int
+	public function getLocation($address): ?int
 	{
 		$result = null;
 
