@@ -6,8 +6,10 @@ use Bitrix\Main;
 use Bitrix\Main\Localization\Loc;
 use Sale\Handlers\PaySystem\YandexPayHandler;
 use YandexPay\Pay\Config;
+use YandexPay\Pay\Exceptions;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Setup as TradingSetup;
+use YandexPay\Pay\Trading\Action as TradingAction;
 use YandexPay\Pay\Trading\Settings as TradingSettings;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use YandexPay\Pay\Utils;
@@ -63,6 +65,119 @@ class PurchaseRest extends \CBitrixComponent
 		$response->setContent('OK');
 
 		$this->sendResponse($response);
+	}
+
+	protected function orderCreateAction() : void
+	{
+		$dto = $this->makeDto(TradingAction\Rest\OrderCreate::class);
+
+		$order = $this->getOrder(null, $dto->getCurrencyCode());
+
+		$this->fillPersonType($order);
+		$this->fillBasket($order, $dto->getItems());
+
+		$order->finalize();
+
+		$this->sendResponse(new Main\Engine\Response\Json([
+			'status' => 'success',
+			'data' => [
+				'currencyCode' => $dto->getCurrencyCode(),
+				'order' => [
+					'items' => $this->collectOrderItems($order),
+					'discounts' => $this->collectOrderDiscounts($order),
+					'totalAmount' => $this->collectOrderTotal($order),
+				],
+			],
+		]));
+	}
+
+	protected function collectOrderItems(EntityReference\Order $order) : array
+	{
+		$result = [];
+
+		foreach ($order->getOrderableItems() as $basketCode)
+		{
+			$basketResult = $order->getBasketItemData($basketCode);
+			$basketData = $basketResult->getData();
+
+			$result[] = [
+				'id' => (string)$basketData['PRODUCT_ID'],
+				'unitPrice' => (float)$basketData['BASE_PRICE'],
+				'discountedUnitPrice' => (float)$basketData['PRICE'],
+				'subtotalAmount' => (float)$basketData['TOTAL_BASE_PRICE'],
+				'totalAmount' => (float)$basketData['TOTAL_PRICE'],
+				'title' => (string)$basketData['NAME'],
+				'quantity' => [
+					'count' => (float)$basketData['QUANTITY'],
+					//'available' => (float), todo
+					//'label' => (string), todo
+				],
+			];
+		}
+
+		return $result;
+	}
+
+	protected function collectOrderDiscounts(EntityReference\Order $order) : array
+	{
+		return []; // todo
+	}
+
+	protected function collectOrderTotal(EntityReference\Order $order) : array
+	{
+		return [
+			'amount' => $order->getOrderPrice(),
+			'label' => null, // todo
+		];
+	}
+
+	protected function getOrder(int $userId = null, string $currency = null) : EntityReference\Order
+	{
+		return $this->environment->getOrderRegistry()->createOrder(
+			$this->setup->getSiteId(),
+			$userId,
+			$currency
+		);
+	}
+
+	protected function fillPersonType(EntityReference\Order $order) : void
+	{
+		Assert::notNull($this->setup->getPersonTypeId(), 'personal type');
+
+		$personTypeResult = $order->setPersonType($this->setup->getPersonTypeId());
+
+		Exceptions\Facade::handleResult($personTypeResult);
+	}
+
+	protected function fillBasket(EntityReference\Order $order, TradingAction\Rest\Cart\Items $products) : void
+	{
+		$order->initEmptyBasket();
+
+		/** @var TradingAction\Rest\Cart\Item $product */
+		foreach ($products as $product)
+		{
+			$productId = $product->getId();
+			$quantity = $product->getCount();
+
+			$addResult = $order->addProduct($productId, $quantity);
+
+			Exceptions\Facade::handleResult($addResult);
+		}
+	}
+
+	/**
+	 * @template T
+	 * @param class-string<T> $className
+	 *
+	 * @return T
+	 */
+	protected function makeDto(string $className) : TradingAction\Reference\Skeleton
+	{
+		Assert::isSubclassOf($className, TradingAction\Reference\Skeleton::class);
+
+		$data = $this->request->getPostList()->toArray();
+
+		return new $className($data);
 	}
 
 	protected function loadModules() : void
@@ -249,7 +364,7 @@ class PurchaseRest extends \CBitrixComponent
 	{
 		$parts = explode('/', $action);
 		$parts = array_map('ucfirst', $parts);
-		$method = implode('/', $parts);
+		$method = implode('', $parts);
 		$method = lcfirst($method);
 
 		return $method . 'Action';

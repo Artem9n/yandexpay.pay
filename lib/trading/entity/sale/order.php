@@ -133,6 +133,9 @@ class Order extends EntityReference\Order
 			'PRODUCT_ID' => $basketItem->getProductId(),
 			'NAME' => $basketItem->getField('NAME'),
 			'PRICE' => $basketItem->getPriceWithVat(),
+			'BASE_PRICE' => $basketItem->getBasePriceWithVat(),
+			'TOTAL_PRICE' => $basketItem->getFinalPrice(),
+			'TOTAL_BASE_PRICE' => $basketItem->getBasePriceWithVat() * $basketItem->getQuantity(),
 			'QUANTITY' => $basketItem->canBuy() ? $basketItem->getQuantity() : 0,
 			'PROPS' => $this->collectBasketItemProps($basketItem),
 		]);
@@ -661,7 +664,7 @@ class Order extends EntityReference\Order
 
 		if (!$saleResult->isSuccess())
 		{
-			$result->addError($saleResult->getErrors());
+			$result->addErrors($saleResult->getErrors());
 		}
 
 		return $result;
