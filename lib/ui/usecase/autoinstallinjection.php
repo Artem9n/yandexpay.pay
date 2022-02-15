@@ -58,7 +58,10 @@ class AutoInstallInjection extends Reference\Event\Regular
 		$trading = new Trading\Setup\Model();
 
 		$siteId = $trading->getEnvironment()->getSite()->getDefault();
-		$personTypeId = $trading->getEnvironment()->getPersonType()->getIndividualId($siteId);
+		$individualTypeId = $trading->getEnvironment()->getPersonType()->getIndividualId($siteId);
+		$legalTypeId = $trading->getEnvironment()->getPersonType()->getLegalId($siteId);
+
+		$personTypeId = $individualTypeId ?? $legalTypeId;
 
 		$trading->setSiteId($siteId);
 		$trading->setPersonTypeId($personTypeId);
