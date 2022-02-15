@@ -43,7 +43,7 @@ export default class Factory {
 			return;
 		}
 
-		setTimeout(this.waitElementLoop.bind(this, selector, resolve, reject));
+		setTimeout(this.waitElementLoop.bind(this, selector, resolve, reject), 1000);
 	}
 
 	findElement(selector) {
