@@ -7,20 +7,18 @@ const YaPay = window.YaPay;
 export default class Cart extends AbstractStep {
 
 	static defaults = {
-		loaderTemplate:
-			'<div class="yandex-pay__label width--#WIDTH#"><em></em><span>#LABEL#</span></div>'
-			+ '<div class="yandex-pay-skeleton-loading width--#WIDTH#"></div>',
+		loaderTemplate: '<div class="yandex-pay-skeleton-loading width--#WIDTH#"></div>',
 		loaderSelector: '.yandex-pay-skeleton-loading',
 	}
 
 	render(node, data) {
 		this.isBootstrap = false;
 		this.element = node;
-		this.insertLoader();
 		this.paymentData = this.getPaymentData(data);
 
+		this.bootSolution();
+		this.insertLoader();
 		this.setupPaymentCash();
-		this.installSolution();
 		this.delayBootstrap();
 	}
 
@@ -28,19 +26,12 @@ export default class Cart extends AbstractStep {
 		return Template.compile(this.options.template, data);
 	}
 
-	installSolution() {
-		const type = this.getOption('solution');
+	bootSolution() {
+		const solution = this.widget.getSolution();
 
-		if (type == null) { return; }
+		if (solution == null) { return; }
 
-		const factory = window?.BX?.YandexPay?.Solution?.[type]?.factory;
-
-		if (factory == null) {
-			console?.warn(`cant find solution ${type}`);
-			return;
-		}
-
-		factory.create(this);
+		solution.bootCart(this);
 	}
 
 	delayChangeOffer(productId) {
@@ -59,7 +50,7 @@ export default class Cart extends AbstractStep {
 		this.getProducts()
 			.then((result) => {
 
-				if (result.error) { throw new Error(result.error.message, result.error.code); }
+				if (result.error) { throw new Error(result.error.message); }
 
 				this.combineOrderWithProducts(result);
 				this.createPayment(this.element, this.paymentData);
@@ -77,7 +68,7 @@ export default class Cart extends AbstractStep {
 		let productId = this.getOption('productId');
 
 		if (productId !== newProductId) { // todo in items
-			this.setOption('productId', newProductId);
+			this.widget.setOption('productId', newProductId);
 			this.getProducts().then((result) => {
 				this.combineOrderWithProducts(result);
 			});
@@ -395,7 +386,6 @@ export default class Cart extends AbstractStep {
 	}
 
 	insertLoader() {
-
 		const width = this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto;
 
 		this.element.innerHTML = Template.compile(this.getOption('loaderTemplate'), {
@@ -406,7 +396,9 @@ export default class Cart extends AbstractStep {
 
 	removeLoader() {
 		const loader = this.element.querySelector(this.getOption('loaderSelector'));
+
 		if (loader == null) { return; }
+
 		loader.remove();
 	}
 }

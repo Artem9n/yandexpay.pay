@@ -5,19 +5,28 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	'use strict';
 
 	var Page = /*#__PURE__*/function () {
-	  function Page(cart) {
+	  function Page() {
 	    babelHelpers.classCallCheck(this, Page);
-	    babelHelpers.defineProperty(this, "cart", null);
-	    this.cart = cart;
-	    this.bootstrap();
 	  }
 
 	  babelHelpers.createClass(Page, [{
-	    key: "bootstrap",
-	    value: function bootstrap() {}
+	    key: "bootFactory",
+	    value: function bootFactory(factory) {}
+	  }, {
+	    key: "bootWidget",
+	    value: function bootWidget(widget) {}
+	  }, {
+	    key: "bootCart",
+	    value: function bootCart(cart) {}
 	  }]);
 	  return Page;
 	}();
+
+	var factoryLayout = (function (factory) {
+	  factory.extendDefaults({
+	    template: '<div class="bx-yapay-divider width--#WIDTH#">' + '<span class="bx-yapay-divider__corner bx-yapay-divider__corner--left"></span>' + '<span class="bx-yapay-divider__text">#LABEL#</span>' + '<span class="bx-yapay-divider__corner bx-yapay-divider__corner--right"></span>' + '</div>' + factory.getOption('template')
+	  });
+	});
 
 	var Element = /*#__PURE__*/function (_Page) {
 	  babelHelpers.inherits(Element, _Page);
@@ -28,10 +37,13 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  }
 
 	  babelHelpers.createClass(Element, [{
-	    key: "bootstrap",
-	    value: function bootstrap() {
-	      var _this = this;
-
+	    key: "bootFactory",
+	    value: function bootFactory(factory) {
+	      factoryLayout(factory);
+	    }
+	  }, {
+	    key: "bootCart",
+	    value: function bootCart(cart) {
 	      if (typeof BX === 'undefined' || typeof JCCatalogElement === 'undefined') {
 	        return;
 	      }
@@ -45,7 +57,7 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	          return;
 	        }
 
-	        _this.cart.delayChangeOffer(newProductId);
+	        cart.delayChangeOffer(newProductId);
 	      });
 	    }
 	  }]);
@@ -61,23 +73,38 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  }
 
 	  babelHelpers.createClass(Basket, [{
-	    key: "bootstrap",
-	    value: function bootstrap() {
-	      var _this = this;
-
+	    key: "bootCart",
+	    value: function bootCart(cart) {
 	      if (typeof BX === 'undefined') {
 	        return;
 	      }
 
 	      BX.addCustomEvent('OnBasketChange', function () {
-	        _this.cart.getProducts().then(function (result) {
-	          _this.cart.combineOrderWithProducts(result);
+	        cart.getProducts().then(function (result) {
+	          cart.combineOrderWithProducts(result);
 	        });
 	      });
 	    }
 	  }]);
 	  return Basket;
 	}(Page);
+
+	var Basket$1 = /*#__PURE__*/function (_EshopBasket) {
+	  babelHelpers.inherits(Basket$$1, _EshopBasket);
+
+	  function Basket$$1() {
+	    babelHelpers.classCallCheck(this, Basket$$1);
+	    return babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(Basket$$1).apply(this, arguments));
+	  }
+
+	  babelHelpers.createClass(Basket$$1, [{
+	    key: "bootFactory",
+	    value: function bootFactory(factory) {
+	      factoryLayout(factory);
+	    }
+	  }]);
+	  return Basket$$1;
+	}(Basket);
 
 	var Factory = /*#__PURE__*/function () {
 	  function Factory(classMap) {
@@ -88,15 +115,14 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 
 	  babelHelpers.createClass(Factory, [{
 	    key: "create",
-	    value: function create(cart) {
-	      var type = cart.getOption('mode');
-	      var className = this.classMap[type];
+	    value: function create(mode) {
+	      var className = this.classMap[mode];
 
 	      if (className == null) {
 	        return null;
 	      }
 
-	      return new className(cart);
+	      return new className();
 	    }
 	  }]);
 	  return Factory;
@@ -104,10 +130,10 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 
 	var factory = new Factory({
 	  element: Element,
-	  basket: Basket
+	  basket: Basket$1
 	});
 
 	exports.factory = factory;
 
 }((this.BX.YandexPay.Solution.AsproOptimus = this.BX.YandexPay.Solution.AsproOptimus || {})));
-//# sourceMappingURL=build.js.map
+//# sourceMappingURL=solution.js.map

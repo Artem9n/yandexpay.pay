@@ -1,0 +1,73 @@
+.product-info.product-info--type2 .shadowed-block .buy_block .yandex-pay-skeleton-loading,
+.product-info.product-info--type2 .shadowed-block .buy_block .ya-pay-button {
+	border-radius: 0;
+}
+
+.product-info.product-info--type2 .shadowed-block .buy_block .yandex-pay {
+	margin-bottom: 0;
+}
+
+.yandex-pay .ya-pay-button,
+.yandex-pay .yandex-pay-skeleton-loading
+{
+	border-radius: 2px;
+}
+.bx-yapay-divider {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-align: center;
+	    -ms-flex-align: center;
+	        align-items: center;
+	width: 282px;
+	-webkit-box-sizing: border-box;
+	        box-sizing: border-box;
+
+	margin: 10px 0 20px;
+
+	color: #9397ad;
+
+	font-size: 16px;
+	line-height: initial;
+	text-align: center;
+}
+
+.bx-yapay-divider.width--max {
+	width: 100%;
+}
+
+.bx-yapay-divider__corner {
+	-webkit-box-flex: 1;
+	    -ms-flex: auto 1 1;
+	        flex: auto 1 1;
+	height: 1px;
+
+	position: relative;
+
+	background: #d0d4e0;
+}
+
+.bx-yapay-divider__corner:after {
+	content: '';
+	width: 5px;
+	height: 5px;
+	border-radius: 100%;
+
+	position: absolute;
+	left: 0;
+	top: -2px;
+
+	background: #d0d4e0;
+}
+
+.bx-yapay-divider__corner--right:after {
+	left: auto;
+	right: 0;
+}
+
+.bx-yapay-divider__text {
+	-webkit-box-flex: 1;
+	    -ms-flex: auto 0 1;
+	        flex: auto 0 1;
+	padding: 0 10px;
+}

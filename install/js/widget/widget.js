@@ -1,25 +1,26 @@
 import StepFactory from './step/factory';
+import SolutionRegistry from "./solutionregistry";
 
 export default class Widget {
 
-	/**
-	 * @type {{failureTemplate: string, modalTemplate: string, finishedTemplate: string}}
-	 */
-	defaults = {
-		finishedTemplate:   '<div class="alert alert-success" role="alert"><strong>#MESSAGE#</strong></div>',
-		failureTemplate:      '<div class="alert alert-danger" role="alert"><strong>#MESSAGE#</strong></div>',
-		modalTemplate:      '<div class="yandex-pay-modal-inner">#IFRAME#</div>',
-	}
+	static defaults = {}
+
+	defaults;
+	options;
+	el;
+	step;
 
 	/**
 	 * @param {Object<Element>} element
+	 * @param {Object} options
 	 */
-	constructor(element){
+	constructor(element, options = {}) {
+		this.defaults = Object.assign({}, this.constructor.defaults);
+		this.options = {};
 		this.el = element;
-	}
 
-	setOptions(options) {
-		this.options = Object.assign({}, this.defaults, options);
+		this.setOptions(options);
+		this.bootSolution();
 	}
 
 	/**
@@ -52,10 +53,35 @@ export default class Widget {
 	 * @throws {Error}
 	 */
 	makeStep(type) {
-		const step = StepFactory.make(type);
+		const options = this.getOption(type) || {};
 
-		step.setWidget(this);
+		return StepFactory.make(type, this, options);
+	}
 
-		return step;
+	getSolution() {
+		const name = this.getOption('solution');
+		const mode = this.getOption('mode');
+
+		return SolutionRegistry.getPage(name, mode);
+	}
+
+	bootSolution() {
+		const solution = this.getSolution();
+
+		if (solution == null) { return; }
+
+		solution.bootWidget(this);
+	}
+
+	extendDefaults(options) {
+		this.defaults = Object.assign(this.defaults, options);
+	}
+
+	setOptions(options) {
+		this.options = Object.assign(this.options, options);
+	}
+
+	getOption(name) {
+		return this.options[name] ?? this.defaults[name];
 	}
 }

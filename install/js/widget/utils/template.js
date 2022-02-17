@@ -32,4 +32,11 @@ export default class Template {
 		return context.firstElementChild;
 	}
 
+	static toElements(html) {
+		const context = document.createElement('div');
+		context.innerHTML = html;
+
+		return [...context.children];
+	}
+
 }

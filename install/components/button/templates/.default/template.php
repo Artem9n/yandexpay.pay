@@ -17,7 +17,8 @@ echo Extension::getHtml('yandexpaypay.widget');
 
 if (!empty($arResult['PARAMS']['solution']))
 {
-	try {
+	try
+	{
 		$solution = Solution\Registry::getInstance($arResult['PARAMS']['solution']);
 		echo $solution->getExtension();
 	}
@@ -28,24 +29,29 @@ if (!empty($arResult['PARAMS']['solution']))
 }
 
 $widgetOptions = array_diff_key($arResult['PARAMS'], [ 'order' => true , 'selector' => true, 'position' => true]);
-$widgetOptions['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
 $order = $arResult['PARAMS']['order'];
 $selector = $arResult['PARAMS']['selector'];
 $position = $arResult['PARAMS']['position'];
 
 if (!empty($selector))
 {
+	$factoryOptions = array_intersect_key($arResult['PARAMS'], [
+		'solution' => true,
+		'mode' => true,
+		'width' => true,
+	]);
+	$factoryOptions['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
+
 	?>
 	<script>
 		(function() {
-			const factory = new BX.YandexPay.Factory();
+			const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
 			const selector = '<?= htmlspecialcharsback($selector) ?>';
 			const position = '<?= $position?>';
-			const options = <?= Json::encode($widgetOptions) ?>;
 
 			factory.inject(selector, position)
 				.then((widget) => {
-					widget.setOptions(options);
+					widget.setOptions(<?= Json::encode($widgetOptions) ?>);
 					widget.cart(<?= Json::encode($order) ?>);
 				});
 		})();
@@ -68,4 +74,4 @@ else
 		})();
 	</script>
 	<?php
-}?>
+}

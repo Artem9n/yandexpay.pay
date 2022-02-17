@@ -1,12 +1,9 @@
 import Template from '../utils/template';
 import AbstractStep from './abstractstep';
-import StepFactory from "./factory";
 
 const YaPay = window.YaPay;
 
 export default class Payment extends AbstractStep {
-
-	static optionPrefix = 'payment';
 
 	static defaults = {
 		template: '<div class="alert alert-success" role="alert"><strong>#MESSAGE#</strong></div>'

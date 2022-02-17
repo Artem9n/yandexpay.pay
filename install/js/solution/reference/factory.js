@@ -6,14 +6,12 @@ export default class Factory {
 		this.classMap = classMap;
 	}
 
-	create(cart) {
-		const type = cart.getOption('mode');
-
-		const className = this.classMap[type];
+	create(mode) {
+		const className = this.classMap[mode];
 
 		if (className == null) { return null; }
 
-		return new className(cart);
+		return new className();
 	}
 
 }

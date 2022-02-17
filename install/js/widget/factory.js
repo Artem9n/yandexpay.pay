@@ -1,9 +1,26 @@
+import SolutionRegistry from './solutionregistry';
 import Utils from './utils/template';
 
 export default class Factory {
 
-	defaults = {
-		template: '<div id="yandexpay" class="yandex-pay"></div>',
+	static defaults = {
+		solution: null,
+		template: '<div id="yandexpay" class="bx-yapay-drawer"></div>',
+		containerSelector: '.bx-yapay-drawer',
+		waitLimit: 30,
+		waitTimeout: 1000,
+	}
+
+	defaults;
+	options;
+	waitCount = 0;
+
+	constructor(options = {}) {
+		this.defaults = Object.assign({}, this.constructor.defaults);
+		this.options = {};
+
+		this.setOptions(options);
+		this.bootSolution();
 	}
 
 	inject(selector, position) {
@@ -23,7 +40,6 @@ export default class Factory {
 	waitElement(selector) {
 		return new Promise((resolve, reject) => {
 			this.waitCount = 0;
-			this.waitLimit = 10;
 			this.waitElementLoop(selector, resolve, reject);
 		});
 	}
@@ -38,12 +54,12 @@ export default class Factory {
 
 		++this.waitCount;
 
-		if (this.waitCount >= this.waitLimit) {
+		if (this.waitCount >= this.getOption('waitLimit')) {
 			reject('cant find element by selector ' + selector);
 			return;
 		}
 
-		setTimeout(this.waitElementLoop.bind(this, selector, resolve, reject), 1000);
+		setTimeout(this.waitElementLoop.bind(this, selector, resolve, reject), this.getOption('waitTimeout'));
 	}
 
 	findElement(selector) {
@@ -132,10 +148,50 @@ export default class Factory {
 	}
 
 	renderElement(anchor, position) {
-		const result = Utils.toElement(this.defaults.template);
+		const selector = this.getOption('containerSelector');
+		const html = Utils.compile(this.getOption('template'), {
+			label: this.getOption('label'),
+			width: (this.getOption('width') || 'AUTO').toLowerCase(),
+		});
+		let elements = Utils.toElements(html);
+		let result = null;
 
-		anchor.insertAdjacentElement(position, result);
+		if (position.indexOf('after') === 0) { elements = elements.reverse(); }
+
+		for (const element of elements) {
+			anchor.insertAdjacentElement(position, element);
+
+			if (result != null) { continue; }
+
+			result = element.matches(selector) ? element : element.querySelector(selector);
+		}
+
+		if (result == null) {
+			throw new Error(`cant find template container by selector ${selector}`);
+		}
 
 		return result;
+	}
+
+	bootSolution() {
+		const name = this.getOption('solution');
+		const mode = this.getOption('mode');
+		const solution = SolutionRegistry.getPage(name, mode);
+
+		if (solution == null) { return; }
+
+		solution.bootFactory(this);
+	}
+
+	extendDefaults(options) {
+		this.defaults = Object.assign(this.defaults, options);
+	}
+
+	setOptions(options) {
+		this.options = Object.assign(this.options, options);
+	}
+
+	getOption(name) {
+		return this.options[name] ?? this.defaults[name]
 	}
 }

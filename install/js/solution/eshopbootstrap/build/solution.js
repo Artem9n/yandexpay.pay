@@ -5,16 +5,19 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	'use strict';
 
 	var Page = /*#__PURE__*/function () {
-	  function Page(cart) {
+	  function Page() {
 	    babelHelpers.classCallCheck(this, Page);
-	    babelHelpers.defineProperty(this, "cart", null);
-	    this.cart = cart;
-	    this.bootstrap();
 	  }
 
 	  babelHelpers.createClass(Page, [{
-	    key: "bootstrap",
-	    value: function bootstrap() {}
+	    key: "bootFactory",
+	    value: function bootFactory(factory) {}
+	  }, {
+	    key: "bootWidget",
+	    value: function bootWidget(widget) {}
+	  }, {
+	    key: "bootCart",
+	    value: function bootCart(cart) {}
 	  }]);
 	  return Page;
 	}();
@@ -28,24 +31,20 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  }
 
 	  babelHelpers.createClass(Element, [{
-	    key: "bootstrap",
-	    value: function bootstrap() {
-	      var _this = this;
-
+	    key: "bootCart",
+	    value: function bootCart(cart) {
 	      if (typeof BX === 'undefined' || typeof JCCatalogElement === 'undefined') {
 	        return;
 	      }
 
-	      BX.addCustomEvent('onAsproSkuSetPrice', function (eventData) {
-	        var _eventData$offer;
-
-	        var newProductId = parseInt(eventData === null || eventData === void 0 ? void 0 : (_eventData$offer = eventData.offer) === null || _eventData$offer === void 0 ? void 0 : _eventData$offer.ID, 10);
+	      BX.addCustomEvent('onCatalogElementChangeOffer', function (eventData) {
+	        var newProductId = parseInt(eventData === null || eventData === void 0 ? void 0 : eventData.newId, 10);
 
 	        if (isNaN(newProductId)) {
 	          return;
 	        }
 
-	        _this.cart.delayChangeOffer(newProductId);
+	        cart.delayChangeOffer(newProductId);
 	      });
 	    }
 	  }]);
@@ -61,17 +60,15 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  }
 
 	  babelHelpers.createClass(Basket, [{
-	    key: "bootstrap",
-	    value: function bootstrap() {
-	      var _this = this;
-
+	    key: "bootCart",
+	    value: function bootCart(cart) {
 	      if (typeof BX === 'undefined') {
 	        return;
 	      }
 
 	      BX.addCustomEvent('OnBasketChange', function () {
-	        _this.cart.getProducts().then(function (result) {
-	          _this.cart.combineOrderWithProducts(result);
+	        cart.getProducts().then(function (result) {
+	          cart.combineOrderWithProducts(result);
 	        });
 	      });
 	    }
@@ -88,15 +85,14 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 
 	  babelHelpers.createClass(Factory, [{
 	    key: "create",
-	    value: function create(cart) {
-	      var type = cart.getOption('mode');
-	      var className = this.classMap[type];
+	    value: function create(mode) {
+	      var className = this.classMap[mode];
 
 	      if (className == null) {
 	        return null;
 	      }
 
-	      return new className(cart);
+	      return new className();
 	    }
 	  }]);
 	  return Factory;
@@ -109,5 +105,5 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 
 	exports.factory = factory;
 
-}((this.BX.YandexPay.Solution.AsproMax = this.BX.YandexPay.Solution.AsproMax || {})));
-//# sourceMappingURL=build.js.map
+}((this.BX.YandexPay.Solution.EshopBootstrap = this.BX.YandexPay.Solution.EshopBootstrap || {})));
+//# sourceMappingURL=solution.js.map

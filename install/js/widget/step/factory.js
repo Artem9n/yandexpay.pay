@@ -8,20 +8,22 @@ export default class Factory {
 
 	/**
 	 * @param {string} type
+	 * @param {Widget} widget
+	 * @param {Object} options
 	 * @returns {Cart|Finish|Step3ds|Payment|Failure}
 	 * @throws {Error}
 	 */
-	static make(type) {
+	static make(type, widget, options = {}) {
 		if (type === '3ds') {
-			return new Secure3d();
+			return new Secure3d(widget, options);
 		} else if (type === 'finished') {
-			return new Finish();
+			return new Finish(widget, options);
 		} else if (type === 'error') {
-			return new Failure();
+			return new Failure(widget, options);
 		} else if (type === 'payment') {
-			return new Payment();
+			return new Payment(widget, options);
 		} else if (type === 'cart'){
-			return new Cart();
+			return new Cart(widget, options);
 		}
 
 		throw new Error('unknown step ' + type);

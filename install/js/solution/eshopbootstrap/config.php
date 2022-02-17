@@ -2,5 +2,5 @@
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
 
 return [
-	'js' => './build.js',
+	'js' => './build/solution.js',
 ];

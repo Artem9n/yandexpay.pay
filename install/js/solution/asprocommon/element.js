@@ -1,8 +1,13 @@
 import Page from '../reference/page';
+import factoryLayout from './molecules/factorylayout';
 
 export default class Element extends Page {
 
-	bootstrap() {
+	bootFactory(factory) {
+		factoryLayout(factory);
+	}
+
+	bootCart(cart) {
 		if (typeof BX === 'undefined' || typeof JCCatalogElement === 'undefined') { return; }
 
 		BX.addCustomEvent('onAsproSkuSetPrice', (eventData) => {
@@ -10,7 +15,7 @@ export default class Element extends Page {
 
 			if (isNaN(newProductId)) { return; }
 
-			this.cart.delayChangeOffer(newProductId);
+			cart.delayChangeOffer(newProductId);
 		});
 	}
 }

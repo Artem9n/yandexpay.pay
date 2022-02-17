@@ -2,52 +2,32 @@ import Template from '../utils/template';
 
 export default class AbstractStep {
 
-	static optionSection = null;
-
 	static defaults = {
 		template: '',
 	}
 
+	defaults;
+	options;
+	widget;
+	delayTimeouts = {};
+
 	/**
+	 * @param {Widget} widget
 	 * @param {Object} options
 	 */
-	constructor(options = {}) {
-		this.options = Object.assign({}, this.constructor.defaults, options);
-		this.widget = null;
-		this.delayTimeouts = {};
-	}
-
-	/**
-	 *
-	 * @param {Widget} widget
-	 */
-	setWidget(widget) {
+	constructor(widget, options = {}) {
 		this.widget = widget;
+		this.defaults = Object.assign({}, this.constructor.defaults);
+		this.options = Object.assign({}, options);
 	}
 
 	/**
 	 *
-	 * @param {string} key
+	 * @param {string} name
 	 * @returns {*}
 	 */
-	getOption(key) {
-		const section = this.constructor.optionSection;
-
-		/*if (this.widget.options[section] !== null && this.widget.options[section][key]) {
-			return this.widget.options[section][key];
-		} else */if (key in this.options) {
-			return this.options[key];
-		} else {
-			return this.widget.options[key];
-		}
-	}
-
-	setOption(key, value) {
-		if (key in this.options) {
-			this.options[key] = value;
-		} else if (key in this.widget.options){
-			this.widget.options[key] = value;
-		}
+	getOption(name) {
+		return this.options[name] ?? this.widget.getOption(name) ?? this.defaults[name];
 	}
 
 	/**
@@ -108,8 +88,6 @@ export default class AbstractStep {
 	}
 
 	getNode(selector, context, method) {
-		let result;
-
 		if (selector.substr(0, 1) === '#') { // is id query
 			context = document;
 		} else if (!context) {

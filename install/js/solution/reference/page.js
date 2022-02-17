@@ -1,13 +1,14 @@
 export default class Page {
 
-	cart = null;
+	bootFactory(factory) {
 
-	constructor(cart) {
-		this.cart = cart;
-		this.bootstrap();
 	}
 
-	bootstrap() {
+	bootWidget(widget) {
+
+	}
+
+	bootCart(cart) {
 
 	}
 

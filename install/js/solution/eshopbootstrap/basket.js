@@ -2,12 +2,12 @@ import Page from '../reference/page';
 
 export default class Basket extends Page {
 
-	bootstrap() {
+	bootCart(cart) {
 		if (typeof BX === 'undefined') { return; }
 
 		BX.addCustomEvent('OnBasketChange', () => {
-			this.cart.getProducts().then((result) => {
-				this.cart.combineOrderWithProducts(result);
+			cart.getProducts().then((result) => {
+				cart.combineOrderWithProducts(result);
 			});
 		});
 	}

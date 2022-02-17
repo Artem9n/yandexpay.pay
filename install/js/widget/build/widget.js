@@ -2,6 +2,63 @@ this.BX = this.BX || {};
 (function (exports) {
 	'use strict';
 
+	var SolutionRegistry = /*#__PURE__*/function () {
+	  function SolutionRegistry() {
+	    babelHelpers.classCallCheck(this, SolutionRegistry);
+	  }
+
+	  babelHelpers.createClass(SolutionRegistry, null, [{
+	    key: "getFactory",
+	    value: function getFactory(name) {
+	      var _window, _window$BX, _window$BX$YandexPay, _window$BX$YandexPay$, _window$BX$YandexPay$2;
+
+	      if (name == null) {
+	        return null;
+	      }
+
+	      var factory = (_window = window) === null || _window === void 0 ? void 0 : (_window$BX = _window.BX) === null || _window$BX === void 0 ? void 0 : (_window$BX$YandexPay = _window$BX.YandexPay) === null || _window$BX$YandexPay === void 0 ? void 0 : (_window$BX$YandexPay$ = _window$BX$YandexPay.Solution) === null || _window$BX$YandexPay$ === void 0 ? void 0 : (_window$BX$YandexPay$2 = _window$BX$YandexPay$[name]) === null || _window$BX$YandexPay$2 === void 0 ? void 0 : _window$BX$YandexPay$2.factory;
+
+	      if (factory == null) {
+	        var _console;
+
+	        (_console = console) === null || _console === void 0 ? void 0 : _console.warn("cant find solution ".concat(name));
+	        return;
+	      }
+
+	      return factory;
+	    }
+	  }, {
+	    key: "getPage",
+	    value: function getPage(name, mode) {
+	      if (name == null || mode == null) {
+	        return null;
+	      }
+
+	      var key = name + ':' + mode;
+
+	      if (this.pages[key] == null) {
+	        this.pages[key] = this.createPage(name, mode);
+	      }
+
+	      return this.pages[key];
+	    }
+	  }, {
+	    key: "createPage",
+	    value: function createPage(name, mode) {
+	      var factory = this.getFactory(name);
+
+	      if (factory == null) {
+	        return null;
+	      }
+
+	      return factory.create(mode);
+	    }
+	  }]);
+	  return SolutionRegistry;
+	}();
+
+	babelHelpers.defineProperty(SolutionRegistry, "pages", {});
+
 	var Template = /*#__PURE__*/function () {
 	  function Template() {
 	    babelHelpers.classCallCheck(this, Template);
@@ -43,11 +100,18 @@ this.BX = this.BX || {};
 	      context.innerHTML = html;
 	      return context.firstElementChild;
 	    }
+	  }, {
+	    key: "toElements",
+	    value: function toElements(html) {
+	      var context = document.createElement('div');
+	      context.innerHTML = html;
+	      return babelHelpers.toConsumableArray(context.children);
+	    }
 	  }]);
 	  return Template;
 	}();
 
-	function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+	function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 	function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -55,10 +119,13 @@ this.BX = this.BX || {};
 
 	var Factory = /*#__PURE__*/function () {
 	  function Factory() {
+	    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	    babelHelpers.classCallCheck(this, Factory);
-	    babelHelpers.defineProperty(this, "defaults", {
-	      template: '<div id="yandexpay" class="yandex-pay"></div>'
-	    });
+	    babelHelpers.defineProperty(this, "waitCount", 0);
+	    this.defaults = Object.assign({}, this.constructor.defaults);
+	    this.options = {};
+	    this.setOptions(options);
+	    this.bootSolution();
 	  }
 
 	  babelHelpers.createClass(Factory, [{
@@ -86,7 +153,6 @@ this.BX = this.BX || {};
 
 	      return new Promise(function (resolve, reject) {
 	        _this2.waitCount = 0;
-	        _this2.waitLimit = 10;
 
 	        _this2.waitElementLoop(selector, resolve, reject);
 	      });
@@ -103,12 +169,12 @@ this.BX = this.BX || {};
 
 	      ++this.waitCount;
 
-	      if (this.waitCount >= this.waitLimit) {
+	      if (this.waitCount >= this.getOption('waitLimit')) {
 	        reject('cant find element by selector ' + selector);
 	        return;
 	      }
 
-	      setTimeout(this.waitElementLoop.bind(this, selector, resolve, reject), 1000);
+	      setTimeout(this.waitElementLoop.bind(this, selector, resolve, reject), this.getOption('waitTimeout'));
 	    }
 	  }, {
 	    key: "findElement",
@@ -243,64 +309,112 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "renderElement",
 	    value: function renderElement(anchor, position) {
-	      var result = Template.toElement(this.defaults.template);
-	      anchor.insertAdjacentElement(position, result);
+	      var selector = this.getOption('containerSelector');
+	      var html = Template.compile(this.getOption('template'), {
+	        label: this.getOption('label'),
+	        width: (this.getOption('width') || 'AUTO').toLowerCase()
+	      });
+	      var elements = Template.toElements(html);
+	      var result = null;
+
+	      if (position.indexOf('after') === 0) {
+	        elements = elements.reverse();
+	      }
+
+	      var _iterator4 = _createForOfIteratorHelper(elements),
+	          _step4;
+
+	      try {
+	        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+	          var element = _step4.value;
+	          anchor.insertAdjacentElement(position, element);
+
+	          if (result != null) {
+	            continue;
+	          }
+
+	          result = element.matches(selector) ? element : element.querySelector(selector);
+	        }
+	      } catch (err) {
+	        _iterator4.e(err);
+	      } finally {
+	        _iterator4.f();
+	      }
+
+	      if (result == null) {
+	        throw new Error("cant find template container by selector ".concat(selector));
+	      }
+
 	      return result;
+	    }
+	  }, {
+	    key: "bootSolution",
+	    value: function bootSolution() {
+	      var name = this.getOption('solution');
+	      var mode = this.getOption('mode');
+	      var solution = SolutionRegistry.getPage(name, mode);
+
+	      if (solution == null) {
+	        return;
+	      }
+
+	      solution.bootFactory(this);
+	    }
+	  }, {
+	    key: "extendDefaults",
+	    value: function extendDefaults(options) {
+	      this.defaults = Object.assign(this.defaults, options);
+	    }
+	  }, {
+	    key: "setOptions",
+	    value: function setOptions(options) {
+	      this.options = Object.assign(this.options, options);
+	    }
+	  }, {
+	    key: "getOption",
+	    value: function getOption(name) {
+	      var _this$options$name;
+
+	      return (_this$options$name = this.options[name]) !== null && _this$options$name !== void 0 ? _this$options$name : this.defaults[name];
 	    }
 	  }]);
 	  return Factory;
 	}();
 
+	babelHelpers.defineProperty(Factory, "defaults", {
+	  solution: null,
+	  template: '<div id="yandexpay" class="bx-yapay-drawer"></div>',
+	  containerSelector: '.bx-yapay-drawer',
+	  waitLimit: 30,
+	  waitTimeout: 1000
+	});
+
 	var AbstractStep = /*#__PURE__*/function () {
 	  /**
+	   * @param {Widget} widget
 	   * @param {Object} options
 	   */
-	  function AbstractStep() {
-	    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	  function AbstractStep(widget) {
+	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	    babelHelpers.classCallCheck(this, AbstractStep);
-	    this.options = Object.assign({}, this.constructor.defaults, options);
-	    this.widget = null;
-	    this.delayTimeouts = {};
+	    babelHelpers.defineProperty(this, "delayTimeouts", {});
+	    this.widget = widget;
+	    this.defaults = Object.assign({}, this.constructor.defaults);
+	    this.options = Object.assign({}, options);
 	  }
 	  /**
 	   *
-	   * @param {Widget} widget
+	   * @param {string} name
+	   * @returns {*}
 	   */
 
 
 	  babelHelpers.createClass(AbstractStep, [{
-	    key: "setWidget",
-	    value: function setWidget(widget) {
-	      this.widget = widget;
-	    }
-	    /**
-	     *
-	     * @param {string} key
-	     * @returns {*}
-	     */
-
-	  }, {
 	    key: "getOption",
-	    value: function getOption(key) {
-	      var section = this.constructor.optionSection;
-	      /*if (this.widget.options[section] !== null && this.widget.options[section][key]) {
-	      	return this.widget.options[section][key];
-	      } else */
+	    value: function getOption(name) {
+	      var _ref, _this$options$name;
 
-	      if (key in this.options) {
-	        return this.options[key];
-	      } else {
-	        return this.widget.options[key];
-	      }
-	    }
-	  }, {
-	    key: "setOption",
-	    value: function setOption(key, value) {
-	      if (key in this.options) {
-	        this.options[key] = value;
-	      } else if (key in this.widget.options) {
-	        this.widget.options[key] = value;
-	      }
+	      return (_ref = (_this$options$name = this.options[name]) !== null && _this$options$name !== void 0 ? _this$options$name : this.widget.getOption(name)) !== null && _ref !== void 0 ? _ref : this.defaults[name];
 	    }
 	    /**
 	     * @param {Object<Element>} node Element
@@ -373,7 +487,6 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "getNode",
 	    value: function getNode(selector, context, method) {
-
 	      if (selector.substr(0, 1) === '#') {
 	        // is id query
 	        context = document;
@@ -407,7 +520,6 @@ this.BX = this.BX || {};
 	  return AbstractStep;
 	}();
 
-	babelHelpers.defineProperty(AbstractStep, "optionSection", null);
 	babelHelpers.defineProperty(AbstractStep, "defaults", {
 	  template: ''
 	});
@@ -615,7 +727,7 @@ this.BX = this.BX || {};
 	        } else {
 	          _this2.widget.go('error', result);
 	        }
-	      }).catch(function (error) {
+	      })["catch"](function (error) {
 	        return console.log(error);
 	      });
 	    }
@@ -683,7 +795,6 @@ this.BX = this.BX || {};
 	  return Finish;
 	}(AbstractStep);
 
-	babelHelpers.defineProperty(Finish, "optionPrefix", 'finish');
 	babelHelpers.defineProperty(Finish, "defaults", {
 	  template: '<div class="alert alert-success" role="alert"><strong>#MESSAGE#</strong></div>'
 	});
@@ -699,7 +810,6 @@ this.BX = this.BX || {};
 	  return Failure;
 	}(AbstractStep);
 
-	babelHelpers.defineProperty(Failure, "optionPrefix", 'failure');
 	babelHelpers.defineProperty(Failure, "defaults", {
 	  template: '<div class="alert alert-danger" role="alert"><strong>#MESSAGE#</strong></div>'
 	});
@@ -805,7 +915,7 @@ this.BX = this.BX || {};
 
 	        payment.on(YaPay.PaymentEventType.Abort, function onPaymentAbort(event) {// Предложить пользователю другой способ оплаты.
 	        });
-	      }).catch(function (err) {
+	      })["catch"](function (err) {
 	        // Платеж не создан.
 	        console.log({
 	          'payment not create': err
@@ -837,7 +947,7 @@ this.BX = this.BX || {};
 	        } else {
 	          _this2.widget.go('error', result);
 	        }
-	      }).catch(function (error) {
+	      })["catch"](function (error) {
 	        return console.log(error);
 	      });
 	    }
@@ -845,7 +955,6 @@ this.BX = this.BX || {};
 	  return Payment;
 	}(AbstractStep);
 
-	babelHelpers.defineProperty(Payment, "optionPrefix", 'payment');
 	babelHelpers.defineProperty(Payment, "defaults", {
 	  template: '<div class="alert alert-success" role="alert"><strong>#MESSAGE#</strong></div>'
 	});
@@ -858,6 +967,9 @@ this.BX = this.BX || {};
 	  }
 	}
 
+	function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+	function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { babelHelpers.defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 	var YaPay$1 = window.YaPay;
 
 	var Cart = /*#__PURE__*/function (_AbstractStep) {
@@ -873,10 +985,10 @@ this.BX = this.BX || {};
 	    value: function render(node, data) {
 	      this.isBootstrap = false;
 	      this.element = node;
-	      this.insertLoader();
 	      this.paymentData = this.getPaymentData(data);
+	      this.bootSolution();
+	      this.insertLoader();
 	      this.setupPaymentCash();
-	      this.installSolution();
 	      this.delayBootstrap();
 	    }
 	  }, {
@@ -885,26 +997,15 @@ this.BX = this.BX || {};
 	      return Template.compile(this.options.template, data);
 	    }
 	  }, {
-	    key: "installSolution",
-	    value: function installSolution() {
-	      var _window, _window$BX, _window$BX$YandexPay, _window$BX$YandexPay$, _window$BX$YandexPay$2;
+	    key: "bootSolution",
+	    value: function bootSolution() {
+	      var solution = this.widget.getSolution();
 
-	      var type = this.getOption('solution');
-
-	      if (type == null) {
+	      if (solution == null) {
 	        return;
 	      }
 
-	      var factory = (_window = window) === null || _window === void 0 ? void 0 : (_window$BX = _window.BX) === null || _window$BX === void 0 ? void 0 : (_window$BX$YandexPay = _window$BX.YandexPay) === null || _window$BX$YandexPay === void 0 ? void 0 : (_window$BX$YandexPay$ = _window$BX$YandexPay.Solution) === null || _window$BX$YandexPay$ === void 0 ? void 0 : (_window$BX$YandexPay$2 = _window$BX$YandexPay$[type]) === null || _window$BX$YandexPay$2 === void 0 ? void 0 : _window$BX$YandexPay$2.factory;
-
-	      if (factory == null) {
-	        var _console;
-
-	        (_console = console) === null || _console === void 0 ? void 0 : _console.warn("cant find solution ".concat(type));
-	        return;
-	      }
-
-	      factory.create(this);
+	      solution.bootCart(this);
 	    }
 	  }, {
 	    key: "delayChangeOffer",
@@ -928,13 +1029,13 @@ this.BX = this.BX || {};
 	      this.isBootstrap = true;
 	      this.getProducts().then(function (result) {
 	        if (result.error) {
-	          throw new Error(result.error.message, result.error.code);
+	          throw new Error(result.error.message);
 	        }
 
 	        _this2.combineOrderWithProducts(result);
 
 	        _this2.createPayment(_this2.element, _this2.paymentData);
-	      }).catch(function (error) {//this.showError('bootstrap', '', error);
+	      })["catch"](function (error) {//this.showError('bootstrap', '', error);
 	      });
 	    }
 	  }, {
@@ -950,7 +1051,7 @@ this.BX = this.BX || {};
 
 	      if (productId !== newProductId) {
 	        // todo in items
-	        this.setOption('productId', newProductId);
+	        this.widget.setOption('productId', newProductId);
 	        this.getProducts().then(function (result) {
 	          _this3.combineOrderWithProducts(result);
 	        });
@@ -1059,7 +1160,7 @@ this.BX = this.BX || {};
 	                window.location.href = result.redirect;
 	              }
 	            }
-	          }).catch(function (error) {
+	          })["catch"](function (error) {
 	            _this4.showError('yapayProcess', '', error); // todo test it
 
 
@@ -1102,7 +1203,7 @@ this.BX = this.BX || {};
 	            });
 	          }
 	        });
-	      }).catch(function (err) {
+	      })["catch"](function (err) {
 	        _this4.showError('yapayPayment', 'payment not created', err);
 	      });
 	    }
@@ -1162,7 +1263,9 @@ this.BX = this.BX || {};
 	        paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
 	        orderAmount: event.orderAmount
 	      };
-	      var data = babelHelpers.objectSpread({}, orderData, delivery);
+
+	      var data = _objectSpread(_objectSpread({}, orderData), delivery);
+
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
@@ -1191,13 +1294,13 @@ this.BX = this.BX || {};
 	    key: "combineOrderWithPickupShipping",
 	    value: function combineOrderWithPickupShipping(pickupOption) {
 	      var order = this.paymentData.order;
-	      return babelHelpers.objectSpread({}, order, {
+	      return _objectSpread(_objectSpread({}, order), {}, {
 	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
 	          type: 'SHIPPING',
 	          label: pickupOption.label,
 	          amount: pickupOption.amount
 	        }]),
-	        total: babelHelpers.objectSpread({}, order.total, {
+	        total: _objectSpread(_objectSpread({}, order.total), {}, {
 	          amount: this.amountSum(order.total.amount, pickupOption.amount)
 	        })
 	      });
@@ -1206,13 +1309,13 @@ this.BX = this.BX || {};
 	    key: "combineOrderWithDirectShipping",
 	    value: function combineOrderWithDirectShipping(shippingOption) {
 	      var order = this.paymentData.order;
-	      return babelHelpers.objectSpread({}, order, {
+	      return _objectSpread(_objectSpread({}, order), {}, {
 	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
 	          type: 'SHIPPING',
 	          label: shippingOption.label,
 	          amount: shippingOption.amount
 	        }]),
-	        total: babelHelpers.objectSpread({}, order.total, {
+	        total: _objectSpread(_objectSpread({}, order.total), {}, {
 	          amount: this.amountSum(order.total.amount, shippingOption.amount)
 	        })
 	      });
@@ -1221,12 +1324,14 @@ this.BX = this.BX || {};
 	    key: "combineOrderWithProducts",
 	    value: function combineOrderWithProducts(products) {
 	      var order = this.paymentData.order;
-	      var exampleOrder = babelHelpers.objectSpread({}, order, {
+
+	      var exampleOrder = _objectSpread(_objectSpread({}, order), {}, {
 	        items: products.items,
 	        total: {
 	          amount: products.amount
 	        }
 	      });
+
 	      Object.assign(this.paymentData.order, exampleOrder);
 	    }
 	  }, {
@@ -1271,7 +1376,7 @@ this.BX = this.BX || {};
 	}(AbstractStep);
 
 	babelHelpers.defineProperty(Cart, "defaults", {
-	  loaderTemplate: '<div class="yandex-pay__label width--#WIDTH#"><em></em><span>#LABEL#</span></div>' + '<div class="yandex-pay-skeleton-loading width--#WIDTH#"></div>',
+	  loaderTemplate: '<div class="yandex-pay-skeleton-loading width--#WIDTH#"></div>',
 	  loaderSelector: '.yandex-pay-skeleton-loading'
 	});
 
@@ -1285,20 +1390,24 @@ this.BX = this.BX || {};
 
 	    /**
 	     * @param {string} type
+	     * @param {Widget} widget
+	     * @param {Object} options
 	     * @returns {Cart|Finish|Step3ds|Payment|Failure}
 	     * @throws {Error}
 	     */
-	    value: function make(type) {
+	    value: function make(type, widget) {
+	      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
 	      if (type === '3ds') {
-	        return new Step3ds();
+	        return new Step3ds(widget, options);
 	      } else if (type === 'finished') {
-	        return new Finish();
+	        return new Finish(widget, options);
 	      } else if (type === 'error') {
-	        return new Failure();
+	        return new Failure(widget, options);
 	      } else if (type === 'payment') {
-	        return new Payment();
+	        return new Payment(widget, options);
 	      } else if (type === 'cart') {
-	        return new Cart();
+	        return new Cart(widget, options);
 	      }
 
 	      throw new Error('unknown step ' + type);
@@ -1309,32 +1418,24 @@ this.BX = this.BX || {};
 
 	var Widget = /*#__PURE__*/function () {
 	  /**
-	   * @type {{failureTemplate: string, modalTemplate: string, finishedTemplate: string}}
-	   */
-
-	  /**
 	   * @param {Object<Element>} element
+	   * @param {Object} options
 	   */
 	  function Widget(element) {
+	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	    babelHelpers.classCallCheck(this, Widget);
-	    babelHelpers.defineProperty(this, "defaults", {
-	      finishedTemplate: '<div class="alert alert-success" role="alert"><strong>#MESSAGE#</strong></div>',
-	      failureTemplate: '<div class="alert alert-danger" role="alert"><strong>#MESSAGE#</strong></div>',
-	      modalTemplate: '<div class="yandex-pay-modal-inner">#IFRAME#</div>'
-	    });
+	    this.defaults = Object.assign({}, this.constructor.defaults);
+	    this.options = {};
 	    this.el = element;
+	    this.setOptions(options);
+	    this.bootSolution();
 	  }
+	  /**
+	   * @param {Object} data
+	   */
+
 
 	  babelHelpers.createClass(Widget, [{
-	    key: "setOptions",
-	    value: function setOptions(options) {
-	      this.options = Object.assign({}, this.defaults, options);
-	    }
-	    /**
-	     * @param {Object} data
-	     */
-
-	  }, {
 	    key: "payment",
 	    value: function payment(data) {
 	      this.go('payment', data);
@@ -1368,13 +1469,49 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "makeStep",
 	    value: function makeStep(type) {
-	      var step = Factory$1.make(type);
-	      step.setWidget(this);
-	      return step;
+	      var options = this.getOption(type) || {};
+	      return Factory$1.make(type, this, options);
+	    }
+	  }, {
+	    key: "getSolution",
+	    value: function getSolution() {
+	      var name = this.getOption('solution');
+	      var mode = this.getOption('mode');
+	      return SolutionRegistry.getPage(name, mode);
+	    }
+	  }, {
+	    key: "bootSolution",
+	    value: function bootSolution() {
+	      var solution = this.getSolution();
+
+	      if (solution == null) {
+	        return;
+	      }
+
+	      solution.bootWidget(this);
+	    }
+	  }, {
+	    key: "extendDefaults",
+	    value: function extendDefaults(options) {
+	      this.defaults = Object.assign(this.defaults, options);
+	    }
+	  }, {
+	    key: "setOptions",
+	    value: function setOptions(options) {
+	      this.options = Object.assign(this.options, options);
+	    }
+	  }, {
+	    key: "getOption",
+	    value: function getOption(name) {
+	      var _this$options$name;
+
+	      return (_this$options$name = this.options[name]) !== null && _this$options$name !== void 0 ? _this$options$name : this.defaults[name];
 	    }
 	  }]);
 	  return Widget;
 	}();
+
+	babelHelpers.defineProperty(Widget, "defaults", {});
 
 	exports.Factory = Factory;
 	exports.Widget = Widget;
