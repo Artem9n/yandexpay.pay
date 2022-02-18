@@ -37,14 +37,18 @@ export default class Widget {
 		this.go('cart', data);
 	}
 
+	restore(element) {
+		this.el = element;
+		this.step?.restore(element);
+	}
+
 	/**
 	 * @param {string} type
 	 * @param {Object} data
 	 */
 	go(type, data) {
-		const step = this.makeStep(type);
-
-		step.render(this.el, data);
+		this.step = this.makeStep(type);
+		this.step.render(this.el, data);
 	}
 
 	/**

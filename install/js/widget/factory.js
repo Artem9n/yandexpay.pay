@@ -1,4 +1,5 @@
 import SolutionRegistry from './solutionregistry';
+import NodePreserver from "./ui/nodepreserver";
 import Utils from './utils/template';
 
 export default class Factory {
@@ -7,6 +8,7 @@ export default class Factory {
 		solution: null,
 		template: '<div id="yandexpay" class="bx-yapay-drawer"></div>',
 		containerSelector: '.bx-yapay-drawer',
+		preserve: false,
 		waitLimit: 30,
 		waitTimeout: 1000,
 	}
@@ -28,8 +30,45 @@ export default class Factory {
 			.then(() => this.waitElement(selector))
 			.then((anchor) => {
 				const element = this.renderElement(anchor, position);
+				const widget = this.install(element);
 
-				return this.install(element);
+				if (this.getOption('preserve')) {
+					this.preserve(selector, position, widget);
+				}
+
+				return widget;
+			});
+	}
+
+	preserve(selector, position, widget) {
+		const preserver = new NodePreserver(widget.el, Object.assign({}, this.preserveOptions(), {
+			restore: () => {
+				preserver.destroy();
+				// noinspection JSIgnoredPromiseFromCall
+				this.restore(selector, position, widget);
+			},
+		}));
+	}
+
+	preserveOptions() {
+		const preserveOption = this.getOption('preserve');
+
+		return typeof preserveOption === 'object' ? preserveOption : {};
+	}
+
+	restore(selector, position, widget) {
+		return Promise.resolve()
+			.then(() => this.waitElement(selector))
+			.then((anchor) => {
+				const element = this.renderElement(anchor, position);
+
+				widget.restore(element);
+
+				if (this.getOption('preserve')) {
+					this.preserve(selector, position, widget);
+				}
+
+				return widget;
 			});
 	}
 
@@ -91,7 +130,7 @@ export default class Factory {
 			for (const part of selector.split(',')) { // first selector
 				const partSanitized = part.trim();
 
-				if (partSanitized === '') { continue; }
+				if (partSanitized === '' || !this.isCssSelector(partSanitized)) { continue; }
 
 				const collection = document.querySelectorAll(partSanitized);
 

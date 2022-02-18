@@ -59,6 +59,364 @@ this.BX = this.BX || {};
 
 	babelHelpers.defineProperty(SolutionRegistry, "pages", {});
 
+	var MutationSkeleton = /*#__PURE__*/function () {
+	  function MutationSkeleton(element) {
+	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	    babelHelpers.classCallCheck(this, MutationSkeleton);
+	    this.el = element;
+	    this.options = Object.assign({}, this.constructor.defaults, options);
+	  }
+
+	  babelHelpers.createClass(MutationSkeleton, [{
+	    key: "destroy",
+	    value: function destroy() {}
+	  }]);
+	  return MutationSkeleton;
+	}();
+
+	babelHelpers.defineProperty(MutationSkeleton, "defaults", {
+	  check: null
+	});
+
+	var MutationLoop = /*#__PURE__*/function (_MutationSkeleton) {
+	  babelHelpers.inherits(MutationLoop, _MutationSkeleton);
+
+	  function MutationLoop(element) {
+	    var _this;
+
+	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	    babelHelpers.classCallCheck(this, MutationLoop);
+	    _this = babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(MutationLoop).call(this, element, options));
+	    babelHelpers.defineProperty(babelHelpers.assertThisInitialized(_this), "loop", function () {
+	      _this.options.check() && _this.loopTimeout();
+	    });
+
+	    _this.loopTimeout();
+
+	    return _this;
+	  }
+
+	  babelHelpers.createClass(MutationLoop, [{
+	    key: "destroy",
+	    value: function destroy() {
+	      this.loopCancel();
+	    }
+	  }, {
+	    key: "loopTimeout",
+	    value: function loopTimeout() {
+	      clearTimeout(this._loopTimeout);
+	      this._loopTimeout = setTimeout(this.loop, this.options.timeout);
+	    }
+	  }, {
+	    key: "loopCancel",
+	    value: function loopCancel() {
+	      clearTimeout(this._loopTimeout);
+	    }
+	  }]);
+	  return MutationLoop;
+	}(MutationSkeleton);
+
+	babelHelpers.defineProperty(MutationLoop, "defaults", Object.assign({}, MutationSkeleton.defaults, {
+	  timeout: 1000
+	}));
+
+	function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+	function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+	function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+	var MutationObserver = /*#__PURE__*/function (_MutationSkeleton) {
+	  babelHelpers.inherits(MutationObserver, _MutationSkeleton);
+
+	  function MutationObserver(element) {
+	    var _this;
+
+	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	    babelHelpers.classCallCheck(this, MutationObserver);
+	    _this = babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(MutationObserver).call(this, element, options));
+	    babelHelpers.defineProperty(babelHelpers.assertThisInitialized(_this), "listener", function (mutations) {
+	      var _iterator = _createForOfIteratorHelper(mutations),
+	          _step;
+
+	      try {
+	        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+	          var mutation = _step.value;
+
+	          if (mutation.removedNodes == null) {
+	            continue;
+	          }
+
+	          var _iterator2 = _createForOfIteratorHelper(mutation.removedNodes),
+	              _step2;
+
+	          try {
+	            for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+	              var removedNode = _step2.value;
+
+	              if (!(removedNode instanceof HTMLElement)) {
+	                continue;
+	              }
+
+	              if (removedNode === _this.el || removedNode.contains(_this.el)) {
+	                _this.runCheck();
+
+	                return;
+	              }
+	            }
+	          } catch (err) {
+	            _iterator2.e(err);
+	          } finally {
+	            _iterator2.f();
+	          }
+	        }
+	      } catch (err) {
+	        _iterator.e(err);
+	      } finally {
+	        _iterator.f();
+	      }
+	    });
+
+	    _this.observe();
+
+	    return _this;
+	  }
+
+	  babelHelpers.createClass(MutationObserver, [{
+	    key: "destroy",
+	    value: function destroy() {
+	      this.disconnect();
+	    }
+	  }, {
+	    key: "observe",
+	    value: function observe() {
+	      var anchor = this.getAnchor();
+
+	      if (anchor == null) {
+	        var _console;
+
+	        (_console = console) === null || _console === void 0 ? void 0 : _console.warn('cant find anchor for node preserver');
+	        return;
+	      }
+
+	      this.observer = new window.MutationObserver(this.listener);
+	      this.observer.observe(anchor, {
+	        childList: true,
+	        subtree: true
+	      });
+	    }
+	  }, {
+	    key: "disconnect",
+	    value: function disconnect() {
+	      if (this.observer == null) {
+	        return;
+	      }
+
+	      this.observer.disconnect();
+	      this.observer = null;
+	    }
+	  }, {
+	    key: "runCheck",
+	    value: function runCheck() {
+	      var _this2 = this;
+
+	      var delay = this.options.delay;
+
+	      if (delay == null) {
+	        this.options.check();
+	      } else {
+	        clearTimeout(this._checkTimeout);
+	        this._checkTimeout = setTimeout(function () {
+	          _this2.options.check();
+	        }, delay);
+	      }
+	    }
+	  }, {
+	    key: "getAnchor",
+	    value: function getAnchor() {
+	      if (this.options.anchor == null) {
+	        return document.body;
+	      }
+
+	      return this.el.closest(this.options.anchor);
+	    }
+	  }]);
+	  return MutationObserver;
+	}(MutationSkeleton);
+
+	babelHelpers.defineProperty(MutationObserver, "defaults", Object.assign({}, MutationSkeleton.defaults, {
+	  anchor: null,
+	  delay: 0
+	}));
+
+	var MutationFactory = /*#__PURE__*/function () {
+	  function MutationFactory() {
+	    babelHelpers.classCallCheck(this, MutationFactory);
+	  }
+
+	  babelHelpers.createClass(MutationFactory, null, [{
+	    key: "make",
+	    value: function make(element, options) {
+	      if (typeof window.MutationObserver === 'function') {
+	        return new MutationObserver(element, options);
+	      }
+
+	      return new MutationLoop(element, options);
+	    }
+	  }]);
+	  return MutationFactory;
+	}();
+
+	var Subscriber = /*#__PURE__*/function () {
+	  function Subscriber(element) {
+	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	    babelHelpers.classCallCheck(this, Subscriber);
+	    this.el = element;
+	    this.options = Object.assign({}, this.constructor.defaults, options);
+	    this.bind();
+	  }
+
+	  babelHelpers.createClass(Subscriber, [{
+	    key: "destroy",
+	    value: function destroy() {
+	      this.unbind();
+	      this.options = {};
+	      this.el = null;
+	    }
+	  }, {
+	    key: "bind",
+	    value: function bind() {
+	      if (this.options.on == null) {
+	        var _console;
+
+	        (_console = console) === null || _console === void 0 ? void 0 : _console.warn('define "on" option for subscriber of node preserver');
+	        return;
+	      }
+
+	      this.options.on(this.options.check);
+	    }
+	  }, {
+	    key: "unbind",
+	    value: function unbind() {
+	      if (this.options.off == null) {
+	        var _console2;
+
+	        (_console2 = console) === null || _console2 === void 0 ? void 0 : _console2.warn('define "off" option for subscriber of node preserver');
+	        return;
+	      }
+
+	      this.options.off(this.options.check);
+	    }
+	  }]);
+	  return Subscriber;
+	}();
+
+	babelHelpers.defineProperty(Subscriber, "defaults", {
+	  check: null,
+	  on: null,
+	  off: null
+	});
+
+	var NodePreserver = /*#__PURE__*/function () {
+	  function NodePreserver(element) {
+	    var _this = this;
+
+	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	    babelHelpers.classCallCheck(this, NodePreserver);
+	    babelHelpers.defineProperty(this, "check", function () {
+	      var found = document.body.contains(_this.el);
+
+	      if (!found) {
+	        _this.options.restore();
+	      }
+
+	      return found;
+	    });
+	    this.el = element;
+	    this.options = Object.assign({}, this.constructor.defaults, options);
+	    this.install();
+	  }
+
+	  babelHelpers.createClass(NodePreserver, [{
+	    key: "destroy",
+	    value: function destroy() {
+	      this.uninstall();
+	      this.options = {};
+	      this.el = null;
+	    }
+	  }, {
+	    key: "install",
+	    value: function install() {
+	      this.installMutation();
+	      this.installSubscriber();
+	    }
+	  }, {
+	    key: "uninstall",
+	    value: function uninstall() {
+	      this.uninstallMutation();
+	      this.uninstallSubscriber();
+	    }
+	  }, {
+	    key: "installMutation",
+	    value: function installMutation() {
+	      if (!this.isEnabled('mutation')) {
+	        return;
+	      }
+
+	      this.mutation = MutationFactory.make(this.el, this.driverOptions('mutation'));
+	    }
+	  }, {
+	    key: "uninstallMutation",
+	    value: function uninstallMutation() {
+	      if (this.mutation == null) {
+	        return;
+	      }
+
+	      this.mutation.destroy();
+	    }
+	  }, {
+	    key: "installSubscriber",
+	    value: function installSubscriber() {
+	      if (!this.isEnabled('subscriber')) {
+	        return;
+	      }
+
+	      this.subscriber = new Subscriber(this.el, this.driverOptions('subscriber'));
+	    }
+	  }, {
+	    key: "uninstallSubscriber",
+	    value: function uninstallSubscriber() {
+	      if (this.subscriber == null) {
+	        return;
+	      }
+
+	      this.subscriber.destroy();
+	      this.subscriber = null;
+	    }
+	  }, {
+	    key: "isEnabled",
+	    value: function isEnabled(type) {
+	      return !!this.options[type];
+	    }
+	  }, {
+	    key: "driverOptions",
+	    value: function driverOptions(type) {
+	      var option = babelHelpers["typeof"](this.options[type]) === 'object' ? this.options[type] : {};
+	      var overrides = {
+	        check: this.check
+	      };
+	      return Object.assign({}, option, overrides);
+	    }
+	  }]);
+	  return NodePreserver;
+	}();
+
+	babelHelpers.defineProperty(NodePreserver, "defaults", {
+	  restore: null,
+	  subscriber: null,
+	  mutation: true
+	});
+
 	var Template = /*#__PURE__*/function () {
 	  function Template() {
 	    babelHelpers.classCallCheck(this, Template);
@@ -111,11 +469,11 @@ this.BX = this.BX || {};
 	  return Template;
 	}();
 
-	function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+	function _createForOfIteratorHelper$1(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray$1(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
-	function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+	function _unsupportedIterableToArray$1(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$1(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$1(o, minLen); }
 
-	function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+	function _arrayLikeToArray$1(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 	var Factory = /*#__PURE__*/function () {
 	  function Factory() {
@@ -138,7 +496,51 @@ this.BX = this.BX || {};
 	      }).then(function (anchor) {
 	        var element = _this.renderElement(anchor, position);
 
-	        return _this.install(element);
+	        var widget = _this.install(element);
+
+	        if (_this.getOption('preserve')) {
+	          _this.preserve(selector, position, widget);
+	        }
+
+	        return widget;
+	      });
+	    }
+	  }, {
+	    key: "preserve",
+	    value: function preserve(selector, position, widget) {
+	      var _this2 = this;
+
+	      var preserver = new NodePreserver(widget.el, Object.assign({}, this.preserveOptions(), {
+	        restore: function restore() {
+	          preserver.destroy(); // noinspection JSIgnoredPromiseFromCall
+
+	          _this2.restore(selector, position, widget);
+	        }
+	      }));
+	    }
+	  }, {
+	    key: "preserveOptions",
+	    value: function preserveOptions() {
+	      var preserveOption = this.getOption('preserve');
+	      return babelHelpers["typeof"](preserveOption) === 'object' ? preserveOption : {};
+	    }
+	  }, {
+	    key: "restore",
+	    value: function restore(selector, position, widget) {
+	      var _this3 = this;
+
+	      return Promise.resolve().then(function () {
+	        return _this3.waitElement(selector);
+	      }).then(function (anchor) {
+	        var element = _this3.renderElement(anchor, position);
+
+	        widget.restore(element);
+
+	        if (_this3.getOption('preserve')) {
+	          _this3.preserve(selector, position, widget);
+	        }
+
+	        return widget;
 	      });
 	    }
 	  }, {
@@ -149,12 +551,12 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "waitElement",
 	    value: function waitElement(selector) {
-	      var _this2 = this;
+	      var _this4 = this;
 
 	      return new Promise(function (resolve, reject) {
-	        _this2.waitCount = 0;
+	        _this4.waitCount = 0;
 
-	        _this2.waitElementLoop(selector, resolve, reject);
+	        _this4.waitElementLoop(selector, resolve, reject);
 	      });
 	    }
 	  }, {
@@ -211,7 +613,7 @@ this.BX = this.BX || {};
 	      try {
 	        var result = [];
 
-	        var _iterator = _createForOfIteratorHelper(selector.split(',')),
+	        var _iterator = _createForOfIteratorHelper$1(selector.split(',')),
 	            _step;
 
 	        try {
@@ -220,13 +622,13 @@ this.BX = this.BX || {};
 	            // first selector
 	            var partSanitized = part.trim();
 
-	            if (partSanitized === '') {
+	            if (partSanitized === '' || !this.isCssSelector(partSanitized)) {
 	              continue;
 	            }
 
 	            var collection = document.querySelectorAll(partSanitized);
 
-	            var _iterator2 = _createForOfIteratorHelper(collection),
+	            var _iterator2 = _createForOfIteratorHelper$1(collection),
 	                _step2;
 
 	            try {
@@ -276,7 +678,7 @@ this.BX = this.BX || {};
 	    value: function reduceVisible(collection) {
 	      var result = null;
 
-	      var _iterator3 = _createForOfIteratorHelper(collection),
+	      var _iterator3 = _createForOfIteratorHelper$1(collection),
 	          _step3;
 
 	      try {
@@ -321,7 +723,7 @@ this.BX = this.BX || {};
 	        elements = elements.reverse();
 	      }
 
-	      var _iterator4 = _createForOfIteratorHelper(elements),
+	      var _iterator4 = _createForOfIteratorHelper$1(elements),
 	          _step4;
 
 	      try {
@@ -385,6 +787,7 @@ this.BX = this.BX || {};
 	  solution: null,
 	  template: '<div id="yandexpay" class="bx-yapay-drawer"></div>',
 	  containerSelector: '.bx-yapay-drawer',
+	  preserve: false,
 	  waitLimit: 30,
 	  waitTimeout: 1000
 	});
@@ -436,6 +839,14 @@ this.BX = this.BX || {};
 	    key: "compile",
 	    value: function compile(data) {
 	      return Template.compile(this.options.template, data);
+	    }
+	    /**
+	     * @param {Object<Element>} node
+	     */
+
+	  }, {
+	    key: "restore",
+	    value: function restore(node) {// nothing by default
 	    }
 	    /**
 	     * @param {string} url
@@ -986,6 +1397,7 @@ this.BX = this.BX || {};
 	      this.isBootstrap = false;
 	      this.element = node;
 	      this.paymentData = this.getPaymentData(data);
+	      this.paymentButton = null;
 	      this.bootSolution();
 	      this.insertLoader();
 	      this.setupPaymentCash();
@@ -995,6 +1407,12 @@ this.BX = this.BX || {};
 	    key: "compile",
 	    value: function compile(data) {
 	      return Template.compile(this.options.template, data);
+	    }
+	  }, {
+	    key: "restore",
+	    value: function restore(node) {
+	      this.element = node;
+	      this.restoreButton(node);
 	    }
 	  }, {
 	    key: "bootSolution",
@@ -1118,21 +1536,10 @@ this.BX = this.BX || {};
 	          version: "1.0"
 	        }
 	      }).then(function (payment) {
-	        // Создать экземпляр кнопки.
-	        var button = payment.createButton({
-	          type: YaPay$1.ButtonType.Checkout,
-	          theme: _this4.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
-	          width: _this4.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
-	        }); // Смонтировать кнопку в DOM.
-
 	        _this4.removeLoader();
 
-	        button.mount(node); // Подписаться на событие click.
+	        _this4.mountButton(node, payment); // Подписаться на событие process.
 
-	        button.on(YaPay$1.ButtonEventType.Click, function () {
-	          // Запустить оплату после клика на кнопку.
-	          payment.checkout();
-	        }); // Подписаться на событие process.
 
 	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
@@ -1206,6 +1613,28 @@ this.BX = this.BX || {};
 	      })["catch"](function (err) {
 	        _this4.showError('yapayPayment', 'payment not created', err);
 	      });
+	    }
+	  }, {
+	    key: "mountButton",
+	    value: function mountButton(node, payment) {
+	      this.paymentButton = payment.createButton({
+	        type: YaPay$1.ButtonType.Checkout,
+	        theme: this.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
+	        width: this.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
+	      });
+	      this.paymentButton.mount(node);
+	      this.paymentButton.on(YaPay$1.ButtonEventType.Click, function () {
+	        payment.checkout();
+	      });
+	    }
+	  }, {
+	    key: "restoreButton",
+	    value: function restoreButton(node) {
+	      if (this.paymentButton == null) {
+	        return;
+	      }
+
+	      this.paymentButton.mount(node);
 	    }
 	  }, {
 	    key: "isPaymentTypeCash",
@@ -1449,6 +1878,14 @@ this.BX = this.BX || {};
 	    value: function cart(data) {
 	      this.go('cart', data);
 	    }
+	  }, {
+	    key: "restore",
+	    value: function restore(element) {
+	      var _this$step;
+
+	      this.el = element;
+	      (_this$step = this.step) === null || _this$step === void 0 ? void 0 : _this$step.restore(element);
+	    }
 	    /**
 	     * @param {string} type
 	     * @param {Object} data
@@ -1457,8 +1894,8 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "go",
 	    value: function go(type, data) {
-	      var step = this.makeStep(type);
-	      step.render(this.el, data);
+	      this.step = this.makeStep(type);
+	      this.step.render(this.el, data);
 	    }
 	    /**
 	     * @param {String} type

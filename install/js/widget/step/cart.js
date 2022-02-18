@@ -15,6 +15,7 @@ export default class Cart extends AbstractStep {
 		this.isBootstrap = false;
 		this.element = node;
 		this.paymentData = this.getPaymentData(data);
+		this.paymentButton = null;
 
 		this.bootSolution();
 		this.insertLoader();
@@ -24,6 +25,11 @@ export default class Cart extends AbstractStep {
 
 	compile(data) {
 		return Template.compile(this.options.template, data);
+	}
+
+	restore(node) {
+		this.element = node;
+		this.restoreButton(node);
 	}
 
 	bootSolution() {
@@ -140,22 +146,8 @@ export default class Cart extends AbstractStep {
 		// Создать платеж.
 		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then((payment) => {
-				// Создать экземпляр кнопки.
-				let button = payment.createButton({
-					type: YaPay.ButtonType.Checkout,
-					theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
-					width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
-				});
-
-				// Смонтировать кнопку в DOM.
 				this.removeLoader();
-				button.mount(node);
-
-				// Подписаться на событие click.
-				button.on(YaPay.ButtonEventType.Click, () => {
-					// Запустить оплату после клика на кнопку.
-					payment.checkout();
-				});
+				this.mountButton(node, payment);
 
 				// Подписаться на событие process.
 				payment.on(YaPay.PaymentEventType.Process, (event) => {
@@ -228,6 +220,26 @@ export default class Cart extends AbstractStep {
 			.catch((err) => {
 				this.showError('yapayPayment','payment not created', err);
 			});
+	}
+
+	mountButton(node, payment) {
+		this.paymentButton = payment.createButton({
+			type: YaPay.ButtonType.Checkout,
+			theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
+			width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
+		});
+
+		this.paymentButton.mount(node);
+
+		this.paymentButton.on(YaPay.ButtonEventType.Click, () => {
+			payment.checkout();
+		});
+	}
+
+	restoreButton(node) {
+		if (this.paymentButton == null) { return; }
+
+		this.paymentButton.mount(node);
 	}
 
 	isPaymentTypeCash(event) {

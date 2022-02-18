@@ -73,6 +73,13 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  }
 
 	  babelHelpers.createClass(Basket, [{
+	    key: "bootFactory",
+	    value: function bootFactory(factory) {
+	      factory.extendDefaults({
+	        preserve: true
+	      });
+	    }
+	  }, {
 	    key: "bootCart",
 	    value: function bootCart(cart) {
 	      if (typeof BX === 'undefined') {

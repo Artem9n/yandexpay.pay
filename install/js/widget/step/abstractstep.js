@@ -47,6 +47,13 @@ export default class AbstractStep {
 	}
 
 	/**
+	 * @param {Object<Element>} node
+	 */
+	restore(node) {
+		// nothing by default
+	}
+
+	/**
 	 * @param {string} url
 	 * @param {Object} data
 	 * @returns {Promise.<Object>}
