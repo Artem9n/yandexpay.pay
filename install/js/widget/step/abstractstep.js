@@ -105,7 +105,7 @@ export default class AbstractStep {
 	}
 
 	clearDelay(name) {
-		if (this.delayTimeouts[name] === null) { return; }
+		if (this.delayTimeouts[name] == null) { return; }
 
 		clearTimeout(this.delayTimeouts[name]);
 		this.delayTimeouts[name] = null;

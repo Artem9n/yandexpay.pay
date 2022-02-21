@@ -83,11 +83,11 @@ export default class Cart extends AbstractStep {
 
 	setupPaymentCash(){
 		// Указываем возможность оплаты заказа при получении
-		if (this.getOption('paymentCash') !== null) {
-			this.paymentData.paymentMethods.push({
-				type: YaPay.PaymentMethodType.Cash,
-			});
-		}
+		if (this.getOption('paymentCash') == null) { return; }
+
+		this.paymentData.paymentMethods.push({
+			type: YaPay.PaymentMethodType.Cash,
+		});
 	}
 
 	getPaymentData(data) {
@@ -170,7 +170,7 @@ export default class Cart extends AbstractStep {
 
 							payment.complete(YaPay.CompleteReason.Success);
 
-							if (result.redirect !== null) {
+							if (result.redirect != null) {
 								window.location.href = result.redirect;
 							}
 						}

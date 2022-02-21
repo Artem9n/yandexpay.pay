@@ -911,7 +911,7 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "clearDelay",
 	    value: function clearDelay(name) {
-	      if (this.delayTimeouts[name] === null) {
+	      if (this.delayTimeouts[name] == null) {
 	        return;
 	      }
 
@@ -1477,11 +1477,13 @@ this.BX = this.BX || {};
 	    key: "setupPaymentCash",
 	    value: function setupPaymentCash() {
 	      // Указываем возможность оплаты заказа при получении
-	      if (this.getOption('paymentCash') !== null) {
-	        this.paymentData.paymentMethods.push({
-	          type: YaPay$2.PaymentMethodType.Cash
-	        });
+	      if (this.getOption('paymentCash') == null) {
+	        return;
 	      }
+
+	      this.paymentData.paymentMethods.push({
+	        type: YaPay$2.PaymentMethodType.Cash
+	      });
 	    }
 	  }, {
 	    key: "getPaymentData",
@@ -1561,7 +1563,7 @@ this.BX = this.BX || {};
 	            } else {
 	              payment.complete(YaPay$2.CompleteReason.Success);
 
-	              if (result.redirect !== null) {
+	              if (result.redirect != null) {
 	                window.location.href = result.redirect;
 	              }
 	            }
