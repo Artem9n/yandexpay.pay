@@ -286,7 +286,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		if ($request->get('backurl') !== null)
 		{
-			LocalRedirect($request->get('backurl'));
+			LocalRedirect($request->get('backurl'), true);
 			die();
 		}
 
