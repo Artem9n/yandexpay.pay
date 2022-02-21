@@ -34,7 +34,7 @@ $widgetOptions = array_intersect_key($params, [
 <div>
 	<?= Loc::getMessage('YANDEX_MARKET_SALE_SUM_DESCRIPTION', ['#SUM#' => CurrencyFormat($params['order']['total'], $params['currency'])])?>
 </div>
-<div id="yandexpay" class="yandex-pay"></div>
+<div id="yandexpay" class="bx-yapay-drawer"></div>
 
 <script>
 	(function() {
