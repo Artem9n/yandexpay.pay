@@ -43,7 +43,7 @@ export default class AbstractStep {
 	 * @returns {string}
 	 */
 	compile(data) {
-		return Template.compile(this.options.template, data);
+		return Template.compile(this.getOption('template'), data);
 	}
 
 	/**

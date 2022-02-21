@@ -839,7 +839,7 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "compile",
 	    value: function compile(data) {
-	      return Template.compile(this.options.template, data);
+	      return Template.compile(this.getOption('template'), data);
 	    }
 	    /**
 	     * @param {Object<Element>} node
