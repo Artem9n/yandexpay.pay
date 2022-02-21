@@ -1,16 +1,74 @@
-.product-info.product-info--type2 .shadowed-block .buy_block .yandex-pay-skeleton-loading,
+.product-info.product-info--type2 .shadowed-block .buy_block .bx-yapay-skeleton-loading,
 .product-info.product-info--type2 .shadowed-block .buy_block .ya-pay-button {
 	border-radius: 0;
 }
 
-.product-info.product-info--type2 .shadowed-block .buy_block .yandex-pay {
+.product-info.product-info--type2 .shadowed-block .buy_block .bx-yapay-drawer{
 	margin-bottom: 0;
 }
 
-.yandex-pay .ya-pay-button,
-.yandex-pay .yandex-pay-skeleton-loading
+.bx-yapay-drawer .ya-pay-button,
+.bx-yapay-drawer .bx-yapay-skeleton-loading
 {
 	border-radius: 2px;
+}
+
+.basket-checkout-section-inner{
+	-ms-flex-wrap: wrap;
+	    flex-wrap: wrap;
+}
+
+.basket-checkout-section-inner::after{
+	content: '';
+	width: 100%;
+	-webkit-box-ordinal-group: 2;
+	    -ms-flex-order: 1;
+	        order: 1;
+}
+
+.basket-checkout-section .basket-checkout-section-inner .bx-yapay-divider-container{
+	width: 357px;
+	-webkit-box-ordinal-group: 3;
+	    -ms-flex-order: 2;
+	        order: 2;
+}
+
+.basket-checkout-section .basket-checkout-section-inner .bx-yapay-divider-container ~ .basket-checkout-block-share{
+	-webkit-box-ordinal-group: 3;
+	    -ms-flex-order: 2;
+	        order: 2;
+}
+
+.basket-checkout-section-inner .bx-yapay-drawer,
+.bx-soa-cart-total .bx-yapay-drawer{
+	margin-bottom: 0;
+}
+
+@media screen and (max-width: 767px), projection and (max-width: 767px), tv and (max-width: 767px), handheld and (max-width: 767px) {
+	.basket-checkout-section .basket-checkout-section-inner .bx-yapay-divider-container{
+		width: 100%;
+	}
+}
+
+.bx-soa-cart-total .bx-yapay-divider-container{
+	margin: 35px -44px -42px;
+	position: absolute;
+	width: 100%;
+	padding-left: 16px;
+	padding-right: 16px;
+}
+
+.bx-soa-cart-total.bx-soa-cart-total-fixed .bx-yapay-divider-container{
+	margin: 35px -29px -42px;
+	padding: 0;
+}
+
+@media screen and (max-width: 767px), projection and (max-width: 767px), tv and (max-width: 767px), handheld and (max-width: 767px) {
+	.bx-soa-cart-total .bx-yapay-divider-container{
+		position: unset;
+		margin: 0;
+		padding: 0;
+	}
 }
 .bx-yapay-divider {
 	display: -webkit-box;
@@ -32,7 +90,8 @@
 	text-align: center;
 }
 
-.bx-yapay-divider.width--max {
+.bx-yapay-divider.width--max,
+.bx-yapay-divider-container.width--max{
 	width: 100%;
 }
 
@@ -60,7 +119,7 @@
 	background: #d0d4e0;
 }
 
-.bx-yapay-divider__corner--right:after {
+.bx-yapay-divider__corner.at--right:after {
 	left: auto;
 	right: 0;
 }

@@ -22,10 +22,11 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  return Page;
 	}();
 
-	var factoryLayout = (function (factory) {
-	  factory.extendDefaults({
-	    template: '<div class="bx-yapay-divider width--#WIDTH#">' + '<span class="bx-yapay-divider__corner bx-yapay-divider__corner--left"></span>' + '<span class="bx-yapay-divider__text">#LABEL#</span>' + '<span class="bx-yapay-divider__corner bx-yapay-divider__corner--right"></span>' + '</div>' + factory.getOption('template')
-	  });
+	var factoryLayout = (function (factory, options) {
+	  var template = {
+	    template: '<div class="bx-yapay-divider-container width--#WIDTH#">' + '<div class="bx-yapay-divider width--#WIDTH#">' + '<span class="bx-yapay-divider__corner"></span>' + '<span class="bx-yapay-divider__text">#LABEL#</span>' + '<span class="bx-yapay-divider__corner at--right"></span>' + '</div>' + factory.getOption('template') + '</div>'
+	  };
+	  factory.extendDefaults(Object.assign({}, options, template));
 	});
 
 	var Element = /*#__PURE__*/function (_Page) {
@@ -76,7 +77,12 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	    key: "bootFactory",
 	    value: function bootFactory(factory) {
 	      factory.extendDefaults({
-	        preserve: true
+	        preserve: {
+	          mutation: {
+	            anchor: '[data-entity="basket-total-block"]',
+	            delay: null
+	          }
+	        }
 	      });
 	    }
 	  }, {
@@ -107,11 +113,42 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  babelHelpers.createClass(Basket$$1, [{
 	    key: "bootFactory",
 	    value: function bootFactory(factory) {
-	      factoryLayout(factory);
+	      factoryLayout(factory, {
+	        preserve: {
+	          mutation: {
+	            anchor: '[data-entity="basket-total-block"]',
+	            delay: null
+	          }
+	        }
+	      });
 	    }
 	  }]);
 	  return Basket$$1;
 	}(Basket);
+
+	var Order = /*#__PURE__*/function (_Page) {
+	  babelHelpers.inherits(Order, _Page);
+
+	  function Order() {
+	    babelHelpers.classCallCheck(this, Order);
+	    return babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(Order).apply(this, arguments));
+	  }
+
+	  babelHelpers.createClass(Order, [{
+	    key: "bootFactory",
+	    value: function bootFactory(factory) {
+	      factoryLayout(factory, {
+	        preserve: {
+	          mutation: {
+	            anchor: '#bx-soa-total, #bx-soa-total-mobile',
+	            delay: null
+	          }
+	        }
+	      });
+	    }
+	  }]);
+	  return Order;
+	}(Page);
 
 	var Factory = /*#__PURE__*/function () {
 	  function Factory(classMap) {
@@ -137,7 +174,8 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 
 	var factory = new Factory({
 	  element: Element,
-	  basket: Basket$1
+	  basket: Basket$1,
+	  order: Order
 	});
 
 	exports.factory = factory;

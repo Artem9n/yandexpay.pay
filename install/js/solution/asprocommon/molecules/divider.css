@@ -13,7 +13,8 @@
 	text-align: center;
 }
 
-.bx-yapay-divider.width--max {
+.bx-yapay-divider.width--max,
+.bx-yapay-divider-container.width--max{
 	width: 100%;
 }
 
@@ -39,7 +40,7 @@
 	background: #d0d4e0;
 }
 
-.bx-yapay-divider__corner--right:after {
+.bx-yapay-divider__corner.at--right:after {
 	left: auto;
 	right: 0;
 }

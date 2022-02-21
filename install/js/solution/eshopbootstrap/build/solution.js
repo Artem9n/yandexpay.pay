@@ -88,6 +88,30 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  return Basket;
 	}(Page);
 
+	var Order = /*#__PURE__*/function (_Page) {
+	  babelHelpers.inherits(Order, _Page);
+
+	  function Order() {
+	    babelHelpers.classCallCheck(this, Order);
+	    return babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(Order).apply(this, arguments));
+	  }
+
+	  babelHelpers.createClass(Order, [{
+	    key: "bootFactory",
+	    value: function bootFactory(factory) {
+	      factory.extendDefaults({
+	        preserve: {
+	          mutation: {
+	            anchor: '.bx-soa-cart-total',
+	            delay: null
+	          }
+	        }
+	      });
+	    }
+	  }]);
+	  return Order;
+	}(Page);
+
 	var Factory = /*#__PURE__*/function () {
 	  function Factory(classMap) {
 	    babelHelpers.classCallCheck(this, Factory);
@@ -112,7 +136,8 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 
 	var factory = new Factory({
 	  element: Element,
-	  basket: Basket
+	  basket: Basket,
+	  order: Order
 	});
 
 	exports.factory = factory;
