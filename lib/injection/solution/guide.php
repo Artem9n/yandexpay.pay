@@ -9,8 +9,8 @@ class Guide
 		$dir = rtrim($dir, '/');
 
 		return [
-			'SELECTOR' => '#bx-soa-total .bx-soa-cart-total-ghost, .bx-soa-section',
-			'POSITION' => 'beforebegin',
+			'SELECTOR' => '.bx-soa-cart-total',
+			'POSITION' => 'beforeend',
 			'PATH' => $dir . $path,
 			'WIDTH_BUTTON' => 'MAX'
 		];
@@ -22,9 +22,10 @@ class Guide
 		$dir = rtrim($dir, '/');
 
 		return [
-			'SELECTOR' => '#basket-root',
-			'POSITION' => 'beforebegin',
+			'SELECTOR' => '.basket-checkout-block .fastorder, .basket-checkout-block.basket-checkout-block-btn',
+			'POSITION' => 'afterend',
 			'PATH' => $dir . $path,
+			'WIDTH_BUTTON' => 'MAX'
 		];
 	}
 
