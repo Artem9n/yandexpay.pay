@@ -188,9 +188,10 @@ export default class Factory {
 
 	renderElement(anchor, position) {
 		const selector = this.getOption('containerSelector');
+		const width = this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto;
 		const html = Utils.compile(this.getOption('template'), {
 			label: this.getOption('label'),
-			width: (this.getOption('width') || 'AUTO').toLowerCase(),
+			width: width.toLowerCase(),
 		});
 		let elements = Utils.toElements(html);
 		let result = null;

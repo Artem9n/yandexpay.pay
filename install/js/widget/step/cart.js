@@ -7,8 +7,8 @@ const YaPay = window.YaPay;
 export default class Cart extends AbstractStep {
 
 	static defaults = {
-		loaderTemplate: '<div class="yandex-pay-skeleton-loading width--#WIDTH#"></div>',
-		loaderSelector: '.yandex-pay-skeleton-loading',
+		loaderTemplate: '<div class="bx-yapay-skeleton-loading width--#WIDTH#"></div>',
+		loaderSelector: '.bx-yapay-skeleton-loading',
 	}
 
 	render(node, data) {
@@ -229,7 +229,7 @@ export default class Cart extends AbstractStep {
 			width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
 		});
 
-		this.paymentButton.mount(node);
+		this.paymentButton.mount(this.element);
 
 		this.paymentButton.on(YaPay.ButtonEventType.Click, () => {
 			payment.checkout();
@@ -237,8 +237,12 @@ export default class Cart extends AbstractStep {
 	}
 
 	restoreButton(node) {
-		if (this.paymentButton == null) { return; }
+		if (this.paymentButton == null) {
+			this.insertLoader();
+			return;
+		}
 
+		//this.removeLoader();
 		this.paymentButton.mount(node);
 	}
 

@@ -1,14 +1,14 @@
-.yandex-pay {
+.bx-yapay-drawer{
 	height: auto;
 	margin-bottom: 20px;
 	display: block !important;
 }
 
-.yandex-pay:first-child {
+.bx-yapay-drawer:first-child {
 	margin-top: 0;
 }
 
-.yandex-pay .alert {
+.bx-yapay-drawer.alert {
     margin-bottom: 20px;
     padding: 15px;
     border: 0;
@@ -16,19 +16,19 @@
     font-size: 14px;
 }
 
-.yandex-pay .alert.alert-danger {
+.bx-yapay-drawer .alert.alert-danger {
     border-color: #ebccd1;
     background-color: #f2dede;
     color: #a94442;
 }
 
-.yandex-pay .alert.alert-success {
+.bx-yapay-drawer.alert.alert-success {
     border-color: #d6e9c6;
     background-color: #dff0d8;
     color: #3c763d;
 }
 
-.yandex-pay-skeleton-loading {
+.bx-yapay-skeleton-loading {
 	display: inline-block;
 	vertical-align: top;
 
@@ -46,7 +46,7 @@
 	user-select: none;
 }
 
-.yandex-pay-skeleton-loading:before {
+.bx-yapay-skeleton-loading:before {
 	content: '';
 	display: block;
 	height: 100%;
@@ -57,10 +57,14 @@
 	left: 0;
 
 	background:  linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-	animation: yandex-pay-skeleton-loading 1.2s linear infinite;
+	animation: bx-yapay-skeleton-loading 1.2s linear infinite;
 }
 
-@keyframes yandex-pay-skeleton-loading {
+.bx-yapay-skeleton-loading.width--max{
+	width: 100%;
+}
+
+@keyframes bx-yapay-skeleton-loading {
 	0% {
 		transform: translateX(-100%);
 	}
@@ -68,4 +72,10 @@
 	100% {
 		transform: translateX(100%);
 	}
+}
+
+.bx-yapay-drawer .ya-pay-button_theme_white-outlined{
+	border-color: #000000 !important;
+	border-width: 1px !important;
+	border-style: solid !important;
 }

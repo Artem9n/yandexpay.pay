@@ -120,7 +120,7 @@ this.BX = this.BX || {};
 	  timeout: 1000
 	}));
 
-	function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+	function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 
 	function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -401,7 +401,7 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "driverOptions",
 	    value: function driverOptions(type) {
-	      var option = babelHelpers["typeof"](this.options[type]) === 'object' ? this.options[type] : {};
+	      var option = babelHelpers.typeof(this.options[type]) === 'object' ? this.options[type] : {};
 	      var overrides = {
 	        check: this.check
 	      };
@@ -469,7 +469,7 @@ this.BX = this.BX || {};
 	  return Template;
 	}();
 
-	function _createForOfIteratorHelper$1(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray$1(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+	function _createForOfIteratorHelper$1(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray$1(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 
 	function _unsupportedIterableToArray$1(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$1(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$1(o, minLen); }
 
@@ -522,7 +522,7 @@ this.BX = this.BX || {};
 	    key: "preserveOptions",
 	    value: function preserveOptions() {
 	      var preserveOption = this.getOption('preserve');
-	      return babelHelpers["typeof"](preserveOption) === 'object' ? preserveOption : {};
+	      return babelHelpers.typeof(preserveOption) === 'object' ? preserveOption : {};
 	    }
 	  }, {
 	    key: "restore",
@@ -712,9 +712,10 @@ this.BX = this.BX || {};
 	    key: "renderElement",
 	    value: function renderElement(anchor, position) {
 	      var selector = this.getOption('containerSelector');
+	      var width = this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto;
 	      var html = Template.compile(this.getOption('template'), {
 	        label: this.getOption('label'),
-	        width: (this.getOption('width') || 'AUTO').toLowerCase()
+	        width: width.toLowerCase()
 	      });
 	      var elements = Template.toElements(html);
 	      var result = null;
@@ -1138,7 +1139,7 @@ this.BX = this.BX || {};
 	        } else {
 	          _this2.widget.go('error', result);
 	        }
-	      })["catch"](function (error) {
+	      }).catch(function (error) {
 	        return console.log(error);
 	      });
 	    }
@@ -1225,7 +1226,7 @@ this.BX = this.BX || {};
 	  template: '<div class="alert alert-danger" role="alert"><strong>#MESSAGE#</strong></div>'
 	});
 
-	var YaPay = window.YaPay;
+	var YaPay$1 = window.YaPay;
 
 	var Payment = /*#__PURE__*/function (_AbstractStep) {
 	  babelHelpers.inherits(Payment, _AbstractStep);
@@ -1252,8 +1253,8 @@ this.BX = this.BX || {};
 	      return {
 	        env: this.getOption('env'),
 	        version: 2,
-	        countryCode: YaPay.CountryCode.Ru,
-	        currencyCode: YaPay.CurrencyCode.Rub,
+	        countryCode: YaPay$1.CountryCode.Ru,
+	        currencyCode: YaPay$1.CurrencyCode.Rub,
 	        merchant: {
 	          id: this.getOption('merchantId'),
 	          name: this.getOption('merchantName')
@@ -1266,11 +1267,11 @@ this.BX = this.BX || {};
 	          items: data.items
 	        },
 	        paymentMethods: [{
-	          type: YaPay.PaymentMethodType.Card,
+	          type: YaPay$1.PaymentMethodType.Card,
 	          gateway: this.getOption('gateway'),
 	          gatewayMerchantId: this.getOption('gatewayMerchantId'),
-	          allowedAuthMethods: [YaPay.AllowedAuthMethod.PanOnly],
-	          allowedCardNetworks: [YaPay.AllowedCardNetwork.UnionPay, YaPay.AllowedCardNetwork.Uzcard, YaPay.AllowedCardNetwork.Discover, YaPay.AllowedCardNetwork.AmericanExpress, YaPay.AllowedCardNetwork.Visa, YaPay.AllowedCardNetwork.Mastercard, YaPay.AllowedCardNetwork.Mir, YaPay.AllowedCardNetwork.Maestro, YaPay.AllowedCardNetwork.VisaElectron]
+	          allowedAuthMethods: [YaPay$1.AllowedAuthMethod.PanOnly],
+	          allowedCardNetworks: [YaPay$1.AllowedCardNetwork.UnionPay, YaPay$1.AllowedCardNetwork.Uzcard, YaPay$1.AllowedCardNetwork.Discover, YaPay$1.AllowedCardNetwork.AmericanExpress, YaPay$1.AllowedCardNetwork.Visa, YaPay$1.AllowedCardNetwork.Mastercard, YaPay$1.AllowedCardNetwork.Mir, YaPay$1.AllowedCardNetwork.Maestro, YaPay$1.AllowedCardNetwork.VisaElectron]
 	        }]
 	      };
 	    }
@@ -1280,7 +1281,7 @@ this.BX = this.BX || {};
 	      var _this = this;
 
 	      // Создать платеж.
-	      YaPay.createPayment(paymentData, {
+	      YaPay$1.createPayment(paymentData, {
 	        agent: {
 	          name: "CMS-Bitrix",
 	          version: "1.0"
@@ -1288,19 +1289,19 @@ this.BX = this.BX || {};
 	      }).then(function (payment) {
 	        // Создать экземпляр кнопки.
 	        var button = payment.createButton({
-	          type: YaPay.ButtonType.Pay,
-	          theme: _this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
-	          width: _this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto
+	          type: YaPay$1.ButtonType.Pay,
+	          theme: _this.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
+	          width: _this.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
 	        }); // Смонтировать кнопку в DOM.
 
 	        button.mount(node); // Подписаться на событие click.
 
-	        button.on(YaPay.ButtonEventType.Click, function onPaymentButtonClick() {
+	        button.on(YaPay$1.ButtonEventType.Click, function onPaymentButtonClick() {
 	          // Запустить оплату после клика на кнопку.
 	          payment.checkout();
 	        }); // Подписаться на событие process.
 
-	        payment.on(YaPay.PaymentEventType.Process, function (event) {
+	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
 	          _this.notify(payment, event).then(function (result) {});
 	          /*alert('Payment token — ' + event.token);
@@ -1310,23 +1311,23 @@ this.BX = this.BX || {};
 	          */
 
 
-	          payment.complete(YaPay.CompleteReason.Success);
+	          payment.complete(YaPay$1.CompleteReason.Success);
 	        }); // Подписаться на событие error.
 
-	        payment.on(YaPay.PaymentEventType.Error, function onPaymentError(event) {
+	        payment.on(YaPay$1.PaymentEventType.Error, function onPaymentError(event) {
 	          // Вывести информацию о недоступности оплаты в данный момент
 	          // и предложить пользователю другой способ оплаты.
 	          // Закрыть форму Yandex.Pay.
 	          console.log({
 	            'errors': event
 	          });
-	          payment.complete(YaPay.CompleteReason.Error);
+	          payment.complete(YaPay$1.CompleteReason.Error);
 	        }); // Подписаться на событие abort.
 	        // Это когда пользователь закрыл форму Yandex Pay.
 
-	        payment.on(YaPay.PaymentEventType.Abort, function onPaymentAbort(event) {// Предложить пользователю другой способ оплаты.
+	        payment.on(YaPay$1.PaymentEventType.Abort, function onPaymentAbort(event) {// Предложить пользователю другой способ оплаты.
 	        });
-	      })["catch"](function (err) {
+	      }).catch(function (err) {
 	        // Платеж не создан.
 	        console.log({
 	          'payment not create': err
@@ -1358,7 +1359,7 @@ this.BX = this.BX || {};
 	        } else {
 	          _this2.widget.go('error', result);
 	        }
-	      })["catch"](function (error) {
+	      }).catch(function (error) {
 	        return console.log(error);
 	      });
 	    }
@@ -1378,10 +1379,7 @@ this.BX = this.BX || {};
 	  }
 	}
 
-	function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-
-	function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { babelHelpers.defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-	var YaPay$1 = window.YaPay;
+	var YaPay$2 = window.YaPay;
 
 	var Cart = /*#__PURE__*/function (_AbstractStep) {
 	  babelHelpers.inherits(Cart, _AbstractStep);
@@ -1453,7 +1451,7 @@ this.BX = this.BX || {};
 	        _this2.combineOrderWithProducts(result);
 
 	        _this2.createPayment(_this2.element, _this2.paymentData);
-	      })["catch"](function (error) {//this.showError('bootstrap', '', error);
+	      }).catch(function (error) {//this.showError('bootstrap', '', error);
 	      });
 	    }
 	  }, {
@@ -1481,7 +1479,7 @@ this.BX = this.BX || {};
 	      // Указываем возможность оплаты заказа при получении
 	      if (this.getOption('paymentCash') !== null) {
 	        this.paymentData.paymentMethods.push({
-	          type: YaPay$1.PaymentMethodType.Cash
+	          type: YaPay$2.PaymentMethodType.Cash
 	        });
 	      }
 	    }
@@ -1491,8 +1489,8 @@ this.BX = this.BX || {};
 	      return {
 	        env: this.getOption('env'),
 	        version: 2,
-	        countryCode: YaPay$1.CountryCode.Ru,
-	        currencyCode: YaPay$1.CurrencyCode.Rub,
+	        countryCode: YaPay$2.CountryCode.Ru,
+	        currencyCode: YaPay$2.CurrencyCode.Rub,
 	        merchant: {
 	          id: this.getOption('merchantId'),
 	          name: this.getOption('merchantName'),
@@ -1502,11 +1500,11 @@ this.BX = this.BX || {};
 	          id: '0'
 	        },
 	        paymentMethods: [{
-	          type: YaPay$1.PaymentMethodType.Card,
+	          type: YaPay$2.PaymentMethodType.Card,
 	          gateway: this.getOption('gateway'),
 	          gatewayMerchantId: this.getOption('gatewayMerchantId'),
-	          allowedAuthMethods: [YaPay$1.AllowedAuthMethod.PanOnly],
-	          allowedCardNetworks: [YaPay$1.AllowedCardNetwork.UnionPay, YaPay$1.AllowedCardNetwork.Uzcard, YaPay$1.AllowedCardNetwork.Discover, YaPay$1.AllowedCardNetwork.AmericanExpress, YaPay$1.AllowedCardNetwork.Visa, YaPay$1.AllowedCardNetwork.Mastercard, YaPay$1.AllowedCardNetwork.Mir, YaPay$1.AllowedCardNetwork.Maestro, YaPay$1.AllowedCardNetwork.VisaElectron]
+	          allowedAuthMethods: [YaPay$2.AllowedAuthMethod.PanOnly],
+	          allowedCardNetworks: [YaPay$2.AllowedCardNetwork.UnionPay, YaPay$2.AllowedCardNetwork.Uzcard, YaPay$2.AllowedCardNetwork.Discover, YaPay$2.AllowedCardNetwork.AmericanExpress, YaPay$2.AllowedCardNetwork.Visa, YaPay$2.AllowedCardNetwork.Mastercard, YaPay$2.AllowedCardNetwork.Mir, YaPay$2.AllowedCardNetwork.Maestro, YaPay$2.AllowedCardNetwork.VisaElectron]
 	        }],
 	        requiredFields: {
 	          billingContact: {
@@ -1530,7 +1528,7 @@ this.BX = this.BX || {};
 	      var _this4 = this;
 
 	      // Создать платеж.
-	      YaPay$1.createPayment(paymentData, {
+	      YaPay$2.createPayment(paymentData, {
 	        agent: {
 	          name: "CMS-Bitrix",
 	          version: "1.0"
@@ -1541,7 +1539,7 @@ this.BX = this.BX || {};
 	        _this4.mountButton(node, payment); // Подписаться на событие process.
 
 
-	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
+	        payment.on(YaPay$2.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
 	          _this4.orderAccept(event).then(function (result) {
 	            if (result.error) {
@@ -1553,35 +1551,35 @@ this.BX = this.BX || {};
 	                if (result.success === true) {
 	                  _this4.widget.go(result.state, result);
 
-	                  payment.complete(YaPay$1.CompleteReason.Success);
+	                  payment.complete(YaPay$2.CompleteReason.Success);
 	                } else {
 	                  _this4.widget.go('error', result);
 
-	                  payment.complete(YaPay$1.CompleteReason.Error);
+	                  payment.complete(YaPay$2.CompleteReason.Error);
 	                }
 	              });
 	            } else {
-	              payment.complete(YaPay$1.CompleteReason.Success);
+	              payment.complete(YaPay$2.CompleteReason.Success);
 
 	              if (result.redirect !== null) {
 	                window.location.href = result.redirect;
 	              }
 	            }
-	          })["catch"](function (error) {
+	          }).catch(function (error) {
 	            _this4.showError('yapayProcess', '', error); // todo test it
 
 
-	            payment.complete(YaPay$1.CompleteReason.Error);
+	            payment.complete(YaPay$2.CompleteReason.Error);
 	          });
 	        }); // Подписаться на событие error.
 
-	        payment.on(YaPay$1.PaymentEventType.Error, function (event) {
+	        payment.on(YaPay$2.PaymentEventType.Error, function (event) {
 	          _this4.showError('yapayError', 'service temporary unavailable');
 
-	          payment.complete(YaPay$1.CompleteReason.Error);
+	          payment.complete(YaPay$2.CompleteReason.Error);
 	        }); // Подписаться на событие change.
 
-	        payment.on(YaPay$1.PaymentEventType.Change, function (event) {
+	        payment.on(YaPay$2.PaymentEventType.Change, function (event) {
 	          if (event.shippingAddress) {
 	            _this4.getShippingOptions(event.shippingAddress).then(function (result) {
 	              payment.update({
@@ -1610,7 +1608,7 @@ this.BX = this.BX || {};
 	            });
 	          }
 	        });
-	      })["catch"](function (err) {
+	      }).catch(function (err) {
 	        _this4.showError('yapayPayment', 'payment not created', err);
 	      });
 	    }
@@ -1618,12 +1616,12 @@ this.BX = this.BX || {};
 	    key: "mountButton",
 	    value: function mountButton(node, payment) {
 	      this.paymentButton = payment.createButton({
-	        type: YaPay$1.ButtonType.Checkout,
-	        theme: this.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
-	        width: this.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
+	        type: YaPay$2.ButtonType.Checkout,
+	        theme: this.getOption('buttonTheme') || YaPay$2.ButtonTheme.Black,
+	        width: this.getOption('buttonWidth') || YaPay$2.ButtonWidth.Auto
 	      });
-	      this.paymentButton.mount(node);
-	      this.paymentButton.on(YaPay$1.ButtonEventType.Click, function () {
+	      this.paymentButton.mount(this.element);
+	      this.paymentButton.on(YaPay$2.ButtonEventType.Click, function () {
 	        payment.checkout();
 	      });
 	    }
@@ -1631,8 +1629,10 @@ this.BX = this.BX || {};
 	    key: "restoreButton",
 	    value: function restoreButton(node) {
 	      if (this.paymentButton == null) {
+	        this.insertLoader();
 	        return;
-	      }
+	      } //this.removeLoader();
+
 
 	      this.paymentButton.mount(node);
 	    }
@@ -1692,9 +1692,7 @@ this.BX = this.BX || {};
 	        paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
 	        orderAmount: event.orderAmount
 	      };
-
-	      var data = _objectSpread(_objectSpread({}, orderData), delivery);
-
+	      var data = babelHelpers.objectSpread({}, orderData, delivery);
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
@@ -1723,13 +1721,13 @@ this.BX = this.BX || {};
 	    key: "combineOrderWithPickupShipping",
 	    value: function combineOrderWithPickupShipping(pickupOption) {
 	      var order = this.paymentData.order;
-	      return _objectSpread(_objectSpread({}, order), {}, {
+	      return babelHelpers.objectSpread({}, order, {
 	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
 	          type: 'SHIPPING',
 	          label: pickupOption.label,
 	          amount: pickupOption.amount
 	        }]),
-	        total: _objectSpread(_objectSpread({}, order.total), {}, {
+	        total: babelHelpers.objectSpread({}, order.total, {
 	          amount: this.amountSum(order.total.amount, pickupOption.amount)
 	        })
 	      });
@@ -1738,13 +1736,13 @@ this.BX = this.BX || {};
 	    key: "combineOrderWithDirectShipping",
 	    value: function combineOrderWithDirectShipping(shippingOption) {
 	      var order = this.paymentData.order;
-	      return _objectSpread(_objectSpread({}, order), {}, {
+	      return babelHelpers.objectSpread({}, order, {
 	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
 	          type: 'SHIPPING',
 	          label: shippingOption.label,
 	          amount: shippingOption.amount
 	        }]),
-	        total: _objectSpread(_objectSpread({}, order.total), {}, {
+	        total: babelHelpers.objectSpread({}, order.total, {
 	          amount: this.amountSum(order.total.amount, shippingOption.amount)
 	        })
 	      });
@@ -1753,14 +1751,12 @@ this.BX = this.BX || {};
 	    key: "combineOrderWithProducts",
 	    value: function combineOrderWithProducts(products) {
 	      var order = this.paymentData.order;
-
-	      var exampleOrder = _objectSpread(_objectSpread({}, order), {}, {
+	      var exampleOrder = babelHelpers.objectSpread({}, order, {
 	        items: products.items,
 	        total: {
 	          amount: products.amount
 	        }
 	      });
-
 	      Object.assign(this.paymentData.order, exampleOrder);
 	    }
 	  }, {
@@ -1783,7 +1779,7 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "insertLoader",
 	    value: function insertLoader() {
-	      var width = this.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto;
+	      var width = this.getOption('buttonWidth') || YaPay$2.ButtonWidth.Auto;
 	      this.element.innerHTML = Template.compile(this.getOption('loaderTemplate'), {
 	        width: width.toLowerCase(),
 	        label: this.getOption('label')
@@ -1805,8 +1801,8 @@ this.BX = this.BX || {};
 	}(AbstractStep);
 
 	babelHelpers.defineProperty(Cart, "defaults", {
-	  loaderTemplate: '<div class="yandex-pay-skeleton-loading width--#WIDTH#"></div>',
-	  loaderSelector: '.yandex-pay-skeleton-loading'
+	  loaderTemplate: '<div class="bx-yapay-skeleton-loading width--#WIDTH#"></div>',
+	  loaderSelector: '.bx-yapay-skeleton-loading'
 	});
 
 	var Factory$1 = /*#__PURE__*/function () {
