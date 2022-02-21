@@ -20,7 +20,7 @@ class Catalog extends EntityReference\Catalog
 			'filter' => [
 				'=IBLOCK.LID' => $siteId,
 				'=IBLOCK.TYPE.LANG_MESSAGE.LANGUAGE_ID' => LANGUAGE_ID,
-				'%IBLOCK.TYPE.ID' => 'catalog'
+				//'%IBLOCK.TYPE.ID' => 'catalog'
 			],
 			'select' => [
 				'ID' => 'IBLOCK.ID'
@@ -46,7 +46,7 @@ class Catalog extends EntityReference\Catalog
 			'order' => ['IBLOCK_ID' => 'ASC'],
 			'filter' => [
 				'=IBLOCK.TYPE.LANG_MESSAGE.LANGUAGE_ID' => LANGUAGE_ID,
-				'%IBLOCK.TYPE.ID' => 'catalog'
+				//'%IBLOCK.TYPE.ID' => 'catalog'
 			],
 			'select' => [
 				'ID' => 'IBLOCK.ID',
