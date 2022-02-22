@@ -239,4 +239,12 @@ abstract class Order
 	{
 		throw new Main\NotImplementedException('getBasketPrice is missing');
 	}
+
+	/**
+	 * @return null|string
+	 */
+	public function getAccountNumber() : ?string
+	{
+		throw new Main\NotImplementedException('getAccountNumber is missing');
+	}
 }

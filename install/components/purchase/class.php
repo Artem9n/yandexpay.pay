@@ -369,15 +369,13 @@ class Purchase extends \CBitrixComponent
 
 		$this->check($order, $request);
 
-		$orderId = $this->addOrder($order);
+		$saveOrderData = $this->addOrder($order);
 
-		[$paymentId, $paySystemId] = $this->getPayment($orderId);
-
-		$redirect = $this->getRedirectUrl($orderId, $paySystemId);
+		$redirect = $this->getRedirectUrl($saveOrderData['ID'], $saveOrderData['PAYMENT_ID']);
 
 		$result = [
-			'externalId' => $paymentId,
-			'paySystemId' => $paySystemId,
+			'externalId' => $saveOrderData['INTERNAL_ID'],
+			'paySystemId' => $saveOrderData['PAY_SYSTEM_ID'],
 			'redirect' => $redirect,
 		];
 
@@ -626,7 +624,7 @@ class Purchase extends \CBitrixComponent
 		}
 	}
 
-	protected function addOrder(EntityReference\Order $order) : string
+	protected function addOrder(EntityReference\Order $order) : array
 	{
 		global $USER;
 
@@ -650,10 +648,10 @@ class Purchase extends \CBitrixComponent
 				$_SESSION['SALE_ORDER_ID'] = [];
 			}
 
-			$_SESSION['SALE_ORDER_ID'][] = (int)$saveData['INTERNAL_ID'];
+			$_SESSION['SALE_ORDER_ID'][] = $saveData['INTERNAL_ID'];
 		}
 
-		return (string)$saveData['ID'];
+		return $saveData;
 	}
 
 	protected function getRedirectUrl(string $orderId, int $paySystemId) : ?string
@@ -675,36 +673,6 @@ class Purchase extends \CBitrixComponent
 		}
 
 		return $result;
-	}
-
-	protected function getPayment(string $orderId) : array
-	{
-		if (EntitySale\OrderRegistry::useAccountNumber())
-		{
-			$order = Sale\Order::loadByAccountNumber($orderId);
-		}
-		else
-		{
-			$order = Sale\Order::load($orderId);
-		}
-
-		if ($order === null) { return []; }
-
-		$paymentId = null;
-		$paySystemId = null;
-
-		$paymentCollection = $order->getPaymentCollection();
-
-		/** @var Sale\Payment $payment */
-		foreach ($paymentCollection as $payment)
-		{
-			if ($payment->isInner()) { continue; }
-
-			$paymentId = $payment->getId();
-			$paySystemId = $payment->getPaymentSystemId();
-		}
-
-		return [$paymentId, $paySystemId];
 	}
 
 	protected function fillPaySystem(EntityReference\Order $order, TradingAction\Incoming\OrderAccept $request) : void
