@@ -32,7 +32,7 @@ class AsproMax extends Skeleton
 	{
 		return [
 			Behavior\Registry::ELEMENT => [
-				'SELECTOR' => '.buy_block .wrapp-one-click, .buy_block .offer_buy_block, .buy_block .counter_wrapp',
+				'SELECTOR' => '.buy_block .offer_buy_block, .buy_block .wrapp-one-click, .buy_block .counter_wrapp',
 				'POSITION' => 'afterend',
 				'IBLOCK' => $context['IBLOCK'],
 				'WIDTH_BUTTON' => 'MAX'
