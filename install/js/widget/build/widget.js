@@ -1467,7 +1467,9 @@ this.BX = this.BX || {};
 
 	      if (productId !== newProductId) {
 	        // todo in items
-	        this.widget.setOption('productId', newProductId);
+	        this.widget.setOptions({
+	          productId: newProductId
+	        });
 	        this.getProducts().then(function (result) {
 	          _this3.combineOrderWithProducts(result);
 	        });

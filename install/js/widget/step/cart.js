@@ -74,7 +74,7 @@ export default class Cart extends AbstractStep {
 		let productId = this.getOption('productId');
 
 		if (productId !== newProductId) { // todo in items
-			this.widget.setOption('productId', newProductId);
+			this.widget.setOptions({productId: newProductId});
 			this.getProducts().then((result) => {
 				this.combineOrderWithProducts(result);
 			});
