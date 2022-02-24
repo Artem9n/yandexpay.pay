@@ -47,6 +47,9 @@ try
 					.then((widget) => {
 						widget.setOptions(<?= Json::encode($widgetOptions) ?>);
 						widget.cart();
+					})
+					.catch((error) => {
+						console.warn(error);
 					});
 			})();
 		</script>

@@ -494,6 +494,8 @@ this.BX = this.BX || {};
 	      return Promise.resolve().then(function () {
 	        return _this.waitElement(selector);
 	      }).then(function (anchor) {
+	        return _this.checkElement(anchor);
+	      }).then(function (anchor) {
 	        var element = _this.renderElement(anchor, position);
 
 	        var widget = _this.install(element);
@@ -504,6 +506,17 @@ this.BX = this.BX || {};
 
 	        return widget;
 	      });
+	    }
+	  }, {
+	    key: "checkElement",
+	    value: function checkElement(anchor) {
+	      var selector = this.getOption('containerSelector');
+
+	      if (this.findElement(selector)) {
+	        throw new Error('the element already has a container');
+	      }
+
+	      return anchor;
 	    }
 	  }, {
 	    key: "preserve",

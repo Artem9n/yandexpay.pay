@@ -28,6 +28,7 @@ export default class Factory {
 	inject(selector, position) {
 		return Promise.resolve()
 			.then(() => this.waitElement(selector))
+			.then((anchor) => this.checkElement(anchor))
 			.then((anchor) => {
 				const element = this.renderElement(anchor, position);
 				const widget = this.install(element);
@@ -37,7 +38,17 @@ export default class Factory {
 				}
 
 				return widget;
-			});
+			})
+	}
+
+	checkElement(anchor) {
+		const selector = this.getOption('containerSelector');
+
+		if (this.findElement(selector)) {
+			throw new Error('the element already has a container');
+		}
+
+		return anchor;
 	}
 
 	preserve(selector, position, widget) {
