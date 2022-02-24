@@ -1,0 +1,81 @@
+.bx-yapay-drawer{
+	height: auto;
+	margin-bottom: 20px;
+	display: block !important;
+}
+
+.bx-yapay-drawer:first-child {
+	margin-top: 0;
+}
+
+.bx-yapay-drawer.alert {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 0;
+    border-radius: 1px;
+    font-size: 14px;
+}
+
+.bx-yapay-drawer .alert.alert-danger {
+    border-color: #ebccd1;
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+.bx-yapay-drawer.alert.alert-success {
+    border-color: #d6e9c6;
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+.bx-yapay-skeleton-loading {
+	display: inline-block;
+	vertical-align: top;
+
+	overflow: hidden;
+	box-sizing: border-box;
+	height: 54px;
+	min-width: 282px;
+	padding: 14px 28px;
+	border: 1px solid transparent;
+	border-radius: 8px;
+
+	position: relative;
+
+	background: #dcdcdd;
+	user-select: none;
+}
+
+.bx-yapay-skeleton-loading:before {
+	content: '';
+	display: block;
+	height: 100%;
+	width: 100%;
+
+	position: absolute;
+	top: 0;
+	left: 0;
+
+	background:  linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+	animation: bx-yapay-skeleton-loading 1.2s linear infinite;
+}
+
+.bx-yapay-skeleton-loading.width--max{
+	width: 100%;
+}
+
+@keyframes bx-yapay-skeleton-loading {
+	0% {
+		transform: translateX(-100%);
+	}
+
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+.bx-yapay-drawer .ya-pay-button_theme_white-outlined{
+	border-color: #000000 !important;
+	border-width: 1px !important;
+	border-style: solid !important;
+}
