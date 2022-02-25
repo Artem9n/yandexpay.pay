@@ -511,12 +511,71 @@ this.BX = this.BX || {};
 	    key: "checkElement",
 	    value: function checkElement(anchor) {
 	      var selector = this.getOption('containerSelector');
+	      var contains = !!anchor.querySelector(selector) || this.containsSiblingElement(anchor, selector);
 
-	      if (this.findElement(selector)) {
+	      if (contains) {
 	        throw new Error('the element already has a container');
 	      }
 
 	      return anchor;
+	    }
+	  }, {
+	    key: "containsSiblingElement",
+	    value: function containsSiblingElement(anchor, selector) {
+	      var _anchor$parentElement;
+
+	      var result = false;
+	      var next = (_anchor$parentElement = anchor.parentElement) === null || _anchor$parentElement === void 0 ? void 0 : _anchor$parentElement.firstElementChild;
+
+	      while (next.nextElementSibling) {
+	        next = next.nextElementSibling;
+
+	        if (next.matches(selector) || next.querySelector(selector)) {
+	          result = true;
+	          break;
+	        }
+	      }
+
+	      return result;
+	    }
+	  }, {
+	    key: "previousElement",
+	    value: function previousElement(anchor, selector) {
+	      var result = null;
+	      var prevSibling = anchor.previousElementSibling;
+
+	      if (prevSibling) {
+	        result = prevSibling.matches(selector);
+
+	        if (result) {
+	          return result;
+	        }
+
+	        var children = prevSibling.children;
+
+	        if (children) {
+	          var _iterator = _createForOfIteratorHelper$1(children),
+	              _step;
+
+	          try {
+	            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+	              var child = _step.value;
+
+	              if (result) {
+	                break;
+	              }
+
+	              result = child.matches(selector);
+	            }
+	          } catch (err) {
+	            _iterator.e(err);
+	          } finally {
+	            _iterator.f();
+	          }
+	        }
+	      }
+
+	      return result;
 	    }
 	  }, {
 	    key: "preserve",
@@ -626,12 +685,12 @@ this.BX = this.BX || {};
 	      try {
 	        var result = [];
 
-	        var _iterator = _createForOfIteratorHelper$1(selector.split(',')),
-	            _step;
+	        var _iterator2 = _createForOfIteratorHelper$1(selector.split(',')),
+	            _step2;
 
 	        try {
-	          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-	            var part = _step.value;
+	          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+	            var part = _step2.value;
 	            // first selector
 	            var partSanitized = part.trim();
 
@@ -641,24 +700,24 @@ this.BX = this.BX || {};
 
 	            var collection = document.querySelectorAll(partSanitized);
 
-	            var _iterator2 = _createForOfIteratorHelper$1(collection),
-	                _step2;
+	            var _iterator3 = _createForOfIteratorHelper$1(collection),
+	                _step3;
 
 	            try {
-	              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-	                var element = _step2.value;
+	              for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+	                var element = _step3.value;
 	                result.push(element);
 	              }
 	            } catch (err) {
-	              _iterator2.e(err);
+	              _iterator3.e(err);
 	            } finally {
-	              _iterator2.f();
+	              _iterator3.f();
 	            }
 	          }
 	        } catch (err) {
-	          _iterator.e(err);
+	          _iterator2.e(err);
 	        } finally {
-	          _iterator.f();
+	          _iterator2.f();
 	        }
 
 	        return result.length > 0 ? result : null;
@@ -691,12 +750,12 @@ this.BX = this.BX || {};
 	    value: function reduceVisible(collection) {
 	      var result = null;
 
-	      var _iterator3 = _createForOfIteratorHelper$1(collection),
-	          _step3;
+	      var _iterator4 = _createForOfIteratorHelper$1(collection),
+	          _step4;
 
 	      try {
-	        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-	          var element = _step3.value;
+	        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+	          var element = _step4.value;
 
 	          if (this.testVisible(element)) {
 	            result = element;
@@ -704,9 +763,9 @@ this.BX = this.BX || {};
 	          }
 	        }
 	      } catch (err) {
-	        _iterator3.e(err);
+	        _iterator4.e(err);
 	      } finally {
-	        _iterator3.f();
+	        _iterator4.f();
 	      }
 
 	      return result;
@@ -737,12 +796,12 @@ this.BX = this.BX || {};
 	        elements = elements.reverse();
 	      }
 
-	      var _iterator4 = _createForOfIteratorHelper$1(elements),
-	          _step4;
+	      var _iterator5 = _createForOfIteratorHelper$1(elements),
+	          _step5;
 
 	      try {
-	        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-	          var element = _step4.value;
+	        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+	          var element = _step5.value;
 	          anchor.insertAdjacentElement(position, element);
 
 	          if (result != null) {
@@ -752,9 +811,9 @@ this.BX = this.BX || {};
 	          result = element.matches(selector) ? element : element.querySelector(selector);
 	        }
 	      } catch (err) {
-	        _iterator4.e(err);
+	        _iterator5.e(err);
 	      } finally {
-	        _iterator4.f();
+	        _iterator5.f();
 	      }
 
 	      if (result == null) {

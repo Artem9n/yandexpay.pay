@@ -43,14 +43,34 @@ export default class Factory {
 
 	checkElement(anchor) {
 		const selector = this.getOption('containerSelector');
+		const contains = (
+			!!anchor.querySelector(selector)
+			|| this.containsSiblingElement(anchor, selector)
+		);
 
-		if (this.findElement(selector)) {
+		if (contains) {
 			throw new Error('the element already has a container');
 		}
 
 		return anchor;
 	}
 
+	containsSiblingElement(anchor, selector) {
+		let result = false;
+		let next = anchor.parentElement?.firstElementChild;
+
+		while (next.nextElementSibling) {
+			next = next.nextElementSibling;
+
+			if (next.matches(selector) || next.querySelector(selector)) {
+				result = true;
+				break;
+			}
+		}
+
+		return result;
+	}
+	
 	preserve(selector, position, widget) {
 		const preserver = new NodePreserver(widget.el, Object.assign({}, this.preserveOptions(), {
 			restore: () => {
