@@ -511,7 +511,7 @@ this.BX = this.BX || {};
 	    key: "checkElement",
 	    value: function checkElement(anchor) {
 	      var selector = this.getOption('containerSelector');
-	      var contains = anchor.querySelector(selector) || this.containsSiblingElement(anchor, selector);
+	      var contains = !!anchor.querySelector(selector) || this.containsSiblingElement(anchor, selector);
 
 	      if (contains) {
 	        throw new Error('the element already has a container');
@@ -527,13 +527,13 @@ this.BX = this.BX || {};
 	      var result = false;
 	      var next = (_anchor$parentElement = anchor.parentElement) === null || _anchor$parentElement === void 0 ? void 0 : _anchor$parentElement.firstElementChild;
 
-	      while (next.nextElementSibling) {
-	        next = next.nextElementSibling;
-
+	      while (next) {
 	        if (next.matches(selector) || next.querySelector(selector)) {
 	          result = true;
 	          break;
 	        }
+
+	        next = next.nextElementSibling;
 	      }
 
 	      return result;

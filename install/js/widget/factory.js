@@ -44,7 +44,7 @@ export default class Factory {
 	checkElement(anchor) {
 		const selector = this.getOption('containerSelector');
 		const contains = (
-			anchor.querySelector(selector)
+			!!anchor.querySelector(selector)
 			|| this.containsSiblingElement(anchor, selector)
 		);
 
@@ -59,13 +59,13 @@ export default class Factory {
 		let result = false;
 		let next = anchor.parentElement?.firstElementChild;
 
-		while (next.nextElementSibling) {
-			next = next.nextElementSibling;
-
+		while (next) {
 			if (next.matches(selector) || next.querySelector(selector)) {
 				result = true;
 				break;
 			}
+
+			next = next.nextElementSibling;
 		}
 
 		return result;
