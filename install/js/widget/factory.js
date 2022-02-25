@@ -44,7 +44,7 @@ export default class Factory {
 	checkElement(anchor) {
 		const selector = this.getOption('containerSelector');
 		const contains = (
-			!!anchor.querySelector(selector)
+			anchor.querySelector(selector)
 			|| this.containsSiblingElement(anchor, selector)
 		);
 
