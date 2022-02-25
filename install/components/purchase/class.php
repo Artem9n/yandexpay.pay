@@ -374,7 +374,7 @@ class Purchase extends \CBitrixComponent
 		$redirect = $this->getRedirectUrl($saveOrderData['ID'], $saveOrderData['PAY_SYSTEM_ID']);
 
 		$result = [
-			'externalId' => $saveOrderData['INTERNAL_ID'],
+			'externalId' => $saveOrderData['PAYMENT_ID'],
 			'paySystemId' => $saveOrderData['PAY_SYSTEM_ID'],
 			'redirect' => $redirect,
 		];
