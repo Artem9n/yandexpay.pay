@@ -34,18 +34,21 @@ abstract class AbstractBehavior implements BehaviorInterface
 		return [
 			'VARIANT_BUTTON' => [
 				'TITLE' => self::getMessage('VARIANT_BUTTON'),
+				'GROUP' => self::getMessage('BUTTON'),
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
 				'VALUES' => $this->getVariantButtonEnum(),
 			],
 			'WIDTH_BUTTON' => [
 				'TITLE' => self::getMessage('WIDTH_BUTTON'),
+				'GROUP' => self::getMessage('BUTTON'),
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
 				'VALUES' => $this->getWidthButtonEnum(),
 			],
 			'POSITION' => [
 				'TITLE' => self::getMessage('POSITION'),
+				'GROUP' => self::getMessage('VIEW'),
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
 				'VALUES' => $this->getPositionsEnum(),
@@ -171,14 +174,17 @@ abstract class AbstractBehavior implements BehaviorInterface
 		/** @var Engine\AbstractEngine $classEngine */
 		$classEngine = $this->getClassEngine();
 
-		$classEngine::register([
-			'module' => 'main',
-			'event' => 'onEpilog',
-			'arguments' => [
-				$injectionId,
-				$this->eventSettings(),
-			],
-		]);
+		foreach ($this->events() as [$module, $event])
+		{
+			$classEngine::register([
+				'module' => $module,
+				'event' => $event,
+				'arguments' => [
+					$injectionId,
+					$this->eventSettings(),
+				],
+			]);
+		}
 	}
 
 	public function uninstall(int $injectionId) : void
@@ -188,18 +194,28 @@ abstract class AbstractBehavior implements BehaviorInterface
 
 		try
 		{
-			$classEngine::unregister([
-				'module' => 'main',
-				'event' => 'onEpilog',
-				'arguments' => [
-					$injectionId,
-					$this->eventSettings(),
-				],
-			]);
+			foreach ($this->events() as [$module, $event])
+			{
+				$classEngine::unregister([
+					'module' => $module,
+					'event' => $event,
+					'arguments' => [
+						$injectionId,
+						$this->eventSettings(),
+					],
+				]);
+			}
 		}
 		catch (Main\SystemException $exception)
 		{
 			// nothing
 		}
+	}
+
+	protected function events() : array
+	{
+		return [
+			[ 'main', 'onEpilog' ],
+		];
 	}
 }

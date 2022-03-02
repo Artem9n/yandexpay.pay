@@ -18,11 +18,13 @@ class Basket extends AbstractBehavior
 		return parent::getFields() + [
 			'SELECTOR' => [
 				'TYPE' => 'string',
+				'GROUP' => self::getMessage('VIEW'),
 				'TITLE' => self::getMessage('SELECTOR'),
 				'MANDATORY' => 'Y',
 			],
 			'PATH' => [
 				'TYPE' => 'string',
+				'GROUP' => self::getMessage('VIEW'),
 				'TITLE' => self::getMessage('PATH'),
 				'MANDATORY' => 'Y',
 			],

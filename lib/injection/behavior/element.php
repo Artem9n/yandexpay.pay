@@ -19,11 +19,13 @@ class Element extends AbstractBehavior
 		return parent::getFields() + [
 			'SELECTOR' => [
 				'TYPE' => 'string',
+				'GROUP' => self::getMessage('VIEW'),
 				'TITLE' => self::getMessage('SELECTOR'),
 				'MANDATORY' => 'Y',
 			],
 			'IBLOCK' => [
 				'TYPE' => 'enumeration',
+				'GROUP' => self::getMessage('VIEW'),
 				'MANDATORY' => 'Y',
 				'TITLE' => self::getMessage('IBLOCK'),
 				'VALUES' => $this->getIblockEnum(),
@@ -62,7 +64,6 @@ class Element extends AbstractBehavior
 	{
 		return [
 			'IBLOCK' => $this->getIblock(),
-			//'URL_TEMPLATE' => $this->getUrlTemplate(),
 		];
 	}
 }

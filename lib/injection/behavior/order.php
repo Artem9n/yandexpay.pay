@@ -18,11 +18,13 @@ class Order extends AbstractBehavior
 		return parent::getFields() + [
 			'SELECTOR' => [
 				'TYPE' => 'string',
+				'GROUP' => static::getMessage('VIEW'),
 				'TITLE' => self::getMessage('SELECTOR'),
 				'MANDATORY' => 'Y',
 			],
 			'PATH' => [
 				'TYPE' => 'string',
+				'GROUP' => static::getMessage('VIEW'),
 				'TITLE' => self::getMessage('PATH'),
 				'MANDATORY' => 'Y',
 			]

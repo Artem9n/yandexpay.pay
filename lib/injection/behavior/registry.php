@@ -6,6 +6,7 @@ use YandexPay\Pay\Reference\Assert;
 class Registry
 {
 	public const ELEMENT = 'element';
+	public const ELEMENT_FAST = 'elementFast';
 	public const BASKET = 'basket';
 	public const ORDER = 'order';
 
@@ -13,6 +14,7 @@ class Registry
 	{
 		return [
 			static::ELEMENT,
+			static::ELEMENT_FAST,
 			static::BASKET,
 			static::ORDER,
 		];
