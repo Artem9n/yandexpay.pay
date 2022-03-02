@@ -483,10 +483,18 @@ this.BX = this.BX || {};
 	    this.defaults = Object.assign({}, this.constructor.defaults);
 	    this.options = {};
 	    this.setOptions(options);
-	    this.bootSolution();
 	  }
 
 	  babelHelpers.createClass(Factory, [{
+	    key: "assets",
+	    value: function assets(files) {
+	      return new Promise(function (resolve, reject) {
+	        BX.load(files, function () {
+	          resolve();
+	        });
+	      });
+	    }
+	  }, {
 	    key: "inject",
 	    value: function inject(selector, position) {
 	      var _this = this;
@@ -1259,8 +1267,6 @@ this.BX = this.BX || {};
 	  template: '<div class="alert alert-danger" role="alert"><strong>#MESSAGE#</strong></div>'
 	});
 
-	var YaPay$1 = window.YaPay;
-
 	var Payment = /*#__PURE__*/function (_AbstractStep) {
 	  babelHelpers.inherits(Payment, _AbstractStep);
 
@@ -1283,11 +1289,12 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "getPaymentData",
 	    value: function getPaymentData(data) {
+	      var YaPay = this.getLibrary();
 	      return {
 	        env: this.getOption('env'),
 	        version: 2,
-	        countryCode: YaPay$1.CountryCode.Ru,
-	        currencyCode: YaPay$1.CurrencyCode.Rub,
+	        countryCode: YaPay.CountryCode.Ru,
+	        currencyCode: YaPay.CurrencyCode.Rub,
 	        merchant: {
 	          id: this.getOption('merchantId'),
 	          name: this.getOption('merchantName')
@@ -1300,11 +1307,11 @@ this.BX = this.BX || {};
 	          items: data.items
 	        },
 	        paymentMethods: [{
-	          type: YaPay$1.PaymentMethodType.Card,
+	          type: YaPay.PaymentMethodType.Card,
 	          gateway: this.getOption('gateway'),
 	          gatewayMerchantId: this.getOption('gatewayMerchantId'),
-	          allowedAuthMethods: [YaPay$1.AllowedAuthMethod.PanOnly],
-	          allowedCardNetworks: [YaPay$1.AllowedCardNetwork.UnionPay, YaPay$1.AllowedCardNetwork.Uzcard, YaPay$1.AllowedCardNetwork.Discover, YaPay$1.AllowedCardNetwork.AmericanExpress, YaPay$1.AllowedCardNetwork.Visa, YaPay$1.AllowedCardNetwork.Mastercard, YaPay$1.AllowedCardNetwork.Mir, YaPay$1.AllowedCardNetwork.Maestro, YaPay$1.AllowedCardNetwork.VisaElectron]
+	          allowedAuthMethods: [YaPay.AllowedAuthMethod.PanOnly],
+	          allowedCardNetworks: [YaPay.AllowedCardNetwork.UnionPay, YaPay.AllowedCardNetwork.Uzcard, YaPay.AllowedCardNetwork.Discover, YaPay.AllowedCardNetwork.AmericanExpress, YaPay.AllowedCardNetwork.Visa, YaPay.AllowedCardNetwork.Mastercard, YaPay.AllowedCardNetwork.Mir, YaPay.AllowedCardNetwork.Maestro, YaPay.AllowedCardNetwork.VisaElectron]
 	        }]
 	      };
 	    }
@@ -1313,8 +1320,9 @@ this.BX = this.BX || {};
 	    value: function createPayment(node, paymentData) {
 	      var _this = this;
 
-	      // Создать платеж.
-	      YaPay$1.createPayment(paymentData, {
+	      var YaPay = this.getLibrary(); // Создать платеж.
+
+	      YaPay.createPayment(paymentData, {
 	        agent: {
 	          name: "CMS-Bitrix",
 	          version: "1.0"
@@ -1322,19 +1330,19 @@ this.BX = this.BX || {};
 	      }).then(function (payment) {
 	        // Создать экземпляр кнопки.
 	        var button = payment.createButton({
-	          type: YaPay$1.ButtonType.Pay,
-	          theme: _this.getOption('buttonTheme') || YaPay$1.ButtonTheme.Black,
-	          width: _this.getOption('buttonWidth') || YaPay$1.ButtonWidth.Auto
+	          type: YaPay.ButtonType.Pay,
+	          theme: _this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
+	          width: _this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto
 	        }); // Смонтировать кнопку в DOM.
 
 	        button.mount(node); // Подписаться на событие click.
 
-	        button.on(YaPay$1.ButtonEventType.Click, function onPaymentButtonClick() {
+	        button.on(YaPay.ButtonEventType.Click, function onPaymentButtonClick() {
 	          // Запустить оплату после клика на кнопку.
 	          payment.checkout();
 	        }); // Подписаться на событие process.
 
-	        payment.on(YaPay$1.PaymentEventType.Process, function (event) {
+	        payment.on(YaPay.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
 	          _this.notify(payment, event).then(function (result) {});
 	          /*alert('Payment token — ' + event.token);
@@ -1344,21 +1352,21 @@ this.BX = this.BX || {};
 	          */
 
 
-	          payment.complete(YaPay$1.CompleteReason.Success);
+	          payment.complete(YaPay.CompleteReason.Success);
 	        }); // Подписаться на событие error.
 
-	        payment.on(YaPay$1.PaymentEventType.Error, function onPaymentError(event) {
+	        payment.on(YaPay.PaymentEventType.Error, function onPaymentError(event) {
 	          // Вывести информацию о недоступности оплаты в данный момент
 	          // и предложить пользователю другой способ оплаты.
 	          // Закрыть форму Yandex.Pay.
 	          console.log({
 	            'errors': event
 	          });
-	          payment.complete(YaPay$1.CompleteReason.Error);
+	          payment.complete(YaPay.CompleteReason.Error);
 	        }); // Подписаться на событие abort.
 	        // Это когда пользователь закрыл форму Yandex Pay.
 
-	        payment.on(YaPay$1.PaymentEventType.Abort, function onPaymentAbort(event) {// Предложить пользователю другой способ оплаты.
+	        payment.on(YaPay.PaymentEventType.Abort, function onPaymentAbort(event) {// Предложить пользователю другой способ оплаты.
 	        });
 	      }).catch(function (err) {
 	        // Платеж не создан.
@@ -1396,6 +1404,11 @@ this.BX = this.BX || {};
 	        return console.log(error);
 	      });
 	    }
+	  }, {
+	    key: "getLibrary",
+	    value: function getLibrary() {
+	      return window.YaPay;
+	    }
 	  }]);
 	  return Payment;
 	}(AbstractStep);
@@ -1411,8 +1424,6 @@ this.BX = this.BX || {};
 	    document.addEventListener('DOMContentLoaded', callback);
 	  }
 	}
-
-	var YaPay$2 = window.YaPay;
 
 	var Cart = /*#__PURE__*/function (_AbstractStep) {
 	  babelHelpers.inherits(Cart, _AbstractStep);
@@ -1516,18 +1527,20 @@ this.BX = this.BX || {};
 	        return;
 	      }
 
+	      var YaPay = this.getLibrary();
 	      this.paymentData.paymentMethods.push({
-	        type: YaPay$2.PaymentMethodType.Cash
+	        type: YaPay.PaymentMethodType.Cash
 	      });
 	    }
 	  }, {
 	    key: "getPaymentData",
 	    value: function getPaymentData(data) {
+	      var YaPay = this.getLibrary();
 	      return {
 	        env: this.getOption('env'),
 	        version: 2,
-	        countryCode: YaPay$2.CountryCode.Ru,
-	        currencyCode: YaPay$2.CurrencyCode.Rub,
+	        countryCode: YaPay.CountryCode.Ru,
+	        currencyCode: YaPay.CurrencyCode.Rub,
 	        merchant: {
 	          id: this.getOption('merchantId'),
 	          name: this.getOption('merchantName'),
@@ -1537,11 +1550,11 @@ this.BX = this.BX || {};
 	          id: '0'
 	        },
 	        paymentMethods: [{
-	          type: YaPay$2.PaymentMethodType.Card,
+	          type: YaPay.PaymentMethodType.Card,
 	          gateway: this.getOption('gateway'),
 	          gatewayMerchantId: this.getOption('gatewayMerchantId'),
-	          allowedAuthMethods: [YaPay$2.AllowedAuthMethod.PanOnly],
-	          allowedCardNetworks: [YaPay$2.AllowedCardNetwork.UnionPay, YaPay$2.AllowedCardNetwork.Uzcard, YaPay$2.AllowedCardNetwork.Discover, YaPay$2.AllowedCardNetwork.AmericanExpress, YaPay$2.AllowedCardNetwork.Visa, YaPay$2.AllowedCardNetwork.Mastercard, YaPay$2.AllowedCardNetwork.Mir, YaPay$2.AllowedCardNetwork.Maestro, YaPay$2.AllowedCardNetwork.VisaElectron]
+	          allowedAuthMethods: [YaPay.AllowedAuthMethod.PanOnly],
+	          allowedCardNetworks: [YaPay.AllowedCardNetwork.UnionPay, YaPay.AllowedCardNetwork.Uzcard, YaPay.AllowedCardNetwork.Discover, YaPay.AllowedCardNetwork.AmericanExpress, YaPay.AllowedCardNetwork.Visa, YaPay.AllowedCardNetwork.Mastercard, YaPay.AllowedCardNetwork.Mir, YaPay.AllowedCardNetwork.Maestro, YaPay.AllowedCardNetwork.VisaElectron]
 	        }],
 	        requiredFields: {
 	          billingContact: {
@@ -1564,8 +1577,9 @@ this.BX = this.BX || {};
 	    value: function createPayment(node, paymentData) {
 	      var _this4 = this;
 
-	      // Создать платеж.
-	      YaPay$2.createPayment(paymentData, {
+	      var YaPay = this.getLibrary(); // Создать платеж.
+
+	      YaPay.createPayment(paymentData, {
 	        agent: {
 	          name: "CMS-Bitrix",
 	          version: "1.0"
@@ -1576,7 +1590,7 @@ this.BX = this.BX || {};
 	        _this4.mountButton(node, payment); // Подписаться на событие process.
 
 
-	        payment.on(YaPay$2.PaymentEventType.Process, function (event) {
+	        payment.on(YaPay.PaymentEventType.Process, function (event) {
 	          // Получить платежный токен.
 	          _this4.orderAccept(event).then(function (result) {
 	            if (result.error) {
@@ -1588,15 +1602,15 @@ this.BX = this.BX || {};
 	                if (result.success === true) {
 	                  _this4.widget.go(result.state, result);
 
-	                  payment.complete(YaPay$2.CompleteReason.Success);
+	                  payment.complete(YaPay.CompleteReason.Success);
 	                } else {
 	                  _this4.widget.go('error', result);
 
-	                  payment.complete(YaPay$2.CompleteReason.Error);
+	                  payment.complete(YaPay.CompleteReason.Error);
 	                }
 	              });
 	            } else {
-	              payment.complete(YaPay$2.CompleteReason.Success);
+	              payment.complete(YaPay.CompleteReason.Success);
 
 	              if (result.redirect != null) {
 	                window.location.href = result.redirect;
@@ -1606,17 +1620,17 @@ this.BX = this.BX || {};
 	            _this4.showError('yapayProcess', '', error); // todo test it
 
 
-	            payment.complete(YaPay$2.CompleteReason.Error);
+	            payment.complete(YaPay.CompleteReason.Error);
 	          });
 	        }); // Подписаться на событие error.
 
-	        payment.on(YaPay$2.PaymentEventType.Error, function (event) {
+	        payment.on(YaPay.PaymentEventType.Error, function (event) {
 	          _this4.showError('yapayError', 'service temporary unavailable');
 
-	          payment.complete(YaPay$2.CompleteReason.Error);
+	          payment.complete(YaPay.CompleteReason.Error);
 	        }); // Подписаться на событие change.
 
-	        payment.on(YaPay$2.PaymentEventType.Change, function (event) {
+	        payment.on(YaPay.PaymentEventType.Change, function (event) {
 	          if (event.shippingAddress) {
 	            _this4.getShippingOptions(event.shippingAddress).then(function (result) {
 	              payment.update({
@@ -1652,13 +1666,14 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "mountButton",
 	    value: function mountButton(node, payment) {
+	      var YaPay = this.getLibrary();
 	      this.paymentButton = payment.createButton({
-	        type: YaPay$2.ButtonType.Checkout,
-	        theme: this.getOption('buttonTheme') || YaPay$2.ButtonTheme.Black,
-	        width: this.getOption('buttonWidth') || YaPay$2.ButtonWidth.Auto
+	        type: YaPay.ButtonType.Checkout,
+	        theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
+	        width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto
 	      });
 	      this.paymentButton.mount(this.element);
-	      this.paymentButton.on(YaPay$2.ButtonEventType.Click, function () {
+	      this.paymentButton.on(YaPay.ButtonEventType.Click, function () {
 	        payment.checkout();
 	      });
 	    }
@@ -1816,7 +1831,7 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "insertLoader",
 	    value: function insertLoader() {
-	      var width = this.getOption('buttonWidth') || YaPay$2.ButtonWidth.Auto;
+	      var width = this.getOption('buttonWidth') || this.getLibrary().ButtonWidth.Auto;
 	      this.element.innerHTML = Template.compile(this.getOption('loaderTemplate'), {
 	        width: width.toLowerCase(),
 	        label: this.getOption('label')
@@ -1832,6 +1847,11 @@ this.BX = this.BX || {};
 	      }
 
 	      loader.remove();
+	    }
+	  }, {
+	    key: "getLibrary",
+	    value: function getLibrary() {
+	      return window.YaPay;
 	    }
 	  }]);
 	  return Cart;
