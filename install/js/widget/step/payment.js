@@ -1,8 +1,6 @@
 import Template from '../utils/template';
 import AbstractStep from './abstractstep';
 
-const YaPay = window.YaPay;
-
 export default class Payment extends AbstractStep {
 
 	static defaults = {
@@ -20,6 +18,8 @@ export default class Payment extends AbstractStep {
 	}
 
 	getPaymentData(data) {
+		const YaPay = this.getLibrary();
+
 		return {
 			env: this.getOption('env'),
 			version: 2,
@@ -57,6 +57,7 @@ export default class Payment extends AbstractStep {
 	}
 
 	createPayment(node, paymentData) {
+		const YaPay = this.getLibrary();
 		// Создать платеж.
 		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then( (payment) => {
@@ -136,5 +137,9 @@ export default class Payment extends AbstractStep {
 				}
 			})
 			.catch(error => console.log(error) );
+	}
+
+	getLibrary() {
+		return window.YaPay;
 	}
 }

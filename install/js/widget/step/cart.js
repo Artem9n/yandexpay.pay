@@ -2,8 +2,6 @@ import Template from '../utils/template';
 import AbstractStep from './abstractstep';
 import { ready } from "../utils/ready";
 
-const YaPay = window.YaPay;
-
 export default class Cart extends AbstractStep {
 
 	static defaults = {
@@ -85,12 +83,16 @@ export default class Cart extends AbstractStep {
 		// ”казываем возможность оплаты заказа при получении
 		if (this.getOption('paymentCash') == null) { return; }
 
+		const YaPay = this.getLibrary();
+
 		this.paymentData.paymentMethods.push({
 			type: YaPay.PaymentMethodType.Cash,
 		});
 	}
 
 	getPaymentData(data) {
+		const YaPay = this.getLibrary();
+
 		return {
 			env: this.getOption('env'),
 			version: 2,
@@ -143,6 +145,8 @@ export default class Cart extends AbstractStep {
 	}
 
 	createPayment(node, paymentData) {
+		const YaPay = this.getLibrary();
+
 		// —оздать платеж.
 		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then((payment) => {
@@ -223,6 +227,8 @@ export default class Cart extends AbstractStep {
 	}
 
 	mountButton(node, payment) {
+		const YaPay = this.getLibrary();
+
 		this.paymentButton = payment.createButton({
 			type: YaPay.ButtonType.Checkout,
 			theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
@@ -402,7 +408,7 @@ export default class Cart extends AbstractStep {
 	}
 
 	insertLoader() {
-		const width = this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto;
+		const width = this.getOption('buttonWidth') || this.getLibrary().ButtonWidth.Auto;
 
 		this.element.innerHTML = Template.compile(this.getOption('loaderTemplate'), {
 			width: width.toLowerCase(),
@@ -416,5 +422,9 @@ export default class Cart extends AbstractStep {
 		if (loader == null) { return; }
 
 		loader.remove();
+	}
+
+	getLibrary() {
+		return window.YaPay;
 	}
 }
