@@ -44,22 +44,23 @@ class TradingButton extends \CBitrixComponent
 		return $arParams;
 	}
 
-	public function executeComponent(): void
+	public function executeComponent()
 	{
 		try
 		{
+			$this->arResult['ERRORS'] = null;
+
 			$this->loadModules();
 			$this->bootstrap();
 			$this->setParameters();
 			$this->includeComponentTemplate();
+
+			return $this->arResult['CONTENT'] ?? null;
 		}
 		catch (Main\SystemException $exception)
 		{
+			$this->arResult['ERRORS'] = $exception->getMessage();
 			// todo  loggers
-
-			/*echo '<pre>';
-			print_r($exception->getMessage());
-			echo '</pre>';*/
 		}
 	}
 

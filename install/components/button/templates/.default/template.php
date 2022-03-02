@@ -5,76 +5,75 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
  * @var array $arResult
  */
 
-use Bitrix\Main;
-use YandexPay\Pay\Injection\Solution;
-use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Web\Json;
-use Bitrix\Main\UI\Extension;
 
-Loc::loadMessages(__FILE__);
-
-try
+if (!empty($arResult['ERRORS']))
 {
-	echo Extension::getHtml('yandexpaypay.widget');
+	if (!isset($USER) || !$USER->IsAdmin()) { return; }
 
-	if (!empty($arResult['PARAMS']['solution']))
+	ShowError($arResult['ERRORS']);
+	return;
+}
+
+if (!empty($arResult['PARAMS']['selector']))
+{
+	foreach ($arResult['preload'] as $path)
 	{
-		$solution = Solution\Registry::getInstance($arResult['PARAMS']['solution']);
-		echo $solution->getExtension();
+		$arResult['CONTENT'] .= sprintf('<script src="%s"></script>', $path);
 	}
 
-	$widgetOptions = array_diff_key($arResult['PARAMS'], [ 'order' => true , 'selector' => true, 'position' => true]);
-	$factoryOptions = array_intersect_key($arResult['PARAMS'], [
-		'solution' => true,
-		'mode' => true,
-		'buttonWidth' => true,
-	]);
-	$factoryOptions['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
-	$order = $arResult['PARAMS']['order'];
-	$selector = $arResult['PARAMS']['selector'];
-	$position = $arResult['PARAMS']['position'];
-
-	if (!empty($selector))
-	{
-		?>
-		<script>
+	$arResult['CONTENT'] .= sprintf(
+		"<script>
 			(function() {
-				const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
-				const selector = '<?= htmlspecialcharsback($selector) ?>';
-				const position = '<?= $position?>';
-
-				factory.inject(selector, position)
+				const factory = new BX.YandexPay.Factory(%s);
+		
+				factory.assets(%s)
+					.then(() => {
+						factory.bootSolution();
+						return factory.inject('%s', '%s');
+					})
 					.then((widget) => {
-						widget.setOptions(<?= Json::encode($widgetOptions) ?>);
+						widget.setOptions(%s);
 						widget.cart();
 					})
 					.catch((error) => {
 						console.warn(error);
 					});
 			})();
-		</script>
-		<?php
-	}
-	else
-	{
-		?>
-		<div id="yandexpay" class="yandex-pay"></div>
-		<script>
-			(function() {
-				const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
-				const element = document.getElementById('yandexpay');
-				const widget = factory.install(element);
-
-				widget.setOptions(<?= Json::encode($widgetOptions) ?>);
-				widget.cart();
-			})();
-		</script>
-		<?php
-	}
+		</script>",
+		Json::encode($arResult['factory_options']),
+		Json::encode($arResult['async']),
+		htmlspecialcharsback($arResult['PARAMS']['selector']),
+		$arResult['PARAMS']['position'],
+		Json::encode($arResult['widget_options'])
+	);
 }
-catch (Main\SystemException $exception)
+else // inline
 {
-	if (!isset($USER) || !$USER->IsAdmin()) { return; }
+	foreach ($arResult['preload'] as $path)
+	{
+		echo sprintf('<script src="%s"></script>', $path);
+	}
 
-	ShowError($exception->getMessage());
+	?>
+	<div id="yandexpay" class="yandex-pay"></div>
+	<script>
+		(function() {
+			const factory = new BX.YandexPay.Factory(<?= Json::encode($arResult['factory_options']) ?>);
+
+			factory.assets(<?= Json::encode($arResult['async']) ?>)
+				.then(() => {
+					factory.bootSolution();
+
+					return document.getElementById('yandexpay');
+				})
+				.then((element) => {
+					const widget = factory.install(element);
+
+					widget.setOptions(<?= Json::encode($arResult['widget_options']) ?>);
+					widget.cart();
+				});
+		})();
+	</script>
+	<?php
 }
