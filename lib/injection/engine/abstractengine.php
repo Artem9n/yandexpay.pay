@@ -8,6 +8,10 @@ use YandexPay\Pay\Injection;
 
 abstract class AbstractEngine extends Event\Base
 {
+	const RENDER_ASSETS = 'assets';
+	const RENDER_OUTPUT = 'output';
+	const RENDER_RETURN = 'return';
+
 	protected static $handlerDisallowYaPay = false;
 
 	protected static function loadModule(string $name) : void
@@ -24,7 +28,7 @@ abstract class AbstractEngine extends Event\Base
 
 		return (
 			!$request->isAdminSection()
-			//&& !$request->isAjaxRequest()
+			&& !$request->isAjaxRequest()
 			&& mb_strpos($request->getRequestedPage(), '/bitrix/') !== 0
 		);
 	}
@@ -34,11 +38,13 @@ abstract class AbstractEngine extends Event\Base
 		return Main\Context::getCurrent()->getRequest();
 	}
 
-	protected static function render(int $injectionId, array $data = []) : void
+	protected static function render(int $injectionId, array $data = [], $mode = self::RENDER_ASSETS) : string
 	{
 		global $APPLICATION;
 
-		if (static::$handlerDisallowYaPay) { return; }
+		$contents = '';
+
+		if (static::$handlerDisallowYaPay) { return $contents; }
 
 		static::$handlerDisallowYaPay = true;
 
@@ -47,11 +53,17 @@ abstract class AbstractEngine extends Event\Base
 
 		$parameters = static::getComponentParameters($setup, $data);
 
-		ob_start();
-		$APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
-		$contents = ob_get_clean();
+		if ($mode === self::RENDER_ASSETS)
+		{
+			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+			Main\Page\Asset::getInstance()->addString($contents, false, Main\Page\AssetLocation::AFTER_JS);
+		}
+		else if ($mode === self::RENDER_RETURN)
+		{
+			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+		}
 
-		Main\Page\Asset::getInstance()->addString($contents, false, Main\Page\AssetLocation::AFTER_JS);
+		return $contents;
 	}
 
 	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
