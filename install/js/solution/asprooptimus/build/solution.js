@@ -65,6 +65,17 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  return Element;
 	}(Page);
 
+	var ElementFast = /*#__PURE__*/function (_Element) {
+	  babelHelpers.inherits(ElementFast, _Element);
+
+	  function ElementFast() {
+	    babelHelpers.classCallCheck(this, ElementFast);
+	    return babelHelpers.possibleConstructorReturn(this, babelHelpers.getPrototypeOf(ElementFast).apply(this, arguments));
+	  }
+
+	  return ElementFast;
+	}(Element);
+
 	var Basket = /*#__PURE__*/function (_Page) {
 	  babelHelpers.inherits(Basket, _Page);
 
@@ -174,6 +185,7 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 
 	var factory = new Factory({
 	  element: Element,
+	  elementFast: ElementFast,
 	  basket: Basket$1,
 	  order: Order
 	});
