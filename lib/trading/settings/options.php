@@ -419,7 +419,7 @@ class Options extends Reference\Skeleton
 					'DEFAULT_VALUE' => $this->makeInjectionDefaults($environment, $siteId),
 					'DATA_CLASS' => Injection\Setup\RepositoryTable::class,
 					'REFERENCE' => [ 'ID' => 'TRADING_ID' ],
-					'SUMMARY' => '#BEHAVIOR# (#SETTINGS.ELEMENT_IBLOCK#) (#SETTINGS.ORDER_PATH#) (#SETTINGS.BASKET_PATH#)',
+					'SUMMARY' => '#BEHAVIOR# (#SETTINGS.ELEMENTFAST_QUERY_PARAM#) (#SETTINGS.ELEMENT_IBLOCK#) (#SETTINGS.ORDER_PATH#) (#SETTINGS.BASKET_PATH#)',
 					'LAYOUT' => 'summary',
 					'MODAL_WIDTH' => 600,
 					'MODAL_HEIGHT' => 450,
