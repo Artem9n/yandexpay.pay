@@ -30,13 +30,16 @@ class AsproMax extends Skeleton
 
 	public function getDefaults(array $context = []) : array
 	{
+		$elementFields = [
+			'SELECTOR' => '.buy_block .offer_buy_block, .buy_block .wrapp-one-click, .buy_block .counter_wrapp',
+			'POSITION' => 'afterend',
+			'IBLOCK' => $context['IBLOCK'],
+			'WIDTH_BUTTON' => 'MAX',
+		];
+
 		return [
-			Behavior\Registry::ELEMENT => [
-				'SELECTOR' => '.buy_block .offer_buy_block, .buy_block .wrapp-one-click, .buy_block .counter_wrapp',
-				'POSITION' => 'afterend',
-				'IBLOCK' => $context['IBLOCK'],
-				'WIDTH_BUTTON' => 'MAX'
-			],
+			Behavior\Registry::ELEMENT_FAST => ['QUERY_PARAM' => 'FAST_VIEW=Y'] + $elementFields,
+			Behavior\Registry::ELEMENT => $elementFields,
 			Behavior\Registry::BASKET => Guide::getBitrixBasket($context, '/basket/'),
 			Behavior\Registry::ORDER => Guide::getBitrixOrder($context, '/order/'),
 		];

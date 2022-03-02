@@ -17,8 +17,22 @@ abstract class Skeleton
 
 	public function getExtension() : ?string
 	{
+		$name = $this->getExtensionName();
+
+		return Main\UI\Extension::getHtml($name);
+	}
+
+	public function getExtensionFiles() : array
+	{
+		$name = $this->getExtensionName();
+
+		return Main\UI\Extension::getAssets($name);
+	}
+
+	protected function getExtensionName() : string
+	{
 		$type = mb_strtolower($this->getType());
 
-		return Main\UI\Extension::getHtml('yandexpaypay.solution.' . $type);
+		return 'yandexpaypay.solution.' . $type;
 	}
 }
