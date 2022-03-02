@@ -469,7 +469,10 @@ class Purchase extends \CBitrixComponent
 	{
 		$mode = $request->getMode();
 
-		if ($mode === Pay\Injection\Behavior\Registry::ELEMENT)
+		if (
+			$mode === Pay\Injection\Behavior\Registry::ELEMENT
+			|| $mode === Pay\Injection\Behavior\Registry::ELEMENT_FAST
+		)
 		{
 			$productId = $request->getProductId();
 			$offerId = $this->environment->getProduct()->resolveOffer($productId);
