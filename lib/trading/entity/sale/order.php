@@ -903,20 +903,50 @@ class Order extends EntityReference\Order
 		{
 			$orderId = $orderResult->getId();
 			$orderExportId = $orderId;
-			$orderAccountNumber = (string)$this->internalOrder->getField('ACCOUNT_NUMBER');
+			$orderAccountNumber = $this->getAccountNumber();
 
-			if ($orderAccountNumber !== '' && OrderRegistry::useAccountNumber())
+			if ($orderAccountNumber !== null)
 			{
 				$orderExportId = $orderAccountNumber;
 			}
 
+			[$paymentId, $paySystemId] = $this->getPayment();
+
 			$result->setData([
 				'ID' => $orderExportId,
-				'INTERNAL_ID' => $orderId
+				'INTERNAL_ID' => $orderId,
+				'PAYMENT_ID' => $paymentId,
+				'PAY_SYSTEM_ID' => $paySystemId
 			]);
 		}
 
 		return $result;
+	}
+
+	public function getAccountNumber() : ?string
+	{
+		$accountNumber = (string)$this->internalOrder->getField('ACCOUNT_NUMBER');
+
+		return $accountNumber !== '' ? $accountNumber : null;
+	}
+
+	protected function getPayment() : array
+	{
+		$paymentId = null;
+		$paySystemId = null;
+
+		$paymentCollection = $this->internalOrder->getPaymentCollection();
+
+		/** @var Sale\Payment $payment */
+		foreach ($paymentCollection as $payment)
+		{
+			if ($payment->isInner()) { continue; }
+
+			$paymentId = $payment->getId();
+			$paySystemId = $payment->getPaymentSystemId();
+		}
+
+		return [$paymentId, $paySystemId];
 	}
 
 	/*protected function syncOrderPrice()

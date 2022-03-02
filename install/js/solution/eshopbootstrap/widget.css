@@ -1,0 +1,51 @@
+.basket-checkout-section-inner{
+	flex-wrap: wrap;
+}
+
+.basket-checkout-section-inner::after{
+	content: '';
+	width: 100%;
+	order: 1;
+}
+
+.basket-checkout-section .basket-checkout-section-inner .bx-yapay-drawer{
+	width: 357px;
+	order: 2;
+	margin-top: 10px;
+}
+
+.basket-checkout-section .basket-checkout-section-inner .bx-yapay-drawer ~ .basket-checkout-block-share{
+	order: 2;
+}
+
+.basket-checkout-section-inner .bx-yapay-drawer,
+.bx-soa-cart-total .bx-yapay-drawer{
+	margin-bottom: 0;
+}
+
+@media screen and (max-width: 767px), projection and (max-width: 767px), tv and (max-width: 767px), handheld and (max-width: 767px) {
+	.basket-checkout-section .basket-checkout-section-inner .bx-yapay-drawer{
+		width: 100%;
+	}
+}
+
+.bx-soa-cart-total .bx-yapay-drawer{
+	margin: 35px -34px -42px;
+	position: absolute;
+	width: 100%;
+	padding-left: 16px;
+	padding-right: 16px;
+}
+
+.bx-soa-cart-total.bx-soa-cart-total-fixed .bx-yapay-drawer{
+	margin: 35px -29px -42px;
+	padding: 0;
+}
+
+@media screen and (max-width: 767px), projection and (max-width: 767px), tv and (max-width: 767px), handheld and (max-width: 767px) {
+	.bx-soa-cart-total .bx-yapay-drawer{
+		position: unset;
+		margin: 0;
+		padding: 0;
+	}
+}

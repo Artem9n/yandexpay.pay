@@ -1,0 +1,51 @@
+.bx-yapay-divider {
+	display: flex;
+	align-items: center;
+	width: 282px;
+	box-sizing: border-box;
+
+	margin: 10px 0 20px;
+
+	color: #9397ad;
+
+	font-size: 16px;
+	line-height: initial;
+	text-align: center;
+}
+
+.bx-yapay-divider.width--max,
+.bx-yapay-divider-container.width--max{
+	width: 100%;
+}
+
+.bx-yapay-divider__corner {
+	flex: auto 1 1;
+	height: 1px;
+
+	position: relative;
+
+	background: #d0d4e0;
+}
+
+.bx-yapay-divider__corner:after {
+	content: '';
+	width: 5px;
+	height: 5px;
+	border-radius: 100%;
+
+	position: absolute;
+	left: 0;
+	top: -2px;
+
+	background: #d0d4e0;
+}
+
+.bx-yapay-divider__corner.at--right:after {
+	left: auto;
+	right: 0;
+}
+
+.bx-yapay-divider__text {
+	flex: auto 0 1;
+	padding: 0 10px;
+}
