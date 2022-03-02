@@ -22,7 +22,12 @@ export default class Factory {
 		this.options = {};
 
 		this.setOptions(options);
-		this.bootSolution();
+	}
+
+	assets(files) {
+		return new Promise((resolve, reject) => {
+			BX.load(files, () => { resolve(); });
+		});
 	}
 
 	inject(selector, position) {
