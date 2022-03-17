@@ -44,9 +44,9 @@ class CalculationFacade
 	{
 		//$stores = Sale\Delivery\ExtraServices\Manager::getStoresList($service->getId());
 		//$stores = static::getStores($stores);
-
 		$result->setDeliveryId($service->getId());
 		$result->setServiceName($service->getNameWithParent());
+		$result->setDescription($service->getDescription());
 		//$result->setStores($stores);
 	}
 
