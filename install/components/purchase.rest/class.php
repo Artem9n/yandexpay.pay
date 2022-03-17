@@ -3,16 +3,15 @@
 namespace YandexPay\Pay\Components;
 
 use Bitrix\Main;
+use Bitrix\Sale;
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Sale\Order;
 use Sale\Handlers\PaySystem\YandexPayHandler;
-use YandexPay\Pay\Config;
-use YandexPay\Pay\Exceptions;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Setup as TradingSetup;
 use YandexPay\Pay\Trading\Action as TradingAction;
 use YandexPay\Pay\Trading\Settings as TradingSettings;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
-use YandexPay\Pay\Utils;
 
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
 
@@ -20,8 +19,10 @@ Loc::loadMessages(__FILE__);
 
 class PurchaseRest extends \CBitrixComponent
 {
-	private const HTTP_STATUS_200 = '200 OK';
 	private const HTTP_STATUS_400 = '400 Bad Request';
+	private const HTTP_STATUS_403 = '403 Forbidden';
+	private const HTTP_STATUS_404 = '404 Not Found';
+	private const HTTP_STATUS_500 = '500 Internal server error';
 
 	/** @var EntityReference\Environment */
 	protected $environment;
@@ -40,129 +41,193 @@ class PurchaseRest extends \CBitrixComponent
 			$this->parseUrl();
 			$this->bootstrap();
 
-			$action = $this->resolveAction();
+			$path = $this->getActionPath();
+			$action = $this->resolveAction($path);
 
-			$this->parseRequest($action);
-			$this->callAction($action);
+			$action->passTrading($this->setup, $this->payHandler->isTestMode());
+			$action->passHttp($this->request);
+			$action->bootstrap();
+
+			$response = $action->process();
+
+			$this->sendResponse($response);
 		}
-		catch (Main\SystemException $exception)
+		catch (TradingAction\Rest\Exceptions\ActionNotImplemented $exception)
 		{
-			$response = new Main\Engine\Response\Json([
-				'status' => 'fail',
-				'reasonCode' => (string)($exception->getCode() ?: 'UNKNOWN'),
-				'reason' => $exception->getMessage(),
+			$response = $this->makeExceptionResponse($exception, static::HTTP_STATUS_404, [
+				'reasonCode' => 'NOT_FOUND',
+				'reason' => 'Action not found',
 			]);
-			$response->setStatus(static::HTTP_STATUS_400);
+
+			$this->sendResponse($response);
+		}
+		catch (TradingAction\Rest\Exceptions\RequestAuthentication $exception)
+		{
+			$response = $this->makeExceptionResponse($exception, static::HTTP_STATUS_403, [
+				'reasonCode' => 'FORBIDDEN',
+			]);
+
+			$this->sendResponse($response);
+		}
+		catch (TradingAction\Reference\Exceptions\DtoProperty $exception)
+		{
+			$response = $this->makeExceptionResponse($exception, static::HTTP_STATUS_400, [
+				'reasonCode' => $exception->getParameter()
+			]);
+
+			$this->sendResponse($response);
+		}
+		catch (\Throwable $exception)
+		{
+			$response = $this->makeExceptionResponse($exception, static::HTTP_STATUS_500);
 
 			$this->sendResponse($response);
 		}
 	}
 
-	protected function rootAction() : void
+	protected function webhookAction() : void
 	{
-		$response = new Main\HttpResponse();
-		$response->setStatus(static::HTTP_STATUS_200);
-		$response->setContent('OK');
-
-		$this->sendResponse($response);
+		$dto = $this->makeDto(TradingAction\Rest\Webhook::class);
+		$this->callWebhook($dto);
 	}
 
-	protected function orderCreateAction() : void
+	protected function transactionStatusUpdateRefundEvent(TradingAction\Rest\Webhook $request) : void
 	{
-		$dto = $this->makeDto(TradingAction\Rest\OrderCreate::class);
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		/** @var Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+		$order = $orderClassName::load($request->getExternalOrderId());
 
-		$order = $this->getOrder(null, $dto->getCurrencyCode());
-
-		$this->fillPersonType($order);
-		$this->fillBasket($order, $dto->getItems());
-
-		$order->finalize();
-
-		$this->sendResponse(new Main\Engine\Response\Json([
-			'status' => 'success',
-			'data' => [
-				'currencyCode' => $dto->getCurrencyCode(),
-				'order' => [
-					'items' => $this->collectOrderItems($order),
-					'discounts' => $this->collectOrderDiscounts($order),
-					'totalAmount' => $this->collectOrderTotal($order),
-				],
-			],
-		]));
-	}
-
-	protected function collectOrderItems(EntityReference\Order $order) : array
-	{
-		$result = [];
-
-		foreach ($order->getOrderableItems() as $basketCode)
+		if ($order === null)
 		{
-			$basketResult = $order->getBasketItemData($basketCode);
-			$basketData = $basketResult->getData();
-
-			$result[] = [
-				'id' => (string)$basketData['PRODUCT_ID'],
-				'unitPrice' => (float)$basketData['BASE_PRICE'],
-				'discountedUnitPrice' => (float)$basketData['PRICE'],
-				'subtotalAmount' => (float)$basketData['TOTAL_BASE_PRICE'],
-				'totalAmount' => (float)$basketData['TOTAL_PRICE'],
-				'title' => (string)$basketData['NAME'],
-				'quantity' => [
-					'count' => (float)$basketData['QUANTITY'],
-					//'available' => (float), todo
-					//'label' => (string), todo
-				],
-			];
+			$errorMessage = 'order not undefined';//$this->getLang('ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET');
+			Sale\PaySystem\Logger::addError($errorMessage);
+			throw new Main\SystemException($errorMessage);
 		}
 
-		return $result;
-	}
-
-	protected function collectOrderDiscounts(EntityReference\Order $order) : array
-	{
-		return []; // todo
-	}
-
-	protected function collectOrderTotal(EntityReference\Order $order) : array
-	{
-		return [
-			'amount' => $order->getOrderPrice(),
-			'label' => null, // todo
-		];
-	}
-
-	protected function getOrder(int $userId = null, string $currency = null) : EntityReference\Order
-	{
-		return $this->environment->getOrderRegistry()->createOrder(
-			$this->setup->getSiteId(),
-			$userId,
-			$currency
-		);
-	}
-
-	protected function fillPersonType(EntityReference\Order $order) : void
-	{
-		Assert::notNull($this->setup->getPersonTypeId(), 'personal type');
-
-		$personTypeResult = $order->setPersonType($this->setup->getPersonTypeId());
-
-		Exceptions\Facade::handleResult($personTypeResult);
-	}
-
-	protected function fillBasket(EntityReference\Order $order, TradingAction\Rest\Cart\Items $products) : void
-	{
-		$order->initEmptyBasket();
-
-		/** @var TradingAction\Rest\Cart\Item $product */
-		foreach ($products as $product)
+		if ($order->isCanceled())
 		{
-			$productId = $product->getId();
-			$quantity = $product->getCount();
-
-			$addResult = $order->addProduct($productId, $quantity);
-
-			Exceptions\Facade::handleResult($addResult);
+			$errorMessage = 'order canceled';
+			Sale\PaySystem\Logger::addError($errorMessage);
+			throw new Main\SystemException($errorMessage);
 		}
+
+		if (!$order->isPaid())
+		{
+			$errorMessage = 'order is not paid';//$this->getLang('ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET');
+			Sale\PaySystem\Logger::addError($errorMessage);
+			throw new Main\SystemException($errorMessage);
+		}
+
+		$collection = $order->getPaymentCollection();
+		$payment = null;
+
+		/** @var Sale\Payment $model */
+		foreach ($collection as $model)
+		{
+			if ($model->isInner()) { continue; }
+			$payment = $model;
+			break;
+		}
+
+		if ($payment === null)
+		{
+			$errorMessage = 'payment not exist';
+			Sale\PaySystem\Logger::addError($errorMessage);
+			throw new Main\SystemException($errorMessage);
+		}
+	}
+
+	protected function transactionStatusUpdateSuccessEvent(TradingAction\Rest\Webhook $request) : void
+	{
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		/** @var Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+		$order = $orderClassName::load($request->getExternalOrderId());
+
+		if ($order === null)
+		{
+			$errorMessage = 'order not undefined';//$this->getLang('ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET');
+			Sale\PaySystem\Logger::addError($errorMessage);
+			throw new Main\SystemException($errorMessage);
+		}
+
+		if ($order->isCanceled())
+		{
+			$errorMessage = 'order canceled';
+			Sale\PaySystem\Logger::addError($errorMessage);
+			throw new Main\SystemException($errorMessage);
+		}
+
+		if ($order->isPaid())
+		{
+			$errorMessage = 'order is paid';//$this->getLang('ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET');
+			Sale\PaySystem\Logger::addError($errorMessage);
+			throw new Main\SystemException($errorMessage);
+		}
+
+		$collection = $order->getPaymentCollection();
+		$payment = null;
+
+		/** @var Sale\Payment $model */
+		foreach ($collection as $model)
+		{
+			if ($model->isInner()) { continue; }
+			$payment = $model;
+			break;
+		}
+
+		if ($payment === null)
+		{
+			$errorMessage = 'payment not exist';
+			Sale\PaySystem\Logger::addError($errorMessage);
+			throw new Main\SystemException($errorMessage);
+		}
+
+		$resultFieldPayment = $payment->setFields([
+			'PAID'              => 'Y',
+			'PS_STATUS'         => 'Y',
+			'DATE_PAID'         => new Main\Type\DateTime(),
+			'PS_RESPONSE_DATE'  => new Main\Type\DateTime($request->getEventTime())
+		]);
+
+		if (!$resultFieldPayment->isSuccess())
+		{
+			$errorMessage = 'PAYMENT SET PAID: '.implode(' ', $resultFieldPayment->getErrorMessages());
+			Sale\PaySystem\Logger::addError($errorMessage);
+			throw new Main\SystemException($errorMessage);
+		}
+
+		$saveResult = $order->save();
+
+		if (!$saveResult->isSuccess())
+		{
+			$errorMessage = 'ORDER SAVE: '.implode(' ', $saveResult->getErrorMessages());
+			Sale\PaySystem\Logger::addError($errorMessage);
+			throw new Main\SystemException($errorMessage);
+		}
+	}
+
+	protected function callWebhook(TradingAction\Rest\Webhook $request) : void
+	{
+		$method = $this->eventToMethodName($request->getEvent(), $request->getStatus());
+
+		if (!method_exists($this, $method))
+		{
+			throw new Main\NotImplementedException(sprintf('event webhook %s not implemented', $request->getEvent()));
+		}
+
+		$this->{$method}($request);
+	}
+
+	protected function eventToMethodName(string $event, string $status) : string
+	{
+		$parts = explode('_', mb_strtolower($event));
+		$parts = array_map('ucfirst', $parts);
+		$method = implode('', $parts);
+		$method = lcfirst($method);
+
+		return $method . ucfirst(mb_strtolower($status)) .'Event';
 	}
 
 	/**
@@ -171,9 +236,9 @@ class PurchaseRest extends \CBitrixComponent
 	 *
 	 * @return T
 	 */
-	protected function makeDto(string $className) : TradingAction\Reference\Skeleton
+	protected function makeDto(string $className) : TradingAction\Reference\Dto
 	{
-		Assert::isSubclassOf($className, TradingAction\Reference\Skeleton::class);
+		Assert::isSubclassOf($className, TradingAction\Reference\Dto::class);
 
 		$data = $this->request->getPostList()->toArray();
 
@@ -247,8 +312,8 @@ class PurchaseRest extends \CBitrixComponent
 	protected function bootstrap() : void
 	{
 		$this->setup = $this->loadSetup();
-		$this->options = $this->setup->wakeupOptions();
-		$this->environment = $this->setup->getEnvironment();
+		$this->options = $this->setup->wakeupOptions(); // todo remove
+		$this->environment = $this->setup->getEnvironment(); // todo remove
 		$this->payHandler = $this->loadPayHandler();
 	}
 
@@ -296,46 +361,14 @@ class PurchaseRest extends \CBitrixComponent
 		return $result;
 	}
 
-	protected function parseRequest(string $action) : void
+	protected function resolveAction(string $path) : TradingAction\Rest\Reference\HttpAction
 	{
-		if ($action === 'root') { return; }
+		$router = new TradingAction\Rest\Router();
 
-		if ($action !== 'hello')
-		{
-			$this->decodeRequest();
-		}
-		else
-		{
-			$this->readRequest();
-		}
+		return $router->getAction($path);
 	}
 
-	protected function decodeRequest() : void
-	{
-		$jwkUrl = $this->getJwkUrl();
-		$filter = new Utils\JwtBodyFilter($jwkUrl);
-
-		$this->request->addFilter($filter);
-	}
-
-	protected function readRequest() : void
-	{
-		$filter = new Utils\JsonBodyFilter();
-
-		$this->request->addFilter($filter);
-	}
-
-	protected function getJwkUrl() : string
-	{
-		$optionName = $this->payHandler->isTestMode() ? 'SANDBOX_JWK' : 'PUBLIC_JWK';
-		$result = Config::getOption($optionName);
-
-		Assert::isString($result, sprintf('options[%s]', $optionName));
-
-		return $result;
-	}
-
-	protected function resolveAction() : string
+	protected function getActionPath() : string
 	{
 		$action = (string)$this->requireParameter('ACTION');
 		$action = ltrim($action, '/');
@@ -348,26 +381,26 @@ class PurchaseRest extends \CBitrixComponent
 		return $action;
 	}
 
-	protected function callAction(string $action) : void
+	protected function makeExceptionResponse(\Throwable $exception, $status, array $overrides = []) : Main\Engine\Response\Json
 	{
-		$method = $this->actionToMethodName($action);
+		$response = new Main\Engine\Response\Json($overrides + [
+			'status' => 'fail',
+			'reasonCode' => (string)($exception->getCode() ?: 'UNKNOWN'),
+			'reason' => $this->convertEncoding($exception->getMessage()),
+			'trace' => $exception->getTraceAsString(),
+		]);
+		$response->setStatus($status);
 
-		if (!method_exists($this, $method))
-		{
-			throw new Main\NotImplementedException(sprintf('action %s not implemented', $action));
-		}
-
-		$this->{$method}();
+		return $response;
 	}
 
-	protected function actionToMethodName(string $action) : string
+	protected function convertEncoding(string $message) : string
 	{
-		$parts = explode('/', $action);
-		$parts = array_map('ucfirst', $parts);
-		$method = implode('', $parts);
-		$method = lcfirst($method);
+		$isUtf8Config = Main\Application::isUtfMode();
 
-		return $method . 'Action';
+		if ($isUtf8Config) { return $message; }
+
+		return Main\Text\Encoding::convertEncoding($message, 'WINDOWS-1251', 'UTF-8');
 	}
 
 	protected function sendResponse(Main\HttpResponse $response) : void
