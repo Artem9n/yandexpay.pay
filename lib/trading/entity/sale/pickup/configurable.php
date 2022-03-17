@@ -43,7 +43,7 @@ class Configurable extends AbstractAdapter
 
 		while ($store = $query->fetch())
 		{
-			$result[] = $store;
+			$result[$store['ID']] = $store;
 		}
 
 		return $result;
@@ -78,9 +78,11 @@ class Configurable extends AbstractAdapter
 			]
 		])->fetchCollection();
 
+		if ($result === null) { return  null; }
+
 		$result = $result->getLocationCodeList();
 
-		if (empty($result)) { return  null; }
+		if (empty($result)) { return null; }
 
 		return end($result);
 	}

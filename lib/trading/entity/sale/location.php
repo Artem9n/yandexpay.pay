@@ -31,6 +31,7 @@ class Location extends EntityReference\Location
 			'Name' => [
 				'fields' => [
 					'locality',
+					'region',
 					'country'
 				]
 			],
@@ -39,12 +40,6 @@ class Location extends EntityReference\Location
 					'locality'
 				]
 			],
-			/*'Bounds' => [
-				'fields' => [
-					'ne',
-					'sw'
-				]
-			]*/
 		];
 
 		foreach ($searchMethods as $searchMethod => $searchArgument)
@@ -121,6 +116,7 @@ class Location extends EntityReference\Location
 
 		$regions = array_intersect_key($address, [
 			'locality' => true,
+			'region' => true,
 			'country' => true,
 			'ne' => true,
 			'sw' => true
