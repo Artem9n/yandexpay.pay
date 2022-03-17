@@ -106,4 +106,15 @@ class Delivery
 	{
 		throw new NotImplementedException('testAdminPickupCoords is missing');
 	}
+
+	/**
+	 * @param int $storeId
+	 *
+	 * @return array
+	 * @throws \Bitrix\Main\NotImplementedException
+	 */
+	public function getStore(int $storeId) : array
+	{
+		throw new NotImplementedException('getStore is missing');
+	}
 }

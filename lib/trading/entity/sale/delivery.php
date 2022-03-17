@@ -23,9 +23,9 @@ class Delivery extends EntityReference\Delivery
 
 	public const EMPTY_DELIVERY = 'emptyDelivery';
 
-	public const CATEGORY_STANDART = 'standart';
-	public const CATEGORY_EXPRESS = 'express';
-	public const CATEGORY_TODAY = 'today';
+	public const CATEGORY_STANDART = 'STANDART';
+	public const CATEGORY_EXPRESS = 'EXPRESS';
+	public const CATEGORY_TODAY = 'TODAY';
 
 	public const DELIVERY_TYPE = 'delivery';
 	public const PICKUP_TYPE = 'pickup';
@@ -171,6 +171,25 @@ class Delivery extends EntityReference\Delivery
 		catch (Main\SystemException $exception)
 		{
 			$result = [];
+		}
+
+		return $result;
+	}
+
+	public function getStore(int $storeId) : array
+	{
+		$result = [];
+
+		$query = Catalog\StoreTable::getList([
+			'filter' => [
+				'=ID' => $storeId,
+			],
+			'limit' => 1
+		]);
+
+		if ($store = $query->fetch())
+		{
+			$result = $store;
 		}
 
 		return $result;
