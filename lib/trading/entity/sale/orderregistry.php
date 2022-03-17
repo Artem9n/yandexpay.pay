@@ -20,6 +20,7 @@ class OrderRegistry extends EntityReference\OrderRegistry
 	{
 		if ($userId === null) { $userId = \CSaleUser::GetAnonymousUserID(); }
 
+		Sale\DiscountCouponsManager::init(Sale\DiscountCouponsManager::MODE_CLIENT, ['userId' => $userId]);
 		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
 		$orderClassName = $registry->getOrderClassName();
 		$internalOrder = $orderClassName::create($siteId, $userId, $currency);
