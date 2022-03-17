@@ -1002,4 +1002,9 @@ class Order extends EntityReference\Order
 	{
 		$this->internalOrder->setField('USER_DESCRIPTION', $value);
 	}
+
+	public function getCurrencyCode() : string
+	{
+		return $this->internalOrder->getCurrency();
+	}
 }

@@ -247,4 +247,12 @@ abstract class Order
 	{
 		throw new Main\NotImplementedException('getAccountNumber is missing');
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getCurrencyCode() : string
+	{
+		throw new Main\NotImplementedException('getCurrencyCode is missing');
+	}
 }
