@@ -9,6 +9,7 @@ class CalculationResult extends Pay\Result\Base
 {
 	protected $deliveryId;
 	protected $deliveryType;
+	protected $description;
 	protected $serviceName;
 	protected $price;
 	protected $dateFrom;
@@ -28,20 +29,30 @@ class CalculationResult extends Pay\Result\Base
 		return $this->deliveryId;
 	}
 
+	public function getDescription() : string
+	{
+		return $this->description ?? '';
+	}
+
+	public function setDescription(string $description) : void
+	{
+		$this->description = $description;
+	}
+
 	/** @param string $name */
-	public function setServiceName($name)
+	public function setServiceName(string $name) : void
 	{
 		$this->serviceName = $name;
 	}
 
 	/** @return string|null */
-	public function getServiceName()
+	public function getServiceName() : ?string
 	{
 		return $this->serviceName;
 	}
 
 	/** @param float $price */
-	public function setPrice($price)
+	public function setPrice($price) : void
 	{
 		$this->price = $price;
 	}
@@ -78,10 +89,10 @@ class CalculationResult extends Pay\Result\Base
 		$this->dateTo = $date;
 	}
 
-	/** @return Main\Type\Date|null */
+	/** @return Main\Type\Date */
 	public function getDateTo()
 	{
-		return $this->dateTo;
+		return $this->dateTo ?? new Main\Type\DateTime();
 	}
 
 	/** @return array{date: Main\Type\Date, fromTime: string, toTime: string}[]|null */
