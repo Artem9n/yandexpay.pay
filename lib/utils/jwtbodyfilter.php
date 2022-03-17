@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Utils;
 use Bitrix\Main;
 use Firebase\JWT;
 use YandexPay\Pay\Config;
+use YandexPay\Pay\Trading\Action\Rest\Exceptions;
 
 class JwtBodyFilter implements Main\Type\IRequestFilter
 {
@@ -61,14 +62,14 @@ class JwtBodyFilter implements Main\Type\IRequestFilter
 			$errorMessage = reset($errors);
 			$errorKey = key($errors);
 
-			throw new Main\SystemException(sprintf('[%s] %s', $errorKey, $errorMessage));
+			throw new Exceptions\RequestAuthentication(sprintf('[%s] %s', $errorKey, $errorMessage));
 		}
 
 		$data = Main\Web\Json::decode($raw);
 
 		if (!is_array($data))
 		{
-			throw new Main\SystemException('cant parse jwk endpoint response');
+			throw new Exceptions\RequestAuthentication('cant parse jwk endpoint response');
 		}
 
 		return $data;
@@ -82,7 +83,7 @@ class JwtBodyFilter implements Main\Type\IRequestFilter
 		}
 		catch (\Exception $exception)
 		{
-			throw new Main\SystemException(
+			throw new Exceptions\RequestAuthentication(
 				$exception->getMessage(),
 				$exception->getCode(),
 				$exception->getFile(),
@@ -97,12 +98,13 @@ class JwtBodyFilter implements Main\Type\IRequestFilter
 		try
 		{
 			$data = JWT\JWT::decode($raw, $keys);
+			$data = $this->convertStdClassToArray($data);
 
-			return (array)$data;
+			return $data;
 		}
 		catch (\Exception $exception)
 		{
-			throw new Main\SystemException(
+			throw new Exceptions\RequestAuthentication(
 				$exception->getMessage(),
 				$exception->getCode(),
 				$exception->getFile(),
@@ -110,5 +112,31 @@ class JwtBodyFilter implements Main\Type\IRequestFilter
 				$exception
 			);
 		}
+	}
+
+	protected function convertStdClassToArray($data)
+	{
+		if ($data instanceof \stdClass)
+		{
+			$data = (array)$data;
+		}
+
+		if (is_array($data))
+		{
+			foreach ($data as $key => $value)
+			{
+				if (is_array($value))
+				{
+					$data[$key] = $this->convertStdClassToArray($value);
+				}
+
+				if ($value instanceof \stdClass)
+				{
+					$data[$key] = $this->convertStdClassToArray((array)$value);
+				}
+			}
+		}
+
+		return $data;
 	}
 }
