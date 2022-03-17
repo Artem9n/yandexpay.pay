@@ -97,6 +97,20 @@ class Options extends Reference\Skeleton
 		return $result > 0 ? $result : null;
 	}
 
+	public function useCoupons() : bool
+	{
+		$result = (int)$this->getValue('ALLOW_ENTER_COUPON');
+
+		return $result > 0;
+	}
+
+	public function useComment() : bool
+	{
+		$result = (int)$this->getValue('ALLOW_ENTER_COMMENT');
+
+		return $result > 0;
+	}
+
 	protected function validateSelf() : Main\Result
 	{
 		$result = new Main\Result();
@@ -108,14 +122,6 @@ class Options extends Reference\Skeleton
 		{
 			$result->addError(new Main\Error(self::getMessage('VALIDATE_ONE_OF_EMAIL_PHONE')));
 		}
-
-		/*if (
-			!$this->getPaymentCash()
-			&& !$this->getPaymentCard()
-		)
-		{
-			$result->addError(new Main\Error('¬ыберите одну из платежных систем дл€ оплаты'));
-		}*/
 
 		return $result;
 	}
