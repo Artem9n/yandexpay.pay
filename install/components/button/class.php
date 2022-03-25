@@ -2,10 +2,11 @@
 
 namespace YandexPay\Pay\Components;
 
+use Bitrix\Currency;
 use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Main\Localization\Loc;
-use YandexPay\Pay\Gateway\Manager;
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading;
 use YandexPay\Pay\Injection;
@@ -92,6 +93,7 @@ class TradingButton extends \CBitrixComponent
 			'useName'           => $options->useBuyerName(),
 			'usePhone'          => $options->useBuyerPhone(),
 			'purchaseUrl'       => $options->getPurchaseUrl(),
+			'restUrl'           => $this->getRestUrl(),
 			'notifyUrl'         => $params['YANDEX_PAY_NOTIFY_URL'],
 			'siteUrl'           => Utils\Url::absolutizePath(),
 			'productId'         => $this->arParams['PRODUCT_ID'],
@@ -103,7 +105,18 @@ class TradingButton extends \CBitrixComponent
 			'selector'          => $this->arParams['SELECTOR'],
 			'position'          => $this->arParams['POSITION'],
 			'solution'          => $options->getSolution(),
+			'currencyCode'      => Currency\CurrencyManager::getBaseCurrency(),
 		];
+	}
+
+	protected function getRestUrl() : string
+	{
+		return Utils\Url::absolutizePath(
+			sprintf('%s/services/%s/trading/p%s/button/data',
+				BX_ROOT,
+				Config::getModuleName(),
+				$this->setup->getId()
+		));
 	}
 
 	protected function getSetup() : Trading\Setup\Model
@@ -162,7 +175,8 @@ class TradingButton extends \CBitrixComponent
 	{
 		return [
 			'yandexpay.pay',
-			'sale'
+			'sale',
+			'currency'
 		];
 	}
 
