@@ -17,8 +17,8 @@ export default class Basket extends Page {
 		if (typeof BX === 'undefined') { return; }
 
 		BX.addCustomEvent('OnBasketChange', () => {
-			cart.getProducts().then((result) => {
-				cart.combineOrderWithProducts(result);
+			cart.getButtonData().then((result) => {
+				cart.combineOrderWithProducts(result.data);
 			});
 		});
 	}
