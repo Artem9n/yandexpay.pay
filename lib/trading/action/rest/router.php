@@ -27,6 +27,7 @@ class Router
 			'v1/pickup-options' => PickupOptions\Action::class,
 			'v1/pickup-option-details' => PickupDetail\Action::class,
 			'v1/order/create' => OrderCreate\Action::class,
+			'button/data' => ButtonData\Action::class,
 		];
 	}
 }

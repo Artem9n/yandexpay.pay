@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\PickupOptions\Stage;
 
+use YandexPay\Pay\Trading\Action\Rest\Reference;
 use YandexPay\Pay\Trading\Action\Rest\Stage;
 use YandexPay\Pay\Trading\Action\Rest\State;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
@@ -8,6 +9,15 @@ use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 
 class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 {
+	/** @var array|null */
+	protected $bounds;
+
+	public function __construct(Reference\EffectiveResponse $response, string $key = '', array $bounds = null)
+	{
+		parent::__construct($response, $key);
+		$this->bounds = $bounds;
+	}
+
 	public function __invoke(State\OrderCalculation $state)
 	{
 		$result = [];
@@ -19,7 +29,7 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 		{
 			if (!$state->environment->getDelivery()->isCompatible($deliveryId, $state->order)) { continue; }
 
-			$allStores = $state->environment->getDelivery()->getPickupStores($deliveryId, $state->order);
+			$allStores = $state->environment->getDelivery()->getPickupStores($deliveryId, $state->order, $this->bounds);
 			//$storesByLocation = $this->groupStoresByLocation($allStores); //todo, need group?
 			foreach ($allStores as $locationId => $stores)
 			{

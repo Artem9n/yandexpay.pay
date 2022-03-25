@@ -19,13 +19,9 @@ abstract class EffectiveAction extends HttpAction
 
 	public function bootstrap() : void
 	{
-		if (!$this->httpRequest->get('DEV'))
-		{
-			$this->bootJwt();
-			$this->bootMerchant();
-		}
-
+		$this->bootJwt();
 		$this->bootJson();
+		$this->bootMerchant();
 	}
 
 	protected function bootJwt() : void
@@ -43,9 +39,13 @@ abstract class EffectiveAction extends HttpAction
 	protected function bootMerchant() : void
 	{
 		$merchantId = BusinessValue::get('YANDEX_PAY_MERCHANT_ID', Service::PAY_SYSTEM_PREFIX . $this->options->getPaymentCard());
-		$data = $this->httpRequest->getPostList()->toArray();
 
-		if ($data['merchantId'] !== $merchantId)
+		if ($merchantId === null)
+		{
+			throw new RequestAuthentication('not setting payment merchantId');
+		}
+
+		if ($this->httpRequest->get('merchantId') !== $merchantId)
 		{
 			throw new RequestAuthentication('Invalid merchantId');
 		}

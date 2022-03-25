@@ -6,9 +6,23 @@ use YandexPay\Pay\Trading\Action\Rest;
 
 class Request extends Rest\Reference\EffectiveRequest
 {
+	public function getMetadata() : array
+	{
+		return unserialize($this->getField('metadata'), [false]);
+	}
+
 	public function getUserId() : ?int
 	{
-		return $this->getField('metadata.userId');
+		$data = $this->getMetadata();
+
+		return $data['userId'];
+	}
+
+	public function getFUserId() : ?int
+	{
+		$data = $this->getMetadata();
+
+		return $data['fUserId'];
 	}
 
 	public function getCurrencyCode()

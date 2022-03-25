@@ -14,7 +14,7 @@ class Action extends Rest\Reference\EffectiveAction
 
 		(new Rest\Pipeline())
 			->pipe($this->calculationPipeline($request))
-			->pipe($this->collectorPipeline($response))
+			->pipe(new Stage\PickupOptionsCollector($response, 'pickupOptions', $request->getBounds()->getFields()))
 			->process($state);
 
 		return $this->convertResponseToHttp($response);
@@ -23,14 +23,9 @@ class Action extends Rest\Reference\EffectiveAction
 	protected function calculationPipeline(Request $request) : Rest\Pipeline
 	{
 		return (new Rest\Pipeline())
-			->pipe(new Rest\Stage\NewOrder($request->getUserId(), $request->getCurrencyCode(), $request->getCoupons()))
+			->pipe(new Rest\Stage\NewOrder($request->getUserId(), $request->getFUserId(), $request->getCurrencyCode(), $request->getCoupons()))
+			->pipe(new Rest\Stage\OrderInitialize())
 			->pipe(new Rest\Stage\NewBasket($request->getItems()))
 			->pipe(new Rest\Stage\OrderFinalizer());
-	}
-
-	protected function collectorPipeline(Rest\Reference\EffectiveResponse $response) : Rest\Pipeline
-	{
-		return (new Rest\Pipeline())
-			->pipe(new Stage\PickupOptionsCollector($response, 'pickupOptions'));
 	}
 }

@@ -24,7 +24,8 @@ class Action extends Rest\Reference\EffectiveAction
 	{
 		return (new Rest\Pipeline())
 			->pipe(new Rest\OrderCreate\Stage\OrderUser($request))
-			->pipe(new Rest\Stage\NewOrder($request->getUserId(), $request->getCurrencyCode(), $request->getCoupons()))
+			->pipe(new Rest\Stage\NewOrder($request->getUserId(), $request->getFUserId(), $request->getCurrencyCode(), $request->getCoupons()))
+			->pipe(new Rest\Stage\OrderInitialize())
 			->pipe(new Rest\OrderCreate\Stage\OrderStatus())
 			->pipe(new Rest\OrderCreate\Stage\OrderProperties($request))
 			->pipe(new Rest\Stage\NewBasket($request->getItems()))

@@ -22,11 +22,9 @@ class OrderUser
 
 	protected function createUser(State\OrderCalculation $state) : int
 	{
-		global $USER;
-
 		$userId = (int)$this->request->getUserId();
 
-		if ($userId > 0)
+		if ($userId > 0 && $userId !== (int)\CSaleUser::GetAnonymousUserID())
 		{
 			return $userId;
 		}

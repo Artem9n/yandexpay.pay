@@ -9,12 +9,14 @@ class NewOrder
 {
 	protected $items;
 	protected $userId;
+	protected $fUserId;
 	protected $currency;
 	protected $coupons;
 
-	public function __construct(int $userId = null, string $currency = null, array $coupons = null)
+	public function __construct(int $userId = null, int $fUserId = null, string $currency = null, array $coupons = null)
 	{
 		$this->userId = $userId;
+		$this->fUserId = $fUserId;
 		$this->currency = $currency;
 		$this->coupons = $coupons;
 	}
@@ -30,9 +32,11 @@ class NewOrder
 	{
 		$state->order = $state->environment->getOrderRegistry()->createOrder(
 			$state->setup->getSiteId(),
-			$state->userId ?? $this->userId,
+			$state->userId ?? $this->userId, // todo only userId
 			$this->currency
 		);
+
+		$state->order->setFUserId($state->fUserId ?? $this->fUserId);
 	}
 
 	protected function fillPersonType(State\OrderCalculation $state) : void
