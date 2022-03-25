@@ -53,7 +53,7 @@ export default class Widget {
 
 	/**
 	 * @param {String} type
-	 * @returns {Cart|Finish|Step3ds|Payment|Failure}
+	 * @returns {AbstractCart|Finish|Step3ds|Payment|Failure}
 	 * @throws {Error}
 	 */
 	makeStep(type) {

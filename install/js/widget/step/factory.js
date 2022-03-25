@@ -2,7 +2,7 @@ import Secure3d from './secure3d';
 import Finish from './finish';
 import Failure from './failure';
 import Payment from './payment';
-import Cart from "./cart";
+import AbstractCart from "./cart/abstractcart";
 
 export default class Factory {
 
@@ -10,7 +10,7 @@ export default class Factory {
 	 * @param {string} type
 	 * @param {Widget} widget
 	 * @param {Object} options
-	 * @returns {Cart|Finish|Step3ds|Payment|Failure}
+	 * @returns {AbstractCart|Finish|Step3ds|Payment|Failure}
 	 * @throws {Error}
 	 */
 	static make(type, widget, options = {}) {
@@ -22,8 +22,8 @@ export default class Factory {
 			return new Failure(widget, options);
 		} else if (type === 'payment') {
 			return new Payment(widget, options);
-		} else if (type === 'cart'){
-			return new Cart(widget, options);
+		} else if (type === 'cart') {
+			return new AbstractCart(widget, options);
 		}
 
 		throw new Error('unknown step ' + type);
