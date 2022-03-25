@@ -6,61 +6,61 @@ use Bitrix\Main;
 
 class Assert
 {
-	public static function notNull($value, $argument, $message = null): void
+	public static function notNull($value, $argument, $message = null, $exceptionClassName = Main\ArgumentException::class): void
 	{
 		if ($value === null)
 		{
 			$message = $message ?? sprintf('Argument "%s" is null', $argument);
 
-			throw new Main\ArgumentException($message, $argument);
+			throw new $exceptionClassName($message, $argument);
 		}
 	}
 
-	public static function typeOf($value, $className, $argument): void
+	public static function typeOf($value, $className, $argument, $exceptionClassName = Main\ArgumentTypeException::class): void
 	{
 		if (!($value instanceof $className))
 		{
-			throw new Main\ArgumentTypeException($argument, $className);
+			throw new $exceptionClassName($argument, $className);
 		}
 	}
 
-	public static function isArray($value, $argument): void
+	public static function isArray($value, $argument, $exceptionClassName = Main\ArgumentTypeException::class): void
 	{
 		if (!is_array($value))
 		{
-			throw new Main\ArgumentTypeException($argument, 'Array');
+			throw new $exceptionClassName($argument, 'Array');
 		}
 	}
 
-	public static function classExists($className): void
+	public static function classExists($className, $exceptionClassName = Main\NotImplementedException::class): void
 	{
 		if (!class_exists($className))
 		{
-			throw new Main\NotImplementedException(sprintf('class %s not exists', $className));
+			throw new $exceptionClassName(sprintf('class %s not exists', $className));
 		}
 	}
 
-	public static function isString($value, $argument): void
+	public static function isString($value, $argument, $exceptionClassName = Main\ArgumentException::class): void
 	{
 		if (!is_string($value))
 		{
-			throw new Main\ArgumentException($argument, 'String');
+			throw new $exceptionClassName($argument, 'String');
 		}
 	}
 
-	public static function isNumber($value, $argument): void
+	public static function isNumber($value, $argument, $exceptionClassName = Main\ArgumentException::class): void
 	{
 		if (!is_numeric($value))
 		{
-			throw new Main\ArgumentException($argument, 'Number');
+			throw new $exceptionClassName($argument, 'Number');
 		}
 	}
 
-	public static function isSubclassOf($className, $parentName): void
+	public static function isSubclassOf($className, $parentName, $exceptionClassName = Main\InvalidOperationException::class): void
 	{
 		if (!is_subclass_of($className, $parentName))
 		{
-			throw new Main\InvalidOperationException(sprintf(
+			throw new $exceptionClassName(sprintf(
 				'%s must extends %s',
 				$className,
 				$parentName
@@ -68,11 +68,11 @@ class Assert
 		}
 	}
 
-	public static function methodExists($classOrObject, $method): void
+	public static function methodExists($classOrObject, $method, $exceptionClassName = Main\InvalidOperationException::class): void
 	{
 		if (!method_exists($classOrObject, $method))
 		{
-			throw new Main\InvalidOperationException(sprintf(
+			throw new $exceptionClassName(sprintf(
 				'%s missing method %s',
 				is_object($classOrObject) ? get_class($classOrObject) : $classOrObject,
 				$method
