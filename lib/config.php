@@ -63,4 +63,9 @@ class Config
 
 		Option::set($moduleName, $name, $value, $siteId);
 	}
+
+	public static function isBeta() : bool
+	{
+		return strpos($_SERVER['HTTP_HOST'], 't-dir') !== false;
+	}
 }

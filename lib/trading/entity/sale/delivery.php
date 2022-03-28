@@ -158,7 +158,7 @@ class Delivery extends EntityReference\Delivery
 		return Sale\Delivery\Services\Manager::getEmptyDeliveryServiceId();
 	}
 
-	public function getPickupStores(int $deliveryId, EntityReference\Order $order) : array
+	public function getPickupStores(int $deliveryId, EntityReference\Order $order, array $bounds = null) : array
 	{
 		try
 		{
@@ -166,7 +166,7 @@ class Delivery extends EntityReference\Delivery
 			$service = $this->getDeliveryService($deliveryId);
 			$pickup = Pickup\Factory::make($service);
 
-			$result = $pickup->getStores($calculatableOrder);
+			$result = $pickup->getStores($calculatableOrder, $service, $bounds);
 		}
 		catch (Main\SystemException $exception)
 		{

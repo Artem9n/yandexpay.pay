@@ -75,11 +75,14 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	public function initUserBasket() : Main\Result
+	public function initUserBasket(bool $skipCreate = true) : Main\Result
 	{
 		try
 		{
-			$fuserId = $this->getFUserId();
+			$fuserId = $this->getFUserId($skipCreate);
+
+			//if ($fuserId === null) { return $this->initEmptyBasket($skipCreate); }
+
 			$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
 			/** @var Sale\BasketBase $basketClassName */
 			$basketClassName = $registry->getBasketClassName();
@@ -101,11 +104,12 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	public function initEmptyBasket() : Main\Result
+	public function initEmptyBasket(bool $skipCreate = true) : Main\Result
 	{
 		$siteId = $this->internalOrder->getSiteId();
-		$fUserId = $this->getFUserId();
+		$fUserId = $this->getFUserId($skipCreate);
 
+		/** @var \Bitrix\Sale\BasketBase $basket */
 		$registry = Sale\Registry::getInstance(Sale\Registry::ENTITY_ORDER);
 		$basketClassName = $registry->getBasketClassName();
 		$basket = $basketClassName::create($siteId);
@@ -257,7 +261,7 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	public function getBasketPrice()
+	public function getBasketPrice() : float
 	{
 		return $this->getBasket()->getPrice();
 	}
@@ -385,20 +389,20 @@ class Order extends EntityReference\Order
 		return $basket;
 	}
 
-	protected function getFUserId() : int
+	protected function getFUserId(bool $skipCreate = true) : ?int
 	{
+		if ($this->fUserId !== null) { return $this->fUserId; }
+
 		$userId = (int)$this->internalOrder->getUserId();
 
 		if ($userId <= 0 || $userId === (int)\CSaleUser::GetAnonymousUserID())
 		{
-			$result = Sale\Fuser::getId();
+			$result = Sale\Fuser::getId($skipCreate) ?: null;
 		}
 		else
 		{
-			$result = Sale\Fuser::getId(true) ?: Sale\Fuser::getIdByUserId($userId) ?: null; // false to null
+			$result = Sale\Fuser::getId($skipCreate) ?: Sale\Fuser::getIdByUserId($userId) ?: null;
 		}
-
-		Assert::notNull($result, 'fUserId');
 
 		return $result;
 	}

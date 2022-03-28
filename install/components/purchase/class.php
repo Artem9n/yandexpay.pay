@@ -225,9 +225,9 @@ class Purchase extends \CBitrixComponent
 		return $this->environment->getDelivery()->calculate($deliveryId, $order);
 	}
 
-	protected function getPickupStores(EntityReference\Order $order, int $deliveryId) : array
+	protected function getPickupStores(EntityReference\Order $order, int $deliveryId, array $bounds = null) : array
 	{
-		return $this->environment->getDelivery()->getPickupStores($deliveryId, $order);
+		return $this->environment->getDelivery()->getPickupStores($deliveryId, $order, $bounds);
 	}
 
 	protected function filterDeliveryByType(array $deliveryIds, string $type) : array
@@ -279,16 +279,19 @@ class Purchase extends \CBitrixComponent
 
 		$deliveries = $this->restrictedDeliveries($order);
 		$deliveries = $this->filterDeliveryByType($deliveries, EntitySale\Delivery::PICKUP_TYPE);
+		$bounds = $request->getBounds()->getFields();
 
 		foreach ($deliveries as $deliveryId)
 		{
-			if (!$this->isDeliveryCompatible($order, $deliveryId)) { continue; }
-
-			$allStores = $this->getPickupStores($order, $deliveryId);
+			$allStores = $this->getPickupStores($order, $deliveryId, $bounds);
 			//$storesByLocation = $this->groupStoresByLocation($allStores); //todo, need group?
 			foreach ($allStores as $locationId => $stores)
 			{
+				$this->clearCalculatable($order);
+
 				$this->setLocation($order, $locationId);
+
+				if (!$this->isDeliveryCompatible($order, $deliveryId)) { continue; }
 
 				$calculationResult = $this->calculateDelivery($order, $deliveryId);
 
@@ -304,6 +307,11 @@ class Purchase extends \CBitrixComponent
 		$this->sendResponse($result);
 	}
 
+	protected function clearCalculatable(EntityReference\Order $order) : void
+	{
+		$order->clearCalculatable();
+	}
+
 	protected function collectPickupOption(array $store, EntityReference\Delivery\CalculationResult $calculationResult, int $locationId = null) : array
 	{
 		return [
@@ -313,7 +321,7 @@ class Purchase extends \CBitrixComponent
 				'locationId' => $locationId,
 			]),
 			'label'     => $store['TITLE'],
-			'provider'  => 'pickpoint', //todo
+			'provider'  => $store['PROVIDER'] ?? 'pickpoint', //todo
 			'address'   => $store['ADDRESS'],
 			'deliveryDate' => $calculationResult->getDateFrom()->getTimestamp(),
 			'amount'    => (string)$calculationResult->getPrice(),

@@ -1,13 +1,14 @@
 <?php
 
-namespace YandexPay\Pay\Trading\Entity\Sale\Pickup;
+namespace YandexPay\Pay\Trading\Entity\Sale\Pickup\Site;
 
 use Bitrix\Main;
 use Bitrix\Catalog;
 use Bitrix\Sale;
+use YandexPay\Pay\Trading\Entity\Sale\Pickup\AbstractAdapter;
 
 /** @property Sale\Delivery\Services\Configurable $service */
-class Configurable extends AbstractAdapter
+class Store extends AbstractAdapter
 {
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
@@ -32,24 +33,16 @@ class Configurable extends AbstractAdapter
 
 	protected function loadStores(array $storeIds, array $bounds = null) : array
 	{
-		if (empty($storeIds)) { return []; }
+		if (empty($storeIds) || $bounds === null) { return []; }
 
 		$filter = [
 			'=ID' => $storeIds,
-			'!GPS_N' => false,
-			'!GPS_S' => false,
+			['<=GPS_N' => $bounds['ne']['latitude']],
+			['>=GPS_N' => $bounds['sw']['latitude']],
+			['<=GPS_S' => $bounds['ne']['longitude']],
+			['>=GPS_S' => $bounds['sw']['longitude']],
 			'!ADDRESS' => false,
 		];
-
-		if ($bounds !== null)
-		{
-			$filter += [
-				['<=GPS_N' => $bounds['ne']['latitude']],
-				['>=GPS_N' => $bounds['sw']['latitude']],
-				['<=GPS_S' => $bounds['ne']['longitude']],
-				['>=GPS_S' => $bounds['sw']['longitude']]
-			];
-		}
 
 		$result = [];
 
