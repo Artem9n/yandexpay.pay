@@ -11,6 +11,10 @@ abstract class Order
 	protected $environment;
 	/** @var Sale\OrderBase */
 	protected $internalOrder;
+	/** @var int|null */
+	protected $fUserId;
+	/** @var Sale\OrderBase */
+	protected $calculatable;
 
 	public function __construct(Environment $environment, $internalOrder)
 	{
@@ -28,12 +32,17 @@ abstract class Order
 		throw new Main\NotImplementedException('finalize is missing');
 	}
 
-	public function initUserBasket() : Main\Result
+	public function setFUserId($fuserId) : void
+	{
+		$this->fUserId = $fuserId;
+	}
+
+	public function initUserBasket(bool $skipCreate = true) : Main\Result
 	{
 		throw new Main\NotImplementedException('initUserBasket is missing');
 	}
 
-	public function initEmptyBasket() : Main\Result
+	public function initEmptyBasket(bool $skipCreate = true) : Main\Result
 	{
 		throw new Main\NotImplementedException('initEmptyBasket is missing');
 	}
@@ -235,7 +244,7 @@ abstract class Order
 	/**
 	 * @return float
 	 */
-	public function getBasketPrice()
+	public function getBasketPrice() : float
 	{
 		throw new Main\NotImplementedException('getBasketPrice is missing');
 	}
@@ -254,5 +263,10 @@ abstract class Order
 	public function getCurrencyCode() : string
 	{
 		throw new Main\NotImplementedException('getCurrencyCode is missing');
+	}
+
+	public function clearCalculatable() : void
+	{
+		$this->calculatable = null;
 	}
 }
