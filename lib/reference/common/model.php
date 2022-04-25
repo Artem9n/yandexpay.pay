@@ -163,8 +163,10 @@ abstract class Model
 	}
 
 	/**
+	 * @template T
 	 * @param $fieldKey
-	 * @return Model|null
+	 *
+	 * @return T
 	 */
 	protected function getChildModel($fieldKey)
 	{
