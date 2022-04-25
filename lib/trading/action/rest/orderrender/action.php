@@ -15,6 +15,7 @@ class Action extends Rest\Reference\EffectiveAction
 		(new Rest\Pipeline())
 			->pipe($this->calculationPipeline($request))
 			->pipe($this->collectorPipeline($response))
+			->pipe($this->collectorDelivery($response, $request))
 			->process($state);
 
 		return $this->convertResponseToHttp($response);
@@ -37,7 +38,18 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe(new Rest\Stage\OptionsCollector($response))
 			->pipe(new Rest\Stage\OrderItemsCollector($response, 'cart.items'))
 			->pipe(new Rest\Stage\CouponsCollector($response,  'cart.coupons'))
-			->pipe(new Rest\Stage\OrderTotalCollector($response, 'cart.total'))
-			->pipe(new Rest\Stage\OrderDeliveryCollector($response, 'shipping.availableCourierOptions'));
+			->pipe(new Rest\Stage\OrderTotalCollector($response, 'cart.total'));
+	}
+
+	protected function collectorDelivery(Rest\Reference\EffectiveResponse $response, Request $request)
+	{
+		$result = new Rest\Pipeline();
+
+		if ($request->getAddress() !== null)
+		{
+			$result = new Rest\Stage\OrderDeliveryCollector($response, 'shipping.availableCourierOptions');
+		}
+
+		return $result;
 	}
 }
