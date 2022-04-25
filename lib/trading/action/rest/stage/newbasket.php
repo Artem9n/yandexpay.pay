@@ -35,6 +35,7 @@ class NewBasket
 		}
 
 		$this->addBasketNewProducts($state, $new);
+		$this->refreshBasket($state);
 	}
 
 	protected function splitBasketAlreadyExists() : array
@@ -111,6 +112,13 @@ class NewBasket
 			$result = $state->order->deleteBasketItem($basketCode);
 			Exceptions\Facade::handleResult($result, DtoProperty::class);
 		}
+	}
+
+	protected function refreshBasket(State\OrderCalculation $state) : void
+	{
+		$refreshResult = $state->order->refreshBasket();
+
+		Exceptions\Facade::handleResult($refreshResult);
 	}
 }
 
