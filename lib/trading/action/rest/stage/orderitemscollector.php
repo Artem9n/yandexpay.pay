@@ -14,11 +14,13 @@ class OrderItemsCollector extends ResponseCollector
 			$basketResult = $state->order->getBasketItemData($basketCode);
 			$basketData = $basketResult->getData();
 
+			$product = [
+				(string)$basketData['PRODUCT_ID'],
+				(string)$basketData['BASKET_ID']
+			];
+
 			$result[] = [
-				'productId' => implode(':', [
-					(string)$basketData['PRODUCT_ID'],
-					$basketData['BASKET_ID'] ?? null]
-				),
+				'productId' => implode(':', $product),
 				'unitPrice' => (float)$basketData['BASE_PRICE'],
 				'discountedUnitPrice' => (float)$basketData['PRICE'],
 				'subtotal' => (float)$basketData['TOTAL_BASE_PRICE'],
@@ -26,9 +28,16 @@ class OrderItemsCollector extends ResponseCollector
 				'title' => (string)$basketData['NAME'],
 				'quantity' => [
 					'count' => (float)$basketData['QUANTITY'],
+					'label' => (string)$basketData['MEASURE_NAME'],
+					'tax' => (float)$basketData['VAT_RATE'],
 					//'available' => (float), todo
-					//'label' => (string), todo
 				],
+				'measurements' => [
+					'weight' => $basketData['WEIGHT'],
+					'height' => $basketData['HEIGHT'],
+					'length' => $basketData['LENGTH'],
+					'width' => $basketData['WIDTH']
+				]
 			];
 		}
 
