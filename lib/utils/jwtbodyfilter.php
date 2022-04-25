@@ -93,22 +93,13 @@ class JwtBodyFilter implements Main\Type\IRequestFilter
 		}
 	}
 
-	protected function convertEncoding($message)
-	{
-		$isUtf8Config = Main\Application::isUtfMode();
-
-		if ($isUtf8Config) { return $message; }
-
-		return Main\Text\Encoding::convertEncoding($message, 'UTF-8', 'WINDOWS-1251');
-	}
-
 	protected function decode(string $raw, array $keys) : array
 	{
 		try
 		{
 			$data = JWT\JWT::decode($raw, $keys);
 			$data = $this->convertStdClassToArray($data);
-			$data = $this->convertEncoding($data);
+			$data = Encoding::revert($data);
 
 			return $data;
 		}
