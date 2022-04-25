@@ -88,6 +88,7 @@ class TradingButton extends \CBitrixComponent
 			'buttonTheme'       => $this->arParams['VARIANT_BUTTON'],
 			'buttonWidth'       => $this->arParams['WIDTH_BUTTON'],
 			'gateway'           => $gateway->getGatewayId(),
+			'isRest'            => $gateway->isRest(),
 			'gatewayMerchantId' => $gateway->getMerchantId(),
 			'useEmail'          => $options->useBuyerEmail(),
 			'useName'           => $options->useBuyerName(),
@@ -96,6 +97,7 @@ class TradingButton extends \CBitrixComponent
 			'restUrl'           => $this->getRestUrl(),
 			'notifyUrl'         => $params['YANDEX_PAY_NOTIFY_URL'],
 			'siteUrl'           => Utils\Url::absolutizePath(),
+			'successUrl'        => $options->getSuccessUrl(),
 			'productId'         => $this->arParams['PRODUCT_ID'],
 			'siteId'            => $setup->getSiteId(),
 			'setupId'           => $setup->getId(),
@@ -112,10 +114,9 @@ class TradingButton extends \CBitrixComponent
 	protected function getRestUrl() : string
 	{
 		return Utils\Url::absolutizePath(
-			sprintf('%s/services/%s/trading/p%s/button/data',
+			sprintf('%s/services/%s/trading/',
 				BX_ROOT,
-				Config::getModuleName(),
-				$this->setup->getId()
+				Config::getModuleName()
 		));
 	}
 
