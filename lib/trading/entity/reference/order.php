@@ -188,7 +188,15 @@ abstract class Order
 	 */
 	public function getId()
 	{
-		throw new Main\NotImplementedException('add is missing');
+		throw new Main\NotImplementedException('getId is missing');
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getHash()
+	{
+		throw new Main\NotImplementedException('getHash is missing');
 	}
 
 	/** @return string[] */

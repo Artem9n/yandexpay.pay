@@ -31,22 +31,7 @@ class Order extends EntityReference\Order
 
 	public function finalize() : Main\Result
 	{
-		$basket = $this->getBasket();
-
-		$this->internalOrder->setMathActionOnly(false);
-		$result = $basket->refreshData();
-
-		if ($result->isSuccess())
-		{
-			$unfreezeResult = $this->unfreeze();
-
-			if (!$unfreezeResult->isSuccess())
-			{
-				$result->addErrors($unfreezeResult->getErrors());
-			}
-		}
-
-		return $result;
+		return $this->unfreeze();
 	}
 
 	public function freeze() : void
@@ -63,7 +48,7 @@ class Order extends EntityReference\Order
 
 		if ($this->isStartField)
 		{
-			$hasMeaningfulFields = $this->internalOrder->hasMeaningfulField();
+			$hasMeaningfulFields = $this->internalOrder->isNew() || $this->internalOrder->hasMeaningfulField();
 			$finalActionResult = $this->internalOrder->doFinalAction($hasMeaningfulFields);
 
 			if (!$finalActionResult->isSuccess())
@@ -116,6 +101,11 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setBasket($basket);
 	}
 
+	public function refreshBasket()
+	{
+		return $this->getBasket()->refresh();
+	}
+
 	public function getBasketItemData($basketCode) : Main\Result
 	{
 		$result = new Main\Result();
@@ -130,6 +120,8 @@ class Order extends EntityReference\Order
 			return $result;
 		}
 
+		$dimensions = unserialize($basketItem->getField('DIMENSIONS'), [false]);
+
 		$result->setData([
 			'BASKET_ID' => $basketItem->getBasketCode(),
 			'PRODUCT_ID' => $basketItem->getProductId(),
@@ -139,6 +131,12 @@ class Order extends EntityReference\Order
 			'TOTAL_PRICE' => $basketItem->getFinalPrice(),
 			'TOTAL_BASE_PRICE' => $basketItem->getBasePriceWithVat() * $basketItem->getQuantity(),
 			'QUANTITY' => $basketItem->canBuy() ? $basketItem->getQuantity() : 0,
+			'VAT_RATE' => $basketItem->getVatRate() * 100,
+			'MEASURE_NAME' => $basketItem->getField('MEASURE_NAME'),
+			'WEIGHT' => $basketItem->getWeight() / 1000,
+			'HEIGHT' => $dimensions['HEIGHT'] / 1000,
+			'LENGTH' => $dimensions['LENGTH'] / 1000,
+			'WIDTH' => $dimensions['WIDTH'] / 1000,
 			'PROPS' => $this->collectBasketItemProps($basketItem),
 		]);
 
@@ -427,6 +425,13 @@ class Order extends EntityReference\Order
 		}
 
 		return $result;
+	}
+
+	public function recalculateShipment() : Main\Result
+	{
+		if (!($this->internalOrder instanceof Sale\Order)) { return new Sale\Result(); }
+
+		return $this->internalOrder->getShipmentCollection()->calculateDelivery();
 	}
 
 	public function getShipmentPrice(int $deliveryId) : ?float
@@ -1003,6 +1008,11 @@ class Order extends EntityReference\Order
 	public function setComment(string $value) : void
 	{
 		$this->internalOrder->setField('USER_DESCRIPTION', $value);
+	}
+
+	public function getHash()
+	{
+		return $this->internalOrder->getHash();
 	}
 
 	public function getCurrencyCode() : string
