@@ -5,7 +5,6 @@ export default class RestProxy extends Proxy {
 	bootstrap() {
 		this.getButtonData()
 			.then((result) => {
-
 				if (result.status === 'fail') { throw new Error(result.reason); }
 
 				this.combineOrderWithData(result.data);
@@ -23,46 +22,47 @@ export default class RestProxy extends Proxy {
 			productId: this.getOption('productId'),
 			mode: this.getOption('mode'),
 			currencyCode: this.getOption('currencyCode'),
+			setupId: this.getOption('setupId'),
 		};
 
-		return this.cart.query(this.getOption('restUrl'), data);
+		return this.cart.query(this.getOption('restUrl') + 'button/data', data);
 	}
 
 	getPaymentData() {
 		return {
 			env: this.getOption('env'),
-			version: 2,
-			merchant: {
-				id: this.getOption('merchantId'),
-				name: this.getOption('merchantName'),
-			},
-			order: { id: '0' },
+			version: 3,
+			merchantId: this.getOption('merchantId'),
+			cart: { externalId: "checkout-b2b-test-order-id", },
+			currencyCode: this.getOption('currencyCode'),
 		}
 	}
 
 	createPayment(node, paymentData) {
-		// Создать платеж.
-		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
+
+		console.log(paymentData);
+		YaPay.createCheckout(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then((payment) => {
 				this.cart.removeLoader();
-				this.cart.mountButton(node, payment);
+				this.mountButton(node, payment);
 
-				// Подписаться на событие process.
-				payment.on(YaPay.PaymentEventType.Process, (event) => {
-					// Получить платежный токен.
+				payment.on(YaPay.CheckoutEventType.Success, (event) => {
+
+					this.authorize(event.orderId)
+						.then((result) => {
+							if (result.status === 'success') {
+								//window.location.href = result.data.redirect;
+							}
+							else {
+								this.cart.showError('authorize', result.reasonCode, result.reason);
+							}
+						});
+
 					payment.complete(YaPay.CompleteReason.Success);
-					this.cart.paymentButton.destroy();
-
 					console.log("Process", event);
 				});
 
-				// Подписаться на событие error.
-				payment.on(YaPay.PaymentEventType.Error, (event) => {
-
-					//this.cart.showError('yapayError', 'service temporary unavailable');
-					payment.complete(YaPay.CompleteReason.Error);
-					this.cart.paymentButton.destroy();
-
+				payment.on(YaPay.CheckoutEventType.Error, (event) => {
 					console.log("Process", event);
 				});
 			})
@@ -72,16 +72,60 @@ export default class RestProxy extends Proxy {
 			});
 	}
 
+	authorize(orderId) {
+		let data = {
+			orderId: orderId,
+			hash: 'test',
+			successUrl: this.getOption('successUrl'),
+		};
+
+		return this.cart.query(this.getOption('restUrl') + 'authorize', data);
+	}
+
+	bindDebug(payment) {
+		for (const key in YaPay.CheckoutEventType) {
+			if (!YaPay.CheckoutEventType.hasOwnProperty(key)) { continue; }
+
+			payment.on(YaPay.CheckoutEventType[key], function() {
+				console.log(arguments);
+			});
+		}
+	}
+
+	mountButton(node, payment) {
+
+		this.payment = payment;
+
+		payment.mountButton(this.cart.element, {
+			type: YaPay.ButtonType.Checkout,
+			theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
+			width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
+		});
+	}
+
+	restoreButton(node) {
+		if (this.payment == null) {
+			this.cart.insertLoader();
+			return;
+		}
+
+		this.payment.mountButton(node, {
+			type: YaPay.ButtonType.Checkout,
+			theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
+			width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
+		});
+	}
+
 	combineOrderWithData(data) {
-		const { order } = this.cart.paymentData;
+		const { cart } = this.cart.paymentData;
 
 		let exampleData = {
-			order: {
+			cart: {
+				...cart,
 				items: data.items,
 				total: {
 					amount: data.total.amount,
 				},
-				...order
 			},
 			metadata: data.metadata
 		};
@@ -95,8 +139,14 @@ export default class RestProxy extends Proxy {
 		if (productId !== newProductId) { // todo in items
 			this.cart.widget.setOptions({productId: newProductId});
 			this.getButtonData().then((result) => {
-				this.combineOrderWithData(result);
+				this.combineOrderWithData(result.data);
 			});
 		}
+	}
+
+	changeBasket() {
+		this.getButtonData().then((result) => {
+			this.combineOrderWithData(result.data);
+		});
 	}
 }

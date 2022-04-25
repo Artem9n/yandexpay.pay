@@ -106,15 +106,14 @@ export default class SiteProxy extends Proxy {
 	}
 
 	createPayment(node, paymentData) {
-		// Создать платеж.
+
 		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then((payment) => {
 				this.cart.removeLoader();
 				this.cart.mountButton(node, payment);
 
-				// Подписаться на событие process.
 				payment.on(YaPay.PaymentEventType.Process, (event) => {
-					// Получить платежный токен.
+
 					this.orderAccept(event).then((result) => {
 
 						if (result.error) { throw new Error(result.error.message, result.error.code); }
@@ -143,15 +142,12 @@ export default class SiteProxy extends Proxy {
 						});
 				});
 
-				// Подписаться на событие error.
 				payment.on(YaPay.PaymentEventType.Error, (event) => {
 					this.cart.showError('yapayError', 'service temporary unavailable');
 					payment.complete(YaPay.CompleteReason.Error);
 				});
 
-				// Подписаться на событие change.
 				payment.on(YaPay.PaymentEventType.Change, (event) => {
-
 					// если выбрали адрес доставки, отдаем скисок доставок
 					if (event.shippingAddress) {
 						this.getShippingOptions(event.shippingAddress).then((result) => {
@@ -179,7 +175,6 @@ export default class SiteProxy extends Proxy {
 							order: this.combineOrderWithPickupShipping(event.pickupPoint),
 						});
 					}
-
 				});
 			})
 			.catch((err) => {
@@ -249,6 +244,12 @@ export default class SiteProxy extends Proxy {
 		}
 	}
 
+	changeBasket() {
+		this.getProducts().then((result) => {
+			this.combineOrderWithProducts(result);
+		});
+	}
+
 	combineOrderWithPickupShipping(pickupOption) {
 		const { order } = this.cart.paymentData;
 
@@ -301,5 +302,15 @@ export default class SiteProxy extends Proxy {
 		};
 
 		Object.assign(this.cart.paymentData.order, exampleOrder);
+	}
+
+	restoreButton(node) {
+		if (this.cart.paymentButton == null) {
+			this.cart.insertLoader();
+			return;
+		}
+
+		//this.removeLoader();
+		this.cart.paymentButton.mount(node);
 	}
 }

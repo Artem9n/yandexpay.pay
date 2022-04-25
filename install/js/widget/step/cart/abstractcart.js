@@ -17,7 +17,7 @@ export default class AbstractCart extends AbstractStep {
 		this.isBootstrap = false;
 		this.element = node;
 		this.paymentButton = null;
-		this.proxy = this.getOption('gateway') === 'rest'
+		this.proxy = this.getOption('isRest')
 			? new RestProxy(this)
 			: new SiteProxy(this);
 		this.paymentData = this.getPaymentData();
@@ -50,6 +50,10 @@ export default class AbstractCart extends AbstractStep {
 		solution.bootCart(this);
 	}
 
+	delayChangeBasket() {
+		this.delay('changeBasket');
+	}
+
 	delayChangeOffer(productId) {
 		this.delay('changeOffer', [productId]);
 	}
@@ -58,6 +62,11 @@ export default class AbstractCart extends AbstractStep {
 		ready(() => {
 			this.delay('bootstrap');
 		});
+	}
+
+	changeBasket() {
+		if (!this.isBootstrap) { return; }
+		this.proxy?.changeBasket();
 	}
 
 	changeOffer(newProductId) {
@@ -97,13 +106,7 @@ export default class AbstractCart extends AbstractStep {
 	}
 
 	restoreButton(node) {
-		if (this.paymentButton == null) {
-			this.insertLoader();
-			return;
-		}
-
-		//this.removeLoader();
-		this.paymentButton.mount(node);
+		this.proxy.restoreButton(node);
 	}
 
 	amountSum(amountA, amountB) {
