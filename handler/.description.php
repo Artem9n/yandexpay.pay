@@ -101,6 +101,92 @@ $data = [
 				'VALUE' => Utils\Url::absolutizePath(BX_ROOT . '/tools/yandexpay.pay/sale_ps_yandexpay_result.php')
 			],
 		],
+		'YANDEX_PAY_STATUS_ORDER_AUTO_PAY' => [
+			'NAME' => 'Автоматическая оплата заказа',
+			'DESCRIPTION' => 'Автоматическое подтверждение при холдировании двухстадийной оплаты',
+			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'SORT' => 360,
+			'INPUT'         => [
+				'TYPE' => 'Y/N'
+			],
+			'DEFAULT'       => [
+				'PROVIDER_KEY'      => 'INPUT',
+				'PROVIDER_VALUE'    => 'Y'
+			]
+		],
+		'YANDEX_PAY_STATUS_ORDER_STAGE_PAY' => [
+			'NAME' => 'Стадийность платежа',
+			'DESCRIPTION' => 'Двухстадийный режим включает платежи с предавторизацией (холдирования)',
+			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'SORT' => 370,
+			'INPUT' => [
+				'TYPE' => 'ENUM',
+				'OPTIONS' => [
+					'SINGLE' => 'Одностадийный платеж',
+					'TWO' => 'Двухстадийный платеж'
+				]
+			],
+			'DEFAULT' => [
+				'PROVIDER_VALUE'    => 'TWO',
+				'PROVIDER_KEY'      => 'INPUT'
+			]
+		],
+		'YANDEX_PAY_STATUS_ORDER_HOLD' => [
+			'NAME' => 'Статус захолдированного заказа',
+			'DESCRIPTION' => 'Устанавливать статус при холдировании двухстадийной оплаты',
+			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'SORT' => 450,
+			'INPUT' => [
+				'TYPE' => 'ENUM',
+				'OPTIONS' => \YandexPay\Pay\Trading\Entity\Sale\Status::getEnum()
+			],
+			'DEFAULT' => [
+				'PROVIDER_VALUE'    => 'YH',
+				'PROVIDER_KEY'      => 'INPUT'
+			]
+		],
+		'YANDEX_PAY_STATUS_ORDER_CAPTURE' => [
+			'NAME' => 'Статус заказа для подтверждения',
+			'DESCRIPTION' => 'Если заказ принимает статус, происходит подтверждение двухстадийной оплаты',
+			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'SORT' => 500,
+			'INPUT' => [
+				'TYPE' => 'ENUM',
+				'OPTIONS' => \YandexPay\Pay\Trading\Entity\Sale\Status::getEnum()
+			],
+			'DEFAULT' => [
+				'PROVIDER_VALUE'    => 'YC',
+				'PROVIDER_KEY'      => 'INPUT'
+			]
+		],
+		'YANDEX_PAY_STATUS_ORDER_CANCEL' => [
+			'NAME' => 'Статус заказа для отмены',
+			'DESCRIPTION' => 'Если заказ принимает статус, происходит отмена оплаты',
+			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'SORT' => 550,
+			'INPUT' => [
+				'TYPE' => 'ENUM',
+				'OPTIONS' => \YandexPay\Pay\Trading\Entity\Sale\Status::getEnum()
+			],
+			'DEFAULT' => [
+				'PROVIDER_VALUE'    => 'YU',
+				'PROVIDER_KEY'      => 'INPUT'
+			]
+		],
+		'YANDEX_PAY_STATUS_ORDER_REFUND' => [
+			'NAME' => 'Статус заказа для возврата',
+			'DESCRIPTION' => 'Если заказ принимает статус, происходит возврат средств',
+			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'SORT' => 600,
+			'INPUT' => [
+				'TYPE' => 'ENUM',
+				'OPTIONS' => \YandexPay\Pay\Trading\Entity\Sale\Status::getEnum()
+			],
+			'DEFAULT' => [
+				'PROVIDER_VALUE'    => 'YR',
+				'PROVIDER_KEY'      => 'INPUT'
+			]
+		],
 	],
 ];
 
