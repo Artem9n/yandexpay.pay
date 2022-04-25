@@ -9,6 +9,12 @@ class Action extends Rest\Reference\EffectiveAction
 	public function bootstrap() : void
 	{
 		$this->bootJson();
+		$this->bootSetup();
+	}
+
+	protected function getSetupId() : int
+	{
+		return $this->httpRequest->get('setupId');
 	}
 
 	public function process() : Main\HttpResponse
@@ -20,6 +26,7 @@ class Action extends Rest\Reference\EffectiveAction
 		(new Rest\Pipeline())
 			->pipe($this->calculationPipeline($request))
 			->pipe($this->collectorPipeline($response))
+			->pipe(new Rest\ButtonData\Stage\MetaCollector($response, $request, 'metadata'))
 			->process($state);
 
 		return $this->convertResponseToHttp($response);
@@ -37,7 +44,6 @@ class Action extends Rest\Reference\EffectiveAction
 	{
 		return (new Rest\Pipeline())
 			->pipe(new Rest\Stage\OrderTotalCollector($response, 'total'))
-			->pipe(new Rest\ButtonData\Stage\OrderItemsCollector($response, 'items'))
-			->pipe(new Rest\ButtonData\Stage\UserCollector($response, 'metadata'));
+			->pipe(new Rest\Stage\OrderItemsCollector($response, 'items'));
 	}
 }

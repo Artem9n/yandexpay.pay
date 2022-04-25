@@ -16,8 +16,8 @@ class Request extends Rest\Reference\EffectiveRequest
 		return $this->getField('productId');
 	}
 
-	public function getCurrencyCode() : string
+	public function getSetupId() : int
 	{
-		return $this->requireField('currencyCode');
+		return $this->requireField('setupId');
 	}
 }
