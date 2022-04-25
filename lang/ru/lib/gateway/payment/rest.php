@@ -1,0 +1,3 @@
+<?php
+
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_REST_OPERATION_REFUND_PENDING'] = 'Запрос на возврат отправлен';
