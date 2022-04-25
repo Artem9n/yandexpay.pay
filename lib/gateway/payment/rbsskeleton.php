@@ -10,7 +10,7 @@ use YandexPay\Pay\Gateway\Manager;
 use Yandexpay\Pay\Reference\Concerns;
 use Yandexpay\Pay\Exceptions;
 
-abstract class RbsSkeleton extends Gateway\Base
+abstract class RbsSkeleton extends Gateway\BaseRest
 {
 	use Concerns\HasMessage;
 
@@ -118,7 +118,7 @@ abstract class RbsSkeleton extends Gateway\Base
 		return $this->request->get('paymentId');
 	}
 
-	public function startPay(): array
+	public function startPaySelf(): array
 	{
 		$result = [];
 
@@ -400,7 +400,7 @@ abstract class RbsSkeleton extends Gateway\Base
 		return Main\Text\Encoding::convertEncoding($message, 'WINDOWS-1251', 'UTF-8');
 	}
 
-	public function refund() : void
+	public function refundSelf() : void
 	{
 		$httpClient = new Web\HttpClient();
 		$this->setHeaders($httpClient);

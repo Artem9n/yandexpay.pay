@@ -10,7 +10,7 @@ use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Reference\Concerns;
 
-class Best2pay extends Gateway\Base
+class Best2pay extends Gateway\BaseRest
 {
 	use Concerns\HasMessage;
 
@@ -120,7 +120,7 @@ class Best2pay extends Gateway\Base
 		];
 	}
 
-	public function startPay() : array
+	public function startPaySelf() : array
 	{
 		$result = [];
 
@@ -406,7 +406,7 @@ class Best2pay extends Gateway\Base
 		return Main\Text\Encoding::convertEncoding($message, 'WINDOWS-1251', 'UTF-8');
 	}
 
-	public function refund(): void
+	public function refundSelf(): void
 	{
 		$httpClient = new HttpClient();
 
@@ -493,11 +493,5 @@ class Best2pay extends Gateway\Base
 	protected function isSecure3ds() : bool
 	{
 		return $this->request->get('secure3ds') !== null;
-
-		/*return (
-			$this->request->get('id') !== null
-			&& $this->request->get('operation') !== null
-			&& $this->request->get('reference') !== null
-		);*/
 	}
 }

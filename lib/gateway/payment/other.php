@@ -5,7 +5,7 @@ namespace YandexPay\Pay\Gateway\Payment;
 use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Reference\Concerns;
 
-class Other extends Gateway\Base
+class Other extends Gateway\BaseRest
 {
 	use Concerns\HasMessage;
 
@@ -24,7 +24,7 @@ class Other extends Gateway\Base
 		return null;
 	}
 
-	public function refund() : void
+	public function refundSelf() : void
 	{
 
 	}

@@ -5,11 +5,11 @@ namespace YandexPay\Pay\Gateway;
 use Bitrix\Main;
 use Bitrix\Sale;
 use YandexPay\Pay\Config;
-use YandexPay\Pay\Reference\Concerns\HasMessage;
+use YandexPay\Pay\Reference\Concerns;
 
 abstract class Base implements IGateway
 {
-	use HasMessage;
+	use Concerns\HasMessage;
 
 	public const TEST_URL = 'test';
 	public const ACTIVE_URL = 'active';
@@ -33,7 +33,11 @@ abstract class Base implements IGateway
 
 	abstract public function getPaymentIdFromRequest(): ?int;
 
+	abstract public function refundSelf(): void;
+
 	abstract public function refund(): void;
+
+	abstract public function isRest() : bool;
 
 	abstract protected function getUrlList(): array;
 
@@ -50,6 +54,11 @@ abstract class Base implements IGateway
 	public function setPayment(Sale\Payment $payment) : void
 	{
 		$this->payment = $payment;
+	}
+
+	public function getPayment() : Sale\Payment
+	{
+		return $this->payment;
 	}
 
 	public function getName() : string
@@ -122,6 +131,11 @@ abstract class Base implements IGateway
 		return Config::getLangPrefix();
 	}
 
+	public function startPaySelf() : array
+	{
+		return [];
+	}
+
 	public function startPay() : array
 	{
 		return [];
@@ -169,32 +183,32 @@ abstract class Base implements IGateway
 		return $result;
 	}
 
-	protected function isTestHandlerMode(): bool
+	public function isTestHandlerMode(): bool
 	{
 		return ($this->getParameter('YANDEX_PAY_TEST_MODE', true) === 'Y');
 	}
 
-	protected function getPaymentId() : string
+	public function getPaymentId() : string
 	{
 		return (string)$this->payment->getId();
 	}
 
-	protected function getOrderId() : string
+	public function getOrderId() : string
 	{
 		return (string)$this->payment->getOrderId();
 	}
 
-	protected function getPaymentSum() : float
+	public function getPaymentSum() : float
 	{
 		return $this->payment->getSum();
 	}
 
-	protected function getPaymentAmount() : float
+	public function getPaymentAmount() : float
 	{
 		return round($this->getPaymentSum() * 100);
 	}
 
-	protected function getPaymentField(string $name) : ?string
+	public function getPaymentField(string $name) : ?string
 	{
 		return $this->payment->getField($name);
 	}
@@ -244,26 +258,12 @@ abstract class Base implements IGateway
 
 		$extraParams += $params;
 
-		/*$secure = [
-			'secure3ds' => static::generateParams($extraParams)
-		];*/
-
 		return $this->getParameter('YANDEX_PAY_NOTIFY_URL', true) . '?' . http_build_query($extraParams);
 	}
 
 	protected function getHeaders(string $key = '') : array
 	{
 		return [];
-	}
-
-	public static function generateParams(array $params) : string
-	{
-		return base64_encode(Main\Web\Json::encode($params));
-	}
-
-	public static function parseParams(string $params) : array
-	{
-		return Main\Web\Json::decode(base64_decode($params));
 	}
 
 	protected function setHeaders(Main\Web\HttpClient $httpClient, string $key = '') : void

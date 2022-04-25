@@ -18,21 +18,19 @@ class Manager
 	public const RBS_MTS = 'mts';
 	public const RBS_RSHB = 'rshb';
 	public const RBS = 'rbs';
-	public const REST = 'rest';
 
 	public const OTHER = 'other';
 
 	public static function getGatewayList() : array
 	{
 		return [
-			static::REST,
 			static::PAYTURE,
 			static::BEST2PAY,
-			static::RBKMONEY,
+			/*static::RBKMONEY,
 			static::RBS_ALFA,
 			static::RBS_MTS,
 			static::RBS_RSHB,
-			static::OTHER
+			static::OTHER*/
 		];
 	}
 

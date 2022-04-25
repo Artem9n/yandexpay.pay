@@ -8,7 +8,7 @@ use Bitrix\Main\Web\HttpClient;
 use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Reference\Concerns;
 
-class Payture extends Gateway\Base
+class Payture extends Gateway\BaseRest
 {
 	use Concerns\HasMessage;
 
@@ -108,7 +108,7 @@ class Payture extends Gateway\Base
 		];
 	}
 
-	public function startPay() : array
+	public function startPaySelf() : array
 	{
 		$result = [
 			'PS_INVOICE_ID'     => $this->getExternalId(),
@@ -229,7 +229,7 @@ class Payture extends Gateway\Base
 		return $this->request->get('paymentId');
 	}
 
-	public function refund(): void
+	public function refundSelf(): void
 	{
 		$httpClient = new HttpClient();
 		$url = $this->getUrl('refund');

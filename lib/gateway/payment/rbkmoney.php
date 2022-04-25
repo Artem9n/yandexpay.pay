@@ -5,11 +5,11 @@ namespace YandexPay\Pay\Gateway\Payment;
 use Bitrix\Main;
 use Bitrix\Main\Web\HttpClient;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
-use YandexPay\Pay\Gateway\Base;
+use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Gateway\Manager;
 use YandexPay\Pay\Reference\Concerns\HasMessage;
 
-class Rbkmoney extends Base
+class Rbkmoney extends Gateway\BaseRest
 {
 	use HasMessage;
 
@@ -192,7 +192,7 @@ class Rbkmoney extends Base
 		return $result;
 	}
 
-	public function startPay() : array
+	public function startPaySelf() : array
 	{
 		$result = [];
 
@@ -519,7 +519,7 @@ class Rbkmoney extends Base
 		return Main\Web\Json::decode($data);
 	}
 
-	public function refund(): void
+	public function refundSelf(): void
 	{
 		$apiKey = $this->getParameter('PAYMENT_GATEWAY_API_KEY');
 

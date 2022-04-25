@@ -2,6 +2,7 @@
 
 namespace Yandexpay\Pay\Gateway\Payment;
 
+use YandexPay\Pay\Gateway\Manager;
 use YandexPay\Pay\Reference\Concerns;
 
 class Rshb extends RbsSkeleton
@@ -10,7 +11,7 @@ class Rshb extends RbsSkeleton
 
 	public function getId(): string
 	{
-		return 'rshb';
+		return Manager::RBS_RSHB;
 	}
 
 	protected function getTestUrl() : string

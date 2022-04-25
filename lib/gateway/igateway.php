@@ -13,4 +13,6 @@ interface IGateway
 	public function getParams(): array;
 
 	public function startPay() : array;
+
+	public function startPaySelf() : array;
 }
