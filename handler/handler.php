@@ -12,11 +12,13 @@ use YandexPay\Pay\Config;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Reference\Assert;
+use YandexPay\Pay\Ui\Admin\PaySystemEditPage;
 use YandexPay\Pay\Utils\Url;
+use YandexPay\Pay\Trading\Action\Api;
 
 Loader::includeModule('yandexpay.pay');
 
-class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRefund
+class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRefund, PaySystem\IHold
 {
 	public const REQUEST_SIGN = 'yandexpay';
 
@@ -128,7 +130,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return $result;
 	}
 
-	protected function getParamValue(Payment $payment, $code)
+	public function getParamValue(Payment $payment, $code)
 	{
 		$code = Config::getLangPrefix() . $code;
 
@@ -205,7 +207,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			{
 				$fields = [
 					'PS_STATUS'         => 'Y',
-					'PS_RESPONSE_DATE'  => new Main\Type\DateTime()
+					'PS_RESPONSE_DATE'  => new Main\Type\DateTime(),
+					'PS_STATUS_DESCRIPTION' => $gateway->getId(),
 				] + $resultData;
 
 				if (!$payment->isPaid())
@@ -298,7 +301,18 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	 */
 	public static function getHandlerModeList(): array
 	{
-		return Gateway\Manager::getHandlerModeList();
+		$result = Gateway\Manager::getHandlerModeList();
+
+		if (PaySystemEditPage::isTarget())
+		{
+			$selected = PaySystemEditPage::selectedGateway();
+
+			if ($selected === null) { return $result; }
+
+			$result += $selected;
+		}
+
+		return $result;
 	}
 
 	public function getHandlerMode(): ?string
@@ -309,5 +323,57 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	public function isNewWindow(): bool
 	{
 		return $this->service->getField('NEW_WINDOW') === 'Y';
+	}
+
+	public function orderStatusHold(Payment $payment) : string
+	{
+		return $this->getParamValue($payment, 'STATUS_ORDER_HOLD');
+	}
+
+	public function orderStatusCapture(Payment $payment) : string
+	{
+		return $this->getParamValue($payment, 'STATUS_ORDER_CAPTURE');
+	}
+
+	public function orderStatusRefund(Payment $payment) : string
+	{
+		return $this->getParamValue($payment, 'STATUS_ORDER_REFUND');
+	}
+
+	public function orderStatusCancel(Payment $payment) : string
+	{
+		return $this->getParamValue($payment, 'STATUS_ORDER_CANCEL');
+	}
+
+	public function isAutoPay(Payment $payment) : bool
+	{
+		return (
+			$this->getParamValue($payment, 'STATUS_ORDER_AUTO_PAY') === 'Y'
+			&& $this->getParamValue($payment, 'STATUS_ORDER_STAGE_PAY') === 'TWO'
+		);
+	}
+
+	public function cancel(Payment $payment) : void
+	{
+		$request = new Api\Cancel\Request();
+
+		$request->setTestMode($this->isTestMode($payment));
+		$request->setPayment($payment);
+
+		$data = $request->send();
+
+		$request->buildResponse($data, Api\Cancel\Response::class);
+	}
+
+	public function confirm(Payment $payment) : void
+	{
+		$request = new Api\Capture\Request();
+
+		$request->setTestMode($this->isTestMode($payment));
+		$request->setPayment($payment);
+
+		$data = $request->send();
+
+		$request->buildResponse($data, Api\Capture\Response::class);
 	}
 }
