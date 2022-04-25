@@ -6,9 +6,12 @@ use Bitrix\Sale\BusinessValue;
 use Bitrix\Sale\PaySystem\Service;
 use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference\Assert;
+use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
 use YandexPay\Pay\Trading\Action\Rest\Exceptions\RequestAuthentication;
 use YandexPay\Pay\Trading\Action\Rest\State;
+use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 use YandexPay\Pay\Utils;
+use YandexPay\Pay\Trading\Setup as TradingSetup;
 
 abstract class EffectiveAction extends HttpAction
 {
@@ -21,13 +24,22 @@ abstract class EffectiveAction extends HttpAction
 	{
 		$this->bootJwt();
 		$this->bootJson();
+		$this->bootSetup();
 		$this->bootMerchant();
 	}
 
 	protected function bootJwt() : void
 	{
-		$filter = new Utils\JwtBodyFilter($this->jwkUrl());
-		$this->httpRequest->addFilter($filter);
+		try {
+			$filter = new Utils\JwtBodyFilter($this->jwkUrl());
+			$this->httpRequest->addFilter($filter);
+		}
+		catch (\Exception $exception)
+		{
+			$this->isTestMode = !$this->isTestMode;
+			$filter = new Utils\JwtBodyFilter($this->jwkUrl());
+			$this->httpRequest->addFilter($filter);
+		}
 	}
 
 	protected function bootJson() : void
@@ -36,9 +48,21 @@ abstract class EffectiveAction extends HttpAction
 		$this->httpRequest->addFilter($filter);
 	}
 
+	protected function bootSetup() : void
+	{
+		$setup = $this->loadSetup();
+		$this->passTrading($setup);
+	}
+
 	protected function bootMerchant() : void
 	{
-		$merchantId = BusinessValue::get('YANDEX_PAY_MERCHANT_ID', Service::PAY_SYSTEM_PREFIX . $this->options->getPaymentCard());
+		if(!Main\Loader::includeModule('sale')) { return; }
+
+		$merchantId = BusinessValue::get(
+			'YANDEX_PAY_MERCHANT_ID',
+			Service::PAY_SYSTEM_PREFIX . $this->options->getPaymentCard(),
+			$this->setup->getPersonTypeId()
+		);
 
 		if ($merchantId === null)
 		{
@@ -59,6 +83,34 @@ abstract class EffectiveAction extends HttpAction
 		Assert::isString($result, sprintf('options[%s]', $optionName));
 
 		return $result;
+	}
+
+	protected function loadSetup() : TradingSetup\Model
+	{
+		$setupId = $this->getSetupId();
+
+		$query = TradingSetup\RepositoryTable::getList([
+			'filter' => [
+				'=ID' => $setupId
+			],
+			'limit' => 1,
+		]);
+
+		$result = $query->fetchObject();
+
+		if ($result === null)
+		{
+			throw new DtoProperty('setup not found');
+		}
+
+		return $result;
+	}
+
+	protected function getSetupId() : int
+	{
+		[$userId, $fUserId, $setupId] = explode(':', $this->httpRequest->get('metadata'));
+
+		return (int)$setupId;
 	}
 
 	/**
@@ -85,7 +137,7 @@ abstract class EffectiveAction extends HttpAction
 	{
 		$state->setup = $this->setup;
 		$state->options = $this->options;
-		$state->environment = $this->setup->getEnvironment();
+		$state->environment = EntityRegistry::getEnvironment();
 		$state->isTestMode = $this->isTestMode;
 	}
 
