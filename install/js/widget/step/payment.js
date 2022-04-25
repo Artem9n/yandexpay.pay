@@ -57,58 +57,37 @@ export default class Payment extends AbstractStep {
 	}
 
 	createPayment(node, paymentData) {
-		// Создать платеж.
+
 		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then( (payment) => {
-				// Создать экземпляр кнопки.
+
 				let button = payment.createButton({
 					type: YaPay.ButtonType.Pay,
 					theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
 					width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
 				});
 
-				// Смонтировать кнопку в DOM.
 				button.mount(node);
 
-				// Подписаться на событие click.
 				button.on(YaPay.ButtonEventType.Click, function onPaymentButtonClick() {
-					// Запустить оплату после клика на кнопку.
 					payment.checkout();
 				});
 
-				// Подписаться на событие process.
 				payment.on(YaPay.PaymentEventType.Process, (event) => {
-					// Получить платежный токен.
-					this.notify(payment, event).then((result) => {
-					});
-					/*alert('Payment token — ' + event.token);
 
-					// Опционально (если выполнить шаг 7).
-					alert('Billing email — ' + event.billingContact.email);
+					this.notify(payment, event).then((result) => {});
 
-					// Закрыть форму Yandex Pay.
-					*/
 					payment.complete(YaPay.CompleteReason.Success);
 				});
 
-				// Подписаться на событие error.
 				payment.on(YaPay.PaymentEventType.Error, function onPaymentError(event) {
-					// Вывести информацию о недоступности оплаты в данный момент
-					// и предложить пользователю другой способ оплаты.
-
-					// Закрыть форму Yandex.Pay.
 					console.log({'errors': event});
 					payment.complete(YaPay.CompleteReason.Error);
 				});
 
-				// Подписаться на событие abort.
-				// Это когда пользователь закрыл форму Yandex Pay.
-				payment.on(YaPay.PaymentEventType.Abort, function onPaymentAbort(event) {
-					// Предложить пользователю другой способ оплаты.
-				});
+				payment.on(YaPay.PaymentEventType.Abort, function onPaymentAbort(event) {});
 			})
 			.catch(function (err) {
-				// Платеж не создан.
 				console.log({'payment not create': err});
 			});
 	}
