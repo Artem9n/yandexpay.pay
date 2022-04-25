@@ -5,6 +5,7 @@ use Bitrix\Main;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Common\Model;
 use YandexPay\Pay\Reference\Common\Collection;
+use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
 use YandexPay\Pay\Utils;
 
 abstract class Dto extends Model
@@ -18,7 +19,7 @@ abstract class Dto extends Model
 			throw new Exceptions\DtoProperty(sprintf('%s is missing', $name));
 		}
 
-		Assert::notNull($value, $name);
+		Assert::notNull($value, $name, DtoProperty::class);
 
 		return $value;
 	}
