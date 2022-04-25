@@ -42,7 +42,7 @@ abstract class User
 	 */
 	public function update(array $data)
 	{
-		throw new Main\NotImplementedException(static::class, 'update is missing');
+		throw new Main\NotImplementedException('update is missing');
 	}
 
 	/**
@@ -52,7 +52,7 @@ abstract class User
 	 */
 	public function migrate($code)
 	{
-		throw new Main\NotImplementedException(static::class, 'migrate is missing');
+		throw new Main\NotImplementedException('migrate is missing');
 	}
 
 	/**
@@ -62,7 +62,7 @@ abstract class User
 	 */
 	public function attachGroup($groupId)
 	{
-		throw new Main\NotImplementedException(static::class, 'attachGroup is missing');
+		throw new Main\NotImplementedException('attachGroup is missing');
 	}
 
 	/**
@@ -70,6 +70,14 @@ abstract class User
 	 */
 	public function getId() : ?int
 	{
-		throw new Main\NotImplementedException(static::class, 'getId is missing');
+		throw new Main\NotImplementedException('getId is missing');
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isJustRegistered() : bool
+	{
+		throw new Main\NotImplementedException('isJustRegistered is missing');
 	}
 }

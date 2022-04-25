@@ -35,6 +35,33 @@ class User extends EntityReference\User
 		return $this->id;
 	}
 
+	public function isJustRegistered() : bool
+	{
+		$userId = (int)$this->data['ID'];
+
+		if ($userId <= 0) { return false; }
+
+		$result = false;
+
+		$date = new Main\Type\DateTime();
+
+		$query = Main\UserTable::getList([
+			'filter' => [
+				'ID' => $userId,
+				'>=DATE_REGISTER' => $date->add('-2 minutes')
+			],
+			'select' => [ 'ID', 'DATE_REGISTER' ],
+			'limit' => 1,
+		]);
+
+		if ($user = $query->fetch())
+		{
+			$result = true;
+		}
+
+		return $result;
+	}
+
 	protected function searchUser() : ?int
 	{
 		$filters = $this->getSearchFilters();
