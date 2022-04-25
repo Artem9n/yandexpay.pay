@@ -29,9 +29,10 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe(new Rest\OrderCreate\Stage\OrderStatus())
 			->pipe(new Rest\OrderCreate\Stage\OrderProperties($request))
 			->pipe(new Rest\Stage\NewBasket($request->getItems()))
-			->pipe($this->stageDelivery($request))
 			->pipe(new Rest\OrderCreate\Stage\OrderPaySystem($request))
+			->pipe($this->stageDelivery($request))
 			->pipe(new Rest\Stage\OrderFinalizer())
+			->pipe(new Stage\DeliveryCalculate())
 			->pipe(new Rest\OrderCreate\Stage\OrderCheck($request))
 			->pipe(new Rest\OrderCreate\Stage\OrderAdd($request));
 	}
@@ -52,6 +53,7 @@ class Action extends Rest\Reference\EffectiveAction
 	protected function collectorPipeline(Rest\Reference\EffectiveResponse $response) : Rest\Pipeline
 	{
 		return (new Rest\Pipeline())
-			->pipe(new Rest\OrderCreate\Stage\OrderCollector($response, 'orderId'));
+			->pipe(new Rest\OrderCreate\Stage\OrderCollector($response, 'orderId'))
+			->pipe(new Rest\OrderCreate\Stage\MetaCollector($response, 'metadata'));
 	}
 }

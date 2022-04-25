@@ -23,8 +23,6 @@ class OrderAdd
 
 	protected function addOrder(State\OrderCalculation $state) : void
 	{
-		//global $USER;
-
 		$externalId = $state->order->getId();
 		$saveResult = $state->order->add($externalId);
 
@@ -34,20 +32,8 @@ class OrderAdd
 
 		if (!isset($saveData['ID']))
 		{
-			$errorMessage = 'ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET'; //$this->getLang('ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET');
+			$errorMessage = 'ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET';
 			throw new Main\SystemException($errorMessage);
 		}
-
-		/*if (!$USER->IsAuthorized()) // TODO user id, auth
-		{
-			if (!is_array($_SESSION['SALE_ORDER_ID']))
-			{
-				$_SESSION['SALE_ORDER_ID'] = [];
-			}
-
-			$_SESSION['SALE_ORDER_ID'][] = (int)$saveData['INTERNAL_ID'];
-		}
-
-		return (string)$saveData['ID'];*/
 	}
 }

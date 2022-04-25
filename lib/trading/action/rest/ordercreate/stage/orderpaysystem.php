@@ -31,11 +31,9 @@ class OrderPaySystem
 			$paySystemId = $state->options->getPaymentCash();
 		}
 
-		$price = $this->request->getOrderAmount();
-
 		if ((int)$paySystemId > 0)
 		{
-			$state->order->createPayment($paySystemId, $price);
+			$state->order->createPayment($paySystemId);
 		}
 	}
 }
