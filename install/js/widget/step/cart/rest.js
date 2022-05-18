@@ -48,10 +48,12 @@ export default class RestProxy extends Proxy {
 
 				payment.on(YaPay.CheckoutEventType.Success, (event) => {
 
-					this.authorize(event.orderId)
+					this.authorize(event)
 						.then((result) => {
 							if (result.status === 'success') {
-								//window.location.href = result.data.redirect;
+								setTimeout(function() {
+									window.location.href = result.data.redirect;
+								}, 1000);
 							}
 							else {
 								this.cart.showError('authorize', result.reasonCode, result.reason);
@@ -72,10 +74,10 @@ export default class RestProxy extends Proxy {
 			});
 	}
 
-	authorize(orderId) {
+	authorize(event) {
 		let data = {
-			orderId: orderId,
-			hash: 'test',
+			orderId: event.orderId,
+			hash: event.metadata,
 			successUrl: this.getOption('successUrl'),
 		};
 
