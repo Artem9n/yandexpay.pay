@@ -1,6 +1,8 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
+use YandexPay\Pay\Data\Measure;
+use YandexPay\Pay\Data\Vat;
 use YandexPay\Pay\Trading\Action\Rest\State;
 
 class OrderItemsCollector extends ResponseCollector
@@ -29,8 +31,10 @@ class OrderItemsCollector extends ResponseCollector
 				'quantity' => [
 					'count' => (float)$basketData['QUANTITY'],
 					'label' => (string)$basketData['MEASURE_NAME'],
-					'tax' => (float)$basketData['VAT_RATE'],
-					//'available' => (float), todo
+					'measure' => Measure::convertForService($basketData['MEASURE_CODE']),
+				],
+				'receipt' => [
+					'tax' => Vat::convertForService($basketData['VAT_RATE'])
 				],
 				'measurements' => [
 					'weight' => $basketData['WEIGHT'],
