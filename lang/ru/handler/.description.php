@@ -11,6 +11,9 @@ $MESS['YANDEX_PAY_TEST_MODE_DESCRIPTION'] = 'Если отмечено, платежная служба буд
 $MESS['YANDEX_PAY_MERCHANT_ID_NAME'] = 'Идентификатор продавца';
 $MESS['YANDEX_PAY_MERCHANT_ID_DESCRIPTION'] = 'Идентификатор, который продавец получает при регистрации в Yandex Pay';
 
+$MESS['YANDEX_PAY_REST_API_KEY_NAME'] = 'Api key yandex pay';
+$MESS['YANDEX_PAY_REST_API_KEY_DESCRIPTION'] = 'Для запросов по новой модели оплаты полученный от Yandex Pay';
+
 $MESS['YANDEX_PAY_MERCHANT_NAME_NAME'] = 'Имя продавца';
 $MESS['YANDEX_PAY_MERCHANT_NAME_DESCRIPTION'] = 'Имя, которое продавец указывает при регистрации в Yandex Pay';
 
@@ -31,14 +34,17 @@ $MESS['YANDEX_PAY_PAYMENT_GATEWAY_PROVIDER_ID_DESCRIPTION'] = 'Выберите поставщи
 
 $MESS['YANDEX_PAY_GROUP_GATEWAY'] = 'Параметры подключения платежных шлюзов';
 
-$MESS['YANDEX_PAY_CARD_NETWORK_NAME'] = 'Разрешенные платежные системы для проведения платежа';
-$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_UNIONPAY'] = 'UnionPay';
-$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_UZCARD'] = 'Uzcard';
-$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_DISCOVER'] = 'Discover';
-$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_AMEX'] = 'AmericanExpress';
-$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_VISA'] = 'Visa';
-$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_MASTERCARD'] = 'Mastercard';
-$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_MIR'] = 'МИР';
-$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_MAESTRO'] = 'Maestro';
-$MESS['YANDEX_PAY_CARD_NETWORK_TYPE_VISAELECTRON'] = 'Visa Electron';
+$MESS['YANDEX_PAY_CHECKOUT_GROUP'] = 'Автоматизация Yandex Pay Checkout';
+$MESS['YANDEX_PAY_STATUS_ORDER_AUTO_PAY_NAME'] = 'Автоматическое подтверждение оплаты';
+$MESS['YANDEX_PAY_STATUS_ORDER_AUTO_PAY_DESCRIPTION'] = 'Автоматическое подтверждение при холдировании двухстадийной оплаты';
+$MESS['YANDEX_PAY_STATUS_ORDER_HOLD_NAME'] = 'Статус захолдированного заказа';
+$MESS['YANDEX_PAY_STATUS_ORDER_HOLD_DESCRIPTION'] = 'Устанавливать статус при холдировании двухстадийной оплаты';
+$MESS['YANDEX_PAY_STATUS_ORDER_CAPTURE_NAME'] = 'Статус заказа для подтверждения';
+$MESS['YANDEX_PAY_STATUS_ORDER_CAPTURE_DESCRIPTION'] = 'Если заказ принимает статус, происходит подтверждение оплаты';
+$MESS['YANDEX_PAY_STATUS_ORDER_CANCEL_NAME'] = 'Статус заказа для отмены';
+$MESS['YANDEX_PAY_STATUS_ORDER_CANCEL_DESCRIPTION'] = 'Если заказ принимает статус, происходит отмена захолдированной оплаты';
+$MESS['YANDEX_PAY_STATUS_ORDER_REFUND_NAME'] = 'Статус заказа для возврата';
+$MESS['YANDEX_PAY_STATUS_ORDER_REFUND_DESCRIPTION'] = 'Устанавливать статус при возврате средств';
+$MESS['YANDEX_PAY_STATUS_ORDER_PARTIALLY_REFUND_NAME'] = 'Статус заказа для частичного возврата';
+$MESS['YANDEX_PAY_STATUS_ORDER_PARTIALLY_REFUND_DESCRIPTION'] = 'Устанавливать статус при частичном возврате средств';
 

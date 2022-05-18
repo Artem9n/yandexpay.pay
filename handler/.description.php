@@ -36,7 +36,7 @@ $data = [
 			],
 			'DEFAULT'       => [
 				'PROVIDER_KEY'      => 'INPUT',
-				'PROVIDER_VALUE'    => 'Y'
+				'PROVIDER_VALUE'    => 'N'
 			]
 		],
 		'YANDEX_PAY_MERCHANT_ID' => [
@@ -46,6 +46,15 @@ $data = [
 			'INPUT' => [
 				'TYPE' => PayUi\SaleInput\Registry::type(PayUi\SaleInput\Registry::TYPE_MERCHANT),
 				'SIZE' => 40
+			],
+		],
+		'YANDEX_PAY_REST_API_KEY' => [
+			'NAME' => Loc::getMessage('YANDEX_PAY_REST_API_KEY_NAME'),
+			'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_REST_API_KEY_DESCRIPTION'),
+			'SORT' => 155,
+			'INPUT' => [
+				'TYPE' => 'STRING',
+				'SIZE' => 40,
 			],
 		],
 		'YANDEX_PAY_MERCHANT_NAME' => [
@@ -102,9 +111,9 @@ $data = [
 			],
 		],
 		'YANDEX_PAY_STATUS_ORDER_AUTO_PAY' => [
-			'NAME' => 'Автоматическая оплата заказа',
-			'DESCRIPTION' => 'Автоматическое подтверждение при холдировании двухстадийной оплаты',
-			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'NAME' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_AUTO_PAY_NAME'),
+			'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_AUTO_PAY_DESCRIPTION'),
+			'GROUP' => Loc::getMessage('YANDEX_PAY_CHECKOUT_GROUP'),
 			'SORT' => 360,
 			'INPUT'         => [
 				'TYPE' => 'Y/N'
@@ -114,7 +123,7 @@ $data = [
 				'PROVIDER_VALUE'    => 'Y'
 			]
 		],
-		'YANDEX_PAY_STATUS_ORDER_STAGE_PAY' => [
+		/*'YANDEX_PAY_STATUS_ORDER_STAGE_PAY' => [
 			'NAME' => 'Стадийность платежа',
 			'DESCRIPTION' => 'Двухстадийный режим включает платежи с предавторизацией (холдирования)',
 			'GROUP' => 'Атоматизация Yandex Pay Checkout',
@@ -130,60 +139,74 @@ $data = [
 				'PROVIDER_VALUE'    => 'TWO',
 				'PROVIDER_KEY'      => 'INPUT'
 			]
-		],
+		],*/
 		'YANDEX_PAY_STATUS_ORDER_HOLD' => [
-			'NAME' => 'Статус захолдированного заказа',
-			'DESCRIPTION' => 'Устанавливать статус при холдировании двухстадийной оплаты',
-			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'NAME' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_HOLD_NAME'),
+			'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_HOLD_DESCRIPTION'),
+			'GROUP' => Loc::getMessage('YANDEX_PAY_CHECKOUT_GROUP'),
 			'SORT' => 450,
 			'INPUT' => [
 				'TYPE' => 'ENUM',
 				'OPTIONS' => \YandexPay\Pay\Trading\Entity\Sale\Status::getEnum()
 			],
 			'DEFAULT' => [
-				'PROVIDER_VALUE'    => 'YH',
+				'PROVIDER_VALUE'    => \YandexPay\Pay\Trading\Entity\Sale\Status::orderAuthorize(),
 				'PROVIDER_KEY'      => 'INPUT'
 			]
 		],
 		'YANDEX_PAY_STATUS_ORDER_CAPTURE' => [
-			'NAME' => 'Статус заказа для подтверждения',
-			'DESCRIPTION' => 'Если заказ принимает статус, происходит подтверждение двухстадийной оплаты',
-			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'NAME' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_CAPTURE_NAME'),
+			'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_CAPTURE_DESCRIPTION'),
+			'GROUP' => Loc::getMessage('YANDEX_PAY_CHECKOUT_GROUP'),
 			'SORT' => 500,
 			'INPUT' => [
 				'TYPE' => 'ENUM',
 				'OPTIONS' => \YandexPay\Pay\Trading\Entity\Sale\Status::getEnum()
 			],
 			'DEFAULT' => [
-				'PROVIDER_VALUE'    => 'YC',
+				'PROVIDER_VALUE'    => \YandexPay\Pay\Trading\Entity\Sale\Status::orderCapture(),
 				'PROVIDER_KEY'      => 'INPUT'
 			]
 		],
 		'YANDEX_PAY_STATUS_ORDER_CANCEL' => [
-			'NAME' => 'Статус заказа для отмены',
-			'DESCRIPTION' => 'Если заказ принимает статус, происходит отмена оплаты',
-			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'NAME' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_CANCEL_NAME'),
+			'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_CANCEL_DESCRIPTION'),
+			'GROUP' => Loc::getMessage('YANDEX_PAY_CHECKOUT_GROUP'),
 			'SORT' => 550,
 			'INPUT' => [
 				'TYPE' => 'ENUM',
 				'OPTIONS' => \YandexPay\Pay\Trading\Entity\Sale\Status::getEnum()
 			],
 			'DEFAULT' => [
-				'PROVIDER_VALUE'    => 'YU',
+				'PROVIDER_VALUE'    => \YandexPay\Pay\Trading\Entity\Sale\Status::orderCancel(),
 				'PROVIDER_KEY'      => 'INPUT'
 			]
 		],
 		'YANDEX_PAY_STATUS_ORDER_REFUND' => [
-			'NAME' => 'Статус заказа для возврата',
-			'DESCRIPTION' => 'Если заказ принимает статус, происходит возврат средств',
-			'GROUP' => 'Атоматизация Yandex Pay Checkout',
+			'NAME' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_REFUND_NAME'),
+			'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_REFUND_DESCRIPTION'),
+			'GROUP' => Loc::getMessage('YANDEX_PAY_CHECKOUT_GROUP'),
 			'SORT' => 600,
 			'INPUT' => [
 				'TYPE' => 'ENUM',
 				'OPTIONS' => \YandexPay\Pay\Trading\Entity\Sale\Status::getEnum()
 			],
 			'DEFAULT' => [
-				'PROVIDER_VALUE'    => 'YR',
+				'PROVIDER_VALUE'    => \YandexPay\Pay\Trading\Entity\Sale\Status::orderRefund(),
+				'PROVIDER_KEY'      => 'INPUT'
+			]
+		],
+		'YANDEX_PAY_STATUS_ORDER_PARTIALLY_REFUND' => [
+			'NAME' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_PARTIALLY_REFUND_NAME'),
+			'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_PARTIALLY_REFUND_DESCRIPTION'),
+			'GROUP' => Loc::getMessage('YANDEX_PAY_CHECKOUT_GROUP'),
+			'SORT' => 650,
+			'INPUT' => [
+				'TYPE' => 'ENUM',
+				'OPTIONS' => \YandexPay\Pay\Trading\Entity\Sale\Status::getEnum()
+			],
+			'DEFAULT' => [
+				'PROVIDER_VALUE'    => \YandexPay\Pay\Trading\Entity\Sale\Status::orderPartiallyRefund(),
 				'PROVIDER_KEY'      => 'INPUT'
 			]
 		],
