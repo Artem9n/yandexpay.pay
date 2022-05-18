@@ -50,9 +50,13 @@ class OrderProperties
 
 	protected function fillComment(State\OrderCalculation $state) : void
 	{
-		$comment = $this->request->getComment();
+		$address = $this->request->getAddress();
 
-		if ((string)$comment !== '')
+		if ($address === null) { return; }
+
+		$comment = $address->getComment();
+
+		if ((string)$comment !== '' && $state->options->useComment())
 		{
 			$state->order->setComment($comment);
 		}

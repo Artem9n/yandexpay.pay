@@ -43,11 +43,6 @@ class Request extends Rest\Reference\EffectiveRequest
 		return $this->getField('cart.coupons');
 	}
 
-	public function getComment() : ?string
-	{
-		return $this->getField('cart.comment');
-	}
-
 	public function getOrderAmount() : float
 	{
 		return $this->requireField('orderAmount');
