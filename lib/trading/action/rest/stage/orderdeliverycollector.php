@@ -25,7 +25,6 @@ class OrderDeliveryCollector extends ResponseCollector
 			$result[] = $this->collectDeliveryOption($calculationResult);
 		}
 
-		$this->write(['COURIER'],'shipping.availableMethods');
 		$this->write($result);
 	}
 
@@ -88,7 +87,7 @@ class OrderDeliveryCollector extends ResponseCollector
 			'courierOptionId' => (string)$calculationResult->getDeliveryId(),
 			'provider' => 'COURIER', //todo # Идентификатор службы доставки. enum<COURIER|CDEK|EMS|DHL>
 			'category' => $calculationResult->getCategory(), // enum<EXPRESS|TODAY|STANDARD>
-			'label' => $calculationResult->getServiceName(),
+			'title' => $calculationResult->getServiceName(),
 			'amount'    => (float)$calculationResult->getPrice(),
 			'fromDate' => $calculationResult->getDateFrom()->format('Y-m-d'),
 			'toDate' => $calculationResult->getDateTo()->format('Y-m-d'),

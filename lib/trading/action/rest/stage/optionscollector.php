@@ -8,6 +8,7 @@ class OptionsCollector extends ResponseCollector
 	public function __invoke(State\OrderCalculation $state)
 	{
 		$this->availablePaymentMethods($state);
+		$this->availableShippingMethods($state);
 		$this->enableCoupons($state);
 		$this->enableComment($state);
 		$this->requiredFields($state);
@@ -21,6 +22,11 @@ class OptionsCollector extends ResponseCollector
 		]));
 
 		$this->write(array_values($result), 'availablePaymentMethods');
+	}
+
+	protected function availableShippingMethods(State\OrderCalculation $state) : void
+	{
+		$this->write(['COURIER', 'PICKUP'], 'shipping.availableMethods');// todo get type shipping
 	}
 
 	protected function enableCoupons(State\OrderCalculation $state) : void
