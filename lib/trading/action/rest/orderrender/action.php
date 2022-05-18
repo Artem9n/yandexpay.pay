@@ -28,6 +28,7 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe(new Rest\Stage\OrderInitialize())
 			->pipe(new Rest\Stage\OrderLocation($request->getAddress()))
 			->pipe(new Rest\Stage\NewBasket($request->getItems()))
+			->pipe(new Rest\Stage\OrderPaySystem())
 			->pipe(new Rest\Stage\OrderFinalizer());
 	}
 
