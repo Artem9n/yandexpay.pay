@@ -28,14 +28,32 @@ class Request extends Action\Api\Reference\Request
 
 	public function getQuery() : array
 	{
-		$result = [
-			'cart' => $this->getCart(),
-			'refundAmount' => (string)($this->getPayment()->getSum() - $this->getPayment()->getOrder()->getPrice()),
-			'orderAmount' => $this->getPayment()->getOrder()->getPrice(),
-			'shipping' => $this->getShipping(),
-		];
+		if ($this->isFullRefund())
+		{
+			$result = [
+				'refundAmount' => $this->getPayment()->getSum(),
+				'orderAmount' => 0,
+			];
+		}
+		else
+		{
+			$result = [
+				'cart' => $this->getCart(),
+				'refundAmount' => (string)($this->getPayment()->getSum() - $this->getPayment()->getOrder()->getPrice()),
+				'orderAmount' => $this->getPayment()->getOrder()->getPrice(),
+				'shipping' => $this->getShipping(),
+			];
+		}
 
 		return $result;
+	}
+
+	protected function isFullRefund() : bool
+	{
+		$paymentAmount = (float)$this->getPayment()->getSum();
+		$orderAmount = (float)$this->getPayment()->getOrder()->getPrice();
+
+		return ($paymentAmount - $orderAmount) <= 0;
 	}
 
 	public function setPayment(Payment $payment) : void
