@@ -164,6 +164,11 @@ class Address extends ActionReference\Dto
 		return $this->getField('intercom');
 	}
 
+	public function getComment() : ?string
+	{
+		return $this->getField('comment');
+	}
+
 	public function getCoordinates() : ?array
 	{
 		$result = $this->requireField('location');
