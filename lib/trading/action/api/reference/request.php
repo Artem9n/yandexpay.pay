@@ -15,6 +15,8 @@ abstract class Request
 
 	/** @var bool bool */
 	protected $isTestMode = false;
+	/** @var string */
+	protected $apiKey;
 
 	public function getUrl() : string
 	{
@@ -24,6 +26,11 @@ abstract class Request
 	public function setTestMode(bool $testMode) : void
 	{
 		$this->isTestMode = $testMode;
+	}
+
+	public function setApiKey(string $apiKey) : void
+	{
+		$this->apiKey = $apiKey;
 	}
 
 	public function getFullUrl() : string
@@ -134,9 +141,7 @@ abstract class Request
 	{
 		$result = new Main\Web\HttpClient();
 
-		$result->setHeader('Authorization', sprintf('Api-key %s',
-			'2c0c4fe7b88f4bcd87a75fcbd2b0ce64.xY-EXdTIHj3lfMyXySMJNVFzkTEJFW6z'//'2c0c4fe7-b88f-4bcd-87a7-5fcbd2b0ce64'
-		));
+		$result->setHeader('Authorization', sprintf('Api-key %s', $this->apiKey));
 
 		foreach ($this->queryHeaders() as $name => $value)
 		{
