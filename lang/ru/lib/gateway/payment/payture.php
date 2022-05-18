@@ -9,6 +9,7 @@ $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_DESCRIPTION'] = '<strong>Для текущих к
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_MERCHANT_ID'] = 'Идентификатор продавца';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_MERCHANT_API_KEY'] = 'API-ключ для авторизации';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_MERCHANT_PASSWORD'] = 'Пароль для api';
+$MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_IS_REST'] = 'Использовать новую модель оплаты';
 
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_ACCESS_DENIED'] =  'Запрещены операции с данным набором параметров для Терминала';
 $MESS['YANDEX_PAY_GATEWAY_PAYMENT_PAYTURE_AMOUNT_ERROR'] =  'Ошибка суммы операции. Превышена сумма либо сумма операции не проверена в биллинге';
