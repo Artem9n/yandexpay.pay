@@ -54,4 +54,41 @@ class PaySystemEditPage
 
 		return $result;
 	}
+
+	public static function validateMerchantButton() : bool
+	{
+		$result = true;
+		$gateway = null;
+
+		$request = Main\Context::getCurrent()->getRequest();
+		$paySystemId = $request->get('ID') ?? $request->get('paySystemId');
+
+		if ($request->get('PS_MODE') !== null)
+		{
+			$gateway = $request->get('PS_MODE');
+		}
+		else if ($paySystemId !== null)
+		{
+			$query = Sale\Internals\PaySystemActionTable::getList([
+				'filter' => [
+					'=ID' => $paySystemId,
+					'!PS_MODE' => false
+				],
+				'select' => ['ID', 'PS_MODE', 'ACTION_FILE'],
+				'limit' => 1
+			]);
+
+			if (($system = $query->fetch()))
+			{
+				$gateway = $system['PS_MODE'];
+			}
+		}
+
+		if ($gateway !== null && $gateway !== Manager::PAYTURE)
+		{
+			$result = false;
+		}
+
+		return $result;
+	}
 }

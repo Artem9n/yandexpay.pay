@@ -24,6 +24,8 @@ class MerchantType extends Internals\Input\StringInput
 
 	protected static function getButtonHtml() : string
 	{
+		if (!Ui\Admin\PaySystemEditPage::validateMerchantButton()) { return ''; }
+
 		$attributes = [
 			'type' => 'button',
 			'value' => self::getMessage('INPUT_NAME'),
