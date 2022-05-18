@@ -13,13 +13,13 @@ class OrderLoad
 	public function __construct(string $orderId, string $hash = null)
 	{
 		$this->orderId = $orderId;
-		//$this->hash = $hash;
+		$this->hash = $hash;
 	}
 
 	public function __invoke(State\Payment $state)
 	{
 		$this->loadOrder($state);
-		//$this->checkHash($state);
+		$this->checkHash($state);
 	}
 
 	protected function loadOrder(State\Payment $state) : void
