@@ -327,36 +327,48 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function orderStatusHold(Payment $payment) : string
 	{
-		return $this->getParamValue($payment, 'STATUS_ORDER_HOLD');
+		return $this->getParamValue($payment, 'STATUS_ORDER_HOLD') ?? '';
 	}
 
 	public function orderStatusCapture(Payment $payment) : string
 	{
-		return $this->getParamValue($payment, 'STATUS_ORDER_CAPTURE');
+		return $this->getParamValue($payment, 'STATUS_ORDER_CAPTURE') ?? '';
 	}
 
 	public function orderStatusRefund(Payment $payment) : string
 	{
-		return $this->getParamValue($payment, 'STATUS_ORDER_REFUND');
+		return $this->getParamValue($payment, 'STATUS_ORDER_REFUND') ?? '';
+	}
+
+	public function orderStatusPartiallyRefund(Payment $payment) : string
+	{
+		return $this->getParamValue($payment, 'STATUS_ORDER_PARTIALLY_REFUND') ?? '';
 	}
 
 	public function orderStatusCancel(Payment $payment) : string
 	{
-		return $this->getParamValue($payment, 'STATUS_ORDER_CANCEL');
+		return $this->getParamValue($payment, 'STATUS_ORDER_CANCEL') ?? '';
 	}
 
 	public function isAutoPay(Payment $payment) : bool
 	{
-		return (
-			$this->getParamValue($payment, 'STATUS_ORDER_AUTO_PAY') === 'Y'
-			&& $this->getParamValue($payment, 'STATUS_ORDER_STAGE_PAY') === 'TWO'
-		);
+		return ($this->getParamValue($payment, 'STATUS_ORDER_AUTO_PAY') === 'Y');
+	}
+
+	protected function getApiKey(Payment $payment, bool $isTestMode) : ?string
+	{
+		return $isTestMode ? $this->getParamValue($payment, 'MERCHANT_ID') : $this->getParamValue($payment, 'REST_API_KEY');
 	}
 
 	public function cancel(Payment $payment) : void
 	{
 		$request = new Api\Cancel\Request();
 
+		$apiKey = $this->getApiKey($payment, $this->isTestMode($payment));
+
+		if ($apiKey === null) { return; }
+
+		$request->setApiKey($apiKey);
 		$request->setTestMode($this->isTestMode($payment));
 		$request->setPayment($payment);
 
@@ -369,6 +381,11 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		$request = new Api\Capture\Request();
 
+		$apiKey = $this->getApiKey($payment, $this->isTestMode($payment));
+
+		if ($apiKey === null) { return; }
+
+		$request->setApiKey($apiKey);
 		$request->setTestMode($this->isTestMode($payment));
 		$request->setPayment($payment);
 
