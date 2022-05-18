@@ -48,36 +48,64 @@ class OrderPay
 		$datetime = new \DateTime($this->request->getEventTime());
 		$datetime->setTimezone((new Type\DateTime())->getTimeZone());
 
+		$orderStatusCapture = $state->handler->orderStatusCapture($state->payment);
+		$orderStatusHold = $state->handler->orderStatusHold($state->payment);
+		$orderStatusCancel = $state->handler->orderStatusCancel($state->payment);
+		$orderStatusRefund = $state->handler->orderStatusRefund($state->payment);
+		$orderStatusPartiallyRefund = $state->handler->orderStatusPartiallyRefund($state->payment);
+
 		$data = [
 			'PS_STATUS_CODE' => $status,
 			'PS_STATUS_DESCRIPTION' => $this->request->getEvent(),
 			'PS_RESPONSE_DATE' => new Type\DateTime($datetime->format('d.m.Y H:i:s'))
 		];
 
-		if (!$state->payment->isPaid())
+		if ($status === EntitySale\Status::PAYMENT_STATUS_CAPTURE)
 		{
-			if ($status === EntitySale\Status::PAYMENT_STATUS_CAPTURE)
+			$data['PAID'] = 'Y';
+
+			if (!empty($orderStatusCapture))
 			{
-				$data['PAID'] = 'Y';
-				$state->order->setField('STATUS_ID', $state->handler->orderStatusCapture($state->payment));
+				$state->order->setField('STATUS_ID', $orderStatusCapture);
 			}
-			else if ($status === EntitySale\Status::PAYMENT_STATUS_AUTHORIZE)
+		}
+		else if ($status === EntitySale\Status::PAYMENT_STATUS_AUTHORIZE)
+		{
+			$data['PAID'] = 'Y';
+
+			if (!empty($orderStatusHold))
 			{
-				$state->order->setField('STATUS_ID', $state->handler->orderStatusHold($state->payment));
+				$state->order->setField('STATUS_ID', $orderStatusHold);
 			}
-			else if ($status === EntitySale\Status::PAYMENT_STATUS_VOID)
+		}
+		else if ($status === EntitySale\Status::PAYMENT_STATUS_VOID)
+		{
+			$data['PAID'] = 'N';
+
+			if (!empty($orderStatusCancel))
 			{
-				$state->order->setField('STATUS_ID', $state->handler->orderStatusCancel($state->payment));
+				$state->order->setField('STATUS_ID', $orderStatusCancel);
 			}
-			else if ($status === EntitySale\Status::PAYMENT_STATUS_FAIL)
-			{
-				$result->addWarnings([new \Bitrix\Main\Error(EntitySale\Status::PAYMENT_STATUS_FAIL, 'WEBHOOK')]); //todo change?
-			}
+		}
+		else if ($status === EntitySale\Status::PAYMENT_STATUS_FAIL)
+		{
+			$result->addWarnings([new \Bitrix\Main\Error(EntitySale\Status::PAYMENT_STATUS_FAIL, 'WEBHOOK')]); //todo change?
 		}
 		else if ($status === EntitySale\Status::PAYMENT_STATUS_REFUND)
 		{
 			$data['PAID'] = 'N';
-			$state->order->setField('STATUS_ID', $state->handler->orderStatusRefund($state->payment));
+
+			if (!empty($orderStatusRefund))
+			{
+				$state->order->setField('STATUS_ID', $orderStatusRefund);
+			}
+		}
+		else if ($status === EntitySale\Status::PAYMENT_STATUS_PARTIAL_REFUND)
+		{
+			if (!empty($orderStatusPartiallyRefund))
+			{
+				$state->order->setField('STATUS_ID', $orderStatusPartiallyRefund);
+			}
 		}
 
 		\Bitrix\Sale\EntityMarker::addMarker($state->order, $state->payment, $result);
