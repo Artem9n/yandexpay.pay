@@ -15,24 +15,20 @@ class CheckStatus
 
 	protected function resolveCapture(State\OrderStatus $state) : void
 	{
-		$holdStatus = $state->handler->orderStatusHold($state->payment);
 		$captureStatus = $state->handler->orderStatusCapture($state->payment);
 
 		$paymentStatus = $state->payment->getField('PS_STATUS_CODE');
 
-		if (
-			$paymentStatus !== EntitySale\Status::PAYMENT_STATUS_AUTHORIZE
-			|| $state->payment->isPaid()
-		)
+		if ($paymentStatus !== EntitySale\Status::PAYMENT_STATUS_AUTHORIZE)
 		{
 			return;
 		}
 
-		if ($state->status === $holdStatus && $state->handler->isAutoPay($state->payment))
+		if ($state->handler->isAutoPay($state->payment))
 		{
 			$state->handler->confirm($state->payment);
 		}
-		else if ($state->status === $captureStatus)
+		else if (!empty($captureStatus) && $state->status === $captureStatus)
 		{
 			$state->handler->confirm($state->payment);
 		}
@@ -43,15 +39,12 @@ class CheckStatus
 		$cancelStatus = $state->handler->orderStatusCancel($state->payment);
 		$paymentStatus = $state->payment->getField('PS_STATUS_CODE');
 
-		if (
-			$paymentStatus !== EntitySale\Status::PAYMENT_STATUS_AUTHORIZE
-			|| $state->payment->isPaid()
-		)
+		if ($paymentStatus !== EntitySale\Status::PAYMENT_STATUS_AUTHORIZE)
 		{
 			return;
 		}
 
-		if ($state->status === $cancelStatus)
+		if (!empty($cancelStatus) && $state->status === $cancelStatus)
 		{
 			$state->handler->cancel($state->payment);
 		}
