@@ -30,7 +30,10 @@ abstract class BaseRest extends Base
 
 	public function isRest() : bool
 	{
-		$result = true; //todo isset settings api key
+		$result = (
+			$this->getParameter('PAYMENT_GATEWAY_IS_REST') === 'Y'
+			&& !empty($this->getParameter('YANDEX_PAY_REST_API_KEY', true))
+		);
 
 		if (
 			isset($this->payment)

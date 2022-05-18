@@ -26,7 +26,16 @@ class Rest
 	{
 		$request = new Api\Refund\Request();
 
-		$request->setTestMode($this->gateway->isTestHandlerMode());
+		$isTestMode = $this->gateway->isTestHandlerMode();
+
+		$apiKey = $isTestMode ?
+			$this->gateway->getParameter('YANDEX_PAY_MERCHANT_ID', true)
+			: $this->gateway->getParameter('YANDEX_PAY_REST_API_KEY', true);
+
+		if ($apiKey === null) { return; }
+
+		$request->setApiKey($apiKey);
+		$request->setTestMode($isTestMode);
 		$request->setPayment($this->gateway->getPayment());
 
 		$data = $request->send();
