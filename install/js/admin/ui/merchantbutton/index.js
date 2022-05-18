@@ -2,6 +2,7 @@
 
 	const Plugin = BX.namespace('YandexPay.Plugin');
 	const Ui = BX.namespace('YandexPay.Ui');
+	const Utils = BX.namespace('YandexPay.Utils');
 
 	Ui.ButtonField = Plugin.Base.extend({
 
@@ -25,6 +26,7 @@
 			inputElement: 'input',
 			nameMerchantId: 'YANDEX_PAY_MERCHANT_ID',
 			nameMerchantName: 'YANDEX_PAY_MERCHANT_NAME',
+			nameMerchantApiKey: 'YANDEX_PAY_REST_API_KEY',
 			checkboxElement: 'input[name*="DELETE"]',
 			selectGatewayElement: 'select[name*="PS_MODE"]',
 
@@ -77,8 +79,6 @@
 		confirmWindow: function(data) {
 			const url = this.makePopupUrl(data);
 			const payload = this.makePayload(data);
-
-
 
 			this.popup = window.open(url, this.options.formName, this.getWindowFeatures([this.options.confirmWidth, this.options.confirmHeight]));;
 			this.confirmDeferred = new $.Deferred();
@@ -187,9 +187,11 @@
 
 		fillData: function(merchant) {
 			const fieldset = this.getElement('fieldset', this.$el, 'closest');
+
 			const values = {
 				merchantId: merchant.merchant_id,
 				merchantName: merchant.merchant_name,
+				merchantApiKey : merchant.api_key.value
 			};
 
 			for (const name in values) {
