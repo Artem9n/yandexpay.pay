@@ -55,6 +55,7 @@ class yandexpay_pay extends CModule
 				$this->InstallAgents();
 				$this->InstallFiles();
 				$this->InstallPaySystem();
+				$this->InstallOrderStatus();
 			}
 			else
 			{
@@ -139,6 +140,11 @@ class yandexpay_pay extends CModule
 	public function InstallPaySystem() : void
 	{
 		Pay\Ui\UseCase\AutoInstallPaySystem::install();
+	}
+
+	public function InstallOrderStatus() : void
+	{
+		Pay\Trading\Entity\Sale\Status::install();
 	}
 
 	public function InstallFiles(): void

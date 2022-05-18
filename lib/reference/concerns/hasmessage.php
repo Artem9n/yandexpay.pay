@@ -18,13 +18,13 @@ trait HasMessage
 		MessageRegistry::getModuleInstance()->load(self::class);
 	}
 
-	protected static function getMessage($code, $replaces = null, $fallback = null) : ?string
+	protected static function getMessage($code, $replaces = null, $fallback = null, $language = null) : ?string
 	{
 		self::includeSelfMessages();
 
 		$fullCode = Config::getLangPrefix() . self::getMessagePrefix() . '_' . $code;
 
-		$result = Loc::getMessage($fullCode, $replaces);
+		$result = Loc::getMessage($fullCode, $replaces, $language);
 
 		if ($result === '' || $result === null)
 		{
