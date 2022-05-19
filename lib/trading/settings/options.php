@@ -344,8 +344,7 @@ class Options extends Reference\Skeleton
 				'SORT' => 4010,
 				'VALUES' => $solutions,
 				'SETTINGS' => [
-					'CAPTION_NO_VALUE' => self::getMessage('NO_DEFAULTS'),
-					'DEFAULT_VALUE' => $solution !== null ? $solution->getType() : null
+					'DEFAULT_VALUE' => $solution->getType(),
 				]
 			]
 		];
@@ -387,7 +386,7 @@ class Options extends Reference\Skeleton
 		return $result;
 	}
 
-	protected function makeSolutionDefault(Entity\Reference\Environment $environment, string $siteId) : ?Injection\Solution\Skeleton
+	protected function makeSolutionDefault(Entity\Reference\Environment $environment, string $siteId) : Injection\Solution\Skeleton
 	{
 		$result = null;
 		$siteTemplates = $environment->getSite()->getTemplate($siteId);

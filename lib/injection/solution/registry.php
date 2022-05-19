@@ -14,11 +14,11 @@ class Registry
 	public static function getTypes() : array
 	{
 		return [
-			static::ESHOP_BOOTSTRAP,
 			static::ASPRO_MAX,
 			static::ASPRO_NEXT,
 			static::ASPRO_OPTIMUS,
 			static::ASPRO_MSHOP,
+			static::ESHOP_BOOTSTRAP,
 		];
 	}
 

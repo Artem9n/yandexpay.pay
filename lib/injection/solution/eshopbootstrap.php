@@ -20,7 +20,7 @@ class EshopBootstrap extends Skeleton
 
 	public function isMatch(array $context = []) : bool
 	{
-		return Utils::matchTemplates('eshop_bootstrap', $context);
+		return true;
 	}
 
 	public function getOrderPath(array $context = []) : string
