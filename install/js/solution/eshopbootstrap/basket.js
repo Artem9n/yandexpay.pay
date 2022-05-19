@@ -16,7 +16,7 @@ export default class Basket extends Page {
 	bootCart(cart) {
 		if (typeof BX === 'undefined') { return; }
 
-		BX.addCustomEvent('OnBasketChange', () => {
+		this.onEvent('OnBasketChange', () => {
 			cart.getProducts().then((result) => {
 				cart.combineOrderWithProducts(result);
 			});
