@@ -1,6 +1,7 @@
 import SolutionRegistry from './solutionregistry';
 import NodePreserver from "./ui/nodepreserver";
 import Utils from './utils/template';
+import {EventProxy} from "./utils/eventproxy";
 
 export default class Factory {
 
@@ -23,6 +24,7 @@ export default class Factory {
 
 		this.setOptions(options);
 		this.bootSolution();
+		this.bootLocal();
 	}
 
 	inject(selector, position) {
@@ -252,6 +254,12 @@ export default class Factory {
 		if (solution == null) { return; }
 
 		solution.bootFactory(this);
+	}
+
+	bootLocal() {
+		EventProxy.make().fire('bxYapayFactoryInit', {
+			factory: this,
+		});
 	}
 
 	extendDefaults(options) {
