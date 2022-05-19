@@ -145,10 +145,11 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  babelHelpers.createClass(Basket, [{
 	    key: "bootFactory",
 	    value: function bootFactory(factory) {
+	      console.log(factory);
 	      factory.extendDefaults({
 	        preserve: {
 	          mutation: {
-	            anchor: '[data-entity="basket-total-block"]',
+	            anchor: factory.options.configSolution.anchor,
 	            delay: null
 	          }
 	        }

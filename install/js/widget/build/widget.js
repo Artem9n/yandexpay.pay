@@ -267,6 +267,166 @@ this.BX = this.BX || {};
 	  return MutationFactory;
 	}();
 
+	var EventProxy = /*#__PURE__*/function () {
+	  babelHelpers.createClass(EventProxy, null, [{
+	    key: "make",
+	    value: function make() {
+	      var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	      return new EventProxy(config);
+	    }
+	  }]);
+
+	  function EventProxy() {
+	    var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	    babelHelpers.classCallCheck(this, EventProxy);
+	    this.config = config;
+	  }
+
+	  babelHelpers.createClass(EventProxy, [{
+	    key: "on",
+	    value: function on(name, callback) {
+	      this.matchEvent('bx') && this.onBxEvent(name, callback);
+	      this.matchEvent('jquery') && this.onJQueryEvent(name, callback);
+	      this.matchEvent('plain') && this.onPlainEvent(name, callback);
+	    }
+	  }, {
+	    key: "off",
+	    value: function off(name, callback) {
+	      this.matchEvent('bx') && this.offBxEvent(name, callback);
+	      this.matchEvent('jquery') && this.offJQueryEvent(name, callback);
+	      this.matchEvent('plain') && this.offPlainEvent(name, callback);
+	    }
+	  }, {
+	    key: "fire",
+	    value: function fire(name) {
+	      var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	      this.matchEvent('bx') && this.fireBxEvent(name, data);
+	      this.matchEvent('jquery') && this.fireJQueryEvent(name, data);
+	      this.matchEvent('plain') && this.firePlainEvent(name, data);
+	    }
+	  }, {
+	    key: "matchEvent",
+	    value: function matchEvent(type) {
+	      return this.config[type] != null ? !!this.config[type] : !this.config['strict'];
+	    }
+	  }, {
+	    key: "onBxEvent",
+	    value: function onBxEvent(name, callback) {
+	      if (typeof BX === 'undefined') {
+	        return;
+	      }
+
+	      BX.addCustomEvent(name, callback);
+	    }
+	  }, {
+	    key: "offBxEvent",
+	    value: function offBxEvent(name, callback) {
+	      if (typeof BX === 'undefined') {
+	        return;
+	      }
+
+	      BX.removeCustomEvent(name, callback);
+	    }
+	  }, {
+	    key: "fireBxEvent",
+	    value: function fireBxEvent(name, data) {
+	      if (typeof BX === 'undefined') {
+	        return;
+	      }
+
+	      BX.onCustomEvent(name, [data]);
+	    }
+	  }, {
+	    key: "onJQueryEvent",
+	    value: function onJQueryEvent(name, callback) {
+	      if (typeof jQuery === 'undefined') {
+	        return;
+	      }
+
+	      var selfConfig = this.extractEventTypeConfig('jquery');
+
+	      if (selfConfig['proxy'] !== false) {
+	        var originalCallback = callback;
+
+	        callback = function callback(evt, data) {
+	          var _evt$originalEvent;
+
+	          var proxyData = data != null ? data : evt === null || evt === void 0 ? void 0 : (_evt$originalEvent = evt.originalEvent) === null || _evt$originalEvent === void 0 ? void 0 : _evt$originalEvent.detail;
+	          originalCallback(proxyData);
+	        };
+	      }
+
+	      jQuery(document).on(name, callback);
+	    }
+	  }, {
+	    key: "offJQueryEvent",
+	    value: function offJQueryEvent(name, callback) {
+	      if (typeof jQuery === 'undefined') {
+	        return;
+	      }
+
+	      jQuery(document).off(name, callback); // todo unbind with proxy
+	    }
+	  }, {
+	    key: "fireJQueryEvent",
+	    value: function fireJQueryEvent(name, data) {
+	      if (typeof jQuery === 'undefined') {
+	        return;
+	      }
+
+	      jQuery(document).triggerHandler(name, data);
+	    }
+	  }, {
+	    key: "onPlainEvent",
+	    value: function onPlainEvent(name, callback) {
+	      if (this.isPlainEventDuplicateByJQuery()) {
+	        return;
+	      }
+
+	      var selfConfig = this.extractEventTypeConfig('plain');
+
+	      if (selfConfig['proxy'] !== false) {
+	        var originalCallback = callback;
+
+	        callback = function callback(evt) {
+	          originalCallback(evt.detail);
+	        };
+	      }
+
+	      document.addEventListener(name, callback);
+	    }
+	  }, {
+	    key: "offPlainEvent",
+	    value: function offPlainEvent(name, callback) {
+	      if (this.isPlainEventDuplicateByJQuery()) {
+	        return;
+	      }
+
+	      document.removeEventListener(name, callback); // todo unbind with proxy
+	    }
+	  }, {
+	    key: "firePlainEvent",
+	    value: function firePlainEvent(name, data) {
+	      //if (this.isPlainEventDuplicateByJQuery()) { return; }
+	      document.dispatchEvent(new CustomEvent(name, {
+	        "detail": data
+	      })); // todo resolve collision with jquery
+	    }
+	  }, {
+	    key: "isPlainEventDuplicateByJQuery",
+	    value: function isPlainEventDuplicateByJQuery() {
+	      var selfConfig = this.extractEventTypeConfig('plain');
+	      return selfConfig['force'] !== true && typeof jQuery !== 'undefined';
+	    }
+	  }, {
+	    key: "extractEventTypeConfig",
+	    value: function extractEventTypeConfig(type) {
+	      return babelHelpers["typeof"](this.config[type]) === 'object' && this.config[type] != null ? this.config : {};
+	    }
+	  }]);
+	  return EventProxy;
+	}();
+
 	var Subscriber = /*#__PURE__*/function () {
 	  function Subscriber(element) {
 	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -286,26 +446,82 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "bind",
 	    value: function bind() {
+	      this.bindOn();
+	      this.bindEvent();
+	    }
+	  }, {
+	    key: "unbind",
+	    value: function unbind() {
+	      this.unbindOff();
+	      this.unbindEvent();
+	    }
+	  }, {
+	    key: "bindOn",
+	    value: function bindOn() {
 	      if (this.options.on == null) {
-	        var _console;
-
-	        (_console = console) === null || _console === void 0 ? void 0 : _console.warn('define "on" option for subscriber of node preserver');
 	        return;
 	      }
 
 	      this.options.on(this.options.check);
 	    }
 	  }, {
-	    key: "unbind",
-	    value: function unbind() {
+	    key: "unbindOff",
+	    value: function unbindOff() {
 	      if (this.options.off == null) {
-	        var _console2;
-
-	        (_console2 = console) === null || _console2 === void 0 ? void 0 : _console2.warn('define "off" option for subscriber of node preserver');
 	        return;
 	      }
 
 	      this.options.off(this.options.check);
+	    }
+	  }, {
+	    key: "bindEvent",
+	    value: function bindEvent() {
+	      var _this = this;
+
+	      var event = this.options.event;
+
+	      if (event == null) {
+	        return;
+	      }
+
+	      var proxy = new EventProxy();
+
+	      if (typeof event === 'string') {
+	        proxy.on(event, this.options.check);
+	      } else if (Array.isArray(event)) {
+	        event.forEach(function (one) {
+	          proxy.on(one, _this.options.check);
+	        });
+	      } else {
+	        var _console;
+
+	        (_console = console) === null || _console === void 0 ? void 0 : _console.warn("unknown event type ".concat(babelHelpers["typeof"](event)));
+	      }
+	    }
+	  }, {
+	    key: "unbindEvent",
+	    value: function unbindEvent() {
+	      var _this2 = this;
+
+	      var event = this.options.event;
+
+	      if (event == null) {
+	        return;
+	      }
+
+	      var proxy = new EventProxy();
+
+	      if (typeof event === 'string') {
+	        proxy.off(event, this.options.check);
+	      } else if (Array.isArray(event)) {
+	        event.forEach(function (one) {
+	          proxy.off(one, _this2.options.check);
+	        });
+	      } else {
+	        var _console2;
+
+	        (_console2 = console) === null || _console2 === void 0 ? void 0 : _console2.warn("unknown event type ".concat(babelHelpers["typeof"](event)));
+	      }
 	    }
 	  }]);
 	  return Subscriber;
@@ -313,6 +529,7 @@ this.BX = this.BX || {};
 
 	babelHelpers.defineProperty(Subscriber, "defaults", {
 	  check: null,
+	  event: null,
 	  on: null,
 	  off: null
 	});
@@ -484,6 +701,7 @@ this.BX = this.BX || {};
 	    this.options = {};
 	    this.setOptions(options);
 	    this.bootSolution();
+	    this.bootLocal();
 	  }
 
 	  babelHelpers.createClass(Factory, [{
@@ -795,6 +1013,13 @@ this.BX = this.BX || {};
 	      }
 
 	      solution.bootFactory(this);
+	    }
+	  }, {
+	    key: "bootLocal",
+	    value: function bootLocal() {
+	      EventProxy.make().fire('bxYapayFactoryInit', {
+	        factory: this
+	      });
 	    }
 	  }, {
 	    key: "extendDefaults",

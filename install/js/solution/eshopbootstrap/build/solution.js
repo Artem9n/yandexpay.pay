@@ -4,6 +4,166 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 (function (exports) {
 	'use strict';
 
+	var EventProxy = /*#__PURE__*/function () {
+	  babelHelpers.createClass(EventProxy, null, [{
+	    key: "make",
+	    value: function make() {
+	      var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	      return new EventProxy(config);
+	    }
+	  }]);
+
+	  function EventProxy() {
+	    var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	    babelHelpers.classCallCheck(this, EventProxy);
+	    this.config = config;
+	  }
+
+	  babelHelpers.createClass(EventProxy, [{
+	    key: "on",
+	    value: function on(name, callback) {
+	      this.matchEvent('bx') && this.onBxEvent(name, callback);
+	      this.matchEvent('jquery') && this.onJQueryEvent(name, callback);
+	      this.matchEvent('plain') && this.onPlainEvent(name, callback);
+	    }
+	  }, {
+	    key: "off",
+	    value: function off(name, callback) {
+	      this.matchEvent('bx') && this.offBxEvent(name, callback);
+	      this.matchEvent('jquery') && this.offJQueryEvent(name, callback);
+	      this.matchEvent('plain') && this.offPlainEvent(name, callback);
+	    }
+	  }, {
+	    key: "fire",
+	    value: function fire(name) {
+	      var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	      this.matchEvent('bx') && this.fireBxEvent(name, data);
+	      this.matchEvent('jquery') && this.fireJQueryEvent(name, data);
+	      this.matchEvent('plain') && this.firePlainEvent(name, data);
+	    }
+	  }, {
+	    key: "matchEvent",
+	    value: function matchEvent(type) {
+	      return this.config[type] != null ? !!this.config[type] : !this.config['strict'];
+	    }
+	  }, {
+	    key: "onBxEvent",
+	    value: function onBxEvent(name, callback) {
+	      if (typeof BX === 'undefined') {
+	        return;
+	      }
+
+	      BX.addCustomEvent(name, callback);
+	    }
+	  }, {
+	    key: "offBxEvent",
+	    value: function offBxEvent(name, callback) {
+	      if (typeof BX === 'undefined') {
+	        return;
+	      }
+
+	      BX.removeCustomEvent(name, callback);
+	    }
+	  }, {
+	    key: "fireBxEvent",
+	    value: function fireBxEvent(name, data) {
+	      if (typeof BX === 'undefined') {
+	        return;
+	      }
+
+	      BX.onCustomEvent(name, [data]);
+	    }
+	  }, {
+	    key: "onJQueryEvent",
+	    value: function onJQueryEvent(name, callback) {
+	      if (typeof jQuery === 'undefined') {
+	        return;
+	      }
+
+	      var selfConfig = this.extractEventTypeConfig('jquery');
+
+	      if (selfConfig['proxy'] !== false) {
+	        var originalCallback = callback;
+
+	        callback = function callback(evt, data) {
+	          var _evt$originalEvent;
+
+	          var proxyData = data != null ? data : evt === null || evt === void 0 ? void 0 : (_evt$originalEvent = evt.originalEvent) === null || _evt$originalEvent === void 0 ? void 0 : _evt$originalEvent.detail;
+	          originalCallback(proxyData);
+	        };
+	      }
+
+	      jQuery(document).on(name, callback);
+	    }
+	  }, {
+	    key: "offJQueryEvent",
+	    value: function offJQueryEvent(name, callback) {
+	      if (typeof jQuery === 'undefined') {
+	        return;
+	      }
+
+	      jQuery(document).off(name, callback); // todo unbind with proxy
+	    }
+	  }, {
+	    key: "fireJQueryEvent",
+	    value: function fireJQueryEvent(name, data) {
+	      if (typeof jQuery === 'undefined') {
+	        return;
+	      }
+
+	      jQuery(document).triggerHandler(name, data);
+	    }
+	  }, {
+	    key: "onPlainEvent",
+	    value: function onPlainEvent(name, callback) {
+	      if (this.isPlainEventDuplicateByJQuery()) {
+	        return;
+	      }
+
+	      var selfConfig = this.extractEventTypeConfig('plain');
+
+	      if (selfConfig['proxy'] !== false) {
+	        var originalCallback = callback;
+
+	        callback = function callback(evt) {
+	          originalCallback(evt.detail);
+	        };
+	      }
+
+	      document.addEventListener(name, callback);
+	    }
+	  }, {
+	    key: "offPlainEvent",
+	    value: function offPlainEvent(name, callback) {
+	      if (this.isPlainEventDuplicateByJQuery()) {
+	        return;
+	      }
+
+	      document.removeEventListener(name, callback); // todo unbind with proxy
+	    }
+	  }, {
+	    key: "firePlainEvent",
+	    value: function firePlainEvent(name, data) {
+	      //if (this.isPlainEventDuplicateByJQuery()) { return; }
+	      document.dispatchEvent(new CustomEvent(name, {
+	        "detail": data
+	      })); // todo resolve collision with jquery
+	    }
+	  }, {
+	    key: "isPlainEventDuplicateByJQuery",
+	    value: function isPlainEventDuplicateByJQuery() {
+	      var selfConfig = this.extractEventTypeConfig('plain');
+	      return selfConfig['force'] !== true && typeof jQuery !== 'undefined';
+	    }
+	  }, {
+	    key: "extractEventTypeConfig",
+	    value: function extractEventTypeConfig(type) {
+	      return babelHelpers["typeof"](this.config[type]) === 'object' && this.config[type] != null ? this.config : {};
+	    }
+	  }]);
+	  return EventProxy;
+	}();
+
 	var Page = /*#__PURE__*/function () {
 	  function Page() {
 	    babelHelpers.classCallCheck(this, Page);
@@ -22,70 +182,7 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	    key: "onEvent",
 	    value: function onEvent(name, callback) {
 	      var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-	      this.matchEvent('bx', config) && this.onBxEvent(name, callback, config);
-	      this.matchEvent('jquery', config) && this.onJQueryEvent(name, callback, config);
-	      this.matchEvent('plain', config) && this.onPlainEvent(name, callback, config);
-	    }
-	  }, {
-	    key: "matchEvent",
-	    value: function matchEvent(type, config) {
-	      return config[type] != null ? !!config[type] : !config['strict'];
-	    }
-	  }, {
-	    key: "onBxEvent",
-	    value: function onBxEvent(name, callback, config) {
-	      if (typeof BX === 'undefined') {
-	        return;
-	      }
-
-	      BX.addCustomEvent(name, callback);
-	    }
-	  }, {
-	    key: "onJQueryEvent",
-	    value: function onJQueryEvent(name, callback, config) {
-	      if (typeof jQuery === 'undefined') {
-	        return;
-	      }
-
-	      var selfConfig = this.extractEventTypeConfig('jquery', config);
-
-	      if (selfConfig['proxy'] !== false) {
-	        var originalCallback = callback;
-
-	        callback = function callback(evt, data) {
-	          var _evt$originalEvent;
-
-	          var proxyData = data != null ? data : evt === null || evt === void 0 ? void 0 : (_evt$originalEvent = evt.originalEvent) === null || _evt$originalEvent === void 0 ? void 0 : _evt$originalEvent.detail;
-	          originalCallback(proxyData);
-	        };
-	      }
-
-	      jQuery(document).on(name, callback);
-	    }
-	  }, {
-	    key: "onPlainEvent",
-	    value: function onPlainEvent(name, callback, config) {
-	      var selfConfig = this.extractEventTypeConfig('plain', config);
-
-	      if (selfConfig['force'] !== true && typeof jQuery !== 'undefined') {
-	        // will be catch inside jquery
-	        return;
-	      }
-
-	      if (selfConfig['proxy'] !== false) {
-	        var originalCallback = callback;
-
-	        callback = function callback(evt) {
-	          originalCallback(evt.detail);
-	        };
-	      }
-
-	      document.addEventListener(name, callback);
-	    }
-	  }, {
-	    key: "extractEventTypeConfig",
-	    value: function extractEventTypeConfig(type, config) {
-	      return babelHelpers["typeof"](config[type]) === 'object' && config[type] != null ? config : {};
+	      EventProxy.make(config).on(name, callback);
 	    }
 	  }]);
 	  return Page;
