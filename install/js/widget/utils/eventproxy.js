@@ -6,6 +6,11 @@ export class EventProxy {
 
 	constructor(config = {}) {
 		this.config = config;
+		this.callbackMap = {
+			bx: new WeakMap(),
+			jquery: new WeakMap(),
+			plain: new WeakMap(),
+		};
 	}
 
 	on(name, callback) {
@@ -51,9 +56,9 @@ export class EventProxy {
 	onJQueryEvent(name, callback) {
 		if (typeof jQuery === 'undefined') { return; }
 
-		const selfConfig = this.extractEventTypeConfig('jquery');
+		const selfConfig = this.typeConfig('jquery');
 
-		if (selfConfig['proxy'] !== false) {
+		if (this.canProxyCallback(selfConfig)) {
 			const originalCallback = callback;
 
 			callback = (evt, data) => {
@@ -61,6 +66,8 @@ export class EventProxy {
 
 				originalCallback(proxyData);
 			};
+
+			this.storeCallbackVariation('jquery', originalCallback, callback);
 		}
 
 		jQuery(document).on(name, callback);
@@ -69,7 +76,15 @@ export class EventProxy {
 	offJQueryEvent(name, callback) {
 		if (typeof jQuery === 'undefined') { return; }
 
-		jQuery(document).off(name, callback); // todo unbind with proxy
+		const selfConfig = this.typeConfig('jquery');
+
+		if (this.canProxyCallback(selfConfig)) {
+			callback = this.getCallbackVariation('jquery', callback);
+
+			if (callback == null) { return; }
+		}
+
+		jQuery(document).off(name, callback);
 	}
 
 	fireJQueryEvent(name, data) {
@@ -79,25 +94,35 @@ export class EventProxy {
 	}
 
 	onPlainEvent(name, callback) {
-		if (this.isPlainEventDuplicateByJQuery()) { return; }
+		const selfConfig = this.typeConfig('plain');
 
-		const selfConfig = this.extractEventTypeConfig('plain');
+		if (this.isPlainEventDuplicateByJQuery(selfConfig)) { return; }
 
-		if (selfConfig['proxy'] !== false) {
+		if (this.canProxyCallback(selfConfig)) {
 			const originalCallback = callback;
 
 			callback = (evt) => {
 				originalCallback(evt.detail);
 			};
+
+			this.storeCallbackVariation('plain', originalCallback, callback);
 		}
 
 		document.addEventListener(name, callback);
 	}
 
 	offPlainEvent(name, callback) {
-		if (this.isPlainEventDuplicateByJQuery()) { return; }
+		const selfConfig = this.typeConfig('plain');
 
-		document.removeEventListener(name, callback); // todo unbind with proxy
+		if (this.isPlainEventDuplicateByJQuery(selfConfig)) { return; }
+
+		if (this.canProxyCallback(selfConfig)) {
+			callback = this.getCallbackVariation('plain', callback);
+
+			if (callback == null) { return; }
+		}
+
+		document.removeEventListener(name, callback);
 	}
 
 	firePlainEvent(name, data) {
@@ -106,14 +131,24 @@ export class EventProxy {
 		document.dispatchEvent(new CustomEvent(name, { "detail": data })); // todo resolve collision with jquery
 	}
 
-	isPlainEventDuplicateByJQuery() {
-		const selfConfig = this.extractEventTypeConfig('plain');
-
+	isPlainEventDuplicateByJQuery(selfConfig) {
 		return (selfConfig['force'] !== true && typeof jQuery !== 'undefined');
 	}
 
-	extractEventTypeConfig(type) {
+	canProxyCallback(selfConfig) {
+		return selfConfig['proxy'] !== false;
+	}
+
+	typeConfig(type) {
 		return typeof this.config[type] === 'object' && this.config[type] != null ? this.config : {}
+	}
+
+	storeCallbackVariation(type, callback, proxy) {
+		this.callbackMap[type].set(callback, proxy);
+	}
+
+	getCallbackVariation(type, callback) {
+		return this.callbackMap[type].get(callback);
 	}
 
 }
