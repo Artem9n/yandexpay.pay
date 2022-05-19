@@ -14,7 +14,7 @@
 			formHeight: 350,
 
 			formName: 'Form with secret',
-			confirmUrl: 'https://9nsijy.sse.codesandbox.io/',
+			confirmUrl: 'https://pay.yandex.ru/web/console-registration',
 			confirmWidth: 960,
 			confirmHeight: 700,
 			confirmMessageSource: 'yandex-pay',
