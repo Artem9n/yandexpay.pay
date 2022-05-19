@@ -6,11 +6,7 @@ export class EventProxy {
 
 	constructor(config = {}) {
 		this.config = config;
-		this.callbackMap = {
-			bx: new WeakMap(),
-			jquery: new WeakMap(),
-			plain: new WeakMap(),
-		};
+		this.callbackMap = {};
 	}
 
 	on(name, callback) {
@@ -89,14 +85,15 @@ export class EventProxy {
 
 	fireJQueryEvent(name, data) {
 		if (typeof jQuery === 'undefined') { return; }
+		if (this.hasPlainAndJQueryCollision()) { return; }
 
-		jQuery(document).triggerHandler(name, data);
+		jQuery(document).triggerHandler(new CustomEvent(name, { "detail": data }));
 	}
 
 	onPlainEvent(name, callback) {
-		const selfConfig = this.typeConfig('plain');
+		if (this.hasPlainAndJQueryCollision()) { return; }
 
-		if (this.isPlainEventDuplicateByJQuery(selfConfig)) { return; }
+		const selfConfig = this.typeConfig('plain');
 
 		if (this.canProxyCallback(selfConfig)) {
 			const originalCallback = callback;
@@ -112,9 +109,9 @@ export class EventProxy {
 	}
 
 	offPlainEvent(name, callback) {
-		const selfConfig = this.typeConfig('plain');
+		if (this.hasPlainAndJQueryCollision()) { return; }
 
-		if (this.isPlainEventDuplicateByJQuery(selfConfig)) { return; }
+		const selfConfig = this.typeConfig('plain');
 
 		if (this.canProxyCallback(selfConfig)) {
 			callback = this.getCallbackVariation('plain', callback);
@@ -126,13 +123,15 @@ export class EventProxy {
 	}
 
 	firePlainEvent(name, data) {
-		//if (this.isPlainEventDuplicateByJQuery()) { return; }
-
-		document.dispatchEvent(new CustomEvent(name, { "detail": data })); // todo resolve collision with jquery
+		document.dispatchEvent(new CustomEvent(name, { "detail": data }));
 	}
 
-	isPlainEventDuplicateByJQuery(selfConfig) {
-		return (selfConfig['force'] !== true && typeof jQuery !== 'undefined');
+	hasPlainAndJQueryCollision() {
+		if (!this.matchEvent('plain') || !this.matchEvent('jquery')) { return false; }
+
+		const plainConfig = this.typeConfig('plain');
+
+		return (plainConfig['force'] !== true && typeof jQuery !== 'undefined');
 	}
 
 	canProxyCallback(selfConfig) {
@@ -140,15 +139,19 @@ export class EventProxy {
 	}
 
 	typeConfig(type) {
-		return typeof this.config[type] === 'object' && this.config[type] != null ? this.config : {}
+		return typeof this.config[type] === 'object' && this.config[type] != null ? this.config : {};
 	}
 
 	storeCallbackVariation(type, callback, proxy) {
+		if (this.callbackMap[type] == null) {
+			this.callbackMap[type] = new WeakMap();
+		}
+
 		this.callbackMap[type].set(callback, proxy);
 	}
 
 	getCallbackVariation(type, callback) {
-		return this.callbackMap[type].get(callback);
+		return this.callbackMap[type]?.get(callback);
 	}
 
 }

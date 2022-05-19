@@ -5,6 +5,7 @@ export default class Subscriber {
 	static defaults = {
 		check: null,
 		event: null,
+		eventConfig: {},
 		on: null,
 		off: null,
 	}
@@ -12,6 +13,7 @@ export default class Subscriber {
 	constructor(element, options = {}) {
 		this.el = element;
 		this.options = Object.assign({}, this.constructor.defaults, options);
+		this.eventProxy = new EventProxy(this.options.eventConfig);
 
 		this.bind();
 	}
@@ -19,6 +21,7 @@ export default class Subscriber {
 	destroy() {
 		this.unbind();
 
+		this.eventProxy = null;
 		this.options = {};
 		this.el = null;
 	}
@@ -50,13 +53,11 @@ export default class Subscriber {
 
 		if (event == null) { return; }
 
-		const proxy = new EventProxy();
-
 		if (typeof event === 'string') {
-			proxy.on(event, this.options.check);
+			this.eventProxy.on(event, this.options.check);
 		} else if (Array.isArray(event)) {
 			event.forEach((one) => {
-				proxy.on(one, this.options.check);
+				this.eventProxy.on(one, this.options.check);
 			});
 		} else {
 			console?.warn(`unknown event type ${typeof event}`);
@@ -68,13 +69,11 @@ export default class Subscriber {
 
 		if (event == null) { return; }
 
-		const proxy = new EventProxy();
-
 		if (typeof event === 'string') {
-			proxy.off(event, this.options.check);
+			this.eventProxy.off(event, this.options.check);
 		} else if (Array.isArray(event)) {
 			event.forEach((one) => {
-				proxy.off(one, this.options.check);
+				this.eventProxy.off(one, this.options.check);
 			});
 		} else {
 			console?.warn(`unknown event type ${typeof event}`);
