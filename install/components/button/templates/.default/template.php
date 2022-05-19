@@ -24,11 +24,13 @@ try
 	}
 
 	$widgetOptions = array_diff_key($arResult['PARAMS'], [ 'order' => true , 'selector' => true, 'position' => true]);
+	$widgetOptions += (array)($arParams['~WIDGET_OPTIONS'] ?? []);
 	$factoryOptions = array_intersect_key($arResult['PARAMS'], [
 		'solution' => true,
 		'mode' => true,
 		'buttonWidth' => true,
 	]);
+	$factoryOptions += (array)($arParams['~FACTORY_OPTIONS'] ?? []);
 	$factoryOptions['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
 	$order = $arResult['PARAMS']['order'];
 	$selector = $arResult['PARAMS']['selector'];
