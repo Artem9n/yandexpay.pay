@@ -120,7 +120,7 @@ this.BX = this.BX || {};
 	  timeout: 1000
 	}));
 
-	function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+	function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 	function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
@@ -401,7 +401,7 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "driverOptions",
 	    value: function driverOptions(type) {
-	      var option = babelHelpers.typeof(this.options[type]) === 'object' ? this.options[type] : {};
+	      var option = babelHelpers["typeof"](this.options[type]) === 'object' ? this.options[type] : {};
 	      var overrides = {
 	        check: this.check
 	      };
@@ -469,7 +469,7 @@ this.BX = this.BX || {};
 	  return Template;
 	}();
 
-	function _createForOfIteratorHelper$1(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray$1(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+	function _createForOfIteratorHelper$1(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray$1(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
 	function _unsupportedIterableToArray$1(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$1(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$1(o, minLen); }
 
@@ -555,7 +555,7 @@ this.BX = this.BX || {};
 	    key: "preserveOptions",
 	    value: function preserveOptions() {
 	      var preserveOption = this.getOption('preserve');
-	      return babelHelpers.typeof(preserveOption) === 'object' ? preserveOption : {};
+	      return babelHelpers["typeof"](preserveOption) === 'object' ? preserveOption : {};
 	    }
 	  }, {
 	    key: "restore",
@@ -1172,7 +1172,7 @@ this.BX = this.BX || {};
 	        } else {
 	          _this2.widget.go('error', result);
 	        }
-	      }).catch(function (error) {
+	      })["catch"](function (error) {
 	        return console.log(error);
 	      });
 	    }
@@ -1360,7 +1360,7 @@ this.BX = this.BX || {};
 
 	        payment.on(YaPay$1.PaymentEventType.Abort, function onPaymentAbort(event) {// Предложить пользователю другой способ оплаты.
 	        });
-	      }).catch(function (err) {
+	      })["catch"](function (err) {
 	        // Платеж не создан.
 	        console.log({
 	          'payment not create': err
@@ -1392,7 +1392,7 @@ this.BX = this.BX || {};
 	        } else {
 	          _this2.widget.go('error', result);
 	        }
-	      }).catch(function (error) {
+	      })["catch"](function (error) {
 	        return console.log(error);
 	      });
 	    }
@@ -1412,6 +1412,9 @@ this.BX = this.BX || {};
 	  }
 	}
 
+	function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+	function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { babelHelpers.defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 	var YaPay$2 = window.YaPay;
 
 	var Cart = /*#__PURE__*/function (_AbstractStep) {
@@ -1484,7 +1487,7 @@ this.BX = this.BX || {};
 	        _this2.combineOrderWithProducts(result);
 
 	        _this2.createPayment(_this2.element, _this2.paymentData);
-	      }).catch(function (error) {//this.showError('bootstrap', '', error);
+	      })["catch"](function (error) {//this.showError('bootstrap', '', error);
 	      });
 	    }
 	  }, {
@@ -1602,7 +1605,7 @@ this.BX = this.BX || {};
 	                window.location.href = result.redirect;
 	              }
 	            }
-	          }).catch(function (error) {
+	          })["catch"](function (error) {
 	            _this4.showError('yapayProcess', '', error); // todo test it
 
 
@@ -1645,7 +1648,7 @@ this.BX = this.BX || {};
 	            });
 	          }
 	        });
-	      }).catch(function (err) {
+	      })["catch"](function (err) {
 	        _this4.showError('yapayPayment', 'payment not created', err);
 	      });
 	    }
@@ -1729,7 +1732,9 @@ this.BX = this.BX || {};
 	        paySystemId: this.isPaymentTypeCash(event) ? this.getOption('paymentCash') : this.getOption('paySystemId'),
 	        orderAmount: event.orderAmount
 	      };
-	      var data = babelHelpers.objectSpread({}, orderData, delivery);
+
+	      var data = _objectSpread(_objectSpread({}, orderData), delivery);
+
 	      return this.query(this.getOption('purchaseUrl'), data);
 	    }
 	  }, {
@@ -1758,13 +1763,13 @@ this.BX = this.BX || {};
 	    key: "combineOrderWithPickupShipping",
 	    value: function combineOrderWithPickupShipping(pickupOption) {
 	      var order = this.paymentData.order;
-	      return babelHelpers.objectSpread({}, order, {
+	      return _objectSpread(_objectSpread({}, order), {}, {
 	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
 	          type: 'SHIPPING',
 	          label: pickupOption.label,
 	          amount: pickupOption.amount
 	        }]),
-	        total: babelHelpers.objectSpread({}, order.total, {
+	        total: _objectSpread(_objectSpread({}, order.total), {}, {
 	          amount: this.amountSum(order.total.amount, pickupOption.amount)
 	        })
 	      });
@@ -1773,13 +1778,13 @@ this.BX = this.BX || {};
 	    key: "combineOrderWithDirectShipping",
 	    value: function combineOrderWithDirectShipping(shippingOption) {
 	      var order = this.paymentData.order;
-	      return babelHelpers.objectSpread({}, order, {
+	      return _objectSpread(_objectSpread({}, order), {}, {
 	        items: [].concat(babelHelpers.toConsumableArray(order.items), [{
 	          type: 'SHIPPING',
 	          label: shippingOption.label,
 	          amount: shippingOption.amount
 	        }]),
-	        total: babelHelpers.objectSpread({}, order.total, {
+	        total: _objectSpread(_objectSpread({}, order.total), {}, {
 	          amount: this.amountSum(order.total.amount, shippingOption.amount)
 	        })
 	      });
@@ -1788,12 +1793,14 @@ this.BX = this.BX || {};
 	    key: "combineOrderWithProducts",
 	    value: function combineOrderWithProducts(products) {
 	      var order = this.paymentData.order;
-	      var exampleOrder = babelHelpers.objectSpread({}, order, {
+
+	      var exampleOrder = _objectSpread(_objectSpread({}, order), {}, {
 	        items: products.items,
 	        total: {
 	          amount: products.amount
 	        }
 	      });
+
 	      Object.assign(this.paymentData.order, exampleOrder);
 	    }
 	  }, {

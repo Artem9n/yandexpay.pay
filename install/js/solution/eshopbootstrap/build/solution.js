@@ -18,6 +18,75 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  }, {
 	    key: "bootCart",
 	    value: function bootCart(cart) {}
+	  }, {
+	    key: "onEvent",
+	    value: function onEvent(name, callback) {
+	      var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+	      this.matchEvent('bx', config) && this.onBxEvent(name, callback, config);
+	      this.matchEvent('jquery', config) && this.onJQueryEvent(name, callback, config);
+	      this.matchEvent('plain', config) && this.onPlainEvent(name, callback, config);
+	    }
+	  }, {
+	    key: "matchEvent",
+	    value: function matchEvent(type, config) {
+	      return config[type] != null ? !!config[type] : !config['strict'];
+	    }
+	  }, {
+	    key: "onBxEvent",
+	    value: function onBxEvent(name, callback, config) {
+	      if (typeof BX === 'undefined') {
+	        return;
+	      }
+
+	      BX.addCustomEvent(name, callback);
+	    }
+	  }, {
+	    key: "onJQueryEvent",
+	    value: function onJQueryEvent(name, callback, config) {
+	      if (typeof jQuery === 'undefined') {
+	        return;
+	      }
+
+	      var selfConfig = this.extractEventTypeConfig('jquery', config);
+
+	      if (selfConfig['proxy'] !== false) {
+	        var originalCallback = callback;
+
+	        callback = function callback(evt, data) {
+	          var _evt$originalEvent;
+
+	          var proxyData = data != null ? data : evt === null || evt === void 0 ? void 0 : (_evt$originalEvent = evt.originalEvent) === null || _evt$originalEvent === void 0 ? void 0 : _evt$originalEvent.detail;
+	          originalCallback(proxyData);
+	        };
+	      }
+
+	      jQuery(document).on(name, callback);
+	    }
+	  }, {
+	    key: "onPlainEvent",
+	    value: function onPlainEvent(name, callback, config) {
+	      var selfConfig = this.extractEventTypeConfig('plain', config);
+
+	      if (selfConfig['force'] !== true && typeof jQuery !== 'undefined') {
+	        // will be catch inside jquery
+	        return;
+	      }
+
+	      if (selfConfig['proxy'] !== false) {
+	        var originalCallback = callback;
+
+	        callback = function callback(evt) {
+	          originalCallback(evt.detail);
+	        };
+	      }
+
+	      document.addEventListener(name, callback);
+	    }
+	  }, {
+	    key: "extractEventTypeConfig",
+	    value: function extractEventTypeConfig(type, config) {
+	      return babelHelpers["typeof"](config[type]) === 'object' && config[type] != null ? config : {};
+	    }
 	  }]);
 	  return Page;
 	}();
@@ -33,11 +102,7 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	  babelHelpers.createClass(Element, [{
 	    key: "bootCart",
 	    value: function bootCart(cart) {
-	      if (typeof BX === 'undefined' || typeof JCCatalogElement === 'undefined') {
-	        return;
-	      }
-
-	      BX.addCustomEvent('onCatalogElementChangeOffer', function (eventData) {
+	      this.onEvent('onCatalogElementChangeOffer', function (eventData) {
 	        var newProductId = parseInt(eventData === null || eventData === void 0 ? void 0 : eventData.newId, 10);
 
 	        if (isNaN(newProductId)) {
@@ -78,7 +143,7 @@ this.BX.YandexPay.Solution = this.BX.YandexPay.Solution || {};
 	        return;
 	      }
 
-	      BX.addCustomEvent('OnBasketChange', function () {
+	      this.onEvent('OnBasketChange', function () {
 	        cart.getProducts().then(function (result) {
 	          cart.combineOrderWithProducts(result);
 	        });
