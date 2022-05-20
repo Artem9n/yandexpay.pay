@@ -153,6 +153,7 @@
 
 			url.searchParams.append('domains', formData.data.SITE_DOMAINS);
 			url.searchParams.append('name', formData.data.SHOP_NAME);
+			url.searchParams.append('callback_url', formData.data.CALLBACK_URL);
 			url.searchParams.append('gateway', this.makeGateway());
 
 			return url.href;
@@ -191,7 +192,7 @@
 			const values = {
 				merchantId: merchant.merchant_id,
 				merchantName: merchant.merchant_name,
-				merchantApiKey : merchant.api_key.value
+				merchantApiKey : merchant.key_value
 			};
 
 			for (const name in values) {
