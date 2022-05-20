@@ -8,9 +8,9 @@ use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 
 class Route extends EntityReference\Route
 {
-	public function getPublicPath(string $urlId) : string
+	public function getPublicPath() : string
 	{
-		return $this->getBasePath() . '/' . $urlId;
+		return $this->getBasePath() . '/';
 	}
 
 	public function installPublic(string $siteId) : void

@@ -13,7 +13,7 @@ abstract class Route
 		$this->environment = $environment;
 	}
 
-	public function getPublicPath(string $urlId) : string
+	public function getPublicPath() : string
 	{
 		throw new Main\NotImplementedException('getPublicPath is missing');
 	}

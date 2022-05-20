@@ -36,6 +36,13 @@ class Form extends Pay\Component\Plain\Form
 					'DEFAULT_VALUE' => $this->getDomains(),
 				],
 			],
+			'CALLBACK_URL' => [
+				'TYPE' => 'string',
+				'HIDDEN' => 'Y',
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => $this->getCallbackUrl(),
+				]
+			]
 		];
 
 		return $params;
@@ -108,5 +115,23 @@ class Form extends Pay\Component\Plain\Form
 		}
 
 		return $result;
+	}
+
+	protected function getCallbackUrl() : string
+	{
+		$environment = $this->getEnvironment();
+
+		$siteId = $environment->getSite()->getDefault();
+
+		$params = [
+			'protocol' => 'https',
+			'host' => Pay\Data\SiteDomain::getHost($siteId),
+		];
+
+		$routPath = $environment->getRoute()->getPublicPath();
+
+		$domain = rtrim(Pay\Utils\Url::absolutizePath('', $params), '/');
+
+		return $domain . $routPath;
 	}
 }
