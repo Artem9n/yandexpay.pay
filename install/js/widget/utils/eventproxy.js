@@ -63,7 +63,7 @@ export class EventProxy {
 				originalCallback(proxyData);
 			};
 
-			this.storeCallbackVariation('jquery', originalCallback, callback);
+			this.pushCallbackVariation('jquery', originalCallback, callback);
 		}
 
 		jQuery(document).on(name, callback);
@@ -75,7 +75,7 @@ export class EventProxy {
 		const selfConfig = this.typeConfig('jquery');
 
 		if (this.canProxyCallback(selfConfig)) {
-			callback = this.getCallbackVariation('jquery', callback);
+			callback = this.popCallbackVariation('jquery', callback);
 
 			if (callback == null) { return; }
 		}
@@ -102,7 +102,7 @@ export class EventProxy {
 				originalCallback(evt.detail);
 			};
 
-			this.storeCallbackVariation('plain', originalCallback, callback);
+			this.pushCallbackVariation('plain', originalCallback, callback);
 		}
 
 		document.addEventListener(name, callback);
@@ -114,7 +114,7 @@ export class EventProxy {
 		const selfConfig = this.typeConfig('plain');
 
 		if (this.canProxyCallback(selfConfig)) {
-			callback = this.getCallbackVariation('plain', callback);
+			callback = this.popCallbackVariation('plain', callback);
 
 			if (callback == null) { return; }
 		}
@@ -142,7 +142,7 @@ export class EventProxy {
 		return typeof this.config[type] === 'object' && this.config[type] != null ? this.config : {};
 	}
 
-	storeCallbackVariation(type, callback, proxy) {
+	pushCallbackVariation(type, callback, proxy) {
 		if (this.callbackMap[type] == null) {
 			this.callbackMap[type] = new WeakMap();
 		}
@@ -150,8 +150,17 @@ export class EventProxy {
 		this.callbackMap[type].set(callback, proxy);
 	}
 
-	getCallbackVariation(type, callback) {
-		return this.callbackMap[type]?.get(callback);
+	popCallbackVariation(type, callback) {
+		if (this.callbackMap[type] == null) { return null; }
+
+		const map = this.callbackMap[type];
+		const result = map.get(callback);
+
+		if (result != null) {
+			map.delete(callback);
+		}
+
+		return result;
 	}
 
 }
