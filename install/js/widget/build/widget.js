@@ -280,6 +280,7 @@ this.BX = this.BX || {};
 	    var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	    babelHelpers.classCallCheck(this, EventProxy);
 	    this.config = config;
+	    this.callbackMap = {};
 	  }
 
 	  babelHelpers.createClass(EventProxy, [{
@@ -343,9 +344,9 @@ this.BX = this.BX || {};
 	        return;
 	      }
 
-	      var selfConfig = this.extractEventTypeConfig('jquery');
+	      var selfConfig = this.typeConfig('jquery');
 
-	      if (selfConfig['proxy'] !== false) {
+	      if (this.canProxyCallback(selfConfig)) {
 	        var originalCallback = callback;
 
 	        callback = function callback(evt, data) {
@@ -354,6 +355,8 @@ this.BX = this.BX || {};
 	          var proxyData = data != null ? data : evt === null || evt === void 0 ? void 0 : (_evt$originalEvent = evt.originalEvent) === null || _evt$originalEvent === void 0 ? void 0 : _evt$originalEvent.detail;
 	          originalCallback(proxyData);
 	        };
+
+	        this.storeCallbackVariation('jquery', originalCallback, callback);
 	      }
 
 	      jQuery(document).on(name, callback);
@@ -365,7 +368,17 @@ this.BX = this.BX || {};
 	        return;
 	      }
 
-	      jQuery(document).off(name, callback); // todo unbind with proxy
+	      var selfConfig = this.typeConfig('jquery');
+
+	      if (this.canProxyCallback(selfConfig)) {
+	        callback = this.getCallbackVariation('jquery', callback);
+
+	        if (callback == null) {
+	          return;
+	        }
+	      }
+
+	      jQuery(document).off(name, callback);
 	    }
 	  }, {
 	    key: "fireJQueryEvent",
@@ -374,23 +387,31 @@ this.BX = this.BX || {};
 	        return;
 	      }
 
-	      jQuery(document).triggerHandler(name, data);
+	      if (this.hasPlainAndJQueryCollision()) {
+	        return;
+	      }
+
+	      jQuery(document).triggerHandler(new CustomEvent(name, {
+	        "detail": data
+	      }));
 	    }
 	  }, {
 	    key: "onPlainEvent",
 	    value: function onPlainEvent(name, callback) {
-	      if (this.isPlainEventDuplicateByJQuery()) {
+	      if (this.hasPlainAndJQueryCollision()) {
 	        return;
 	      }
 
-	      var selfConfig = this.extractEventTypeConfig('plain');
+	      var selfConfig = this.typeConfig('plain');
 
-	      if (selfConfig['proxy'] !== false) {
+	      if (this.canProxyCallback(selfConfig)) {
 	        var originalCallback = callback;
 
 	        callback = function callback(evt) {
 	          originalCallback(evt.detail);
 	        };
+
+	        this.storeCallbackVariation('plain', originalCallback, callback);
 	      }
 
 	      document.addEventListener(name, callback);
@@ -398,30 +419,64 @@ this.BX = this.BX || {};
 	  }, {
 	    key: "offPlainEvent",
 	    value: function offPlainEvent(name, callback) {
-	      if (this.isPlainEventDuplicateByJQuery()) {
+	      if (this.hasPlainAndJQueryCollision()) {
 	        return;
 	      }
 
-	      document.removeEventListener(name, callback); // todo unbind with proxy
+	      var selfConfig = this.typeConfig('plain');
+
+	      if (this.canProxyCallback(selfConfig)) {
+	        callback = this.getCallbackVariation('plain', callback);
+
+	        if (callback == null) {
+	          return;
+	        }
+	      }
+
+	      document.removeEventListener(name, callback);
 	    }
 	  }, {
 	    key: "firePlainEvent",
 	    value: function firePlainEvent(name, data) {
-	      //if (this.isPlainEventDuplicateByJQuery()) { return; }
 	      document.dispatchEvent(new CustomEvent(name, {
 	        "detail": data
-	      })); // todo resolve collision with jquery
+	      }));
 	    }
 	  }, {
-	    key: "isPlainEventDuplicateByJQuery",
-	    value: function isPlainEventDuplicateByJQuery() {
-	      var selfConfig = this.extractEventTypeConfig('plain');
-	      return selfConfig['force'] !== true && typeof jQuery !== 'undefined';
+	    key: "hasPlainAndJQueryCollision",
+	    value: function hasPlainAndJQueryCollision() {
+	      if (!this.matchEvent('plain') || !this.matchEvent('jquery')) {
+	        return false;
+	      }
+
+	      var plainConfig = this.typeConfig('plain');
+	      return plainConfig['force'] !== true && typeof jQuery !== 'undefined';
 	    }
 	  }, {
-	    key: "extractEventTypeConfig",
-	    value: function extractEventTypeConfig(type) {
+	    key: "canProxyCallback",
+	    value: function canProxyCallback(selfConfig) {
+	      return selfConfig['proxy'] !== false;
+	    }
+	  }, {
+	    key: "typeConfig",
+	    value: function typeConfig(type) {
 	      return babelHelpers["typeof"](this.config[type]) === 'object' && this.config[type] != null ? this.config : {};
+	    }
+	  }, {
+	    key: "storeCallbackVariation",
+	    value: function storeCallbackVariation(type, callback, proxy) {
+	      if (this.callbackMap[type] == null) {
+	        this.callbackMap[type] = new WeakMap();
+	      }
+
+	      this.callbackMap[type].set(callback, proxy);
+	    }
+	  }, {
+	    key: "getCallbackVariation",
+	    value: function getCallbackVariation(type, callback) {
+	      var _this$callbackMap$typ;
+
+	      return (_this$callbackMap$typ = this.callbackMap[type]) === null || _this$callbackMap$typ === void 0 ? void 0 : _this$callbackMap$typ.get(callback);
 	    }
 	  }]);
 	  return EventProxy;
@@ -433,6 +488,7 @@ this.BX = this.BX || {};
 	    babelHelpers.classCallCheck(this, Subscriber);
 	    this.el = element;
 	    this.options = Object.assign({}, this.constructor.defaults, options);
+	    this.eventProxy = new EventProxy(this.options.eventConfig);
 	    this.bind();
 	  }
 
@@ -440,6 +496,7 @@ this.BX = this.BX || {};
 	    key: "destroy",
 	    value: function destroy() {
 	      this.unbind();
+	      this.eventProxy = null;
 	      this.options = {};
 	      this.el = null;
 	    }
@@ -484,13 +541,11 @@ this.BX = this.BX || {};
 	        return;
 	      }
 
-	      var proxy = new EventProxy();
-
 	      if (typeof event === 'string') {
-	        proxy.on(event, this.options.check);
+	        this.eventProxy.on(event, this.options.check);
 	      } else if (Array.isArray(event)) {
 	        event.forEach(function (one) {
-	          proxy.on(one, _this.options.check);
+	          _this.eventProxy.on(one, _this.options.check);
 	        });
 	      } else {
 	        var _console;
@@ -509,13 +564,11 @@ this.BX = this.BX || {};
 	        return;
 	      }
 
-	      var proxy = new EventProxy();
-
 	      if (typeof event === 'string') {
-	        proxy.off(event, this.options.check);
+	        this.eventProxy.off(event, this.options.check);
 	      } else if (Array.isArray(event)) {
 	        event.forEach(function (one) {
-	          proxy.off(one, _this2.options.check);
+	          _this2.eventProxy.off(one, _this2.options.check);
 	        });
 	      } else {
 	        var _console2;
@@ -530,6 +583,7 @@ this.BX = this.BX || {};
 	babelHelpers.defineProperty(Subscriber, "defaults", {
 	  check: null,
 	  event: null,
+	  eventConfig: {},
 	  on: null,
 	  off: null
 	});
