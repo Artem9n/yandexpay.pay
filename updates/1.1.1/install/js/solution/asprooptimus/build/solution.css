@@ -14,29 +14,22 @@
 }
 
 .basket-checkout-section-inner{
-	-ms-flex-wrap: wrap;
-	    flex-wrap: wrap;
+	flex-wrap: wrap;
 }
 
 .basket-checkout-section-inner::after{
 	content: '';
 	width: 100%;
-	-webkit-box-ordinal-group: 2;
-	    -ms-flex-order: 1;
-	        order: 1;
+	order: 1;
 }
 
 .basket-checkout-section .basket-checkout-section-inner .bx-yapay-divider-container{
 	width: 357px;
-	-webkit-box-ordinal-group: 3;
-	    -ms-flex-order: 2;
-	        order: 2;
+	order: 2;
 }
 
 .basket-checkout-section .basket-checkout-section-inner .bx-yapay-divider-container ~ .basket-checkout-block-share{
-	-webkit-box-ordinal-group: 3;
-	    -ms-flex-order: 2;
-	        order: 2;
+	order: 2;
 }
 
 .basket-checkout-section-inner .bx-yapay-drawer,
@@ -75,15 +68,10 @@
 	min-width: unset;
 }
 .bx-yapay-divider {
-	display: -webkit-box;
-	display: -ms-flexbox;
 	display: flex;
-	-webkit-box-align: center;
-	    -ms-flex-align: center;
-	        align-items: center;
+	align-items: center;
 	width: 282px;
-	-webkit-box-sizing: border-box;
-	        box-sizing: border-box;
+	box-sizing: border-box;
 
 	margin: 10px 0 20px;
 
@@ -100,9 +88,7 @@
 }
 
 .bx-yapay-divider__corner {
-	-webkit-box-flex: 1;
-	    -ms-flex: auto 1 1;
-	        flex: auto 1 1;
+	flex: auto 1 1;
 	height: 1px;
 
 	position: relative;
@@ -129,8 +115,6 @@
 }
 
 .bx-yapay-divider__text {
-	-webkit-box-flex: 1;
-	    -ms-flex: auto 0 1;
-	        flex: auto 0 1;
+	flex: auto 0 1;
 	padding: 0 10px;
 }

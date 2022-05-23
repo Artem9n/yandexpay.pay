@@ -5,7 +5,7 @@ export default class Subscriber {
 	static defaults = {
 		check: null,
 		event: null,
-		eventConfig: {},
+		config: {},
 		on: null,
 		off: null,
 	}
@@ -13,7 +13,7 @@ export default class Subscriber {
 	constructor(element, options = {}) {
 		this.el = element;
 		this.options = Object.assign({}, this.constructor.defaults, options);
-		this.eventProxy = new EventProxy(this.options.eventConfig);
+		this.eventProxy = new EventProxy(this.options.config);
 
 		this.bind();
 	}
