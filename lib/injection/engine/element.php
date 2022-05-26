@@ -86,6 +86,7 @@ class Element extends AbstractEngine
 		$filter = [
 			'IBLOCK_ID' => $iblockId,
 			'=ACTIVE' => 'Y',
+			'INCLUDE_SUBSECTIONS' => 'Y',
 		];
 
 		foreach ($map as $from => $to)
