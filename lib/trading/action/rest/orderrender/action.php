@@ -10,6 +10,33 @@ class Action extends Rest\Reference\EffectiveAction
 	{
 		$request = $this->convertHttpToRequest(Request::class);
 		$response = $this->makeResponse();
+
+		if ($request->getOrderId() !== null)
+		{
+			$this->processOrder($request, $response);
+		}
+		else
+		{
+			$this->processCheckout($request, $response);
+		}
+
+		return $this->convertResponseToHttp($response);
+	}
+
+	protected function processOrder(Request $request, Rest\Reference\EffectiveResponse $response) : void
+	{
+		$state = $this->makeState(Rest\State\Order::class);
+
+		(new Rest\Pipeline())
+			->pipe(new Rest\OrderRender\Stage\OrderLoad($request->getOrderId()))
+			->pipe(new Rest\OrderRender\Stage\OptionsCollector($response))
+			->pipe(new Rest\OrderRender\Stage\ItemsCollector($response, 'cart.items'))
+			->pipe(new Rest\OrderRender\Stage\TotalCollector($response, 'cart.total'))
+			->process($state);
+	}
+
+	protected function processCheckout(Request $request, Rest\Reference\EffectiveResponse $response) : void
+	{
 		$state = $this->makeState(Rest\State\OrderCalculation::class);
 
 		(new Rest\Pipeline())
@@ -17,8 +44,6 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe($this->collectorPipeline($response))
 			->pipe($this->collectorDelivery($response, $request))
 			->process($state);
-
-		return $this->convertResponseToHttp($response);
 	}
 
 	protected function calculationPipeline(Request $request) : Rest\Pipeline

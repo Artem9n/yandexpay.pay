@@ -23,6 +23,11 @@ class Request extends Rest\Reference\EffectiveRequest
 		return $this->getField('cart.coupons');
 	}
 
+	public function getOrderId() : ?int
+	{
+		return $this->getField('orderId');
+	}
+
 	protected function collectionMap() : array
 	{
 		return [
