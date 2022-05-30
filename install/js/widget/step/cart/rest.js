@@ -39,8 +39,6 @@ export default class RestProxy extends Proxy {
 	}
 
 	createPayment(node, paymentData) {
-
-		console.log(paymentData);
 		YaPay.createCheckout(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then((payment) => {
 				this.cart.removeLoader();

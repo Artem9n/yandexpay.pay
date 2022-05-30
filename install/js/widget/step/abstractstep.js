@@ -116,4 +116,13 @@ export default class AbstractStep {
 		this.delayTimeouts[name] = setTimeout(this[name].bind(this, ...args), timeout);
 	}
 
+	showError(type, message, err = null) {
+		let notify = type + ' - ' + message;
+
+		if (err) {
+			notify += ' ' + err;
+		}
+
+		alert(notify);
+	}
 }
