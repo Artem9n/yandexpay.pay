@@ -28,6 +28,10 @@ $widgetOptions = array_intersect_key($params, [
     'paySystemId' => true,
     'currency' => true,
 	'notifyUrl' => true,
+	'restUrl' => true,
+	'successUrl' => true,
+	'isRest' => true,
+	'metadata' => true,
 ]);
 ?>
 
