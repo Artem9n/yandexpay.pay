@@ -25,8 +25,8 @@ class Manager
 	{
 		return [
 			static::PAYTURE,
-			static::BEST2PAY,
-			/*static::RBKMONEY,
+			/*static::BEST2PAY,
+			static::RBKMONEY,
 			static::RBS_ALFA,
 			static::RBS_MTS,
 			static::RBS_RSHB,
