@@ -12,6 +12,7 @@ use YandexPay\Pay\Config;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Reference\Assert;
+use YandexPay\Pay\Trading\Entity\Registry;
 use YandexPay\Pay\Ui\Admin\PaySystemEditPage;
 use YandexPay\Pay\Utils\Url;
 use YandexPay\Pay\Trading\Action\Api;
@@ -73,11 +74,15 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	protected function getParams(Payment $payment) : array
 	{
+		global $APPLICATION;
+
 		$gateway = $this->wakeUpGateway($payment);
+		$isRest = $gateway->isRest();
+		$environment = Registry::getEnvironment();
 
 		return [
 			'requestSign'           => static::REQUEST_SIGN,
-			'order'                 => $this->getOrderData($payment),
+			'order'                 => $isRest ? $this->getOrderRest($payment) : $this->getOrderData($payment),
 			'env'                   => $this->isTestMode($payment) ? self::YANDEX_TEST_MODE : self::YANDEX_PRODUCTION_MODE,
 			'merchantId'            => $this->getParamValue($payment, 'MERCHANT_ID'),
 			'merchantName'          => $this->getParamValue($payment, 'MERCHANT_NAME'),
@@ -89,6 +94,10 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'paySystemId'           => $this->service->getField('ID'),
 			'currency'              => $payment->getField('CURRENCY'),
 			'notifyUrl'             => $this->getParamValue($payment, 'NOTIFY_URL'),
+			'restUrl'               => $environment->getRoute()->getPublicPath(),
+			'successUrl'            => $APPLICATION->GetCurPage(false),
+			'isRest'                => $isRest,
+			'metadata'              => $payment->getOrder()->getHash(),
 		];
 	}
 
@@ -124,6 +133,39 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			$result['items'][] = [
 				'label'     => Main\Localization\Loc::getMessage('ORDER_DELIVERY'),
 				'amount'    => number_format($deliveryPrice, 2, '.', '')
+			];
+		}
+
+		return $result;
+	}
+
+	protected function getOrderRest(Payment $payment): array
+	{
+		$result = [];
+
+		$order = $payment->getOrder();
+
+		if ($order === null) { return $result; }
+
+		$basket = $order->getBasket();
+
+		if ($basket === null) { return $result; }
+
+		$result['id'] = (string)$order->getId();
+		$result['total'] = $payment->getSum();
+
+		/** @var \Bitrix\Sale\BasketItem $basketItem */
+		foreach ($basket as $basketItem)
+		{
+			if ($basketItem->getFinalPrice() <= 0) { continue; }
+
+			$result['items'][] = [
+				'label'     => $basketItem->getField('NAME'),
+				'amount'    => $basketItem->getFinalPrice(),
+				'productId' => $basketItem->getProductId(),
+				'quantity' => [
+					'count' => (float)$basketItem->getQuantity()
+				]
 			];
 		}
 
