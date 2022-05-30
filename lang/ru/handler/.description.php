@@ -34,7 +34,7 @@ $MESS['YANDEX_PAY_PAYMENT_GATEWAY_PROVIDER_ID_DESCRIPTION'] = 'Выберите поставщи
 
 $MESS['YANDEX_PAY_GROUP_GATEWAY'] = 'Параметры подключения платежных шлюзов';
 
-$MESS['YANDEX_PAY_CHECKOUT_GROUP'] = 'Автоматизация Yandex Pay Checkout';
+$MESS['YANDEX_PAY_CHECKOUT_GROUP'] = 'Автоматизация процессов оплаты (работает только по новой модели)';
 $MESS['YANDEX_PAY_STATUS_ORDER_AUTO_PAY_NAME'] = 'Автоматическое подтверждение оплаты';
 $MESS['YANDEX_PAY_STATUS_ORDER_AUTO_PAY_DESCRIPTION'] = 'Автоматическое подтверждение при холдировании двухстадийной оплаты';
 $MESS['YANDEX_PAY_STATUS_ORDER_HOLD_NAME'] = 'Статус захолдированного заказа';
