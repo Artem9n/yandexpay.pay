@@ -24,6 +24,11 @@ class Request extends Rest\Reference\EffectiveRequest
 		return $this->getChildModel('shippingContact');
 	}
 
+	public function getOrderId() : ?int
+	{
+		return $this->getField('orderId');
+	}
+
 	/**
 	 * enum<COURIER|PICKUP|YANDEX_DELIVERY>
 	 * @return string

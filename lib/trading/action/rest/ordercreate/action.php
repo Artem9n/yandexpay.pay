@@ -10,14 +10,38 @@ class Action extends Rest\Reference\EffectiveAction
 	{
 		$request = $this->convertHttpToRequest(Request::class);
 		$response = $this->makeResponse();
+
+		if ($request->getOrderId() !== null)
+		{
+			$this->processOrder($request, $response);
+		}
+		else
+		{
+			$this->processCheckout($request, $response);
+		}
+
+		return $this->convertResponseToHttp($response);
+	}
+
+	protected function processOrder(Request $request, Rest\Reference\EffectiveResponse $response) : void
+	{
+		$state = $this->makeState(Rest\State\Order::class);
+
+		(new Rest\Pipeline())
+			->pipe(new Rest\OrderRender\Stage\OrderLoad($request->getOrderId()))
+			->pipe(new Rest\OrderCreate\Stage\Order\FinishCollector($response, 'orderId'))
+			->pipe(new Rest\OrderCreate\Stage\Order\MetaCollector($response, 'metadata'))
+			->process($state);
+	}
+
+	protected function processCheckout(Request $request, Rest\Reference\EffectiveResponse $response) : void
+	{
 		$state = $this->makeState(Rest\State\OrderCalculation::class);
 
 		(new Rest\Pipeline())
 			->pipe($this->calculationPipeline($request))
 			->pipe($this->collectorPipeline($response))
 			->process($state);
-
-		return $this->convertResponseToHttp($response);
 	}
 
 	protected function calculationPipeline(Request $request) : Rest\Pipeline
