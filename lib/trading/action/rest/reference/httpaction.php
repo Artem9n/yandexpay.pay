@@ -51,7 +51,7 @@ abstract class HttpAction
 
 	protected function getHttpServer() : Main\Server
 	{
-		Assert::notNull($this->httpServer, 'httpRequest');
+		Assert::notNull($this->httpServer, 'httpServer');
 
 		return $this->httpServer;
 	}

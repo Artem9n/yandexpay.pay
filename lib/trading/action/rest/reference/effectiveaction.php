@@ -2,8 +2,7 @@
 namespace YandexPay\Pay\Trading\Action\Rest\Reference;
 
 use Bitrix\Main;
-use Bitrix\Sale\BusinessValue;
-use Bitrix\Sale\PaySystem\Service;
+use Bitrix\Sale;
 use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
@@ -24,8 +23,16 @@ abstract class EffectiveAction extends HttpAction
 	{
 		$this->bootJwt();
 		$this->bootJson();
-		$this->bootSetup();
-		$this->bootMerchant();
+
+		if ($this->httpRequest->get('orderId') === null)
+		{
+			$this->bootSetup();
+			$this->bootMerchant();
+		}
+		else
+		{
+			$this->bootMerchantOrder();
+		}
 	}
 
 	protected function bootJwt() : void
@@ -54,14 +61,17 @@ abstract class EffectiveAction extends HttpAction
 		$this->passTrading($setup);
 	}
 
-	protected function bootMerchant() : void
+	protected function bootMerchant(int $paySystemId = null, string $personTypeId = null) : void
 	{
-		if(!Main\Loader::includeModule('sale')) { return; }
+		if (!Main\Loader::includeModule('sale')) { return; }
 
-		$merchantId = BusinessValue::get(
+		$paySystemId = $paySystemId ?? $this->options->getPaymentCard();
+		$personTypeId = $personTypeId ?? $this->setup->getPersonTypeId();
+
+		$merchantId = Sale\BusinessValue::get(
 			'YANDEX_PAY_MERCHANT_ID',
-			Service::PAY_SYSTEM_PREFIX . $this->options->getPaymentCard(),
-			$this->setup->getPersonTypeId()
+			Sale\PaySystem\Service::PAY_SYSTEM_PREFIX . $paySystemId,
+			$personTypeId
 		);
 
 		if ($merchantId === null)
@@ -73,6 +83,45 @@ abstract class EffectiveAction extends HttpAction
 		{
 			throw new RequestAuthentication('Invalid merchantId');
 		}
+	}
+
+	protected function bootMerchantOrder() : void
+	{
+		$orderId = $this->httpRequest->get('orderId');
+
+		if (!Main\Loader::includeModule('sale')) { return; }
+
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		/** @var \Bitrix\Sale\Order $orderClassName */
+		$orderClassName = $registry->getOrderClassName();
+		/** @var \Bitrix\Sale\Order $order */
+		$order = $orderClassName::load($orderId);
+
+		if ($order === null)
+		{
+			throw new DtoProperty('order not found', 'ORDER_NOT_FOUND');
+		}
+
+		$paySystemId = null;
+
+		$paymentCollection = $order->getPaymentCollection();
+
+		/** @var \Bitrix\Sale\Payment $paymentItem */
+		foreach ($paymentCollection as $paymentItem)
+		{
+			if (!$paymentItem->isInner())
+			{
+				$paySystemId = $paymentItem->getPaymentSystemId();
+				break;
+			}
+		}
+
+		if ($paySystemId === null)
+		{
+			throw new DtoProperty('paySystem not found', 'PAYSYSTEM_NOT_FOUND');
+		}
+
+		$this->bootMerchant($paySystemId, $order->getPersonTypeId());
 	}
 
 	protected function jwkUrl() : string
@@ -91,7 +140,8 @@ abstract class EffectiveAction extends HttpAction
 
 		$query = TradingSetup\RepositoryTable::getList([
 			'filter' => [
-				'=ID' => $setupId
+				'=ID' => $setupId,
+				'ACTIVE' => true,
 			],
 			'limit' => 1,
 		]);
