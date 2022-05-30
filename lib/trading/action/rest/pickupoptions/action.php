@@ -23,7 +23,7 @@ class Action extends Rest\Reference\EffectiveAction
 	protected function calculationPipeline(Request $request) : Rest\Pipeline
 	{
 		return (new Rest\Pipeline())
-			->pipe(new Rest\Stage\NewOrder($request->getUserId(), $request->getFUserId(), 'RUB'/*$request->getCurrencyCode() todo*/, $request->getCoupons()))
+			->pipe(new Rest\Stage\NewOrder($request->getUserId(), $request->getFUserId(), $request->getCurrencyCode(), $request->getCoupons()))
 			->pipe(new Rest\Stage\OrderInitialize())
 			->pipe(new Rest\Stage\NewBasket($request->getItems()))
 			->pipe(new Rest\Stage\OrderPaySystem())
