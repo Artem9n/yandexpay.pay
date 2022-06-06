@@ -14,8 +14,6 @@ class MerchantType extends Internals\Input\StringInput
 
 	public static function getEditHtmlSingle($name, array $input, $value)
 	{
-		Main\UI\Extension::load('yandexpaypay.admin.ui.merchantbutton');
-
 		$result = parent::getEditHtmlSingle($name, $input, $value);
 		$result .= static::getButtonHtml();
 
@@ -24,13 +22,21 @@ class MerchantType extends Internals\Input\StringInput
 
 	protected static function getButtonHtml() : string
 	{
-		if (!Ui\Admin\PaySystemEditPage::validateMerchantButton()) { return ''; }
+		$plugin = 'ButtonField';
+
+		if (!Ui\Admin\PaySystemEditPage::validateMerchantButton())
+		{
+			$plugin = 'RestField';
+		}
+
+		Main\UI\Extension::load('yandexpaypay.admin.ui.merchantbutton');
+		Main\UI\Extension::load('yandexpaypay.admin.ui.merchantrest');
 
 		$attributes = [
 			'type' => 'button',
 			'value' => self::getMessage('INPUT_NAME'),
 			'class' => 'adm-btn-green js-plugin-click',
-			'data-plugin' => 'Ui.ButtonField',
+			'data-plugin' => sprintf('Ui.%s', $plugin),
 			'data-form-url' => Ui\Admin\Path::getModuleUrl('trading_merchant', ['lang' => LANGUAGE_ID, 'view' => 'dialog']),
 			'data-form-title' => self::getMessage('MODAL_TITLE'),
 			'data-form-save-title' => self::getMessage('BTN_SAVE')

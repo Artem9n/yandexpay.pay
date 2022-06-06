@@ -84,7 +84,7 @@ class PaySystemEditPage
 			}
 		}
 
-		if ($gateway !== null && $gateway !== Manager::PAYTURE)
+		if ($gateway === Manager::PAYTURE)
 		{
 			$result = false;
 		}
