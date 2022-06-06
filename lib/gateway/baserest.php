@@ -31,7 +31,7 @@ abstract class BaseRest extends Base
 	public function isRest() : bool
 	{
 		$result = (
-			$this->getParameter('PAYMENT_GATEWAY_IS_REST') === 'Y'
+			Manager::resolveGatewayRest($this->getId())
 			&& !empty($this->getParameter('YANDEX_PAY_REST_API_KEY', true))
 		);
 

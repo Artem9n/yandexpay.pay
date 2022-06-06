@@ -87,19 +87,6 @@ class Payture extends Gateway\BaseRest
 	public function extraParams() : array
 	{
 		return [
-			'PAYMENT_GATEWAY_IS_REST' => [
-				'NAME' => static::getMessage('IS_REST'),
-				'GROUP' => $this->getName(),
-				'DESCRIPTION' => '',
-				'SORT' => 500,
-				'INPUT' => [
-					'TYPE' => 'Y/N',
-				],
-				'DEFAULT'       => [
-					'PROVIDER_KEY'      => 'INPUT',
-					'PROVIDER_VALUE'    => 'Y'
-				]
-			],
 			'PAYMENT_GATEWAY_API_KEY' => [
 				'NAME' => static::getMessage('MERCHANT_API_KEY'),
 				'GROUP' => $this->getName(),

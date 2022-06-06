@@ -25,12 +25,12 @@ class Manager
 	{
 		return [
 			static::PAYTURE,
-			/*static::BEST2PAY,
-			static::RBKMONEY,
+			static::BEST2PAY,
+			//static::RBKMONEY,
 			static::RBS_ALFA,
 			static::RBS_MTS,
 			static::RBS_RSHB,
-			static::OTHER*/
+			//static::OTHER
 		];
 	}
 
@@ -59,5 +59,14 @@ class Manager
 		Assert::isSubclassOf($className, Base::class);
 
 		return new $className();
+	}
+
+	public static function resolveGatewayRest(string $gatewayId) : bool
+	{
+		$list = [
+			static::PAYTURE => true
+		];
+
+		return isset($list[$gatewayId]);
 	}
 }
