@@ -140,6 +140,7 @@ export default class RestProxy extends Proxy {
 			this.cart.widget.setOptions({productId: newProductId});
 			this.getButtonData().then((result) => {
 				this.combineOrderWithData(result.data);
+				this.payment?.update(this.cart.paymentData);
 			});
 		}
 	}
@@ -147,6 +148,7 @@ export default class RestProxy extends Proxy {
 	changeBasket() {
 		this.getButtonData().then((result) => {
 			this.combineOrderWithData(result.data);
+			this.payment?.update(this.cart.paymentData);
 		});
 	}
 }
