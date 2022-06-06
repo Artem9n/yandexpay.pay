@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
+use Bitrix\Sale;
 use YandexPay\Pay\Trading\Action\Rest\State;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
@@ -28,11 +29,11 @@ class OrderDeliveryCollector extends ResponseCollector
 		$this->write($result);
 	}
 
-	protected function restrictedDeliveries(State\OrderCalculation $state) : array
+	protected function restrictedDeliveries(State\OrderCalculation $state, int $mode = Sale\Delivery\Restrictions\Manager::MODE_CLIENT) : array
 	{
 		$result = [];
 		$deliveryService = $state->environment->getDelivery();
-		$compatibleIds = $deliveryService->getRestricted($state->order);
+		$compatibleIds = $deliveryService->getRestricted($state->order, $mode);
 
 		if (empty($compatibleIds)) { return $result; }
 

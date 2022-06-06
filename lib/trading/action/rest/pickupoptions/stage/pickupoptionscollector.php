@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\PickupOptions\Stage;
 
+use Bitrix\Sale;
 use YandexPay\Pay\Trading\Action\Rest\Reference;
 use YandexPay\Pay\Trading\Action\Rest\Stage;
 use YandexPay\Pay\Trading\Action\Rest\State;
@@ -21,7 +22,7 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 	{
 		$result = [];
 
-		$deliveries = $this->restrictedDeliveries($state);
+		$deliveries = $this->restrictedDeliveries($state, Sale\Delivery\Restrictions\Manager::MODE_MANAGER);
 		$deliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::PICKUP_TYPE);
 
 		foreach ($deliveries as $deliveryId)

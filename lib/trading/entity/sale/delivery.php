@@ -195,14 +195,14 @@ class Delivery extends EntityReference\Delivery
 		return $result;
 	}
 
-	public function getRestricted(EntityReference\Order $order) : array
+	public function getRestricted(EntityReference\Order $order, int $mode = Sale\Delivery\Restrictions\Manager::MODE_CLIENT) : array
 	{
 		$result = [];
 		$calculatableOrder = $this->getOrderCalculatable($order);
 		$shipment = $this->getCalculatableShipment($calculatableOrder);
 		$services = Sale\Delivery\Services\Manager::getRestrictedList(
 			$shipment,
-			Sale\Delivery\Restrictions\Manager::MODE_CLIENT
+			$mode
 		);
 
 		foreach ($services as $serviceParameters)
@@ -241,7 +241,7 @@ class Delivery extends EntityReference\Delivery
 					&& $this->hasDeliveryLocationRestriction($serviceId)
 				)
 				{
-					continue;
+					//continue;
 				}
 
 				$result[] = $serviceId;

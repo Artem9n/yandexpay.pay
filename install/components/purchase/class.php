@@ -192,11 +192,11 @@ class Purchase extends \CBitrixComponent
 		];
 	}
 
-	protected function restrictedDeliveries(EntityReference\Order $order) : array
+	protected function restrictedDeliveries(EntityReference\Order $order, int $mode = Sale\Delivery\Restrictions\Manager::MODE_CLIENT) : array
 	{
 		$result = [];
 		$deliveryService = $this->environment->getDelivery();
-		$compatibleIds = $deliveryService->getRestricted($order);
+		$compatibleIds = $deliveryService->getRestricted($order, $mode);
 
 		if (empty($compatibleIds)) { return $result; }
 
@@ -277,7 +277,7 @@ class Purchase extends \CBitrixComponent
 
 		$order->finalize();
 
-		$deliveries = $this->restrictedDeliveries($order);
+		$deliveries = $this->restrictedDeliveries($order, Sale\Delivery\Restrictions\Manager::MODE_MANAGER);
 		$deliveries = $this->filterDeliveryByType($deliveries, EntitySale\Delivery::PICKUP_TYPE);
 
 		foreach ($deliveries as $deliveryId)

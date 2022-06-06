@@ -3,6 +3,7 @@
 namespace YandexPay\Pay\Trading\Entity\Reference;
 
 use Bitrix\Main;
+use Bitrix\Sale;
 use Bitrix\Main\NotImplementedException;
 
 class Delivery
@@ -42,10 +43,11 @@ class Delivery
 
 	/**
 	 * @param Order $order
+	 * @param int $mode
 	 *
 	 * @return int[]
 	 */
-	public function getRestricted(Order $order) : array
+	public function getRestricted(Order $order, int $mode = Sale\Delivery\Restrictions\Manager::MODE_CLIENT) : array
 	{
 		throw new NotImplementedException('getRestricted is missing');
 	}
