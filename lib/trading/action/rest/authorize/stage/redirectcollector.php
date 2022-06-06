@@ -23,7 +23,7 @@ class RedirectCollector extends ResponseCollector
 
 		if ((string)$accountNumber !== '')
 		{
-			$orderId = $accountNumber;
+			$orderId = urlencode($accountNumber);
 		}
 
 		$this->write(sprintf('/%s/?ORDER_ID=%s', $this->successUrl, $orderId));
