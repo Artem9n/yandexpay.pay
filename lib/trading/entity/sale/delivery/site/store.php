@@ -1,11 +1,12 @@
 <?php
 
-namespace YandexPay\Pay\Trading\Entity\Sale\Pickup\Site;
+namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Site;
 
 use Bitrix\Main;
 use Bitrix\Catalog;
 use Bitrix\Sale;
-use YandexPay\Pay\Trading\Entity\Sale\Pickup\AbstractAdapter;
+use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 
 /** @property Sale\Delivery\Services\Configurable $service */
 class Store extends AbstractAdapter
@@ -97,5 +98,15 @@ class Store extends AbstractAdapter
 	public function getLocationBySettingSale() : ?string
 	{
 		return Main\Config\Option::get('sale', 'location', null);
+	}
+
+	public function markSelected(Sale\OrderBase $order, array $store = []) : void
+	{
+		// TODO: Implement markSelected() method.
+	}
+
+	public function getServiceType() : string
+	{
+		return EntitySale\Delivery::PICKUP_TYPE;
 	}
 }

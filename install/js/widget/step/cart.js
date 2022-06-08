@@ -182,6 +182,16 @@ export default class Cart extends AbstractStep {
 
 				});
 
+				payment.on(YaPay.PaymentEventType.Setup, (event) => {
+					// Если местонахождение пользователя не определено,
+					// заранее подготовьте и отдайте точки самовывоза.
+					if (event.pickupPoints) {
+						this.getSetupPickupPoints().then((result) => {
+							payment.update({ order: result });
+						})
+					}
+				});
+
 				// Подписаться на событие error.
 				payment.on(YaPay.PaymentEventType.Error, (event) => {
 					this.showError('yapayError', 'service temporary unavailable');
@@ -275,6 +285,16 @@ export default class Cart extends AbstractStep {
 		return this.query(this.getOption('notifyUrl'), data);
 	}
 
+	getSetupPickupPoints() {
+		let data = {
+			yapayAction: 'setupPickupOptions',
+			items: this.paymentData.order.items,
+			setupId: this.getOption('setupId'),
+		};
+
+		return this.query(this.getOption('purchaseUrl'), data);
+	}
+
 	orderAccept(event) {
 
 		let deliveryType = event.shippingMethodInfo.shippingOption ? 'delivery' : 'pickup';
@@ -316,6 +336,7 @@ export default class Cart extends AbstractStep {
 			yapayAction: 'deliveryOptions',
 			items: this.paymentData.order.items,
 			setupId: this.getOption('setupId'),
+			paySystemId: this.getOption('paySystemId'),
 		};
 
 		return this.query(this.getOption('purchaseUrl'), data);
@@ -328,6 +349,7 @@ export default class Cart extends AbstractStep {
 			yapayAction: 'pickupOptions',
 			items: this.paymentData.order.items,
 			setupId: this.getOption('setupId'),
+			paySystemId: this.getOption('paySystemId'),
 		};
 
 		return this.query(this.getOption('purchaseUrl'), data);

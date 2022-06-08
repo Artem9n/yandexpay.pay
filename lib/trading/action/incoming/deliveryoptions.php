@@ -13,6 +13,11 @@ class DeliveryOptions extends Common
 		return $this->getChildCollection('items');
 	}
 
+	public function getPaySystemId() : int
+	{
+		return $this->requireField('paySystemId');
+	}
+
 	protected function modelMap() : array
 	{
 		return [

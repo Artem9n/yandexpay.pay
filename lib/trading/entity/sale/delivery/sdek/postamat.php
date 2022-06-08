@@ -1,14 +1,14 @@
 <?php
 
-namespace YandexPay\Pay\Trading\Entity\Sale\Pickup\Boxberry;
+namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Sdek;
 
 use Bitrix\Sale;
-use YandexPay\Pay\Trading\Entity\Sale\Pickup\Factory;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 
 /** @property Sale\Delivery\Services\AutomaticProfile $service */
-class Pvz extends Base
+class Postamat extends Base
 {
-	protected $prepaid = 1;
+	protected $code = 'POSTAMAT';
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
@@ -18,11 +18,11 @@ class Pvz extends Base
 
 		$this->title = $service->getName();
 
-		return $code === 'boxberry:PVZ';
+		return $code === 'sdek:postamat';
 	}
 
 	protected function getType() : string
 	{
-		return Factory::BOXBERRY_PVZ;
+		return Factory::SDEK_POSTAMAT;
 	}
 }

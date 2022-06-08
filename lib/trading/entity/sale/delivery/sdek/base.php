@@ -1,17 +1,18 @@
 <?php
 
-namespace YandexPay\Pay\Trading\Entity\Sale\Pickup\Sdek;
+namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Sdek;
 
 use Bitrix\Main;
 use Bitrix\Sale;
 use YandexPay\Pay\Config;
-use YandexPay\Pay\Trading\Entity\Sale\Pickup\AbstractAdapter;
-use YandexPay\Pay\Trading\Entity\Sale\Pickup\Factory;
+use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 
 /** @property Sale\Delivery\Services\AutomaticProfile $service */
 class Base extends AbstractAdapter
 {
 	protected $title;
+	protected $code;
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
@@ -72,9 +73,9 @@ class Base extends AbstractAdapter
 		$pickupList = [];
 
 		$cache = Main\Data\Cache::createInstance();
-		$cacheDir = Config::getModuleName() . ':' . $this->getType();
+		$cacheDir = Config::getModuleName() . ':sdek:ipol';
 
-		if ($cache->initCache(36000, $this->getType(), $cacheDir))
+		if ($cache->initCache(36000, 'sdek:ipol', $cacheDir))
 		{
 			$pickupList = $cache->getVars();
 		}
@@ -92,7 +93,7 @@ class Base extends AbstractAdapter
 
 		if (empty($pickupList) || $bounds === null) { return $result; }
 
-		foreach ($pickupList['PVZ'] as $cityName => $pickupList)
+		foreach ($pickupList[$this->code] as $cityName => $pickupList)
 		{
 			foreach ($pickupList as $pickupKey => $pickup)
 			{
@@ -105,13 +106,14 @@ class Base extends AbstractAdapter
 				{
 					$result[$cityName][] = [
 						'ID' => $pickupKey,
-						'ADDRESS' => $pickup['Address'],
+						'ADDRESS' => $cityName . ', ' . $pickup['Address'],
 						'TITLE' => sprintf('(%s) %s', $this->title, $pickup['Name']),
 						'GPS_N' => $pickup['cY'],
 						'GPS_S' => $pickup['cX'],
 						'SCHEDULE' => $pickup['WorkTime'],
 						'PHONE' => $pickup['Phone'],
-						'PROVIDER' => $this->getType()
+						'PROVIDER' => $this->getType(),
+						'DESCRIPTION' => $pickup['AddressComment'],
 					];
 				}
 			}
@@ -120,4 +122,27 @@ class Base extends AbstractAdapter
 		return $result;
 	}
 
+	public function markSelected(Sale\OrderBase $order, array $store = []) : void
+	{
+		$tariff = $_SESSION['IPOLSDEK_CHOSEN']['pickup'];
+
+		/** @var \Bitrix\Sale\PropertyValue $property */
+		foreach ($order->getPropertyCollection() as $property)
+		{
+			if ($property->getField('CODE') !== 'IPOLSDEK_CNTDTARIF') { continue; }
+
+			$property->setValue($tariff);
+		}
+
+		$propAddress = $order->getPropertyCollection()->getAddress();
+
+		if ($propAddress === null) { return; }
+
+		$propAddress->setValue(sprintf('%s #%s', $store['address'], $store['storeId']));
+	}
+
+	public function getServiceType() : string
+	{
+		return EntitySale\Delivery::PICKUP_TYPE;
+	}
 }

@@ -164,7 +164,7 @@ class Delivery extends EntityReference\Delivery
 		{
 			$calculatableOrder = $this->getOrderCalculatable($order);
 			$service = $this->getDeliveryService($deliveryId);
-			$pickup = Pickup\Factory::make($service);
+			$pickup = Delivery\Factory::make($service, static::PICKUP_TYPE);
 
 			$result = $pickup->getStores($calculatableOrder, $service, $bounds);
 		}
@@ -484,22 +484,9 @@ class Delivery extends EntityReference\Delivery
 
 	protected function matchDeliveryType(Sale\Delivery\Services\Base $deliveryService, $type) : bool
 	{
-		$methodName = 'matchDeliveryType' . ucfirst($type);
-		$result = false;
-
-		if (method_exists($this, $methodName))
-		{
-			$result = (bool)$this->{$methodName}($deliveryService);
-		}
-
-		return $result;
-	}
-
-	protected function matchDeliveryTypePickup(Sale\Delivery\Services\Base $deliveryService) : bool
-	{
 		try
 		{
-			Pickup\Factory::make($deliveryService);
+			Delivery\Factory::make($deliveryService, $type);
 
 			$result = true;
 		}
@@ -514,7 +501,8 @@ class Delivery extends EntityReference\Delivery
 	protected function getSuggestImplementedDeliveryTypes() : array
 	{
 		return [
-			static::PICKUP_TYPE
+			static::PICKUP_TYPE,
+			static::DELIVERY_TYPE
 		];
 	}
 

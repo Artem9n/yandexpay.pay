@@ -1,13 +1,13 @@
 <?php
 
-namespace YandexPay\Pay\Trading\Entity\Sale\Pickup\Dpd;
+namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Dpd;
 
 use Bitrix\Main;
 use Bitrix\Sale;
 use Ipolh\DPD\DB\Terminal;
-use YandexPay\Pay\Config;
-use YandexPay\Pay\Trading\Entity\Sale\Pickup\AbstractAdapter;
-use YandexPay\Pay\Trading\Entity\Sale\Pickup\Factory;
+use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 
 /** @property Sale\Delivery\Services\AutomaticProfile $service */
 class Pickup extends AbstractAdapter
@@ -72,4 +72,19 @@ class Pickup extends AbstractAdapter
 		return $result;
 	}
 
+	public function markSelected(Sale\OrderBase $order, array $store = []) : void
+	{
+		$propAddress = $order->getPropertyCollection()->getAddress();
+
+		if ($propAddress === null) { return; }
+
+		$value = sprintf('%s (%s)', $store['address'], $store['storeId']);
+
+		$propAddress->setValue($value);
+	}
+
+	public function getServiceType() : string
+	{
+		return EntitySale\Delivery::PICKUP_TYPE;
+	}
 }

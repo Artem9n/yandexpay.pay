@@ -1,17 +1,18 @@
 <?php
 
-namespace YandexPay\Pay\Trading\Entity\Sale\Pickup\Boxberry;
+namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Boxberry;
 
 use Bitrix\Main;
 use Bitrix\Sale;
 use YandexPay\Pay\Config;
-use YandexPay\Pay\Trading\Entity\Sale\Pickup\AbstractAdapter;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
+use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
 /** @property Sale\Delivery\Services\AutomaticProfile $service */
 class Base extends AbstractAdapter
 {
 	protected $title;
-	protected $prepaid = 1;
+	protected static $pickupList;
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
@@ -89,7 +90,7 @@ class Base extends AbstractAdapter
 		{
 			\CBoxberry::initApi();
 
-			$pickupList = \CBoxberry::methodExecPost('ListPoints', ['prepaid=' . $this->prepaid]);
+			$pickupList = \CBoxberry::methodExecPost('ListPoints', ['prepaid=1']);
 
 			if (empty($pickupList))
 			{
@@ -99,7 +100,7 @@ class Base extends AbstractAdapter
 			$cache->endDataCache($pickupList);
 		}
 
-		if (empty($pickupList)) { return $result; }
+		if (empty($pickupList) || !empty(static::$pickupList)) { return $result; }
 
 		foreach ($pickupList as $point)
 		{
@@ -124,7 +125,18 @@ class Base extends AbstractAdapter
 			}
 		}
 
+		static::$pickupList = $result;
+
 		return $result;
 	}
 
+	public function markSelected(Sale\OrderBase $order, array $store = []) : void
+	{
+		// TODO: Implement markSelected() method.
+	}
+
+	public function getServiceType() : string
+	{
+		return EntitySale\Delivery::PICKUP_TYPE;
+	}
 }

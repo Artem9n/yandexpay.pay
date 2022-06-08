@@ -85,6 +85,8 @@ class PeriodParser
 	protected static function searchDigits($text, $startPosition, $finishPosition)
 	{
 		$textBefore = mb_substr($text, $startPosition, $finishPosition);
+		$textBefore = trim($textBefore) === '' ? $text : $textBefore;
+
 		$result = [
 			'FROM' => null,
 			'TO' => null,

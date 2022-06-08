@@ -1,10 +1,10 @@
 <?php
 
-namespace YandexPay\Pay\Trading\Entity\Sale\Pickup\Ozon;
+namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Ozon;
 
 use Ipol;
 use Bitrix\Sale;
-use YandexPay\Pay\Trading\Entity\Sale\Pickup\Factory;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 
 /** @property Ipol\Ozon\Bitrix\Handler\DeliveryHandlerPickup $service */
 class Pickup extends Base

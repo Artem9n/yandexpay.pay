@@ -1,14 +1,25 @@
 <?php
 
-namespace YandexPay\Pay\Trading\Entity\Sale\Pickup;
+namespace YandexPay\Pay\Trading\Entity\Sale\Delivery;
 
 use Bitrix\Main;
 use Bitrix\Catalog;
 use Bitrix\Sale;
+use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
 /** @property Sale\Delivery\Services\Configurable $service */
 class Configurable extends AbstractAdapter
 {
+	public function getServiceType() : string
+	{
+		return EntitySale\Delivery::PICKUP_TYPE;
+	}
+
+	public function markSelected(Sale\OrderBase $order, array $store = []) : void
+	{
+		// TODO: Implement markSelected() method.
+	}
+
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
 		if (!($service instanceof Sale\Delivery\Services\Configurable)) { return false; }
