@@ -56,7 +56,7 @@ class Factory
 			static::SDEK_POSTAMAT,
 			static::DPD_PICKUP,
 			static::BOXBERRY_PVZ_COD,
-			static::BOXBERRY_PVZ,
+			//static::BOXBERRY_PVZ,
 			static::RUSSIAN_POST,
 		];
 	}

@@ -113,7 +113,7 @@ class Base extends AbstractAdapter
 			{
 				$result[$point['CityName']][] = array(
 					'ID' => $point['Code'],
-					'ADDRESS' => $point['AddressReduce'] ?: $point['Address'],
+					'ADDRESS' => $point['Address'] ?: $point['AddressReduce'],
 					'TITLE' => sprintf('(%s) %s', $this->title, $point['Name']),
 					'GPS_N' => $pointGps[0],
 					'GPS_S' => $pointGps[1],
@@ -132,7 +132,11 @@ class Base extends AbstractAdapter
 
 	public function markSelected(Sale\OrderBase $order, array $store = []) : void
 	{
-		// TODO: Implement markSelected() method.
+		$propAddress = $order->getPropertyCollection()->getAddress();
+
+		if ($propAddress === null) { return; }
+
+		$propAddress->setValue(sprintf('Boxberry: %s #%s', $store['address'], $store['storeId']));
 	}
 
 	public function getServiceType() : string
