@@ -30,6 +30,8 @@ class Purchase extends \CBitrixComponent
 	protected $setup;
 	/** @var array<int, string> $productIndex => $basketCode  */
 	protected $basketMap = [];
+	protected $filledProperties = [];
+	protected $relatedProperties = [];
 
 	public function executeComponent(): void
 	{
@@ -160,6 +162,7 @@ class Purchase extends \CBitrixComponent
 		$this->fillPersonType($order);
 		$this->fillLocation($order, $request->getAddress());
 		$this->fillBasket($order, $request->getItems());
+		$order->createPayment($request->getPaySystemId());
 
 		$order->finalize();
 
@@ -225,9 +228,9 @@ class Purchase extends \CBitrixComponent
 		return $this->environment->getDelivery()->calculate($deliveryId, $order);
 	}
 
-	protected function getPickupStores(EntityReference\Order $order, int $deliveryId) : array
+	protected function getPickupStores(EntityReference\Order $order, int $deliveryId, array $bounds = null) : array
 	{
-		return $this->environment->getDelivery()->getPickupStores($deliveryId, $order);
+		return $this->environment->getDelivery()->getPickupStores($deliveryId, $order, $bounds);
 	}
 
 	protected function filterDeliveryByType(array $deliveryIds, string $type) : array
@@ -274,21 +277,25 @@ class Purchase extends \CBitrixComponent
 
 		$this->fillPersonType($order);
 		$this->fillBasket($order, $request->getItems());
+		$order->createPayment($request->getPaySystemId());
 
 		$order->finalize();
 
 		$deliveries = $this->restrictedDeliveries($order, Sale\Delivery\Restrictions\Manager::MODE_MANAGER);
 		$deliveries = $this->filterDeliveryByType($deliveries, EntitySale\Delivery::PICKUP_TYPE);
+		$bounds = $request->getBounds()->getFields();
 
 		foreach ($deliveries as $deliveryId)
 		{
-			if (!$this->isDeliveryCompatible($order, $deliveryId)) { continue; }
-
-			$allStores = $this->getPickupStores($order, $deliveryId);
+			$allStores = $this->getPickupStores($order, $deliveryId, $bounds);
 			//$storesByLocation = $this->groupStoresByLocation($allStores); //todo, need group?
 			foreach ($allStores as $locationId => $stores)
 			{
+				$this->clearCalculatable($order);
+
 				$this->setLocation($order, $locationId);
+
+				if (!$this->isDeliveryCompatible($order, $deliveryId)) { continue; }
 
 				$calculationResult = $this->calculateDelivery($order, $deliveryId);
 
@@ -304,16 +311,21 @@ class Purchase extends \CBitrixComponent
 		$this->sendResponse($result);
 	}
 
+	protected function clearCalculatable(EntityReference\Order $order) : void
+	{
+		$order->clearCalculatable();
+	}
+
 	protected function collectPickupOption(array $store, EntityReference\Delivery\CalculationResult $calculationResult, int $locationId = null) : array
 	{
 		return [
 			'id' => Main\Web\Json::encode([
 				'deliveryId' => $calculationResult->getDeliveryId(),
-				'storeId' => (int)$store['ID'],
+				'storeId' => (string)$store['ID'],
 				'locationId' => $locationId,
 			]),
 			'label'     => $store['TITLE'],
-			'provider'  => 'pickpoint', //todo
+			'provider'  => $store['PROVIDER'] ?? 'pickpoint', //todo
 			'address'   => $store['ADDRESS'],
 			'deliveryDate' => $calculationResult->getDateFrom()->getTimestamp(),
 			'amount'    => (string)$calculationResult->getPrice(),
@@ -349,21 +361,29 @@ class Purchase extends \CBitrixComponent
 		$this->fillPersonType($order);
 		$this->fillStatus($order);
 		$this->fillProperties($order, $request);
+		$this->fillPaySystem($order, $request);
 
 		if ($request->getDeliveryType() === EntitySale\Delivery::PICKUP_TYPE)
 		{
-			$this->setLocation($order, $request->getPickup()->getLocationId());
+			$this->fillPickupLocation($order, $request->getPickup()->getLocationId());
 			$this->fillBasket($order, $request->getItems());
 			$this->fillPickup($order, $request->getPickup());
+
+			// fill property pickup provider, need recalculate for ozon
+			$order->recalculateShipment();
+			$order->fillPropertiesStore($request->getPickup()->getFields());
 		}
 		else
 		{
 			$this->fillLocation($order, $request->getAddress());
 			$this->fillBasket($order, $request->getItems());
 			$this->fillDelivery($order, $request->getDelivery());
+
+			$order->recalculateShipment();
+			$order->fillPropertiesDelivery();
 		}
 
-		$this->fillPaySystem($order, $request);
+		$this->fillRelatedProperties($order);
 
 		$order->finalize();
 
@@ -455,14 +475,14 @@ class Purchase extends \CBitrixComponent
 	{
 		$deliveryId = $pickup->getId();
 		$price = $pickup->getAmount();
-		$storeId = $pickup->getStoreId();
+		$store = $pickup->getFields();
 
 		if ((string)$deliveryId === '')
 		{
 			$deliveryId = $this->environment->getDelivery()->getEmptyDeliveryId();
 		}
 
-		$order->createShipment($deliveryId, $price, $storeId);
+		$order->createShipment($deliveryId, null, $store);
 	}
 
 	protected function wakeUpBasket(EntityReference\Order $order, TradingAction\Incoming\Product $request) : void
@@ -682,7 +702,7 @@ class Purchase extends \CBitrixComponent
 
 		if ($paySystemId > 0)
 		{
-			$order->createPayment($paySystemId, $price);
+			$order->createPayment($paySystemId);
 		}
 	}
 
@@ -696,7 +716,7 @@ class Purchase extends \CBitrixComponent
 			$deliveryId = $this->environment->getDelivery()->getEmptyDeliveryId();
 		}
 
-		$order->createShipment($deliveryId, $price);
+		$order->createShipment($deliveryId);
 	}
 
 	protected function filterPickup(array $pickup) : array
@@ -795,6 +815,19 @@ class Purchase extends \CBitrixComponent
 		}
 	}
 
+	protected function fillPickupLocation(EntityReference\Order $order, int $locationId) : void
+	{
+		$locationService = $this->environment->getLocation();
+		$meaningfulValues = $locationService->getMeaningfulValues($locationId);
+
+		$this->setLocation($order, $locationId);
+
+		if (!empty($meaningfulValues))
+		{
+			$this->setMeaningfulPropertyValues($order, $meaningfulValues);
+		}
+	}
+
 	protected function setLocation(EntityReference\Order $order, $locationId) : void
 	{
 		$orderResult = $order->setLocation($locationId);
@@ -812,6 +845,17 @@ class Purchase extends \CBitrixComponent
 		{
 			$this->fillAddress($order, $request);
 			$this->fillComment($order, $request);
+		}
+	}
+
+	protected function fillRelatedProperties(EntityReference\Order $order) : void
+	{
+		if (!empty($this->relatedProperties))
+		{
+			$order->fillProperties($this->relatedProperties);
+
+			$this->filledProperties += $this->relatedProperties;
+			$this->relatedProperties = [];
 		}
 	}
 
@@ -851,12 +895,30 @@ class Purchase extends \CBitrixComponent
 
 	protected function setMeaningfulPropertyValues(EntityReference\Order $order, $values) : void
 	{
-		$propertyValues = $this->combineMeaningfulPropertyValues($values);
+		$formattedValues = $values;
+		$propertyValues = $this->combineMeaningfulPropertyValues($formattedValues);
 
 		if (!empty($propertyValues))
 		{
 			$fillResult = $order->fillProperties($propertyValues);
 			Exceptions\Facade::handleResult($fillResult);
+
+			$fillData = $fillResult->getData();
+
+			if (isset($fillData['FILLED']))
+			{
+				$filledMap = array_fill_keys((array)$fillData['FILLED'], true);
+
+				if (isset($this->filledProperties))
+				{
+					$this->filledProperties += array_intersect_key($propertyValues, $filledMap);
+				}
+
+				if (isset($this->relatedProperties))
+				{
+					$this->relatedProperties += array_diff_key($propertyValues, $filledMap);
+				}
+			}
 		}
 	}
 

@@ -8,6 +8,7 @@ use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Catalog;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 
 class Order extends EntityReference\Order
 {
@@ -159,7 +160,7 @@ class Order extends EntityReference\Order
 		{
 			$setResult = $basketItem->setFields([
 				'CUSTOM_PRICE' => 'Y',
-				'PRICE' => $price
+				'PRICE' => $price,
 			]);
 
 			if (!$setResult->isSuccess())
@@ -361,6 +362,11 @@ class Order extends EntityReference\Order
 		return $shipment;
 	}
 
+	public function getOrder()
+	{
+		return $this->internalOrder;
+	}
+
 	protected function fillShipmentBasket(Sale\Shipment $shipment) : void
 	{
 		/** @var Sale\BasketItem $basketItem */
@@ -426,13 +432,6 @@ class Order extends EntityReference\Order
 		}
 
 		return $result;
-	}
-
-	public function recalculateShipment() : Main\Result
-	{
-		if (!($this->internalOrder instanceof Sale\Order)) { return new Sale\Result(); }
-
-		return $this->internalOrder->getShipmentCollection()->calculateDelivery();
 	}
 
 	public function getShipmentPrice(int $deliveryId) : ?float
@@ -753,7 +752,7 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setPersonTypeId($personType);
 	}
 
-	public function createShipment(int $deliveryId, float $price = null, int $storeId = null, array $data = null) : Main\Result
+	public function createShipment(int $deliveryId, float $price = null, array $store = null, array $data = null) : Main\Result
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
@@ -763,7 +762,11 @@ class Order extends EntityReference\Order
 
 		$this->fillShipmentPrice($shipment, $price);
 		$this->fillShipmentBasket($shipment);
-		$this->fillShipmentStore($shipment, $storeId);
+
+		if ($store !== null)
+		{
+			$this->fillShipmentStore($shipment, $store);
+		}
 
 		return new Main\Result();
 	}
@@ -830,12 +833,74 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	protected function fillShipmentStore(Sale\Shipment $shipment, int $storeId = null) : void
+	protected function fillShipmentStore(Sale\Shipment $shipment, array $store) : void
 	{
-		if ($storeId !== null && $storeId > 0)
+		$provider = $store['provider'];
+		$data = Main\Web\Json::decode($store['id']);
+
+		if ((int)$data['storeId'] > 0 && $provider === Factory::SITE_STORE)
 		{
-			$shipment->setStoreId($storeId);
+			$shipment->setStoreId($data['storeId']);
 		}
+	}
+
+	public function fillPropertiesDelivery() : void
+	{
+		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
+		$shipmentCollection = $this->internalOrder->getShipmentCollection();
+		$deliveryService = null;
+
+		/** @var \Bitrix\Sale\Shipment $shipment */
+		foreach ($shipmentCollection as $shipment)
+		{
+			if ($shipment->isSystem()) { continue; }
+
+			$deliveryService = $shipment->getDelivery();
+		}
+
+		try
+		{
+			$delivery = Delivery\Factory::make($deliveryService, Delivery::DELIVERY_TYPE);
+			$delivery->markSelected($this->internalOrder);
+		}
+		catch (Main\ArgumentException $exception)
+		{
+			//nothing
+		}
+	}
+
+	public function fillPropertiesStore(array $store) : void
+	{
+		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
+		$shipmentCollection = $this->internalOrder->getShipmentCollection();
+		$deliveryService = null;
+
+		/** @var \Bitrix\Sale\Shipment $shipment */
+		foreach ($shipmentCollection as $shipment)
+		{
+			if ($shipment->isSystem()) { continue; }
+
+			$deliveryService = $shipment->getDelivery();
+		}
+
+		try
+		{
+			$delivery = Delivery\Factory::make($deliveryService, Delivery::PICKUP_TYPE);
+			$data = Main\Web\Json::decode($store['id']);
+			$store += $data;
+			$delivery->markSelected($this->internalOrder, $store);
+		}
+		catch (Main\ArgumentException $exception)
+		{
+			//nothing
+		}
+	}
+
+	public function recalculateShipment() : Main\Result
+	{
+		if (!($this->internalOrder instanceof Sale\Order)) { return new Sale\Result(); }
+
+		return $this->internalOrder->getShipmentCollection()->calculateDelivery();
 	}
 
 	public function createPayment($paySystemId, $price = null, array $data = null) : Main\Result
@@ -924,7 +989,7 @@ class Order extends EntityReference\Order
 				'ID' => $orderExportId,
 				'INTERNAL_ID' => $orderId,
 				'PAYMENT_ID' => $paymentId,
-				'PAY_SYSTEM_ID' => $paySystemId
+				'PAY_SYSTEM_ID' => $paySystemId,
 			]);
 		}
 

@@ -51,4 +51,9 @@ class Pickup extends Incoming\Skeleton
 	{
 		return (int)$this->requireField('date');
 	}
+
+	public function getAddress() : string
+	{
+		return (string)$this->requireField('address');
+	}
 }
