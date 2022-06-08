@@ -88,6 +88,7 @@ export default class SiteProxy extends Proxy {
 			yapayAction: 'deliveryOptions',
 			items: this.cart.paymentData.order.items,
 			setupId: this.getOption('setupId'),
+			paySystemId: this.getOption('paySystemId'),
 		};
 
 		return this.cart.query(this.getOption('purchaseUrl'), data);
@@ -100,6 +101,7 @@ export default class SiteProxy extends Proxy {
 			yapayAction: 'pickupOptions',
 			items: this.cart.paymentData.order.items,
 			setupId: this.getOption('setupId'),
+			paySystemId: this.getOption('paySystemId'),
 		};
 
 		return this.cart.query(this.getOption('purchaseUrl'), data);
