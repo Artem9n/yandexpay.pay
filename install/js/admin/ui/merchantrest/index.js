@@ -61,7 +61,16 @@
 			this.requestForm()
 				.then(this.confirmWindow.bind(this))
 				.then(this.fillData.bind(this))
-				.catch(data => alert(data.error));
+				.catch(data => {
+					if (data.error === undefined)
+					{
+						alert(data);
+					}
+					else
+					{
+						alert(data.error);
+					}
+				});
 		},
 
 		requestForm: function() {
@@ -179,6 +188,13 @@
 				let value = selectors[name];
 
 				const input = fieldset.find(`input[name*="${value}"]`).filter('[type="text"]');
+
+				let inputVal = input.val();
+
+				if (inputVal.trim() === '')
+				{
+					throw Error(this.options.notCreds);
+				}
 
 				values[name] = input.val();
 			}

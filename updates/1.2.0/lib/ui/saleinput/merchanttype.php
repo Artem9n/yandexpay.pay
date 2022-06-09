@@ -39,7 +39,8 @@ class MerchantType extends Internals\Input\StringInput
 			'data-plugin' => sprintf('Ui.%s', $plugin),
 			'data-form-url' => Ui\Admin\Path::getModuleUrl('trading_merchant', ['lang' => LANGUAGE_ID, 'view' => 'dialog']),
 			'data-form-title' => self::getMessage('MODAL_TITLE'),
-			'data-form-save-title' => self::getMessage('BTN_SAVE')
+			'data-form-save-title' => self::getMessage('BTN_SAVE'),
+			'data-not-creds' => self::getMessage('NOT_CREDS'),
 		];
 
 		return sprintf('<input %s>', Ui\UserField\Helper\Attributes::stringify($attributes));
