@@ -4,7 +4,6 @@ define('NO_AGENT_CHECK', true);
 define('NO_AGENT_STATISTIC', true);
 define('NOT_CHECK_PERMISSIONS', true);
 define('DisableEventsCheck', true);
-define('BX_SECURITY_SESSION_VIRTUAL', true);
 
 require_once $_SERVER['DOCUMENT_ROOT']. '/bitrix/modules/main/include/prolog_before.php';
 
