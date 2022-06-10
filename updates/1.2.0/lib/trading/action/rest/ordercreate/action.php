@@ -53,10 +53,10 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe(new Rest\OrderCreate\Stage\OrderStatus())
 			->pipe(new Rest\OrderCreate\Stage\OrderProperties($request))
 			->pipe(new Rest\Stage\NewBasket($request->getItems()))
-			->pipe(new Rest\OrderCreate\Stage\OrderPaySystem($request))
 			->pipe($this->stageDelivery($request))
 			->pipe(new Rest\Stage\OrderFinalizer())
 			->pipe(new Stage\DeliveryCalculate())
+			->pipe(new Rest\OrderCreate\Stage\OrderPaySystem($request))
 			->pipe(new Rest\OrderCreate\Stage\OrderCheck($request))
 			->pipe(new Rest\OrderCreate\Stage\OrderAdd($request));
 	}
