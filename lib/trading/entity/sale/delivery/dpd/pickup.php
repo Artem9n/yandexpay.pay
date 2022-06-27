@@ -72,13 +72,13 @@ class Pickup extends AbstractAdapter
 		return $result;
 	}
 
-	public function markSelected(Sale\OrderBase $order, array $store = []) : void
+	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
 	{
 		$propAddress = $order->getPropertyCollection()->getAddress();
 
 		if ($propAddress === null) { return; }
 
-		$value = sprintf('%s (%s)', $store['address'], $store['storeId']);
+		$value = sprintf('%s (%s)', $address, $storeId);
 
 		$propAddress->setValue($value);
 	}
