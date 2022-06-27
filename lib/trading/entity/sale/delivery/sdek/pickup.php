@@ -17,7 +17,7 @@ class Pickup extends Base
 
 		$code = $service->getCode();
 
-		$this->title = $service->getName();
+		$this->title = $service->getNameWithParent();
 
 		return $code === 'sdek:pickup';
 	}

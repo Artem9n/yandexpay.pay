@@ -70,26 +70,8 @@ class Base extends AbstractAdapter
 	protected function loadStores(array $bounds = null) : array
 	{
 		$result = [];
-		$pickupList = [];
 
-		$cache = Main\Data\Cache::createInstance();
-		$cacheDir = Config::getModuleName() . ':sdek:ipol';
-
-		if ($cache->initCache(36000, 'sdek:ipol', $cacheDir))
-		{
-			$pickupList = $cache->getVars();
-		}
-		elseif ($cache->startDataCache())
-		{
-			$pickupList = \CDeliverySDEK::getListFile();
-
-			if (empty($pickupList))
-			{
-				$cache->abortDataCache();
-			}
-
-			$cache->endDataCache($pickupList);
-		}
+		$pickupList = \CDeliverySDEK::getListFile();
 
 		if (empty($pickupList) || $bounds === null) { return $result; }
 
@@ -107,7 +89,7 @@ class Base extends AbstractAdapter
 					$result[$cityName][] = [
 						'ID' => $pickupKey,
 						'ADDRESS' => $cityName . ', ' . $pickup['Address'],
-						'TITLE' => sprintf('(%s) %s', $this->title, $pickup['Name']),
+						'TITLE' => $this->title,
 						'GPS_N' => $pickup['cY'],
 						'GPS_S' => $pickup['cX'],
 						'SCHEDULE' => $pickup['WorkTime'],
@@ -122,7 +104,7 @@ class Base extends AbstractAdapter
 		return $result;
 	}
 
-	public function markSelected(Sale\OrderBase $order, array $store = []) : void
+	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
 	{
 		$tariff = $_SESSION['IPOLSDEK_CHOSEN']['pickup'];
 
@@ -138,7 +120,39 @@ class Base extends AbstractAdapter
 
 		if ($propAddress === null) { return; }
 
-		$propAddress->setValue(sprintf('%s #%s', $store['address'], $store['storeId']));
+		$propAddress->setValue(sprintf('%s #%s', $address, $storeId));
+	}
+
+	public function getDetailPickup(string $storeId) : array
+	{
+		if (!Main\Loader::includeModule('ipol.sdek')) { return []; }
+
+		$result = [];
+
+		$pickupList = \CDeliverySDEK::getListFile();
+
+		if (empty($pickupList)) { return $result; }
+
+		foreach ($pickupList[$this->code] as $cityName => $pickupList)
+		{
+			if (isset($pickupList[$storeId]))
+			{
+				$result = [
+					'ID' => $storeId,
+					'ADDRESS' => $cityName . ', ' . $pickupList[$storeId]['Address'],
+					'TITLE' => $this->title,
+					'GPS_N' => $pickupList[$storeId]['cY'],
+					'GPS_S' => $pickupList[$storeId]['cX'],
+					'SCHEDULE' => $pickupList[$storeId]['WorkTime'],
+					'PHONE' => $pickupList[$storeId]['Phone'],
+					'PROVIDER' => $this->getType(),
+					'DESCRIPTION' => $pickupList[$storeId]['AddressComment'] ?: $pickupList[$storeId]['WorkTime'],
+				];
+				break;
+			}
+		}
+
+		return $result;
 	}
 
 	public function getServiceType() : string
