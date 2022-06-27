@@ -2,9 +2,8 @@
 
 namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Boxberry;
 
-use Bitrix\Main;
 use Bitrix\Sale;
-use YandexPay\Pay\Config;
+use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
@@ -26,8 +25,6 @@ class Base extends AbstractAdapter
 
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		if (!Main\Loader::includeModule('up.boxberrydelivery')) { return []; }
-
 		$stores = $this->loadStores($bounds);
 
 		if (empty($stores)) { return []; }
@@ -77,28 +74,10 @@ class Base extends AbstractAdapter
 	protected function loadStores(array $bounds = null) : array
 	{
 		$result = [];
-		$pickupList = [];
 
-		$cache = Main\Data\Cache::createInstance();
-		$cacheDir = Config::getModuleName() . ':' . $this->getType();
+		\CBoxberry::initApi();
 
-		if ($cache->initCache(36000, $this->getType(), $cacheDir))
-		{
-			$pickupList = $cache->getVars();
-		}
-		elseif ($cache->startDataCache())
-		{
-			\CBoxberry::initApi();
-
-			$pickupList = \CBoxberry::methodExecPost('ListPoints', ['prepaid=1']);
-
-			if (empty($pickupList))
-			{
-				$cache->abortDataCache();
-			}
-
-			$cache->endDataCache($pickupList);
-		}
+		$pickupList = \CBoxberry::methodExec('ListPoints', 36000, ['prepaid=1']);
 
 		if (empty($pickupList) || !empty(static::$pickupList)) { return $result; }
 
@@ -111,17 +90,17 @@ class Base extends AbstractAdapter
 				&& $pointGps[1] <= $bounds['ne']['longitude']
 				&& $pointGps[1] >= $bounds['sw']['longitude'])
 			{
-				$result[$point['CityName']][] = array(
+				$result[$point['CityName']][] = [
 					'ID' => $point['Code'],
 					'ADDRESS' => $point['Address'] ?: $point['AddressReduce'],
-					'TITLE' => sprintf('(%s) %s', $this->title, $point['Name']),
+					'TITLE' => sprintf('%s (%s) ', 'Boxberry', $this->title),
 					'GPS_N' => $pointGps[0],
 					'GPS_S' => $pointGps[1],
 					'SCHEDULE' => $point['WorkSchedule'],
 					'PHONE' => $point['Phone'],
 					'DESCRIPTION' => $point['TripDescription'],
-					'PROVIDER' => $this->getType(),
-				);
+					'PROVIDER' => 'Boxberry',
+				];
 			}
 		}
 
@@ -130,13 +109,58 @@ class Base extends AbstractAdapter
 		return $result;
 	}
 
-	public function markSelected(Sale\OrderBase $order, array $store = []) : void
+	public function getDetailPickup(string $storeId) : array
 	{
+		\CBoxberry::initApi();
+
+		$point = \CBoxberry::methodExec('PointsDescription', 3600, ['code=' . $storeId]);
+
+		if (isset($point['err']) || !$point)
+		{
+			throw new DtoProperty(($point['err'] ?? 'not detail point: ') . $storeId, 'OTHER');
+		}
+
+		$pointGps = explode(',', $point['GPS']);
+
+		return [
+			'ID' => $storeId,
+			'ADDRESS' => $point['Address'] ?: $point['AddressReduce'],
+			'TITLE' => sprintf('%s (%s)', 'Boxberry', $this->title),
+			'GPS_N' => $pointGps[0],
+			'GPS_S' => $pointGps[1],
+			'SCHEDULE' => $point['WorkSchedule'] ?? $point['WorkShedule'],
+			'PHONE' => $point['Phone'],
+			'DESCRIPTION' => $point['TripDescription'],
+			'PROVIDER' => 'Boxberry',
+		];
+	}
+
+	public function prepareCalculatePickup(int $deliveryId, string $storeId, string $locationId, string $zip = null) : void
+	{
+		$_SESSION['selPVZ'] = $storeId;
+	}
+
+	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	{
+		\CBoxberry::disableCheckPvz();
+
+		[$zip, $city] = explode(',', $address, 2);
+
+		if (!empty($zip))
+		{
+			$propZip = $order->getPropertyCollection()->getDeliveryLocationZip();
+
+			if ($propZip !== null)
+			{
+				$propZip->setValue($zip);
+			}
+		}
+
 		$propAddress = $order->getPropertyCollection()->getAddress();
 
 		if ($propAddress === null) { return; }
 
-		$propAddress->setValue(sprintf('Boxberry: %s #%s', $store['address'], $store['storeId']));
+		$propAddress->setValue(sprintf('Boxberry: %s #%s', $address, $storeId));
 	}
 
 	public function getServiceType() : string
