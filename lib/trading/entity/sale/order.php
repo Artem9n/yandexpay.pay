@@ -763,11 +763,6 @@ class Order extends EntityReference\Order
 		$this->fillShipmentPrice($shipment, $price);
 		$this->fillShipmentBasket($shipment);
 
-		if ($store !== null)
-		{
-			$this->fillShipmentStore($shipment, $store);
-		}
-
 		return new Main\Result();
 	}
 
@@ -833,18 +828,7 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	protected function fillShipmentStore(Sale\Shipment $shipment, array $store) : void
-	{
-		$provider = $store['provider'];
-		$data = Main\Web\Json::decode($store['id']);
-
-		if ((int)$data['storeId'] > 0 && $provider === Factory::SITE_STORE)
-		{
-			$shipment->setStoreId($data['storeId']);
-		}
-	}
-
-	public function fillPropertiesDelivery() : void
+	public function fillPropertiesDelivery(array $address) : void
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
@@ -861,7 +845,7 @@ class Order extends EntityReference\Order
 		try
 		{
 			$delivery = Delivery\Factory::make($deliveryService, Delivery::DELIVERY_TYPE);
-			$delivery->markSelected($this->internalOrder);
+			$delivery->markSelectedDelivery($this->internalOrder, $address);
 		}
 		catch (Main\ArgumentException $exception)
 		{
@@ -869,7 +853,7 @@ class Order extends EntityReference\Order
 		}
 	}
 
-	public function fillPropertiesStore(array $store) : void
+	public function fillPropertiesStore(string $storeId, string $address) : void
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
@@ -879,16 +863,13 @@ class Order extends EntityReference\Order
 		foreach ($shipmentCollection as $shipment)
 		{
 			if ($shipment->isSystem()) { continue; }
-
 			$deliveryService = $shipment->getDelivery();
 		}
 
 		try
 		{
 			$delivery = Delivery\Factory::make($deliveryService, Delivery::PICKUP_TYPE);
-			$data = Main\Web\Json::decode($store['id']);
-			$store += $data;
-			$delivery->markSelected($this->internalOrder, $store);
+			$delivery->markSelected($this->internalOrder, $storeId, $address);
 		}
 		catch (Main\ArgumentException $exception)
 		{
