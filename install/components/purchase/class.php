@@ -361,28 +361,21 @@ class Purchase extends \CBitrixComponent
 		$this->fillPersonType($order);
 		$this->fillStatus($order);
 		$this->fillProperties($order, $request);
-		$this->fillPaySystem($order, $request);
 
 		if ($request->getDeliveryType() === EntitySale\Delivery::PICKUP_TYPE)
 		{
 			$this->fillPickupLocation($order, $request->getPickup()->getLocationId());
 			$this->fillBasket($order, $request->getItems());
 			$this->fillPickup($order, $request->getPickup());
-
-			// fill property pickup provider, need recalculate for ozon
-			$order->recalculateShipment();
-			$order->fillPropertiesStore($request->getPickup()->getFields());
 		}
 		else
 		{
 			$this->fillLocation($order, $request->getAddress());
 			$this->fillBasket($order, $request->getItems());
-			$this->fillDelivery($order, $request->getDelivery());
-
-			$order->recalculateShipment();
-			$order->fillPropertiesDelivery();
+			$this->fillDelivery($order, $request->getDelivery(), $request->getAddress()->getFields());
 		}
 
+		$this->fillPaySystem($order, $request);
 		$this->fillRelatedProperties($order);
 
 		$order->finalize();
@@ -474,15 +467,15 @@ class Purchase extends \CBitrixComponent
 	protected function fillPickup(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Pickup $pickup) : void
 	{
 		$deliveryId = $pickup->getId();
-		$price = $pickup->getAmount();
-		$store = $pickup->getFields();
 
 		if ((string)$deliveryId === '')
 		{
 			$deliveryId = $this->environment->getDelivery()->getEmptyDeliveryId();
 		}
 
-		$order->createShipment($deliveryId, null, $store);
+		$order->createShipment($deliveryId);
+		$order->recalculateShipment();
+		$order->fillPropertiesStore($pickup->getStoreId(), $pickup->getAddress());
 	}
 
 	protected function wakeUpBasket(EntityReference\Order $order, TradingAction\Incoming\Product $request) : void
@@ -706,10 +699,9 @@ class Purchase extends \CBitrixComponent
 		}
 	}
 
-	protected function fillDelivery(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Delivery $delivery) : void
+	protected function fillDelivery(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Delivery $delivery, array $address) : void
 	{
 		$deliveryId = $delivery->getId();
-		$price = $delivery->getAmount();
 
 		if ((string)$deliveryId === '')
 		{
@@ -717,27 +709,8 @@ class Purchase extends \CBitrixComponent
 		}
 
 		$order->createShipment($deliveryId);
-	}
-
-	protected function filterPickup(array $pickup) : array
-	{
-		/**
-		 * @var TradingAction\Request\Address $directions
-		 * @var $northeast TradingAction\Request\Address\Coordinates
-		 * @var $southwest TradingAction\Request\Address\Coordinates
-		 */
-		$directions = $this->getRequestAddress();
-		$northeast = $directions->getNortheast();
-		$southwest = $directions->getSouthwest();
-
-		return array_values(array_filter($pickup, static function ($value) use ($northeast, $southwest){
-			return (
-				$value['coordinates']['latitude'] >= $southwest->getLat()
-				&& $value['coordinates']['latitude'] <= $northeast->getLat()
-				&& $value['coordinates']['longitude'] >= $southwest->getLon()
-				&& $value['coordinates']['longitude'] <= $northeast->getLon()
-			);
-		}));
+		$order->recalculateShipment();
+		$order->fillPropertiesDelivery($address);
 	}
 
 	protected function fillStatus(EntityReference\Order $order) : void
