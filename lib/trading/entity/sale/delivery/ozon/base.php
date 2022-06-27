@@ -122,7 +122,7 @@ class Base extends AbstractAdapter
 		return $result;
 	}
 
-	public function markSelected(Sale\OrderBase $order, array $store = []) : void
+	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
 	{
 		if (!Main\Loader::includeModule('ipol.ozon')) { return; }
 
@@ -148,7 +148,7 @@ class Base extends AbstractAdapter
 		}
 
 		$serviceLink = Ipol\Ozon\PvzWidgetHandler::getSavingLink();
-		$_REQUEST[$serviceLink] = $store['storeId'];
+		$_REQUEST[$serviceLink] = $storeId;
 
 		/** @var \Bitrix\Sale\PropertyValue $property */
 		foreach ($order->getPropertyCollection() as $property)
@@ -161,9 +161,9 @@ class Base extends AbstractAdapter
 				$property->setValue($variantGuide);
 			}
 
-			if (!empty($store) && $property->getField('CODE') === 'IPOL_OZON_PVZ')
+			if ($property->getField('CODE') === 'IPOL_OZON_PVZ')
 			{
-				$property->setValue($store['storeId']);
+				$property->setValue($storeId);
 			}
 		}
 
@@ -171,7 +171,7 @@ class Base extends AbstractAdapter
 
 		if ($propAddress === null) { return; }
 
-		$address = sprintf('%s (%s)', $store['address'], \Ipol\Ozon\Bitrix\Tools::getMessage('WIDJET_PVZTYPE_' . $this->typeVariant));
+		$address = sprintf('%s (%s)', $address, \Ipol\Ozon\Bitrix\Tools::getMessage('WIDJET_PVZTYPE_' . $this->typeVariant));
 
 		$propAddress->setValue($address);
 	}
