@@ -39,6 +39,13 @@ class Request extends Rest\Reference\EffectiveRequest
 		return $locationId;
 	}
 
+	public function getZip() : ?string
+	{
+		[$deliveryId, $storeId, $locationId, $zip] = explode(':', $this->getId());
+
+		return $zip;
+	}
+
 	public function getCoupons() : ?array
 	{
 		return $this->getField('cart.coupons');
