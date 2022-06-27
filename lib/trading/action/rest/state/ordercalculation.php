@@ -13,5 +13,9 @@ class OrderCalculation extends Common
 	public $fUserId;
 	/** @var array<int, string> $productIndex => $basketCode  */
 	public $basketMap = [];
+	/** @var array */
+	public $filledProperties = [];
+	/** @var array */
+	public $relatedProperties = [];
 }
 
