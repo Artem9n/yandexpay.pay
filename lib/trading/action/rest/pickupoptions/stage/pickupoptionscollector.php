@@ -46,8 +46,8 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 	protected function collectPickupOption(int $deliveryId, array $store, int $locationId = null) : array
 	{
 		return [
-			'pickupPointId' => implode(':', [$deliveryId, $store['ID'], $locationId]), //todo send need metadata
-			'provider' => 'IN_STORE',
+			'pickupPointId' => implode(':', [$deliveryId, $store['ID'], $locationId, $store['ZIP']]), //todo send need metadata
+			'provider' => $store['PROVIDER'] ?? 'IN_STORE',
 			'address' => $store['ADDRESS'],
 			'location' =>  [
 				'latitude' => (float)$store['GPS_N'],
