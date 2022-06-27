@@ -23,7 +23,7 @@ class Delivery extends EntityReference\Delivery
 
 	public const EMPTY_DELIVERY = 'emptyDelivery';
 
-	public const CATEGORY_STANDART = 'STANDART';
+	public const CATEGORY_STANDART = 'STANDARD';
 	public const CATEGORY_EXPRESS = 'EXPRESS';
 	public const CATEGORY_TODAY = 'TODAY';
 
@@ -359,7 +359,7 @@ class Delivery extends EntityReference\Delivery
 		$shipment->setDeliveryService($deliveryService);
 	}
 
-	protected function getDeliveryService($deliveryId) : Sale\Delivery\Services\Base
+	public function getDeliveryService($deliveryId) : Sale\Delivery\Services\Base
 	{
 		if (!isset($this->deliveryServices[$deliveryId]))
 		{
