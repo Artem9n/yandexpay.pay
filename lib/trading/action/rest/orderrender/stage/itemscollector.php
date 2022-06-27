@@ -49,8 +49,8 @@ class ItemsCollector extends ResponseCollector
 				'measurements' => [
 					'weight' => $basketItem->getWeight() / 1000,
 					'height' => $dimensions['HEIGHT'] / 1000,
-					'length' => $dimensions['LENGTH'],
-					'width' => $dimensions['WIDTH'],
+					'length' => (float)$dimensions['LENGTH'],
+					'width' => (float)$dimensions['WIDTH'],
 				],
 			];
 		}

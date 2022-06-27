@@ -37,10 +37,10 @@ class OrderItemsCollector extends ResponseCollector
 					'tax' => Vat::convertForService($basketData['VAT_RATE'])
 				],
 				'measurements' => [
-					'weight' => $basketData['WEIGHT'],
-					'height' => $basketData['HEIGHT'],
-					'length' => $basketData['LENGTH'],
-					'width' => $basketData['WIDTH']
+					'weight' => (float)$basketData['WEIGHT'],
+					'height' => (float)$basketData['HEIGHT'],
+					'length' => (float)$basketData['LENGTH'],
+					'width' => (float)$basketData['WIDTH'],
 				]
 			];
 		}

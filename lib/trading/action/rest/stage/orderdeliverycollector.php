@@ -84,6 +84,8 @@ class OrderDeliveryCollector extends ResponseCollector
 
 	protected function collectDeliveryOption(EntityReference\Delivery\CalculationResult $calculationResult) : array
 	{
+		$toDate = $calculationResult->getDateTo();
+
 		return [
 			'courierOptionId' => (string)$calculationResult->getDeliveryId(),
 			'provider' => 'COURIER', //todo # Идентификатор службы доставки. enum<COURIER|CDEK|EMS|DHL>
@@ -91,9 +93,7 @@ class OrderDeliveryCollector extends ResponseCollector
 			'title' => $calculationResult->getServiceName(),
 			'amount'    => (float)$calculationResult->getPrice(),
 			'fromDate' => $calculationResult->getDateFrom()->format('Y-m-d'),
-			'toDate' => $calculationResult->getDateTo()->format('Y-m-d'),
-			//'fromTime' => '', //todo HH:mm
-			//'toTime' => '', //todo HH:mm
+			'toDate' => $toDate !== null ? $toDate->format('Y-m-d') : null,
 		];
 	}
 }
