@@ -47,7 +47,8 @@ class Basket extends AbstractBehavior
 	protected function eventSettings() : array
 	{
 		return [
-			'PATH' => $this->getPath()
+			'PATH' => $this->getPath(),
+			'SITE_ID' => $this->getSiteId(),
 		];
 	}
 }

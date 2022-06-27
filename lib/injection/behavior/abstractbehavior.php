@@ -132,6 +132,11 @@ abstract class AbstractBehavior implements BehaviorInterface
 		return (int)$this->requireValue('INJECTION_ID');
 	}
 
+	public function getSiteId() : string
+	{
+		return (string)$this->requireValue('SITE_ID');
+	}
+
 	public function getSelector() : string
 	{
 		return htmlspecialcharsback($this->requireValue('SELECTOR'));

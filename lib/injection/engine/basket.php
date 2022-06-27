@@ -12,6 +12,6 @@ class Basket extends AbstractEngine
 
 		if (!isset($settings['PATH']) || !static::testUrl($settings['PATH'])) { return; }
 
-		static::render($injectionId);
+		static::render($injectionId, ['SITE_ID' => $settings['SITE_ID']]);
 	}
 }

@@ -64,6 +64,8 @@ class Model extends EO_Repository
 			$result[$optionName] = $value;
 		}
 
+		$result['SITE_ID'] = $this->getTrading()->getSiteId();
+
 		return $result;
 	}
 

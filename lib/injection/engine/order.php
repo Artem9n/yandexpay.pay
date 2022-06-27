@@ -13,7 +13,7 @@ class Order extends AbstractEngine
 
 		if (!isset($settings['PATH']) || !static::isOrderPath($settings['PATH'])) { return; }
 
-		static::render($injectionId);
+		static::render($injectionId, ['SITE_ID' => $settings['SITE_ID']]);
 	}
 
 	protected static function isOrderPath(string $path) : bool

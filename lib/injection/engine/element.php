@@ -18,7 +18,7 @@ class Element extends AbstractEngine
 
 		if ($elementId === null) { return; }
 
-		static::render($injectionId, ['PRODUCT_ID' => $elementId]);
+		static::render($injectionId, ['PRODUCT_ID' => $elementId, 'SITE_ID' => $settings['SITE_ID']]);
 	}
 
 	protected static function findProduct(array $settings) : ?int

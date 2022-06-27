@@ -38,6 +38,8 @@ abstract class AbstractEngine extends Event\Base
 	{
 		global $APPLICATION;
 
+		if (SITE_ID !== $data['SITE_ID']) { return; }
+
 		if (static::$handlerDisallowYaPay) { return; }
 
 		static::$handlerDisallowYaPay = true;

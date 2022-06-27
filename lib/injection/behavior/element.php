@@ -62,7 +62,7 @@ class Element extends AbstractBehavior
 	{
 		return [
 			'IBLOCK' => $this->getIblock(),
-			//'URL_TEMPLATE' => $this->getUrlTemplate(),
+			'SITE_ID' => $this->getSiteId(),
 		];
 	}
 }
