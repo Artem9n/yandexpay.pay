@@ -89,10 +89,10 @@ class CalculationResult extends Pay\Result\Base
 		$this->dateTo = $date;
 	}
 
-	/** @return Main\Type\Date */
+	/** @return Main\Type\Date|null */
 	public function getDateTo()
 	{
-		return $this->dateTo ?? new Main\Type\DateTime();
+		return $this->dateTo;
 	}
 
 	/** @return array{date: Main\Type\Date, fromTime: string, toTime: string}[]|null */
