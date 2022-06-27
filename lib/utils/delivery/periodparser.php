@@ -92,7 +92,7 @@ class PeriodParser
 			'TO' => null,
 		];
 
-		if (preg_match(
+		if (Pay\Data\TextString::match(
 			'/(?:(?P<pretext>[^\d\W]{1,3})\s*)?(?P<first>\d+(?:[.,]\d+)?)(?:\s*?(?P<glue>[^\d\W]{1,2}|-)\s*?(?P<second>\d+(?:[.,]\d+)?))?/u',
 			$textBefore,
 			$matches
@@ -163,7 +163,7 @@ class PeriodParser
 
 		foreach ($types as $type)
 		{
-			$word = (string)static::getMessage('UTILS_DELIVERY_PERIOD_PRETEXT_' . $type, null, '');
+			$word = (string)static::getMessage('UTILS_DELIVERY_PERIOD_PARSER_PRETEXT_' . $type, null, '');
 			$wordLower = mb_strtolower($word);
 
 			if ($word !== '' && $pretextLower === $wordLower)
