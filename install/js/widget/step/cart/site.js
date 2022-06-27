@@ -315,4 +315,13 @@ export default class SiteProxy extends Proxy {
 		//this.removeLoader();
 		this.cart.paymentButton.mount(node);
 	}
+
+	setupPaymentCash(){
+		// Указываем возможность оплаты заказа при получении
+		if (this.getOption('paymentCash') == null) { return; }
+
+		this.cart.paymentData.paymentMethods.push({
+			type: YaPay.PaymentMethodType.Cash,
+		});
+	}
 }

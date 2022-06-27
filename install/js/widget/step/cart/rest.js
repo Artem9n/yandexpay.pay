@@ -151,4 +151,8 @@ export default class RestProxy extends Proxy {
 			this.payment?.update(this.cart.paymentData);
 		});
 	}
+
+	setupPaymentCash(){
+
+	}
 }
