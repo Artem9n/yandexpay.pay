@@ -10,7 +10,7 @@ abstract class AbstractAdapter
 
 	abstract public function isMatch(Sale\Delivery\Services\Base $service) : bool;
 
-	abstract public function markSelected(Sale\OrderBase $order, array $store = []) : void;
+	abstract public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void;
 
 	/**
 	 * @param \Bitrix\Sale\OrderBase              $order
@@ -22,5 +22,15 @@ abstract class AbstractAdapter
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		return [];
+	}
+
+	public function getDetailPickup(string $storeId) : array
+	{
+		return [];
+	}
+
+	public function prepareCalculatePickup(int $deliveryId, string $storeId, string $locationId, string $zip = null) : void
+	{
+
 	}
 }

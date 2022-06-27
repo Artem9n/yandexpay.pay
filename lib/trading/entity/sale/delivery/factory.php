@@ -14,10 +14,10 @@ class Factory
 	public const OZON_PICKUP = 'ozon:pickup';
 	public const OZON_POSTAMAT = 'ozon:postamat';
 	public const OZON_DELIVERY = 'ozon:delivery';
-	public const BOXBERRY_PVZ_COD = 'boxberry:pvzCode';
 	public const BOXBERRY_PVZ = 'boxberry:pvz';
 	public const DPD_PICKUP = 'dpd:pickup';
 	public const RUSSIAN_POST = 'russianPost:pickup';
+	public const RUSSIAN_COURIER = 'russianPost:courier';
 
 	public static function make(Sale\Delivery\Services\Base $service, string $deliveryType) : AbstractAdapter
 	{
@@ -49,15 +49,15 @@ class Factory
 	{
 		return [
 			static::SITE_STORE,
-			static::OZON_PICKUP,
-			static::OZON_POSTAMAT,
-			static::OZON_DELIVERY,
-			static::SDEK_PICKUP,
-			static::SDEK_POSTAMAT,
-			static::DPD_PICKUP,
-			static::BOXBERRY_PVZ_COD,
-			//static::BOXBERRY_PVZ,
-			static::RUSSIAN_POST,
+			//static::OZON_PICKUP,
+			//static::OZON_POSTAMAT,
+			//static::OZON_DELIVERY,
+			//static::SDEK_PICKUP,
+			//static::SDEK_POSTAMAT,
+			//static::DPD_PICKUP,
+			static::BOXBERRY_PVZ,
+			//static::RUSSIAN_POST,
+			//static::RUSSIAN_COURIER,
 		];
 	}
 
