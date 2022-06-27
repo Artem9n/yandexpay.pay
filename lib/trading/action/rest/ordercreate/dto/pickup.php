@@ -25,6 +25,11 @@ class Pickup extends ActionReference\Dto
 		return $storeId;
 	}
 
+	public function getAddress() : string
+	{
+		return $this->requireField('address');
+	}
+
 	public function getLocationId() : ?string
 	{
 		[$deliveryId, $storeId, $locationId] = explode(':', $this->getId());
