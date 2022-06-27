@@ -56,7 +56,9 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe($this->stageDelivery($request))
 			->pipe(new Rest\Stage\OrderFinalizer())
 			->pipe(new Stage\DeliveryCalculate())
+			->pipe($this->stageDeliveryProperties($request))
 			->pipe(new Rest\OrderCreate\Stage\OrderPaySystem($request))
+			->pipe(new Rest\OrderCreate\Stage\RelatedProperties())
 			->pipe(new Rest\OrderCreate\Stage\OrderCheck($request))
 			->pipe(new Rest\OrderCreate\Stage\OrderAdd($request));
 	}
@@ -72,6 +74,18 @@ class Action extends Rest\Reference\EffectiveAction
 		return (new Rest\Pipeline())
 			->pipe(new Rest\Stage\OrderLocation($request->getAddress()))
 			->pipe(new Rest\OrderCreate\Stage\OrderDelivery($request));
+	}
+
+	protected function stageDeliveryProperties(Request $request) : Rest\Pipeline
+	{
+		if ($request->getDeliveryType() === 'PICKUP')
+		{
+			return (new Rest\Pipeline())
+				->pipe(new Rest\OrderCreate\Stage\PickupProperties($request->getPickup()));
+		}
+
+		return (new Rest\Pipeline())
+			->pipe(new Rest\OrderCreate\Stage\DeliveryProperties($request->getAddress()));
 	}
 
 	protected function collectorPipeline(Rest\Reference\EffectiveResponse $response) : Rest\Pipeline

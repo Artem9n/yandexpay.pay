@@ -31,6 +31,6 @@ class OrderDelivery
 			$deliveryId = $state->environment->getDelivery()->getEmptyDeliveryId();
 		}
 
-		$state->order->createShipment($deliveryId);
+		$state->order->createShipment($deliveryId, $price);
 	}
 }

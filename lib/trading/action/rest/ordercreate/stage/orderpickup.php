@@ -23,13 +23,12 @@ class OrderPickup
 	{
 		$deliveryId = $this->request->getPickup()->getPickupId();
 		$price = $this->request->getPickup()->getAmount();
-		$storeId = $this->request->getPickup()->getStoreId();
 
 		if ((string)$deliveryId === '')
 		{
 			$deliveryId = $state->environment->getDelivery()->getEmptyDeliveryId();
 		}
 
-		$state->order->createShipment($deliveryId, null, $storeId);
+		$state->order->createShipment($deliveryId, $price);
 	}
 }
