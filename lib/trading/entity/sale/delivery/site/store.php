@@ -5,6 +5,7 @@ namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Site;
 use Bitrix\Main;
 use Bitrix\Catalog;
 use Bitrix\Sale;
+use Bitrix\Sale\Shipment;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 
@@ -100,13 +101,42 @@ class Store extends AbstractAdapter
 		return Main\Config\Option::get('sale', 'location', null);
 	}
 
-	public function markSelected(Sale\OrderBase $order, array $store = []) : void
+	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
 	{
-		// TODO: Implement markSelected() method.
+		$shipments = $order->getShipmentCollection();
+
+		/** @var Shipment $shipment */
+		foreach ($shipments as $shipment)
+		{
+			if (!$shipment->isSystem())
+			{
+				$shipment->setStoreId($storeId);
+				break;
+			}
+		}
 	}
 
 	public function getServiceType() : string
 	{
 		return EntitySale\Delivery::PICKUP_TYPE;
+	}
+
+	public function getDetailPickup(string $storeId) : array
+	{
+		$result = [];
+
+		$query = Catalog\StoreTable::getList([
+			'filter' => [
+				'=ID' => $storeId,
+			],
+			'limit' => 1
+		]);
+
+		if ($store = $query->fetch())
+		{
+			$result = $store;
+		}
+
+		return $result;
 	}
 }
