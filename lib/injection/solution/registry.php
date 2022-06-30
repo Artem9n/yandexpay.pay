@@ -33,8 +33,10 @@ class Registry
 
 	protected static function makeClassName(string $type) : string
 	{
-		$type = str_replace('_', '', $type);
+		$namespace = __NAMESPACE__;
+		$formattedType = str_replace('_', '', $type);
+		$formattedType = ucfirst($formattedType);
 
-		return __NAMESPACE__ . '\\' . ucfirst($type);
+		return $namespace . '\\' . $formattedType;
 	}
 }

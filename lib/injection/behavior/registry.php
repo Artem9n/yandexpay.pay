@@ -29,6 +29,9 @@ class Registry
 
 	protected static function makeClassName(string $type) : string
 	{
-		return __NAMESPACE__ . '\\' . ucfirst($type);
+		$namespace = __NAMESPACE__;
+		$formattedName = ucfirst($type);
+
+		return $namespace . '\\' . $formattedName;
 	}
 }
