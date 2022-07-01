@@ -288,7 +288,7 @@ class Purchase extends \CBitrixComponent
 		foreach ($deliveries as $deliveryId)
 		{
 			$allStores = $this->getPickupStores($order, $deliveryId, $bounds);
-			//$storesByLocation = $this->groupStoresByLocation($allStores); //todo, need group?
+
 			foreach ($allStores as $locationId => $stores)
 			{
 				$this->clearCalculatable($order);
@@ -297,13 +297,9 @@ class Purchase extends \CBitrixComponent
 
 				if (!$this->isDeliveryCompatible($order, $deliveryId)) { continue; }
 
-				$calculationResult = $this->calculateDelivery($order, $deliveryId);
-
-				if (!$calculationResult->isSuccess()) { continue; }
-
 				foreach ($stores as $store)
 				{
-					$result[] = $this->collectPickupOption($store, $calculationResult, $locationId);
+					$result[] = $this->collectPickupOption($deliveryId, $store, $locationId);
 				}
 			}
 		}
@@ -311,29 +307,83 @@ class Purchase extends \CBitrixComponent
 		$this->sendResponse($result);
 	}
 
-	protected function clearCalculatable(EntityReference\Order $order) : void
+	protected function pickupDetailAction() : void
 	{
-		$order->clearCalculatable();
+		$userId = $this->searchUser();
+		$order = $this->getOrder($userId);
+
+		/** @var TradingAction\Incoming\PickupDetail $request */
+		$request = $this->makeRequest(TradingAction\Incoming\PickupDetail::class);
+
+		$order->initialize();
+
+		$this->fillPersonType($order);
+		$this->fillBasket($order, $request->getItems());
+		$order->createPayment($request->getPaySystemId());
+
+		$order->finalize();
+
+		$deliveryService = $this->environment->getDelivery()->getDeliveryService($request->getId());
+		$pickup = EntitySale\Delivery\Factory::make($deliveryService, 'pickup');
+		$pickup->prepareCalculatePickup($request->getId(), $request->getStoreId(), $request->getLocationId(), $request->getZip());
+		$this->clearCalculatable($order);
+		$this->setLocation($order, $request->getLocationId());
+		$calculationResult = $this->calculateDelivery($order, $request->getId());
+
+		if (!$calculationResult->isSuccess())
+		{
+			throw new Main\SystemException(implode(', ', $calculationResult->getErrorMessages()));
+		}
+
+		$store = $pickup->getDetailPickup($request->getStoreId());
+
+		$result = $this->collectPickupDetail($calculationResult, $store, $request->getLocationId());
+
+		$this->sendResponse($result);
 	}
 
-	protected function collectPickupOption(array $store, EntityReference\Delivery\CalculationResult $calculationResult, int $locationId = null) : array
+	protected function collectPickupDetail(EntityReference\Delivery\CalculationResult $calculationResult, array $store, int $locationId = null) : array
 	{
 		return [
 			'id' => Main\Web\Json::encode([
 				'deliveryId' => $calculationResult->getDeliveryId(),
 				'storeId' => (string)$store['ID'],
 				'locationId' => $locationId,
+				'zip' => $store['ZIP'],
 			]),
 			'label'     => $store['TITLE'],
 			'provider'  => $store['PROVIDER'] ?? 'pickpoint', //todo
 			'address'   => $store['ADDRESS'],
 			'deliveryDate' => $calculationResult->getDateFrom()->getTimestamp(),
 			'amount'    => (string)$calculationResult->getPrice(),
-			//'storagePeriod' => 3, // todo
 			'info' => [
 				'contacts' => [$store['PHONE']],
 				'tripDescription' => $store['DESCRIPTION'] . PHP_EOL . $store['SCHEDULE'],
 			],
+			'coordinates' =>  [
+				'latitude' => (float)$store['GPS_N'],
+				'longitude' => (float)$store['GPS_S'],
+			],
+		];
+	}
+
+	protected function clearCalculatable(EntityReference\Order $order) : void
+	{
+		$order->clearCalculatable();
+	}
+
+	protected function collectPickupOption(int $deliveryId, array $store, int $locationId = null) : array
+	{
+		return [
+			'id' => Main\Web\Json::encode([
+				'deliveryId' => $deliveryId,
+				'storeId' => (string)$store['ID'],
+				'locationId' => $locationId,
+				'zip' => $store['ZIP'],
+			]),
+			'label'     => $store['TITLE'],
+			'provider'  => $store['PROVIDER'] ?? 'pickpoint', //todo
+			'address'   => $store['ADDRESS'],
 			'coordinates' =>  [
 				'latitude' => (float)$store['GPS_N'],
 				'longitude' => (float)$store['GPS_S'],
@@ -467,13 +517,14 @@ class Purchase extends \CBitrixComponent
 	protected function fillPickup(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Pickup $pickup) : void
 	{
 		$deliveryId = $pickup->getId();
+		$price = $pickup->getAmount();
 
 		if ((string)$deliveryId === '')
 		{
 			$deliveryId = $this->environment->getDelivery()->getEmptyDeliveryId();
 		}
 
-		$order->createShipment($deliveryId);
+		$order->createShipment($deliveryId, $price);
 		$order->recalculateShipment();
 		$order->fillPropertiesStore($pickup->getStoreId(), $pickup->getAddress());
 	}

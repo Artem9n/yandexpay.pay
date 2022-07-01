@@ -171,6 +171,14 @@ export default class SiteProxy extends Proxy {
 						});
 					}
 
+					if (event.pickupInfo) {
+						this.getPickupDetail(event.pickupInfo.pickupPointId).then((result) => {
+							payment.update({
+								pickupPoint: result
+							});
+						});
+					}
+
 					// добавляем выбранный ПВЗ
 					if (event.pickupPoint) {
 						payment.update({
@@ -182,6 +190,18 @@ export default class SiteProxy extends Proxy {
 			.catch((err) => {
 				this.cart.showError('yapayPayment','payment not created', err);
 			});
+	}
+
+	getPickupDetail(pickupId) {
+		let data = {
+			pickupId: pickupId,
+			yapayAction: 'pickupDetail',
+			items: this.cart.paymentData.order.items,
+			setupId: this.getOption('setupId'),
+			paySystemId: this.getOption('paySystemId'),
+		};
+
+		return this.cart.query(this.getOption('purchaseUrl'), data);
 	}
 
 	orderAccept(event) {
