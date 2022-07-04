@@ -86,8 +86,9 @@ class Pickup extends Base
 			$httpClient = new Main\Web\HttpClient();
 
 			$url = sprintf(
-				'https://widget.pochta.ru/api/pvz?settings_id=%s&currentTopRightPoint[]=%s&currentTopRightPoint[]=%s&currentBottomLeftPoint[]=%s&currentBottomLeftPoint[]=%s',
+				'https://widget.pochta.ru/api/pvz?settings_id=%s&pvzType[]=russian_post%s&currentTopRightPoint[]=%s&currentTopRightPoint[]=%s&currentBottomLeftPoint[]=%s&currentBottomLeftPoint[]=%s',
 				$account[$this->accountId],
+				$account['showPostamat'] ? '&pvzType[]=postamat' : '',
 				$bounds['ne']['longitude'],
 				$bounds['ne']['latitude'],
 				$bounds['sw']['longitude'],
