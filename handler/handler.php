@@ -162,7 +162,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			$result['items'][] = [
 				'label'     => $basketItem->getField('NAME'),
 				'amount'    => $basketItem->getFinalPrice(),
-				'productId' => $basketItem->getProductId(),
+				'productId' => (string)$basketItem->getProductId(),
 				'quantity' => [
 					'count' => (float)$basketItem->getQuantity()
 				]
