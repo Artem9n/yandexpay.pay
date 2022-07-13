@@ -511,6 +511,9 @@ class Order extends EntityReference\Order
 			'SUBSCRIBE' => true,
 		];
 		$presets = array_intersect_key($basketFields, $presetsFields);
+		$presets += [
+			'QUANTITY' => min(1, $basketFields['QUANTITY']),
+		];
 		$presets = array_intersect_key($presets, $settableFieldsMap);
 
 		$basketItem->setFields($presets);

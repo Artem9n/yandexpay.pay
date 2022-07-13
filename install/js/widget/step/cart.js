@@ -4,6 +4,10 @@ import { ready } from "../utils/ready";
 
 const YaPay = window.YaPay;
 
+/**
+ * @deprecated
+ * see Cart/AbstractCart
+ */
 export default class Cart extends AbstractStep {
 
 	static defaults = {

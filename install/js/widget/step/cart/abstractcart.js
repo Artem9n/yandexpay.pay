@@ -3,6 +3,7 @@ import AbstractStep from '../abstractstep';
 import { ready } from "../../utils/ready";
 import RestProxy from "./rest";
 import SiteProxy from "./site";
+import {EventProxy} from "../../utils/eventproxy";
 
 const YaPay = window.YaPay;
 
@@ -70,8 +71,11 @@ export default class AbstractCart extends AbstractStep {
 	}
 
 	changeOffer(newProductId) {
-		if (!this.isBootstrap) { return; }
-		this.proxy?.changeOffer(newProductId);
+		if (this.isBootstrap) {
+			this.proxy?.changeOffer(newProductId);
+		} else {
+			this.widget.setOptions({productId: newProductId});
+		}
 	}
 
 	setupPaymentCash(){

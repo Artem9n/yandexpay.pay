@@ -18,4 +18,8 @@ export default class Page {
 		EventProxy.make(config).on(name, callback);
 	}
 
+	offEvent(name, callback, config = {}) {
+		EventProxy.make(config).off(name, callback);
+	}
+
 }

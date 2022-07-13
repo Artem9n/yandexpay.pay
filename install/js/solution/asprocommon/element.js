@@ -1,21 +1,20 @@
-import Page from '../reference/page';
+import ElementSkeleton from '../reference/element';
 import factoryLayout from './molecules/factorylayout';
 
-export default class Element extends Page {
+export default class Element extends ElementSkeleton {
 
 	bootFactory(factory) {
+		super.bootFactory(factory);
 		factoryLayout(factory);
 	}
 
-	bootCart(cart) {
-		if (typeof BX === 'undefined' || typeof JCCatalogElement === 'undefined') { return; }
+	eventName() {
+		return 'onAsproSkuSetPrice';
+	}
 
-		BX.addCustomEvent('onAsproSkuSetPrice', (eventData) => {
-			let newProductId = parseInt(eventData?.offer?.ID, 10);
+	eventProductId(eventData) {
+		const newProductId = parseInt(eventData?.offer?.ID, 10);
 
-			if (isNaN(newProductId)) { return; }
-
-			cart.delayChangeOffer(newProductId);
-		});
+		return !isNaN(newProductId) ? newProductId : null;
 	}
 }

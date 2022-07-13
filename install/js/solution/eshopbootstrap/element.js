@@ -1,14 +1,14 @@
-import Page from '../reference/page';
+import ElementSkeleton from '../reference/element';
 
-export default class Element extends Page {
+export default class Element extends ElementSkeleton {
 
-	bootCart(cart) {
-		this.onEvent('onCatalogElementChangeOffer', (eventData) => {
-			let newProductId = parseInt(eventData?.newId, 10);
+	eventName() {
+		return 'onCatalogElementChangeOffer';
+	}
 
-			if (isNaN(newProductId)) { return; }
+	eventProductId(eventData) {
+		let newProductId = parseInt(eventData?.newId, 10);
 
-			cart.delayChangeOffer(newProductId);
-		});
+		return !isNaN(newProductId) ? newProductId : null;
 	}
 }
