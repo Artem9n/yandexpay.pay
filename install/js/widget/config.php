@@ -8,5 +8,4 @@ return [
 		'main.core.polyfill',
 		'yandexpay.sdk',
 	],
-	'skip_core' => true,
 ];

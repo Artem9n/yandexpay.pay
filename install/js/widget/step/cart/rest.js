@@ -3,17 +3,7 @@ import Proxy from "./proxy";
 export default class RestProxy extends Proxy {
 
 	bootstrap() {
-		this.getButtonData()
-			.then((result) => {
-				if (result.status === 'fail') { throw new Error(result.reason); }
-
-				this.combineOrderWithData(result.data);
-				this.createPayment(this.cart.element, this.cart.paymentData);
-
-			})
-			.catch((error) => {
-
-			});
+		this.reflow();
 	}
 
 	getButtonData() {
@@ -39,8 +29,12 @@ export default class RestProxy extends Proxy {
 	}
 
 	createPayment(node, paymentData) {
+		if (this._mounted === true) { return; }
+
 		YaPay.createCheckout(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then((payment) => {
+				this._mounted = true;
+
 				this.cart.removeLoader();
 				this.mountButton(node, payment);
 
@@ -138,21 +132,29 @@ export default class RestProxy extends Proxy {
 
 		if (productId !== newProductId) { // todo in items
 			this.cart.widget.setOptions({productId: newProductId});
-			this.getButtonData().then((result) => {
-				this.combineOrderWithData(result.data);
-				this.payment?.update(this.cart.paymentData);
-			});
+			this.reflow();
 		}
 	}
 
 	changeBasket() {
-		this.getButtonData().then((result) => {
-			this.combineOrderWithData(result.data);
-			this.payment?.update(this.cart.paymentData);
-		});
+		this.reflow();
 	}
 
 	setupPaymentCash(){
 
+	}
+
+	reflow() {
+		this.getButtonData()
+			.then((result) => {
+				if (result.status === 'fail') { throw new Error(result.reason); }
+
+				this.combineOrderWithData(result.data);
+				this.createPayment(this.cart.element, this.cart.paymentData);
+				this.payment?.update(this.cart.paymentData);
+			})
+			.catch((error) => {
+				this.cart.removeLoader();
+			});
 	}
 }

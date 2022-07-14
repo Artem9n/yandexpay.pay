@@ -3,18 +3,7 @@ import Proxy from "./proxy";
 export default class SiteProxy extends Proxy {
 
 	bootstrap() {
-		this.getProducts()
-			.then((result) => {
-
-				if (result.error) { throw new Error(result.error.message); }
-
-				this.combineOrderWithProducts(result);
-				this.createPayment(this.cart.element, this.cart.paymentData);
-
-			})
-			.catch((error) => {
-
-			});
+		this.reflow();
 	}
 
 	getPaymentData() {
@@ -108,9 +97,12 @@ export default class SiteProxy extends Proxy {
 	}
 
 	createPayment(node, paymentData) {
+		if (this._mounted === true) { return; }
 
 		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then((payment) => {
+				this._mounted = true;
+
 				this.cart.removeLoader();
 				this.cart.mountButton(node, payment);
 
@@ -260,16 +252,26 @@ export default class SiteProxy extends Proxy {
 
 		if (productId !== newProductId) { // todo in items
 			this.cart.widget.setOptions({productId: newProductId});
-			this.getProducts().then((result) => {
-				this.combineOrderWithProducts(result);
-			});
+			this.reflow();
 		}
 	}
 
 	changeBasket() {
-		this.getProducts().then((result) => {
-			this.combineOrderWithProducts(result);
-		});
+		this.reflow();
+	}
+
+	reflow() {
+		this.getProducts()
+			.then((result) => {
+				if (result.error) { throw new Error(result.error.message); }
+
+				this.combineOrderWithProducts(result);
+				this.createPayment(this.cart.element, this.cart.paymentData);
+			})
+			.catch((error) => {
+				this.cart.removeLoader();
+				// todo this.showError();
+			});
 	}
 
 	combineOrderWithPickupShipping(pickupOption) {
