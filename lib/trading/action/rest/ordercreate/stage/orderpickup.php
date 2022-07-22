@@ -3,6 +3,7 @@ namespace YandexPay\Pay\Trading\Action\Rest\OrderCreate\Stage;
 
 use YandexPay\Pay\Trading\Action\Rest\OrderCreate\Request;
 use YandexPay\Pay\Trading\Action\Rest\State;
+use YandexPay\Pay\Trading\Action\Rest\Utils;
 
 class OrderPickup
 {
@@ -15,7 +16,18 @@ class OrderPickup
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		$state->order->setLocation($this->request->getPickup()->getLocationId());
+		$locationId = $this->request->getPickup()->getLocationId();
+
+		$state->order->setLocation($locationId);
+
+		$locationService = $state->environment->getLocation();
+		$meaningfulValues = $locationService->getMeaningfulValues($locationId);
+
+		if (!empty($meaningfulValues))
+		{
+			Utils\OrderProperties::setMeaningfulPropertyValues($state, $meaningfulValues);
+		}
+
 		$this->fillPickup($state);
 	}
 
