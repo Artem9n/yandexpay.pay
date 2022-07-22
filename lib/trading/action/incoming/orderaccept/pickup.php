@@ -13,11 +13,11 @@ class Pickup extends Incoming\Skeleton
 		return (int)$result['deliveryId'];
 	}
 
-	public function getStoreId() : int
+	public function getStoreId() : string
 	{
 		$result = Web\Json::decode($this->requireField('id'));
 
-		return (int)$result['storeId'];
+		return (string)$result['storeId'];
 	}
 
 	public function getLocationId() : int
