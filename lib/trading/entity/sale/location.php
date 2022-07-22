@@ -166,7 +166,7 @@ class Location extends EntityReference\Location
 			if (empty($levelMatches)) { continue; }
 
 			$levelParents = $levelMatches;
-			$result[$nameKey] = end($levelMatches);
+			$result[$nameKey] = reset($levelMatches);
 		}
 
 		return $result;
