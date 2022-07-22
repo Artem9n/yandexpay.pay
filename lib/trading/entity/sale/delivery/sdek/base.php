@@ -71,13 +71,17 @@ class Base extends AbstractAdapter
 	{
 		$result = [];
 
-		$pickupList = \CDeliverySDEK::getListFile();
+		$list = \CDeliverySDEK::getListFile();
+
+		$weight = !empty(\CDeliverySDEK::$orderWeight) ? false : \Ipolh\SDEK\option::get('weightD');
+
+		$pickupList = \CDeliverySDEK::weightPVZ($weight, $list[$this->code]);
 
 		if (empty($pickupList) || $bounds === null) { return $result; }
 
-		foreach ($pickupList[$this->code] as $cityName => $pickupList)
+		foreach ($pickupList as $cityName => $pickups)
 		{
-			foreach ($pickupList as $pickupKey => $pickup)
+			foreach ($pickups as $pickupKey => $pickup)
 			{
 				if (
 					$pickup['cY'] <= $bounds['ne']['latitude']
@@ -94,7 +98,7 @@ class Base extends AbstractAdapter
 						'GPS_S' => $pickup['cX'],
 						'SCHEDULE' => $pickup['WorkTime'],
 						'PHONE' => $pickup['Phone'],
-						'PROVIDER' => $this->getType(),
+						'PROVIDER' => 'CDEK',
 						'DESCRIPTION' => $pickup['AddressComment'],
 					];
 				}
@@ -106,6 +110,17 @@ class Base extends AbstractAdapter
 
 	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
 	{
+		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
+		$shipmentCollection = $order->getShipmentCollection();
+
+		/** @var \Bitrix\Sale\Shipment $shipment */
+		foreach ($shipmentCollection as $shipment)
+		{
+			if ($shipment->isSystem()) { continue; }
+
+			$shipment->calculateDelivery();
+		}
+
 		$tariff = $_SESSION['IPOLSDEK_CHOSEN']['pickup'];
 
 		/** @var \Bitrix\Sale\PropertyValue $property */
@@ -135,18 +150,20 @@ class Base extends AbstractAdapter
 
 		foreach ($pickupList[$this->code] as $cityName => $pickupList)
 		{
-			if (isset($pickupList[$storeId]))
+			$pickup = $pickupList[$storeId];
+
+			if (isset($pickup))
 			{
 				$result = [
 					'ID' => $storeId,
-					'ADDRESS' => $cityName . ', ' . $pickupList[$storeId]['Address'],
+					'ADDRESS' => $cityName . ', ' . $pickup['Address'],
 					'TITLE' => $this->title,
-					'GPS_N' => $pickupList[$storeId]['cY'],
-					'GPS_S' => $pickupList[$storeId]['cX'],
-					'SCHEDULE' => $pickupList[$storeId]['WorkTime'],
-					'PHONE' => $pickupList[$storeId]['Phone'],
-					'PROVIDER' => $this->getType(),
-					'DESCRIPTION' => $pickupList[$storeId]['AddressComment'] ?: $pickupList[$storeId]['WorkTime'],
+					'GPS_N' => $pickup['cY'],
+					'GPS_S' => $pickup['cX'],
+					'SCHEDULE' => $pickup['WorkTime'],
+					'PHONE' => $pickup['Phone'],
+					'PROVIDER' => 'CDEK',
+					'DESCRIPTION' => sprintf('%s %s', $pickup['AddressComment'], $pickup['WorkTime']),
 				];
 				break;
 			}
