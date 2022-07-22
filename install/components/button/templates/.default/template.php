@@ -2,6 +2,7 @@
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
 
 /**
+ * @var $this \CBitrixComponentTemplate
  * @var array $arResult
  */
 
@@ -12,6 +13,8 @@ use Bitrix\Main\Web\Json;
 use Bitrix\Main\UI\Extension;
 
 Loc::loadMessages(__FILE__);
+
+$this->setFrameMode(true); // not need dynamic area
 
 try
 {

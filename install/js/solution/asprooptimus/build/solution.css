@@ -63,6 +63,12 @@
 		padding: 0;
 	}
 }
+
+.product-action.flex-50 .bx-yapay-divider{
+	width: auto;
+	margin-left: 30px;
+	margin-right: 30px;
+}
 .bx-yapay-drawer .ya-pay-button,
 .bx-yapay-drawer .bx-yapay-skeleton-loading{
 	min-width: unset;
