@@ -13,6 +13,8 @@ if (Main\ModuleManager::isModuleInstalled('yandexpay.pay'))
 
 	AddEventHandler('main', 'OnModuleUpdate', static function($readyModules)
 	{
+		if (!Main\Loader::includeModule('yandexpay.pay')) { return; }
+
 		$querySetup = Pay\Trading\Setup\RepositoryTable::getList([]);
 
 		while ($item = $querySetup->fetchObject())
