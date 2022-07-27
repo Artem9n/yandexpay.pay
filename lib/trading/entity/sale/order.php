@@ -755,7 +755,7 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setPersonTypeId($personType);
 	}
 
-	public function createShipment(int $deliveryId, float $price = null, array $store = null, array $data = null) : Main\Result
+	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
@@ -831,7 +831,7 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	public function fillPropertiesDelivery(array $address) : void
+	public function fillPropertiesDelivery(array $address, string $type = Delivery::DELIVERY_TYPE) : void
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
@@ -847,7 +847,7 @@ class Order extends EntityReference\Order
 
 		try
 		{
-			$delivery = Delivery\Factory::make($deliveryService, Delivery::DELIVERY_TYPE);
+			$delivery = Delivery\Factory::make($deliveryService, $type);
 			$delivery->markSelectedDelivery($this->internalOrder, $address);
 		}
 		catch (Main\ArgumentException $exception)
