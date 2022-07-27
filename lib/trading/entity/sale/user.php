@@ -62,6 +62,30 @@ class User extends EntityReference\User
 		return $result;
 	}
 
+	public function getUserData() : array
+	{
+		$result = [];
+
+		$userId = (int)$this->data['ID'];
+
+		if ($userId <= 0) { return $result; }
+
+		$query = Main\UserTable::getList([
+			'filter' => [
+				'ID' => $userId,
+			],
+			'select' => [ 'ID', 'NAME', 'SECOND_NAME', 'LAST_NAME', 'PERSONAL_PHONE', 'PERSONAL_MOBILE', 'WORK_PHONE' , 'EMAIL'],
+			'limit' => 1,
+		]);
+
+		if ($user = $query->fetch())
+		{
+			$result = $user;
+		}
+
+		return $result;
+	}
+
 	protected function searchUser() : ?int
 	{
 		$filters = $this->getSearchFilters();
