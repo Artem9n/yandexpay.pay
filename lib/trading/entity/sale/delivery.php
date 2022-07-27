@@ -29,6 +29,7 @@ class Delivery extends EntityReference\Delivery
 
 	public const DELIVERY_TYPE = 'delivery';
 	public const PICKUP_TYPE = 'pickup';
+	public const YANDEX_DELIVERY_TYPE = 'yandexDelivery';
 
 	protected static function includeMessages()
 	{
