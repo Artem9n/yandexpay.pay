@@ -22,6 +22,7 @@ class OrderItemsCollector extends ResponseCollector
 			];
 
 			$result[] = [
+				'type' => 'PHYSICAL',//enum<PHYSICAL|DIGITAL|UNSPECIFIED>, todo type item
 				'productId' => implode(':', $product),
 				'unitPrice' => (float)$basketData['BASE_PRICE'],
 				'discountedUnitPrice' => (float)$basketData['PRICE'],
