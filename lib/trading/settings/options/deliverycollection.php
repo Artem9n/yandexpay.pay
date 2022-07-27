@@ -2,7 +2,7 @@
 
 namespace YandexPay\Pay\Trading\Settings\Options;
 
-use Bitrix\Main;
+use YandexPay\Pay\Trading\Entity;
 use YandexPay\Pay\Trading\Settings\Reference\FieldsetCollection;
 
 /**
@@ -27,6 +27,20 @@ class DeliveryCollection extends FieldsetCollection
 		return $result;
 	}
 
+	public function getYandexDelivery() : ?Delivery
+	{
+		$result = null;
+
+		foreach ($this->collection as $model)
+		{
+			if ($model->getType() !== Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE) { continue; }
+
+			$result = $model;
+		}
+
+		return $result;
+	}
+
 	public function getItemByServiceId(int $serviceId) : ?Delivery
 	{
 		$result = null;
@@ -39,11 +53,6 @@ class DeliveryCollection extends FieldsetCollection
 				break;
 			}
 		}
-
-		/*if ($result === null)
-		{
-			throw new Main\ObjectNotFoundException();
-		}*/
 
 		return $result;
 	}
