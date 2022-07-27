@@ -156,7 +156,7 @@ abstract class Order
 	 *
 	 * @return Main\Result
 	 */
-	public function createShipment(int $deliveryId, float $price = null, array $store = null, array $data = null) : Main\Result
+	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
 	{
 		throw new Main\NotImplementedException('createShipment is missing');
 	}
