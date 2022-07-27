@@ -26,7 +26,15 @@ class OptionsCollector extends ResponseCollector
 
 	protected function availableShippingMethods(State\OrderCalculation $state) : void
 	{
-		$this->write(['COURIER', 'PICKUP'], 'shipping.availableMethods');// todo get type shipping
+		$result = ['COURIER', 'PICKUP'];
+		$yandexDelivery = $state->options->getDeliveryOptions()->getYandexDelivery();
+
+		if ($yandexDelivery !== null)
+		{
+			$result[] = 'YANDEX_DELIVERY';
+		}
+
+		$this->write($result, 'shipping.availableMethods');// todo get type shipping courier and pickup
 	}
 
 	protected function enableCoupons(State\OrderCalculation $state) : void
