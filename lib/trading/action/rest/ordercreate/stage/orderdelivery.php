@@ -22,13 +22,13 @@ class OrderDelivery
 	protected function fillDelivery(State\OrderCalculation $state) : void
 	{
 		$delivery = $this->request->getDelivery();
+		$deliveryId = $state->environment->getDelivery()->getEmptyDeliveryId();
+		$price = 0;
 
-		$deliveryId = $delivery->getId();
-		$price = $delivery->getAmount();
-
-		if ((string)$deliveryId === '')
+		if ($delivery !== null)
 		{
-			$deliveryId = $state->environment->getDelivery()->getEmptyDeliveryId();
+			$deliveryId = $delivery->getId();
+			$price = $delivery->getAmount();
 		}
 
 		$state->order->createShipment($deliveryId, $price);

@@ -33,9 +33,9 @@ class Request extends Rest\Reference\EffectiveRequest
 	 * enum<COURIER|PICKUP|YANDEX_DELIVERY>
 	 * @return string
 	 */
-	public function getDeliveryType() : string
+	public function getDeliveryType() : ?string
 	{
-		return $this->requireField('shippingMethod.methodType');
+		return $this->getField('shippingMethod.methodType');
 	}
 
 	public function getPaymentType() : string
@@ -56,7 +56,7 @@ class Request extends Rest\Reference\EffectiveRequest
 	/**
 	 * @noinspection PhpIncompatibleReturnTypeInspection
 	 */
-	public function getDelivery() : Rest\OrderCreate\Dto\Delivery
+	public function getDelivery() : ?Rest\OrderCreate\Dto\Delivery
 	{
 		return $this->getChildModel('shippingMethod.courierOption');
 	}
@@ -67,6 +67,14 @@ class Request extends Rest\Reference\EffectiveRequest
 	public function getPickup() : Rest\OrderCreate\Dto\Pickup
 	{
 		return $this->getChildModel('shippingMethod.pickupOption');
+	}
+
+	/**
+	 * @noinspection PhpIncompatibleReturnTypeInspection
+	 */
+	public function getYandexDelivery() : Rest\OrderCreate\Dto\YandexDelivery
+	{
+		return $this->getChildModel('shippingMethod.yandexDeliveryOption');
 	}
 
 	protected function collectionMap() : array
@@ -83,6 +91,7 @@ class Request extends Rest\Reference\EffectiveRequest
 			'shippingContact' => Rest\OrderCreate\Dto\User::class,
 			'shippingMethod.courierOption' => Rest\OrderCreate\Dto\Delivery::class,
 			'shippingMethod.pickupOption' => Rest\OrderCreate\Dto\Pickup::class,
+			'shippingMethod.yandexDeliveryOption' => Rest\OrderCreate\Dto\YandexDelivery::class,
 		];
 	}
 }

@@ -71,7 +71,11 @@ class OrderCheck
 
 	protected function checkDelivery(State\OrderCalculation $state) : void
 	{
-		$delivery = $this->request->getDeliveryType() === 'PICKUP' ? $this->request->getPickup() : $this->request->getDelivery();
+		$type = $this->request->getDeliveryType();
+		$delivery = $type === 'PICKUP' ? $this->request->getPickup() : $this->request->getDelivery();
+
+		if ($delivery === null) { return; }
+
 		$shipmentPrice = $state->order->getShipmentPrice($delivery->getId());
 
 		Assert::notNull($shipmentPrice, '$shipmentPrice');
@@ -90,6 +94,8 @@ class OrderCheck
 
 	protected function checkTotal(State\OrderCalculation $state) : void
 	{
+		if ($this->request->getDeliveryType() === 'YANDEX_DELIVERY') { return; }
+
 		$orderPrice = $state->order->getOrderPrice();
 		$requestPrice = $this->request->getOrderAmount();
 

@@ -65,27 +65,48 @@ class Action extends Rest\Reference\EffectiveAction
 
 	protected function stageDelivery(Request $request) : Rest\Pipeline
 	{
-		if ($request->getDeliveryType() === 'PICKUP')
+		$result = new Rest\Pipeline();
+		$type = $request->getDeliveryType();
+
+		if ($type === 'PICKUP')
 		{
-			return (new Rest\Pipeline())
-				->pipe(new Rest\OrderCreate\Stage\OrderPickup($request));
+			$result->pipe(new Rest\OrderCreate\Stage\OrderPickup($request));
+		}
+		elseif ($type === 'YANDEX_DELIVERY')
+		{
+			$result
+				->pipe(new Rest\Stage\OrderLocation($request->getAddress()))
+				->pipe(new Rest\OrderCreate\Stage\OrderYandexDelivery($request));
+		}
+		else
+		{
+			$result
+				->pipe(new Rest\Stage\OrderLocation($request->getAddress()))
+				->pipe(new Rest\OrderCreate\Stage\OrderDelivery($request));
 		}
 
-		return (new Rest\Pipeline())
-			->pipe(new Rest\Stage\OrderLocation($request->getAddress()))
-			->pipe(new Rest\OrderCreate\Stage\OrderDelivery($request));
+		return $result;
 	}
 
 	protected function stageDeliveryProperties(Request $request) : Rest\Pipeline
 	{
-		if ($request->getDeliveryType() === 'PICKUP')
+		$result = new Rest\Pipeline();
+		$type = $request->getDeliveryType();
+
+		if ($type === 'PICKUP')
 		{
-			return (new Rest\Pipeline())
-				->pipe(new Rest\OrderCreate\Stage\PickupProperties($request->getPickup()));
+			$result->pipe(new Rest\OrderCreate\Stage\PickupProperties($request->getPickup()));
+		}
+		elseif ($type === 'YANDEX_DELIVERY')
+		{
+			//todo may be
+		}
+		else
+		{
+			$result->pipe(new Rest\OrderCreate\Stage\DeliveryProperties($request->getAddress()));
 		}
 
-		return (new Rest\Pipeline())
-			->pipe(new Rest\OrderCreate\Stage\DeliveryProperties($request->getAddress()));
+		return $result;
 	}
 
 	protected function collectorPipeline(Rest\Reference\EffectiveResponse $response) : Rest\Pipeline
