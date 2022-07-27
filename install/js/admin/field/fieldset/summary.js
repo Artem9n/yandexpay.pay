@@ -7,6 +7,9 @@
 	const constructor = Fieldset.Summary = Reference.Summary.extend({
 
 		defaults: {
+			elementDefault: '.js-fieldset',
+			elementNamespace: null,
+
 			modalElement: '.js-fieldset-summary__edit-modal',
 			fieldElement: '.js-fieldset-summary__field',
 			clearElement: '.js-fieldset-summary__clear',
@@ -23,6 +26,32 @@
 		initialize: function() {
 			this.callParent('initialize', constructor);
 			this.bind();
+		},
+
+		setOptions: function(options) {
+			this.callParent('setOptions', [options], constructor);
+
+			if (
+				this.options.elementNamespace != null
+				&& this.options.elementNamespace !== this.options.elementDefault
+			) {
+				this.overrideElementOptions(
+					this.options.elementDefault,
+					this.options.elementNamespace
+				);
+			}
+		},
+
+		overrideElementOptions: function(from, to) {
+			var key;
+
+			for (key in this.options) {
+				if (!this.options.hasOwnProperty(key)) { continue; }
+				if (key.indexOf('Element') === -1) { continue; }
+				if (this.options[key] == null) { continue; }
+
+				this.options[key] = this.options[key].replace(from, to);
+			}
 		},
 
 		destroy: function() {
@@ -78,7 +107,7 @@
 				text = this.joinValues(summaryValues);
 			}
 
-			if (text === '') {
+			if (text.trim() === '') {
 				text = this.getLang('PLACEHOLDER');
 			}
 

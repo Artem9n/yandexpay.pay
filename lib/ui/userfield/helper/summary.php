@@ -6,9 +6,9 @@ use YandexPay\Pay;
 
 class Summary
 {
-	public static function make(array $fields, array $values, string $template = '') : string
+	public static function make(array $fields, array $values, string $template = null) : string
 	{
-		if ($template !== '')
+		if ($template !== null)
 		{
 			$fields = SummaryTemplate::normalizeNames($fields);
 			$fieldKeys = SummaryTemplate::getUsedKeys($template);

@@ -49,3 +49,7 @@
 	height: 29px!important;
 	padding: 1px 13px 2px!important;
 }
+
+.adm-workarea select{
+	max-width: 300px;
+}
