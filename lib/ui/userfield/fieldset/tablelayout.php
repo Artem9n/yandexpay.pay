@@ -106,6 +106,8 @@ class TableLayout extends AbstractLayout
 
 	protected function editRow($name, $values, array $attributes = [], $allowDelete = false)
 	{
+		$values = $this->resolveRowValues($values);
+
 		$fields = $this->extendFields($name, $this->fields);
 		$result = sprintf('<tr %s>', UserField\Helper\Attributes::stringify($attributes + array_filter([
 			'data-plugin' => 'Field.Fieldset.Row',
