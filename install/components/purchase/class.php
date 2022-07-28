@@ -110,6 +110,7 @@ class Purchase extends \CBitrixComponent
 
 		$order->initialize();
 
+		$this->fillPlatform($order);
 		$this->fillPersonType($order);
 		$this->wakeUpBasket($order, $request);
 
@@ -159,6 +160,7 @@ class Purchase extends \CBitrixComponent
 
 		$order->initialize();
 
+		$this->fillPlatform($order);
 		$this->fillPersonType($order);
 		$this->fillLocation($order, $request->getAddress());
 		$this->fillBasket($order, $request->getItems());
@@ -275,6 +277,7 @@ class Purchase extends \CBitrixComponent
 
 		$order->initialize();
 
+		$this->fillPlatform($order);
 		$this->fillPersonType($order);
 		$this->fillBasket($order, $request->getItems());
 		$order->createPayment($request->getPaySystemId());
@@ -317,6 +320,7 @@ class Purchase extends \CBitrixComponent
 
 		$order->initialize();
 
+		$this->fillPlatform($order);
 		$this->fillPersonType($order);
 		$this->fillBasket($order, $request->getItems());
 		$order->createPayment($request->getPaySystemId());
@@ -408,6 +412,7 @@ class Purchase extends \CBitrixComponent
 
 		$order->initialize();
 
+		$this->fillPlatform($order);
 		$this->fillPersonType($order);
 		$this->fillStatus($order);
 		$this->fillProperties($order, $request);
@@ -915,6 +920,12 @@ class Purchase extends \CBitrixComponent
 		$personTypeResult = $order->setPersonType($this->setup->getPersonTypeId());
 
 		Exceptions\Facade::handleResult($personTypeResult);
+	}
+
+	protected function fillPlatform(EntityReference\Order $order) : void
+	{
+		$platform = $this->environment->getPlatformRegistry();
+		$order->fillTradingSetup($platform);
 	}
 
 	protected function setMeaningfulPropertyValues(EntityReference\Order $order, $values) : void
