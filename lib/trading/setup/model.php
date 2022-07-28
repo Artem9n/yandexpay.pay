@@ -14,9 +14,10 @@ class Model extends EO_Repository
 	public function install() : void
 	{
 		$siteId = $this->getSiteId();
-		$route = $this->getEnvironment()->getRoute();
+		$environment = $this->getEnvironment();
 
-		$route->installPublic($siteId);
+		$environment->getRoute()->installPublic($siteId);
+		$environment->getPlatformRegistry()->install();
 	}
 
 	public function wakeupOptions() : Settings\Options
@@ -66,6 +67,7 @@ class Model extends EO_Repository
 	{
 		$this->setActive(true);
 		$this->fillInjection()->activate();
+		$this->getEnvironment()->getPlatformRegistry()->activate();
 		$this->save();
 	}
 
@@ -73,6 +75,7 @@ class Model extends EO_Repository
 	{
 		$this->setActive(false);
 		$this->fillInjection()->deactivate();
+		$this->getEnvironment()->getPlatformRegistry()->deactivate();
 		$this->save();
 	}
 
@@ -85,6 +88,7 @@ class Model extends EO_Repository
 	public function deleteAction() : void
 	{
 		$this->fillInjection()->delete();
+		$this->getEnvironment()->getPlatformRegistry()->uninstall();
 		$this->delete();
 	}
 
