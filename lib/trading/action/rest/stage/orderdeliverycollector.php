@@ -29,11 +29,11 @@ class OrderDeliveryCollector extends ResponseCollector
 		$this->write($result);
 	}
 
-	protected function restrictedDeliveries(State\OrderCalculation $state, int $mode = Sale\Delivery\Restrictions\Manager::MODE_CLIENT) : array
+	protected function restrictedDeliveries(State\OrderCalculation $state) : array
 	{
 		$result = [];
 		$deliveryService = $state->environment->getDelivery();
-		$compatibleIds = $deliveryService->getRestricted($state->order, $mode);
+		$compatibleIds = $deliveryService->getRestricted($state->order);
 
 		if (empty($compatibleIds)) { return $result; }
 
