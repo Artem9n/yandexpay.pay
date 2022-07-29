@@ -2,6 +2,7 @@
 
 	const Reference = BX.namespace('YandexPay.Field.Reference');
 	const Fieldset = BX.namespace('YandexPay.Field.Fieldset');
+	const Plugin = BX.namespace('YandexPay.Plugin');
 	const utils = BX.namespace('YandexPay.Utils');
 
 	const constructor = Fieldset.Summary = Reference.Summary.extend({
@@ -356,7 +357,10 @@
 		},
 
 		getFieldPlugin: function() {
-			return Fieldset.Row;
+			const element = this.getElement('field');
+			const plugin = element.data('plugin');
+
+			return plugin != null ? Plugin.manager.getPlugin(plugin) : Fieldset.Row;
 		}
 
 	}, {

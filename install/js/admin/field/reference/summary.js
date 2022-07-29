@@ -151,7 +151,7 @@
 			cloneInstance.setParentField(this);
 			cloneInstance.initEdit(index);
 
-			Plugin.manager.initializeContext(modalContent);
+			Plugin.manager.initializeContext(modalContent, this.options.elementNamespace);
 
 			// handle
 
