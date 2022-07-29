@@ -8,7 +8,7 @@
 	function Base(element, options) {
 		this.setOrigin(element);
 
-		this.options = $.extend(true, {}, this.defaults, this.$el.data());
+		this.options = $.extend(true, {}, this.defaults, this.constructor.defaults, this.$el.data());
 
 		this.setOptions(options);
 		this.initVars();

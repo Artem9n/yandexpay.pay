@@ -162,13 +162,21 @@
 			var delayedSelector;
 			var delayedElements;
 			var result = context.filter(pluginSelector).add(context.find(pluginSelector));
+			var delayedSelectors = [];
 
 			if (includeDelayed == null || includeDelayed) {
-				delayedSelector = this.getElementSelector('delayedPlugin');
-				delayedElements = context.filter(delayedSelector).add(context.find(delayedSelector));
+				delayedSelectors.push(this.getElementSelector('delayedPlugin'));
 
-				if (delayedElements.length > 0) {
-					result = result.add(delayedElements);
+				if (typeof includeDelayed === 'string') {
+					delayedSelectors.push(includeDelayed + '-plugin');
+				}
+
+				for (const delayedSelector of delayedSelectors) {
+					delayedElements = context.filter(delayedSelector).add(context.find(delayedSelector));
+
+					if (delayedElements.length > 0) {
+						result = result.add(delayedElements);
+					}
 				}
 			}
 
