@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Trading\UseCase\Restrictions\ByPlatform;
 
 use Bitrix\Sale;
 use Bitrix\Main\Localization\Loc;
+use YandexPay\Pay\Trading\Entity\Sale\Platform;
 
 Loc::loadMessages(__FILE__);
 
@@ -38,9 +39,9 @@ class Rule
 		];
 	}
 
-	public static function check($params, $config) : bool
+	public static function check(array $params, array $config) : bool
 	{
-		$result = in_array(static::getPlatformId(), $params);
+		$result = in_array(static::getPlatformId(), $params, true);
 
 		if ($config['INVERT'] === 'Y')
 		{
@@ -50,7 +51,7 @@ class Rule
 		return $result;
 	}
 
-	public static function extractParams(Sale\Order $order)
+	public static function extractParams(Sale\Order $order) : array
 	{
 		$tradingCollection = $order->getTradeBindingCollection();
 		return static::extractParamsFromTradingCollection($tradingCollection);
@@ -87,8 +88,9 @@ class Rule
 	{
 		$platform = Sale\TradingPlatformTable::getList([
 			'filter' => [
-				'=CODE' => 'yapay_checkout'
-			]
+				'=CODE' => Platform::TRADING_PLATFORM_CODE
+			],
+			'limit' => 1,
 		])->fetch();
 
 		return $platform['ID'] ?? null;
