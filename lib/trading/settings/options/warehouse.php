@@ -57,8 +57,8 @@ class Warehouse extends Settings\Reference\Fieldset
 			'SETTINGS' => [
 				'SUMMARY' => '#COUNTRY#, #LOCALITY#, #STREET# (#BUILDING#)',
 				'LAYOUT' => 'summary',
-				'MODAL_WIDTH' => 450,
-				'MODAL_HEIGHT' => 300,
+				'MODAL_WIDTH' => 800,
+				'MODAL_HEIGHT' => 600,
 			],
 		];
 	}
@@ -90,14 +90,14 @@ class Warehouse extends Settings\Reference\Fieldset
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('FLOOR'),
 			],
+			'LOCATION_LAT' => [
+				'TYPE' => 'string',
+				'NAME' => self::getMessage('LOCATION_LAT'),
+			],
 			'LOCATION_LON' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('LOCATION_LON'),
 			],
-			'LOCATION_LAT' => [
-				'TYPE' => 'string',
-				'NAME' => self::getMessage('LOCATION_LAT'),
-			]
 		];
 	}
 }
