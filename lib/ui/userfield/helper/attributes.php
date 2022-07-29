@@ -173,9 +173,11 @@ class Attributes
 		return $result;
 	}
 
-	public static function delayPluginInitialization(string $html) : string
+	public static function delayPluginInitialization(string $html, string $namespace = null) : string
 	{
-		return preg_replace('/([\s"\'])js-plugin([\s"\'])/', '$1js-plugin-delayed$2', $html);
+		$plugin = $namespace !== null ? $namespace . '-plugin' : 'js-plugin-delayed';
+
+		return preg_replace('/([\s"\'])js-plugin([\s"\'])/', '$1' . $plugin . '$2', $html);
 	}
 
 	public static function sliceInputName(string $html) : string
