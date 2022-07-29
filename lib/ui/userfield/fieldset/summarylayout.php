@@ -10,6 +10,9 @@ class SummaryLayout extends AbstractLayout
 {
 	use Pay\Reference\Concerns\HasMessage;
 
+	/** @var callable|null */
+	protected $formRenderer;
+
 	public function edit($value) : string
 	{
 		Main\UI\Extension::load('yandexpaypay.admin.field.fieldset');
@@ -134,12 +137,38 @@ class SummaryLayout extends AbstractLayout
 		return $result;
 	}
 
+	public function formRenderer(callable $renderer) : void
+	{
+		$this->formRenderer = $renderer;
+	}
+
 	protected function renderEditForm(array $fields, array $values) : string
 	{
+		[$editable, $hidden] = $this->splitHiddenFields($fields);
+		$editableRows = $this->renderEditableFields($editable, $values);
+
+		if ($this->formRenderer !== null)
+		{
+			$callable = $this->formRenderer;
+			$namespace = $this->hasParentFieldset() ? $this->fieldsetName : null;
+
+			$result = $this->renderHiddenFields($hidden, $values);
+			$result .= $callable($editableRows, $values, [
+				'ATTRIBUTES' => [
+					'class' => $this->getFieldsetName('summary__field'),
+					'data-plugin' => 'Field.Fieldset.Row',
+					'data-element-namespace' => $this->hasParentFieldset() ? '.' . $this->fieldsetName : null,
+				],
+			]);
+
+			$result = UserField\Helper\Attributes::delayPluginInitialization($result, $namespace);
+
+			return $result;
+		}
+
 		$activeGroup = null;
 		$groupHtml = '';
 		$hasGroupFields = false;
-		[$editable, $hidden] = $this->splitHiddenFields($fields);
 
 		$result = sprintf('<table %s>', UserField\Helper\Attributes::stringify(array_filter([
 			'class' => 'edit-table ' . $this->getFieldsetName('summary__field'),
@@ -151,9 +180,7 @@ class SummaryLayout extends AbstractLayout
 
 		foreach ($editable as $fieldKey => $field)
 		{
-			$value = Pay\Utils\BracketChain::get($values, $fieldKey);
-
-			$row = UserField\Helper\Renderer::getEditRow($field, $value, $values);
+			$row = $editableRows[$fieldKey];
 
 			// write result
 
@@ -219,10 +246,7 @@ class SummaryLayout extends AbstractLayout
 
 			// control
 
-			$control = $this->prepareFieldControl($row['CONTROL'], $fieldKey, $field);
-			$control = UserField\Helper\Attributes::delayPluginInitialization($control);
-
-			$titleCell = $field['NAME'] ?? $field['EDIT_FORM_LABEL'] ?? $field['LIST_COLUMN_LABEL'] ?? $field['LIST_FILTER_LABEL'];
+			$titleCell = $row['TITLE'];
 
 			if (!empty($field['HELP_MESSAGE']))
 			{
@@ -244,7 +268,7 @@ class SummaryLayout extends AbstractLayout
 				UserField\Helper\Attributes::stringify($rowAttributes),
 				UserField\Helper\Attributes::stringify($titleAttributes),
 				$titleCell,
-				$control
+				$row['CONTROL']
 			);
 		}
 
@@ -285,6 +309,30 @@ class SummaryLayout extends AbstractLayout
 		}
 
 		return sprintf('<tr><td colspan="2">%s</td></tr>', $controls);
+	}
+
+	protected function renderEditableFields(array $fields, array $values) : array
+	{
+		$result = [];
+
+		foreach ($fields as $fieldKey => $field)
+		{
+			$value = Pay\Utils\BracketChain::get($values, $fieldKey);
+			$row = UserField\Helper\Renderer::getEditRow($field, $value, $values);
+			$namespace = $this->hasParentFieldset() ? $this->fieldsetName : null;
+
+			$control = $this->prepareFieldControl($row['CONTROL'], $fieldKey, $field);
+			$control = UserField\Helper\Attributes::delayPluginInitialization($control, $namespace);
+
+			$result[$fieldKey] = [
+				'TITLE' => $field['NAME'] ?? $field['EDIT_FORM_LABEL'] ?? $field['LIST_COLUMN_LABEL'] ?? $field['LIST_FILTER_LABEL'],
+				'CONTROL' => $control . $namespace,
+				'ROW_CLASS' => $row['ROW_CLASS'],
+				'VALIGN' => $row['VALIGN'],
+			];
+		}
+
+		return $result;
 	}
 
 	protected function splitHiddenFields(array $fields) : array
