@@ -385,6 +385,13 @@ class Order extends EntityReference\Order
 		}
 	}
 
+	public function fillTradingSetup(EntityReference\Platform $platform) : void
+	{
+		$salePlatform = $platform->getSalePlatform();
+		$bindingCollection = $this->internalOrder->getTradeBindingCollection();
+		$bindingCollection->createItem($salePlatform);
+	}
+
 	public function getBasket() : Sale\BasketBase
 	{
 		$order = $this->internalOrder;
@@ -943,12 +950,9 @@ class Order extends EntityReference\Order
 		$payment->setField('SUM', $price);
 	}
 
-	public function add($externalId) : Main\Result
+	public function add(string $externalId) : Main\Result
 	{
 		$result = new Main\Result();
-
-		/*$this->syncOrderPrice();*/
-		//$this->syncOrderPaymentSum();
 
 		$orderResult = $this->internalOrder->save();
 

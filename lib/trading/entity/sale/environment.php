@@ -53,4 +53,9 @@ class Environment extends EntityCommon\Environment
 	{
 		return new Catalog($this);
 	}
+
+	protected function createPlatformRegistry() : EntityReference\Platform
+	{
+		return new Platform($this);
+	}
 }

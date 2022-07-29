@@ -43,11 +43,10 @@ class Delivery
 
 	/**
 	 * @param Order $order
-	 * @param int $mode
 	 *
 	 * @return int[]
 	 */
-	public function getRestricted(Order $order, int $mode = Sale\Delivery\Restrictions\Manager::MODE_CLIENT) : array
+	public function getRestricted(Order $order) : array
 	{
 		throw new NotImplementedException('getRestricted is missing');
 	}

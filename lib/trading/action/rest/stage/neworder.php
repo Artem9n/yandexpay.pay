@@ -26,6 +26,7 @@ class NewOrder
 		$this->makeOrder($state);
 		$this->fillPersonType($state);
 		$this->fillCoupons($state);
+		$this->fillTradingPlatform($state);
 	}
 
 	protected function makeOrder(State\OrderCalculation $state) : void
@@ -65,6 +66,12 @@ class NewOrder
 
 			$state->order->applyCoupon($value);
 		}
+	}
+
+	protected function fillTradingPlatform(State\OrderCalculation $state) : void
+	{
+		$platform = $state->environment->getPlatformRegistry();
+		$state->order->fillTradingSetup($platform);
 	}
 }
 
