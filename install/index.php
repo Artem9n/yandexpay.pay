@@ -54,6 +54,7 @@ class yandexpay_pay extends CModule
 				$this->InstallEvents();
 				$this->InstallAgents();
 				$this->InstallFiles();
+				$this->InstallYandexDelivery();
 				$this->InstallPaySystem();
 				$this->InstallOrderStatus();
 			}
@@ -142,6 +143,11 @@ class yandexpay_pay extends CModule
 		Pay\Ui\UseCase\AutoInstallPaySystem::install();
 	}
 
+	public function InstallYandexDelivery(): void
+	{
+		Pay\Ui\UseCase\AutoInstallDelivery::install();
+	}
+
 	public function InstallOrderStatus() : void
 	{
 		Pay\Trading\Entity\Sale\Status::install();
@@ -156,7 +162,6 @@ class yandexpay_pay extends CModule
 		CopyDirFiles(__DIR__ . '/images', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/images/sale/sale_payments/', true, true);
 		CopyDirFiles(__DIR__ . '/js', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/js/' . $moduleSafe, true, true);
 		CopyDirFiles(__DIR__ . '/handler', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/php_interface/include/sale_payment/' . $this->PAYSYSTEM_NAME, true, true);
-		CopyDirFiles(__DIR__ . '/delivery', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/php_interface/include/sale_delivery/' . $this->PAYSYSTEM_NAME, true, true);
 		CopyDirFiles(__DIR__ . '/tools', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/tools/' . $this->MODULE_ID , true, true);
 		CopyDirFiles(__DIR__ . '/services', $_SERVER['DOCUMENT_ROOT'] . BX_ROOT . '/services/' . $this->MODULE_ID , true, true);
 	}

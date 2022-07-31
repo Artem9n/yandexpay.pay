@@ -90,14 +90,14 @@ class Warehouse extends Settings\Reference\Fieldset
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('FLOOR'),
 			],
+			'LOCATION_LAT' => [
+				'TYPE' => 'string',
+				'NAME' => self::getMessage('LOCATION_LAT'),
+			],
 			'LOCATION_LON' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('LOCATION_LON'),
 			],
-			'LOCATION_LAT' => [
-				'TYPE' => 'string',
-				'NAME' => self::getMessage('LOCATION_LAT'),
-			]
 		];
 	}
 }
