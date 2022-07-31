@@ -119,4 +119,9 @@ class Delivery
 	{
 		throw new NotImplementedException('getStore is missing');
 	}
+
+	public function getYandexDeliveryService() : ?Sale\Delivery\Services\Base
+	{
+		throw new NotImplementedException('getYandexDeliveryService is missing');
+	}
 }
