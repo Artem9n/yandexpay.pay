@@ -109,6 +109,8 @@ class AutoInstallInjection extends Reference\Event\Regular
 		{
 			if (isset($field['SETTINGS']['DEFAULT_VALUE']))
 			{
+				if (Utils\Value::isEmpty($field['SETTINGS']['DEFAULT_VALUE'])) { continue; }
+
 				Utils\BracketChain::set($values, $fieldName, $field['SETTINGS']['DEFAULT_VALUE']);
 			}
 			else if (

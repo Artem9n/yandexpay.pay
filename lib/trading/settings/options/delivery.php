@@ -34,14 +34,33 @@ class Delivery extends Fieldset
 
 	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
 	{
+		$defaultsValue = $this->makeDeliveryOptionsDefaults($environment);
+
 		return parent::getFieldDescription($environment, $siteId) + [
 			'SETTINGS' => [
 				'SUMMARY' => '#TYPE# &laquo;#ID#&raquo;',
 				'LAYOUT' => 'summary',
 				'MODAL_WIDTH' => 450,
 				'MODAL_HEIGHT' => 300,
+				'DEFAULT_VALUE' => $defaultsValue,
 			],
 		];
+	}
+
+	protected function makeDeliveryOptionsDefaults(Entity\Reference\Environment $environment) : array
+	{
+		$result = [];
+
+		$yandexDelivery = $environment->getDelivery()->getYandexDeliveryService();
+
+		if ($yandexDelivery === null) { return $result; }
+
+		$result[] = [
+			'ID' => $yandexDelivery->getId(),
+			'TYPE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
+		];
+
+		return $result;
 	}
 
 	public function getFields(Entity\Reference\Environment $environment, string $siteId) : array

@@ -512,3 +512,171 @@ namespace YandexPay\Pay\Injection\Setup {
 	 */
 	class EO_Repository_Entity extends \Bitrix\Main\ORM\Entity {}
 }
+/* ORMENTITYANNOTATION:YandexPay\Pay\Delivery\Yandex\Internals\RepositoryTable */
+namespace YandexPay\Pay\Delivery\Yandex\Internals {
+	/**
+	 * Model
+	 * @see \YandexPay\Pay\Delivery\Yandex\Internals\RepositoryTable
+	 *
+	 * Custom methods:
+	 * ---------------
+	 *
+	 * @method \int getId()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model setId(\int $id)
+	 * @method bool hasId()
+	 * @method bool isIdFilled()
+	 * @method bool isIdChanged()
+	 * @method \Bitrix\Main\Type\DateTime getTimestampX()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model setTimestampX(\Bitrix\Main\Type\DateTime $timestampX)
+	 * @method bool hasTimestampX()
+	 * @method bool isTimestampXFilled()
+	 * @method bool isTimestampXChanged()
+	 * @method \Bitrix\Main\Type\DateTime remindActualTimestampX()
+	 * @method \Bitrix\Main\Type\DateTime requireTimestampX()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model resetTimestampX()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model unsetTimestampX()
+	 * @method \Bitrix\Main\Type\DateTime fillTimestampX()
+	 * @method \int getRequestId()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model setRequestId(\int $requestId)
+	 * @method bool hasRequestId()
+	 * @method bool isRequestIdFilled()
+	 * @method bool isRequestIdChanged()
+	 * @method \int remindActualRequestId()
+	 * @method \int requireRequestId()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model resetRequestId()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model unsetRequestId()
+	 * @method \int fillRequestId()
+	 * @method \Bitrix\Sale\Delivery\Requests\EO_Request getRequest()
+	 * @method \Bitrix\Sale\Delivery\Requests\EO_Request remindActualRequest()
+	 * @method \Bitrix\Sale\Delivery\Requests\EO_Request requireRequest()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model setRequest(\Bitrix\Sale\Delivery\Requests\EO_Request $object)
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model resetRequest()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model unsetRequest()
+	 * @method bool hasRequest()
+	 * @method bool isRequestFilled()
+	 * @method bool isRequestChanged()
+	 * @method \Bitrix\Sale\Delivery\Requests\EO_Request fillRequest()
+	 * @method \string getStatus()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model setStatus(\string $status)
+	 * @method bool hasStatus()
+	 * @method bool isStatusFilled()
+	 * @method bool isStatusChanged()
+	 * @method \string remindActualStatus()
+	 * @method \string requireStatus()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model resetStatus()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model unsetStatus()
+	 * @method \string fillStatus()
+	 *
+	 * Common methods:
+	 * ---------------
+	 *
+	 * @property-read \Bitrix\Main\ORM\Entity $entity
+	 * @property-read array $primary
+	 * @property-read int $state @see \Bitrix\Main\ORM\Objectify\State
+	 * @property \Bitrix\Main\Authentication\Context $authContext
+	 * @method mixed get($fieldName)
+	 * @method mixed remindActual($fieldName)
+	 * @method mixed require($fieldName)
+	 * @method bool has($fieldName)
+	 * @method bool isFilled($fieldName)
+	 * @method bool isChanged($fieldName)
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model set($fieldName, $value)
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model reset($fieldName)
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model unset($fieldName)
+	 * @method void addTo($fieldName, $value)
+	 * @method void removeFrom($fieldName, $value)
+	 * @method void removeAll($fieldName)
+	 * @method \Bitrix\Main\ORM\Data\Result delete()
+	 * @method void fill($fields = \Bitrix\Main\ORM\Fields\FieldTypeMask::ALL) flag or array of field names
+	 * @method mixed[] collectValues($valuesType = \Bitrix\Main\ORM\Objectify\Values::ALL, $fieldsMask = \Bitrix\Main\ORM\Fields\FieldTypeMask::ALL)
+	 * @method \Bitrix\Main\ORM\Data\AddResult|\Bitrix\Main\ORM\Data\UpdateResult|\Bitrix\Main\ORM\Data\Result save()
+	 * @method static \YandexPay\Pay\Delivery\Yandex\Internals\Model wakeUp($data)
+	 */
+	class EO_Repository {
+		/* @var \YandexPay\Pay\Delivery\Yandex\Internals\RepositoryTable */
+		static public $dataClass = '\YandexPay\Pay\Delivery\Yandex\Internals\RepositoryTable';
+		/**
+		 * @param bool|array $setDefaultValues
+		 */
+		public function __construct($setDefaultValues = true) {}
+	}
+}
+namespace YandexPay\Pay\Delivery\Yandex\Internals {
+	/**
+	 * EO_Repository_Collection
+	 *
+	 * Custom methods:
+	 * ---------------
+	 *
+	 * @method \int[] getIdList()
+	 * @method \Bitrix\Main\Type\DateTime[] getTimestampXList()
+	 * @method fillTimestampX()
+	 * @method \int[] getRequestIdList()
+	 * @method fillRequestId()
+	 * @method \Bitrix\Sale\Delivery\Requests\EO_Request[] getRequestList()
+	 * @method fillRequest()
+	 * @method \string[] getStatusList()
+	 * @method fillStatus()
+	 *
+	 * Common methods:
+	 * ---------------
+	 *
+	 * @property-read \Bitrix\Main\ORM\Entity $entity
+	 * @method void add(\YandexPay\Pay\Delivery\Yandex\Internals\Model $object)
+	 * @method bool has(\YandexPay\Pay\Delivery\Yandex\Internals\Model $object)
+	 * @method bool hasByPrimary($primary)
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model getByPrimary($primary)
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model[] getAll()
+	 * @method bool remove(\YandexPay\Pay\Delivery\Yandex\Internals\Model $object)
+	 * @method void removeByPrimary($primary)
+	 * @method void fill($fields = \Bitrix\Main\ORM\Fields\FieldTypeMask::ALL) flag or array of field names
+	 * @method static \YandexPay\Pay\Delivery\Yandex\Internals\EO_Repository_Collection wakeUp($data)
+	 * @method \Bitrix\Main\ORM\Data\Result save($ignoreEvents = false)
+	 * @method void offsetSet() ArrayAccess
+	 * @method void offsetExists() ArrayAccess
+	 * @method void offsetUnset() ArrayAccess
+	 * @method void offsetGet() ArrayAccess
+	 * @method void rewind() Iterator
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model current() Iterator
+	 * @method mixed key() Iterator
+	 * @method void next() Iterator
+	 * @method bool valid() Iterator
+	 * @method int count() Countable
+	 */
+	class EO_Repository_Collection implements \ArrayAccess, \Iterator, \Countable {
+		/* @var \YandexPay\Pay\Delivery\Yandex\Internals\RepositoryTable */
+		static public $dataClass = '\YandexPay\Pay\Delivery\Yandex\Internals\RepositoryTable';
+	}
+}
+namespace YandexPay\Pay\Delivery\Yandex\Internals {
+	/**
+	 * @method static EO_Repository_Query query()
+	 * @method static EO_Repository_Result getByPrimary($primary, array $parameters = array())
+	 * @method static EO_Repository_Result getById($id)
+	 * @method static EO_Repository_Result getList(array $parameters = array())
+	 * @method static EO_Repository_Entity getEntity()
+	 * @method static \YandexPay\Pay\Delivery\Yandex\Internals\Model createObject($setDefaultValues = true)
+	 * @method static \YandexPay\Pay\Delivery\Yandex\Internals\EO_Repository_Collection createCollection()
+	 * @method static \YandexPay\Pay\Delivery\Yandex\Internals\Model wakeUpObject($row)
+	 * @method static \YandexPay\Pay\Delivery\Yandex\Internals\EO_Repository_Collection wakeUpCollection($rows)
+	 */
+	class RepositoryTable extends \Bitrix\Main\ORM\Data\DataManager {}
+	/**
+	 * @method EO_Repository_Result exec()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model fetchObject()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\EO_Repository_Collection fetchCollection()
+	 */
+	class EO_Repository_Query extends \Bitrix\Main\ORM\Query\Query {}
+	/**
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model fetchObject()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\EO_Repository_Collection fetchCollection()
+	 */
+	class EO_Repository_Result extends \Bitrix\Main\ORM\Query\Result {}
+	/**
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model createObject($setDefaultValues = true)
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\EO_Repository_Collection createCollection()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model wakeUpObject($row)
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\EO_Repository_Collection wakeUpCollection($rows)
+	 */
+	class EO_Repository_Entity extends \Bitrix\Main\ORM\Entity {}
+}

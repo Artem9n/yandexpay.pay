@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\OrderRender\Stage;
 
+use YandexPay\Pay\Data;
 use YandexPay\Pay\Trading\Action\Rest\Reference\EffectiveResponse;
 use YandexPay\Pay\Trading\Action\Rest\State;
 use YandexPay\Pay\Trading\Action\Rest\Stage\ResponseCollector;
@@ -26,11 +27,13 @@ class ContactCollector extends ResponseCollector
 		$user = $state->environment->getUserRegistry()->getUser(['ID' => $userId]);
 		$useData = $user->getUserData();
 
+		$phone = $useData['PERSONAL_PHONE'] ?: $useData['PERSONAL_MOBILE'] ?: $useData['WORK_PHONE'] ?: '';
+
 		$formatData = [
 			'firstName' => $useData['NAME'] ?: null,
 			'secondName' => $useData['SECOND_NAME'] ?: null,
 			'lastName' => $useData['LAST_NAME'] ?: null,
-			'phone' => $useData['PERSONAL_MOBILE'] ?: $useData['PERSONAL_PHONE'] ?: $useData['WORK_PHONE'] ?: null,
+			'phone' => Data\Phone::format($phone),
 			'email' => $useData['EMAIL'] ?: null,
 		];
 

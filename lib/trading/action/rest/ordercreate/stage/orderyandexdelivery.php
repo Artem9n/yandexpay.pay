@@ -27,6 +27,7 @@ class OrderYandexDelivery
 		$optionYandexDelivery = $state->options->getDeliveryOptions()->getYandexDelivery();
 		$deliveryId = $state->environment->getDelivery()->getEmptyDeliveryId();
 		$price = $delivery->getAmount();
+		$data = [];
 
 		if ($optionYandexDelivery !== null)
 		{
@@ -43,8 +44,7 @@ class OrderYandexDelivery
 			$comment = sprintf('%s' . PHP_EOL .'%s', $fromDate->format('d.m.Y H:i'), $toDate->format('d.m.Y H:i'));
 		}
 
-		$data = array_filter([
-			'DELIVERY_NAME' => static::getMessage('NAME', ['#TITLE#' => $delivery->getTitle()]),
+		$data += array_filter([
 			'COMMENTS' => $comment,
 		]);
 

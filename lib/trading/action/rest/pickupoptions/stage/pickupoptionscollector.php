@@ -22,7 +22,7 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 	{
 		$result = [];
 
-		$deliveries = $this->restrictedDeliveries($state, Sale\Delivery\Restrictions\Manager::MODE_MANAGER);
+		$deliveries = $this->restrictedDeliveries($state);
 		$deliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::PICKUP_TYPE);
 
 		foreach ($deliveries as $deliveryId)

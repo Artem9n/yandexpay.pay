@@ -1,5 +1,5 @@
 <?php
-namespace YandexPay\Pay\Trading\Action\Rest\OrderPayment\Stage;
+namespace YandexPay\Pay\Trading\Action\Rest\OrderWebhook\Stage;
 
 use Bitrix\Sale;
 use Bitrix\Main\Type;
@@ -7,14 +7,14 @@ use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 use YandexPay\Pay\Trading\Action\Api;
 use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
-use YandexPay\Pay\Trading\Action\Rest\OrderPayment\Request;
+use YandexPay\Pay\Trading\Action\Rest\OrderWebhook\Request;
 use YandexPay\Pay\Trading\Action\Rest\State;
 
 class OrderPay
 {
 	use Concerns\HasMessage;
 
-	/** @var \YandexPay\Pay\Trading\Action\Rest\OrderPayment\Request  */
+	/** @var \YandexPay\Pay\Trading\Action\Rest\OrderWebhook\Request  */
 	protected $request;
 
 	public function __construct(Request $request)
@@ -24,17 +24,7 @@ class OrderPay
 
 	public function __invoke(State\Payment $state)
 	{
-		$eventType = $this->request->getEvent();
-
-		switch ($eventType)
-		{
-			case EntitySale\Status::EVENT_ORDER:
-				$this->processOrder($state);
-				break;
-			case EntitySale\Status::EVENT_OPERATION:
-				$this->processOperation($state);
-				break;
-		}
+		$this->processOrder($state);
 	}
 
 	protected function processOrder(State\Payment $state) : void
@@ -44,6 +34,8 @@ class OrderPay
 		$result = new Sale\Result();
 
 		$status = $this->request->getOrder()->getPaymentStatus();
+
+		if ($status === null) { return; }
 
 		$datetime = new \DateTime($this->request->getEventTime());
 		$datetime->setTimezone((new Type\DateTime())->getTimeZone());
@@ -116,21 +108,6 @@ class OrderPay
 		{
 			throw new DtoProperty($resultPayment->getErrorMessages(), 'OTHER');
 		}
-	}
-
-	protected function processOperation(State\Payment $state) : void
-	{
-		$result = new Sale\Result();
-
-		$operation = $this->request->getOperation();
-
-		if ($operation->getStatus() === 'FAIL')
-		{
-			$message = static::getMessage('OPERATION_TYPE_' . $operation->getType());
-			$result->addWarnings([new \Bitrix\Main\Error($message)]);
-		}
-
-		\Bitrix\Sale\EntityMarker::addMarker($state->order, $state->payment, $result);
 	}
 }
 

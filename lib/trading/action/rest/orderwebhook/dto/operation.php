@@ -1,5 +1,5 @@
 <?php
-namespace YandexPay\Pay\Trading\Action\Rest\OrderPayment\Dto;
+namespace YandexPay\Pay\Trading\Action\Rest\OrderWebhook\Dto;
 
 use YandexPay\Pay\Trading\Action;
 use YandexPay\Pay\Trading\Action\Reference as ActionReference;

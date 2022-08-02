@@ -43,11 +43,10 @@ class Delivery
 
 	/**
 	 * @param Order $order
-	 * @param int $mode
 	 *
 	 * @return int[]
 	 */
-	public function getRestricted(Order $order, int $mode = Sale\Delivery\Restrictions\Manager::MODE_CLIENT) : array
+	public function getRestricted(Order $order) : array
 	{
 		throw new NotImplementedException('getRestricted is missing');
 	}
@@ -119,5 +118,10 @@ class Delivery
 	public function getStore(int $storeId) : array
 	{
 		throw new NotImplementedException('getStore is missing');
+	}
+
+	public function getYandexDeliveryService() : ?Sale\Delivery\Services\Base
+	{
+		throw new NotImplementedException('getYandexDeliveryService is missing');
 	}
 }

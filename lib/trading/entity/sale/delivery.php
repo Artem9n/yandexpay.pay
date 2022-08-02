@@ -20,6 +20,8 @@ class Delivery extends EntityReference\Delivery
 	protected $deliveryServices = [];
 	/** @var array<string, bool> */
 	protected $existsDeliveryDiscount = [];
+	/** @var Sale\Delivery\Services\Base */
+	protected $yandexDeliverySerice;
 
 	public const EMPTY_DELIVERY = 'emptyDelivery';
 
@@ -196,14 +198,14 @@ class Delivery extends EntityReference\Delivery
 		return $result;
 	}
 
-	public function getRestricted(EntityReference\Order $order, int $mode = Sale\Delivery\Restrictions\Manager::MODE_CLIENT) : array
+	public function getRestricted(EntityReference\Order $order) : array
 	{
 		$result = [];
 		$calculatableOrder = $this->getOrderCalculatable($order);
 		$shipment = $this->getCalculatableShipment($calculatableOrder);
 		$services = Sale\Delivery\Services\Manager::getRestrictedList(
 			$shipment,
-			$mode
+			Sale\Delivery\Restrictions\Manager::MODE_CLIENT
 		);
 
 		foreach ($services as $serviceParameters)
@@ -381,6 +383,31 @@ class Delivery extends EntityReference\Delivery
 		}
 
 		return $deliveryService;
+	}
+
+	public function getYandexDeliveryService() : ?Sale\Delivery\Services\Base
+	{
+		if ($this->yandexDeliverySerice === null)
+		{
+			$this->yandexDeliverySerice = $this->loadYandexDeliveryService();
+		}
+
+		return $this->yandexDeliverySerice;
+	}
+
+	protected function loadYandexDeliveryService() : ?Sale\Delivery\Services\Base
+	{
+		$result = null;
+
+		try {
+			$result = Sale\Delivery\Services\Manager::getObjectByCode('yandex_delivery_pay');
+		}
+		catch (Main\SystemException $exception)
+		{
+			//nothing
+		}
+
+		return $result;
 	}
 
 	/**

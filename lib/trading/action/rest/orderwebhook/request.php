@@ -1,17 +1,17 @@
 <?php
-namespace YandexPay\Pay\Trading\Action\Rest\OrderPayment;
+namespace YandexPay\Pay\Trading\Action\Rest\OrderWebhook;
 
 use YandexPay\Pay\Trading\Action;
 use YandexPay\Pay\Trading\Action\Rest;
 
 class Request extends Rest\Reference\EffectiveRequest
 {
-	public function getOrder() : Rest\OrderPayment\Dto\Order
+	public function getOrder() : Rest\OrderWebhook\Dto\Order
 	{
 		return $this->getChildModel('order');
 	}
 
-	public function getOperation() : Rest\OrderPayment\Dto\Operation
+	public function getOperation() : Rest\OrderWebhook\Dto\Operation
 	{
 		return $this->getChildModel('operation');
 	}
@@ -34,8 +34,8 @@ class Request extends Rest\Reference\EffectiveRequest
 	protected function modelMap() : array
 	{
 		return [
-			'order' => Rest\OrderPayment\Dto\Order::class,
-			'operation' => Rest\OrderPayment\Dto\Operation::class,
+			'order' => Rest\OrderWebhook\Dto\Order::class,
+			'operation' => Rest\OrderWebhook\Dto\Operation::class,
 		];
 	}
 }

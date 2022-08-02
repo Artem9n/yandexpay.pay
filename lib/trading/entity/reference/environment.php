@@ -16,6 +16,7 @@ abstract class Environment
 	protected $catalog;
 	protected $product;
 	protected $route;
+	protected $platformRegistry;
 
 	public function load() : void
 	{
@@ -213,5 +214,23 @@ abstract class Environment
 	protected function createRoute() : Route
 	{
 		throw new Main\NotImplementedException('route is missing');
+	}
+
+	public function getPlatformRegistry() : Platform
+	{
+		if ($this->platformRegistry === null)
+		{
+			$this->platformRegistry = $this->createPlatformRegistry();
+		}
+
+		return $this->platformRegistry;
+	}
+
+	/**
+	 * @return Platform
+	 */
+	protected function createPlatformRegistry() : Platform
+	{
+		throw new Main\NotImplementedException('createPlatformRegistry is missing');
 	}
 }

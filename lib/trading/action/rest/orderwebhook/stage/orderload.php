@@ -1,5 +1,5 @@
 <?php
-namespace YandexPay\Pay\Trading\Action\Rest\OrderPayment\Stage;
+namespace YandexPay\Pay\Trading\Action\Rest\OrderWebhook\Stage;
 
 use Bitrix\Main;
 use Bitrix\Sale;
