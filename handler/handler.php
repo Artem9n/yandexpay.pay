@@ -397,16 +397,16 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return ($this->getParamValue($payment, 'STATUS_ORDER_AUTO_PAY') === 'Y');
 	}
 
-	protected function getApiKey(Payment $payment, bool $isTestMode) : ?string
+	public function getApiKey(Payment $payment) : ?string
 	{
-		return $isTestMode ? $this->getParamValue($payment, 'MERCHANT_ID') : $this->getParamValue($payment, 'REST_API_KEY');
+		return $this->isTestMode($payment) ? $this->getParamValue($payment, 'MERCHANT_ID') : $this->getParamValue($payment, 'REST_API_KEY');
 	}
 
 	public function cancel(Payment $payment) : void
 	{
 		$request = new Api\Cancel\Request();
 
-		$apiKey = $this->getApiKey($payment, $this->isTestMode($payment));
+		$apiKey = $this->getApiKey($payment);
 
 		if ($apiKey === null) { return; }
 
@@ -423,7 +423,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		$request = new Api\Capture\Request();
 
-		$apiKey = $this->getApiKey($payment, $this->isTestMode($payment));
+		$apiKey = $this->getApiKey($payment);
 
 		if ($apiKey === null) { return; }
 
