@@ -1,8 +1,6 @@
 <?php
-namespace YandexPay\Pay\Trading\Action\Rest\OrderPayment\Stage;
+namespace YandexPay\Pay\Trading\Action\Rest\OrderWebhook\Stage;
 
-use Bitrix\Main\SystemException;
-use YandexPay\Pay\Exceptions\Facade;
 use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
 use YandexPay\Pay\Trading\Action\Rest\State;
 

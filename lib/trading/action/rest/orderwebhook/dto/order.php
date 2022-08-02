@@ -1,5 +1,5 @@
 <?php
-namespace YandexPay\Pay\Trading\Action\Rest\OrderPayment\Dto;
+namespace YandexPay\Pay\Trading\Action\Rest\OrderWebhook\Dto;
 
 use YandexPay\Pay\Trading\Action;
 use YandexPay\Pay\Trading\Action\Reference as ActionReference;
@@ -11,13 +11,13 @@ class Order extends ActionReference\Dto
 		return (string)$this->requireField('orderId');
 	}
 
-	public function getPaymentStatus() : string
+	public function getPaymentStatus() : ?string
 	{
-		return $this->requireField('paymentStatus');
+		return $this->getField('paymentStatus');
 	}
 
-	public function getShippingStatus() : ?string
+	public function getDeliveryStatus() : ?string
 	{
-		return $this->getField('shippingStatus');
+		return $this->getField('deliveryStatus');
 	}
 }
