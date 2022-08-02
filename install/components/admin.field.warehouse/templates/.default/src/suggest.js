@@ -9,16 +9,17 @@ export class Suggest {
 	constructor(element: $, options: Object = {}) {
 		this.$el = element;
 		this.el = this.$el[0];
-		this.options = Object.assign({}, this.constructor.defaults, {});
+		this.options = Object.assign({}, this.constructor.defaults, options);
 
 		this.initialize();
 	}
 
 	initialize() {
-		console.log(SuggestWidget);
-
 		this.widget = new SuggestWidget({
-			scope: this.el,
+			widget: {
+				scope: this.el
+			},
+			map: this.options.map
 		});
 	}
 

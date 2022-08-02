@@ -25,8 +25,9 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 		const element = this.getElement('map');
 
 		this._map = new ymaps.Map(element[0], {
-			center: [50, 50],
-			zoom: 13,
+			center: [55.76, 37.64],
+			controls: ['zoomControl'],
+			zoom: 10
 		});
 
 		return this._map;
@@ -36,7 +37,7 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 		const element = this.getElement('suggest');
 
 		this._suggest = new Suggest(element, {
-
+			map: this._map,
 		});
 	}
 
