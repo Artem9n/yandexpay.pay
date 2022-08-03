@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Trading\Settings\Options;
 
+use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity;
 use YandexPay\Pay\Trading\Settings\Reference\Fieldset;
@@ -29,7 +30,7 @@ class Delivery extends Fieldset
 
 	public function getUserId() : ?string
 	{
-		return $this->getValue('EMERGENCY_CONTACT');
+		return $this->getValue('EMERGENCY_CONTACT') ?: null;
 	}
 
 	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
@@ -115,6 +116,37 @@ class Delivery extends Fieldset
 				],
 			],
 		];
+	}
+
+	protected function validateFieldset() : Main\Result
+	{
+		$result = new Main\Result();
+
+		if ($this->getType() !==  Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE) { return $result; }
+
+		$errors = [];
+
+		$warehouse = $this->getWarehouse();
+		$requiredFields = $warehouse->getRequiredFields();
+
+		foreach ($requiredFields as $code => $value)
+		{
+			if ($value !== null) { continue; }
+
+			$errors[] = static::getMessage(sprintf('WAREHOUSE_FIELD_%s_REQUIRED', $code));
+		}
+
+		if ($this->getUserId() === null)
+		{
+			$errors[] = static::getMessage('FIELD_EMERGENCY_REQUIRED');
+		}
+
+		if (!empty($errors))
+		{
+			$result->addError(new Main\Error(implode(', ', $errors)));
+		}
+
+		return $result;
 	}
 
 	protected function getFieldsetMap() : array
