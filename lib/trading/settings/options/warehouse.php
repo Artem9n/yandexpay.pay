@@ -2,7 +2,6 @@
 
 namespace YandexPay\Pay\Trading\Settings\Options;
 
-use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity;
 use YandexPay\Pay\Trading\Settings;
@@ -11,24 +10,24 @@ class Warehouse extends Settings\Reference\Fieldset
 {
 	use Concerns\HasMessage;
 
-	public function getCountry() : string
+	public function getCountry() : ?string
 	{
-		return (string)$this->requireValue('COUNTRY');
+		return $this->getValue('COUNTRY')  ?: null;
 	}
 
-	public function getLocality() : string
+	public function getLocality() : ?string
 	{
-		return (string)$this->requireValue('LOCALITY');
+		return $this->getValue('LOCALITY')  ?: null;
 	}
 
 	public function getStreet() : ?string
 	{
-		return $this->requireValue('STREET') ?: null;
+		return $this->getValue('STREET') ?: null;
 	}
 
-	public function getBuilding() : string
+	public function getBuilding() : ?string
 	{
-		return (string)$this->requireValue('BUILDING');
+		return $this->getValue('BUILDING') ?: null;
 	}
 
 	public function getEntrance() : ?string
@@ -49,6 +48,17 @@ class Warehouse extends Settings\Reference\Fieldset
 	public function getLat() : ?float
 	{
 		return $this->getValue('LOCATION_LAT') ?: null;
+	}
+
+	public function getRequiredFields() : array
+	{
+		return [
+			'COUNTRY' => $this->getCountry(),
+			'LOCALITY' => $this->getLocality(),
+			'BUILDING' => $this->getBuilding(),
+			'LOCATION_LON' => $this->getLon(),
+			'LOCATION_LAT' => $this->getLat(),
+		];
 	}
 
 	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
