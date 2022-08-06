@@ -30,7 +30,7 @@ $assets->addJs('/bitrix/js/sale/core_ui_autocomplete.js');
 		?>
 		<button type="button">Уточнить</button>
 	</div>
-	<div hidden>
+	<div>
 		<?php
 		foreach ($fields as $field)
 		{
