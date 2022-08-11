@@ -6,6 +6,8 @@ use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Sale\Delivery;
 use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Trading;
+use YandexPay\Pay\Exceptions;
 
 if (!Main\Loader::includeModule('sale')) { return; }
 
@@ -13,7 +15,9 @@ class Handler extends Sale\Delivery\Services\Base
 {
 	use Concerns\HasMessage;
 
-	protected $code = 'yandex_delivery_pay';
+	public const CODE = 'yandex_delivery_pay';
+
+	protected $code = self::CODE;
 
 	public static function getClassTitle() : string
 	{
@@ -43,5 +47,19 @@ class Handler extends Sale\Delivery\Services\Base
 	public function getDeliveryRequestHandler() : RequestHandler
 	{
 		return new RequestHandler($this);
+	}
+
+	public static function onAfterAdd($serviceId, array $fields = array())
+	{
+		$result = Sale\Internals\ServiceRestrictionTable::add([
+			'SERVICE_ID' => $serviceId,
+			'SERVICE_TYPE' => 0,
+			'CLASS_NAME' => '\\' . Trading\UseCase\Restrictions\ByPlatform\Delivery::class,
+			'PARAMS' => [
+				'INVERT' => 'N',
+			],
+		]);
+
+		Exceptions\Facade::handleResult($result);
 	}
 }
