@@ -585,4 +585,82 @@ class Delivery extends EntityReference\Delivery
 
 		return $result;
 	}
+
+	public function getDefaultAddress(string $siteId) : array
+	{
+		$shopAddress = $this->getAddressBySettingsSale();
+		$storeAddress = $this->getAddressStore($siteId);
+
+		return $shopAddress + $storeAddress;
+	}
+
+	protected function getAddressStore(string $siteId) : array
+	{
+		$result = [];
+
+		$query = Catalog\StoreTable::getList([
+			'filter' => [
+				'!=GPS_N' => false,
+				'!=GPS_S' => false,
+				'=SITE_ID' => $siteId,
+			],
+			'order' => [
+				'SORT' => 'ASC',
+				'ID' => 'ASC',
+			],
+			'limit' => 1,
+		]);
+
+		if ($store = $query->fetch())
+		{
+			$result = [
+				'LOCATION_LAT' => $store['GPS_N'],
+				'LOCATION_LON' => $store['GPS_S'],
+			];
+		}
+
+		return $result;
+	}
+
+	protected function getAddressBySettingsSale() : array
+	{
+		$locationCode = Main\Config\Option::get('sale', 'location', null);
+
+		if ($locationCode === null) { return []; }
+
+		$result = [];
+		$map = [
+			'COUNTRY' => 'COUNTRY',
+			'CITY' => 'LOCALITY',
+		];
+
+		$res = Sale\Location\LocationTable::getList(array(
+			'filter' => [
+				'=CODE' => $locationCode,
+				'=PARENTS.NAME.LANGUAGE_ID' => LANGUAGE_ID,
+				'=PARENTS.TYPE.NAME.LANGUAGE_ID' => LANGUAGE_ID,
+				'!=PARENTS.TYPE.CODE' => 'COUNTRY_DISTRICT'
+			],
+			'select' => [
+				'I_ID' => 'PARENTS.ID',
+				'I_NAME_RU' => 'PARENTS.NAME.NAME',
+				'I_TYPE_CODE' => 'PARENTS.TYPE.CODE',
+				'I_TYPE_NAME_RU' => 'PARENTS.TYPE.NAME.NAME'
+			],
+			'order' => [
+				'PARENTS.DEPTH_LEVEL' => 'asc'
+			],
+		));
+
+		while ($item = $res->fetch())
+		{
+			$type = $item['I_TYPE_CODE'];
+
+			if (!isset($map[$type])) { continue; }
+
+			$result[$map[$type]] = $item['I_NAME_RU'];
+		}
+
+		return $result;
+	}
 }

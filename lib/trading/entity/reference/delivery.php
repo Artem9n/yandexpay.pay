@@ -124,4 +124,9 @@ class Delivery
 	{
 		throw new NotImplementedException('getYandexDeliveryService is missing');
 	}
+
+	public function getDefaultAddress(string $siteId) : array
+	{
+		throw new NotImplementedException('getDefaultAddress is missing');
+	}
 }

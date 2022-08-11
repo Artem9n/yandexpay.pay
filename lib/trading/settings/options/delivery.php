@@ -35,30 +35,38 @@ class Delivery extends Fieldset
 
 	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
 	{
-		$defaultsValue = $this->makeDeliveryOptionsDefaults($environment);
+		$defaultsValue = $this->makeDeliveryOptionsDefaults($environment, $siteId);
 
 		return parent::getFieldDescription($environment, $siteId) + [
 			'SETTINGS' => [
 				'SUMMARY' => '#TYPE# &laquo;#ID#&raquo;',
 				'LAYOUT' => 'summary',
-				'MODAL_WIDTH' => 450,
+				'MODAL_WIDTH' => 550,
 				'MODAL_HEIGHT' => 300,
 				'DEFAULT_VALUE' => $defaultsValue,
 			],
 		];
 	}
 
-	protected function makeDeliveryOptionsDefaults(Entity\Reference\Environment $environment) : array
+	protected function makeDeliveryOptionsDefaults(Entity\Reference\Environment $environment, string $siteId) : array
 	{
+		global $USER;
+
 		$result = [];
 
 		$yandexDelivery = $environment->getDelivery()->getYandexDeliveryService();
+		$deliveryId = $environment->getDelivery()->getEmptyDeliveryId();
 
-		if ($yandexDelivery === null) { return $result; }
+		if ($yandexDelivery !== null)
+		{
+			$deliveryId = $yandexDelivery->getId();
+		}
 
 		$result[] = [
-			'ID' => $yandexDelivery->getId(),
+			'ID' => $deliveryId,
 			'TYPE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
+			'WAREHOUSE' => $environment->getDelivery()->getDefaultAddress($siteId),
+			'EMERGENCY_CONTACT' => $USER->GetID(),
 		];
 
 		return $result;
