@@ -17,7 +17,7 @@ class Model extends EO_Repository
 		$environment = $this->getEnvironment();
 
 		$environment->getRoute()->installPublic($siteId);
-		$environment->getPlatformRegistry()->install();
+		$environment->getPlatform()->install();
 	}
 
 	public function wakeupOptions() : Settings\Options
