@@ -1,6 +1,8 @@
 <?php
 namespace YandexPay\Pay\Ui\UserField;
 
+use YandexPay\Pay\Reference\Assert;
+
 class Registry
 {
 	public static function getUserType(string $type) : array
@@ -24,6 +26,8 @@ class Registry
 				'CLASS_NAME' => $localTypeClassName,
 			];
 		}
+
+		Assert::isArray($result, sprintf('$userType[%s]', $type));
 
 		return $result;
 	}
