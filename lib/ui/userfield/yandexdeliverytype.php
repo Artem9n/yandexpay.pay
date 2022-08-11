@@ -12,6 +12,8 @@ class YandexDeliveryType
 
 	public static function getAdminListViewHTML($userField, $htmlControl)
 	{
+		global $APPLICATION;
+
 		try
 		{
 			if (empty($userField['ENTITY_VALUE_ID'])) { return ''; }
@@ -38,8 +40,16 @@ class YandexDeliveryType
 			}
 			else
 			{
+				$actionUrl = $APPLICATION->GetCurPageParam(
+					http_build_query([
+						'yapayAction' => 'installYandexDelivery',
+						'setupId' => $userField['ENTITY_VALUE_ID'],
+					]),
+					false
+				);
+
 				$message = static::getMessage('NOT_INSTALLED', [
-					'#ACTIVATE_LINK#' => '', // todo
+					'#ACTIVATE_LINK#' => $actionUrl, // todo
 				]);
 			}
 		}
