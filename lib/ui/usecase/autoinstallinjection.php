@@ -87,7 +87,7 @@ class AutoInstallInjection extends Reference\Event\Regular
 		return $values;
 	}
 
-	protected static function getSettingsFields(Trading\Setup\Model $setup) : array
+	public static function getSettingsFields(Trading\Setup\Model $setup) : array
 	{
 		$options = $setup->getOptions();
 		$fields = $options->getFields($setup->getEnvironment(), $setup->getSiteId());
@@ -101,12 +101,14 @@ class AutoInstallInjection extends Reference\Event\Regular
 		return $fields;
 	}
 
-	protected static function collectDefaultSettings(array $fields) : array
+	public static function collectDefaultSettings(array $fields, string $name = null) : array
 	{
 		$values = [];
 
 		foreach ($fields as $fieldName => $field)
 		{
+			if ($name !== null && $fieldName !== $name) { continue; }
+
 			if (isset($field['SETTINGS']['DEFAULT_VALUE']))
 			{
 				if (Utils\Value::isEmpty($field['SETTINGS']['DEFAULT_VALUE'])) { continue; }

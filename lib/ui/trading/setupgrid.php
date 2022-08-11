@@ -26,7 +26,7 @@ class SetupGrid extends Pay\Ui\Reference\Page
 		return [
 			'GRID_ID' => 'YANDEX_PAY_TRADING_SETUP_GRID',
 			'ALLOW_SAVE' => Pay\Ui\Access::hasRights($this->getReadRights()),
-			'PROVIDER_CLASS_NAME' => Pay\Component\Model\Grid::class,
+			'PROVIDER_CLASS_NAME' => Pay\Component\Trading\Setup\Grid::class,
 			'DATA_CLASS_NAME' => Pay\Trading\Setup\RepositoryTable::class,
 			'EDIT_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_setup', $baseQuery) . '&id=#ID#',
 			'ADD_URL' => Pay\Ui\Admin\Path::getModuleUrl('trading_edit', $baseQuery),
