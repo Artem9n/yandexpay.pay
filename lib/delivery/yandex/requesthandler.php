@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace YandexPay\Pay\Delivery\Yandex;
 
@@ -8,10 +8,9 @@ use Bitrix\Sale\Delivery;
 use Bitrix\Sale\Shipment;
 use Sale\Handlers\PaySystem\YandexPayHandler;
 use YandexPay\Pay\Delivery\Yandex\Api;
-use YandexPay\Pay\Delivery\Yandex\Internals\RepositoryTable;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Concerns;
-use YandexPay\Pay\Trading\Entity\Registry;
+use YandexPay\Pay\Trading\Entity as TradingEntity;
 
 if (!Main\Loader::includeModule('sale')) { return; }
 
@@ -27,6 +26,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 	public const ACCEPT_ACTION_CODE = 'accept';
 	public const CREATE_ACTION_CODE = 'create';
 
+	public const CREATED = 'CREATED'; //»дет вычисление стоимости доставки
 	public const ESTIMATING_STATUS = 'ESTIMATING'; //»дет вычисление стоимости доставки
 	public const EXPIRED_STATUS = 'EXPIRED'; //ƒоставка не подтверждена за отведенное врем€
 	public const READY_FOR_APPROVAL_STATUS = 'READY_FOR_APPROVAL'; //ƒоставка ждет подтверждени€
@@ -43,48 +43,95 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 	public const PAID_STATE_CANCEL = 'PAID'; //платно
 	public const UNAVAILABLE_STATE_CANCEL = 'UNAVAILABLE'; //недоступно
 
+	protected $waitCreatedExternalIds = [];
+	protected $alreadyBindRequestTableCreated = false;
+
 	public function __construct(Delivery\Services\Base $deliveryService)
 	{
-		$this->environment = Registry::getEnvironment();
 		parent::__construct($deliveryService);
+
+		$this->environment = TradingEntity\Registry::getEnvironment();
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	public function create(array $shipmentIds, array $additional = array()) : Delivery\Requests\Result
 	{
 		$result = new Delivery\Requests\Result();
-		$requestResult = new Delivery\Requests\RequestResult();
 
-		try
+		foreach ($shipmentIds as $shipmentId)
 		{
-			$shipmentId = (int)$shipmentIds[0];
-			$orderId = $this->getOrderIdByShipmentId($shipmentId);
-
-			if ($orderId === null)
+			try
 			{
-				throw new Main\SystemException('not found order id');
-			}
+				$orderId = $this->getOrderIdByShipmentId($shipmentId);
 
-			[$isTestMode, $apiKey] = $this->getDataForRequest($orderId);
+				$this->sendRequest(
+					$orderId,
+					new Api\Create\Request(),
+					Api\Create\Response::class
+				);
 
-			$result = $this->createRequest($orderId, $isTestMode, $apiKey);
-
-			if ($result->isSuccess())
-			{
-				$requestResult->setExternalId($orderId);
 				$shipmentResult = new Delivery\Requests\ShipmentResult($shipmentId);
+
+				$requestResult = new Delivery\Requests\RequestResult();
+				$requestResult->setExternalId($orderId);
 				$requestResult->addResult($shipmentResult);
+
 				$result->addResult($requestResult);
+
+				$this->waitRequestInstalled($orderId);
 			}
-		}
-		catch (Main\SystemException $exception)
-		{
-			$result->addError(new Main\Error($exception->getMessage()));
+			catch (Main\SystemException $exception)
+			{
+				$result->addError(new Main\Error($exception->getMessage()));
+			}
 		}
 
 		return $result;
+	}
+
+	protected function waitRequestInstalled(int $externalId) : void
+	{
+		$this->waitCreatedExternalIds[] = $externalId;
+		$this->bindRequestTableCreated();
+	}
+
+	protected function bindRequestTableCreated() : void
+	{
+		if ($this->alreadyBindRequestTableCreated !== false) { return; }
+
+		$this->alreadyBindRequestTableCreated = true;
+
+		Main\EventManager::getInstance()->addEventHandler(
+			'sale',
+			'\Bitrix\Sale\Delivery\Requests\Request::onAfterAdd',
+			[$this, 'onRequestTableCreated']
+		);
+	}
+
+	public function onRequestTableCreated(Main\Event $event) : void
+	{
+		$fields = $event->getParameter('fields');
+
+		$externalId = isset($fields['EXTERNAL_ID']) ? (int)$fields['EXTERNAL_ID'] : null;
+
+		if ($externalId === null) { return; }
+
+		$waitIndex = array_search($externalId, $this->waitCreatedExternalIds, true);
+
+		if ($waitIndex === false) { return; }
+
+		array_splice($this->waitCreatedExternalIds, $waitIndex, 1);
+
+		Internals\RepositoryTable::add([
+			'REQUEST_ID' => $event->getParameter('id'),
+			'STATUS' => static::CREATED,
+		]);
+	}
+
+	public function notifyStatus(int $requestId, string $status) : void
+	{
+		$transport = $this->getTransport($requestId);
+		$transport->setStatus($status);
+		$transport->save();
 	}
 
 	protected function getDataForRequest(int $orderId) : array
@@ -99,25 +146,33 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 			throw new Main\SystemException('order not found');
 		}
 
-		$paymentOrder = null;
-		/** @var \Bitrix\Sale\Payment $payment */
+		$targetPayment = null;
+
+		/** @var Sale\Payment $payment */
 		foreach ($order->getPaymentCollection() as $payment)
 		{
 			if ($payment->isInner()) { continue; }
-			$paymentOrder = $payment;
+
+			$paySystem = $payment->getPaySystem();
+
+			if ($paySystem !== null && $paySystem->getField('ACTION_FILE') === 'yandexpay')
+			{
+				$targetPayment = $payment;
+				break;
+			}
 		}
 
-		if ($paymentOrder === null)
+		if ($targetPayment === null)
 		{
 			throw new Main\SystemException('not payment');
 		}
 
 		/** @var \Sale\Handlers\PaySystem\YandexPayHandler $handler */
-		$handler = $this->environment->getPaySystem()->getHandler($paymentOrder->getPaymentSystemId());
+		$handler = $this->environment->getPaySystem()->getHandler($targetPayment->getPaymentSystemId());
 
 		Assert::typeOf($handler, YandexPayHandler::class, 'not YandexPayHandler');
 
-		return [$handler->isTestMode($paymentOrder), $handler->getApiKey($paymentOrder)];
+		return [$handler->isTestMode($targetPayment), $handler->getApiKey($targetPayment)];
 	}
 
 	protected function getOrderIdByShipmentId(int $shipmentId) : ?int
@@ -137,12 +192,14 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 			$result = $shipment['ORDER_ID'];
 		}
 
+		if ($result === null)
+		{
+			throw new Main\SystemException('not found order id');
+		}
+
 		return $result;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	public function getActions($requestId) : array
 	{
 		return [
@@ -152,22 +209,26 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		];
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	public function getShipmentActions(Shipment $shipment) : array
+	{
+		return [
+			self::CANCEL_ACTION_CODE => static::getMessage('ACTION_CANCEL'),
+			self::RENEW_ACTION_CODE => static::getMessage('ACTION_RENEW'),
+			self::ACCEPT_ACTION_CODE => static::getMessage('ACTION_ACCEPT'),
+		];
+	}
+
+	public function executeShipmentAction($requestId, $shipmentId, $actionType, array $additional) : Delivery\Requests\Result
+	{
+		return $this->executeAction($requestId, $actionType, $additional);
+	}
+
 	public function executeAction($requestId, $actionType, array $additional) : Delivery\Requests\Result
 	{
 		$result = new Delivery\Requests\Result();
 
 		try
 		{
-			$actions = $this->getActions($requestId);
-
-			if (!isset($actions[$actionType]))
-			{
-				throw new Main\SystemException('not action');
-			}
-
 			$request = Sale\Delivery\Requests\RequestTable::getById($requestId)->fetch();
 
 			if (!$request)
@@ -176,8 +237,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 			}
 
 			$orderId = $request['EXTERNAL_ID'];
-			[$isTestMode, $apiKey] = $this->getDataForRequest($orderId);
-			$transportStatus = $this->getTrasportStatus($requestId);
+			$transportStatus = $this->getTransport($requestId)->getStatus();
 
 			if ($actionType === static::ACCEPT_ACTION_CODE)
 			{
@@ -186,18 +246,26 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 					throw new Main\SystemException(static::getMessage('ACCEPT_UNAVAILABLE'));
 				}
 
-				$result = $this->acceptAction($orderId, $isTestMode, $apiKey);
+				$this->sendRequest(
+					$orderId,
+					new Api\Accept\Request(),
+					Api\Accept\Response::class
+				);
 			}
-			elseif ($actionType === static::RENEW_ACTION_CODE)
+			else if ($actionType === static::RENEW_ACTION_CODE)
 			{
 				if ($transportStatus !== static::EXPIRED_STATUS)
 				{
 					throw new Main\SystemException(static::getMessage('RENEW_UNAVAILABLE'));
 				}
 
-				$result = $this->renewAction($orderId, $isTestMode, $apiKey);
+				$this->sendRequest(
+					$orderId,
+					new Api\Renew\Request(),
+					Api\Renew\Response::class
+				);
 			}
-			elseif ($actionType === static::CANCEL_ACTION_CODE)
+			else if ($actionType === static::CANCEL_ACTION_CODE)
 			{
 				$state = $additional['CANCEL_STATE'];
 
@@ -206,7 +274,14 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 					throw new Main\SystemException(static::getMessage('CANCEL_UNAVAILABLE'));
 				}
 
-				$result = $this->cancelAction($orderId, $isTestMode, $apiKey, $additional['CANCEL_STATE']);
+				$request = new Api\Cancel\Request();
+				$request->setCancelState($additional['CANCEL_STATE']);
+
+				$this->sendRequest($orderId, $request, Api\Cancel\Response::class);
+			}
+			else
+			{
+				throw new Main\ArgumentException(sprintf('unknown %s action', $actionType));
 			}
 		}
 		catch (Main\SystemException $exception)
@@ -217,142 +292,42 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		return $result;
 	}
 
-	protected function getTrasportStatus(int $requestId) : ?string
+	protected function getTransport(int $requestId) : Internals\Model
 	{
-		$transport = $this->getTransport($requestId, ['STATUS']);
-		return $transport['STATUS'] ?? null;
-	}
-
-	protected function getTransport(int $requestId, array $selectFields = []) : array
-	{
-		$result = [];
-
-		$select = ['*'];
-
-		if (!empty($selectFields))
-		{
-			$select = $selectFields;
-		}
-
-		$query = RepositoryTable::getList([
-			'filter' => [
-				'=REQUEST_ID' => $requestId
-			],
-			'select' => $select,
+		$query = Internals\RepositoryTable::getList([
+			'filter' => [ '=REQUEST_ID' => $requestId ],
 			'limit' => 1,
 		]);
 
-		if ($transport = $query->fetch())
-		{
-			$result = $transport;
-		}
+		$transport = $query->fetchObject();
 
-		return $result;
+		Assert::notNull($transport, '$transport');
+
+		return $transport;
 	}
 
-	protected function createRequest(int $orderId, bool $isTestMode, string $apiKey) : Delivery\Requests\Result
+	/**
+	 * @template T
+	 *
+	 * @param int $orderId
+	 * @param Api\Reference\Request $request
+	 * @param class-string<T> $responseClass
+	 *
+	 * @return T
+	 */
+	protected function sendRequest(
+		int $orderId,
+		Api\Reference\Request $request,
+		string $responseClass
+	)
 	{
-		$result = new Delivery\Requests\Result();
+		[$isTestMode, $apiKey] = $this->getDataForRequest($orderId);
 
-		try
-		{
-			$request = new Api\Create\Request();
-			$request->setTestMode($isTestMode);
-			$request->setApiKey($apiKey);
-			$request->setOrderId($orderId);
-			$request->buildResponse($request->send(), Api\Create\Response::class);
-		}
-		catch (Main\SystemException $exception)
-		{
-			$result->addError(new Main\Error($exception->getMessage()));
-		}
+		$request->setTestMode($isTestMode);
+		$request->setApiKey($apiKey);
+		$request->setOrderId($orderId);
 
-		return $result;
-	}
-
-	protected function acceptAction(int $orderId, bool $isTestMode, string $apiKey) : Delivery\Requests\Result
-	{
-		$result = new Delivery\Requests\Result();
-
-		try
-		{
-			$request = new Api\Accept\Request();
-			$request->setTestMode($isTestMode);
-			$request->setApiKey($apiKey);
-			$request->setOrderId($orderId);
-			$request->buildResponse($request->send(), Api\Accept\Response::class);
-		}
-		catch (Main\SystemException $exception)
-		{
-			$result->addError(new Main\Error($exception->getMessage()));
-		}
-
-		return $result;
-	}
-
-	protected function renewAction(int $orderId, bool $isTestMode, string $apiKey) : Delivery\Requests\Result
-	{
-		$result = new Delivery\Requests\Result();
-
-		try
-		{
-			$request = new Api\Renew\Request();
-			$request->setTestMode($isTestMode);
-			$request->setApiKey($apiKey);
-			$request->setOrderId($orderId);
-			$request->buildResponse($request->send(), Api\Renew\Response::class);
-		}
-		catch (Main\SystemException $exception)
-		{
-			$result->addError(new Main\Error($exception->getMessage()));
-		}
-
-		return $result;
-	}
-
-	protected function cancelInfoAction(int $orderId, bool $isTestMode, string $apiKey) : Delivery\Requests\Result
-	{
-		$result = new Delivery\Requests\Result();
-
-		try
-		{
-			$request = new Api\CancelInfo\Request();
-			$request->setTestMode($isTestMode);
-			$request->setApiKey($apiKey);
-			$request->setOrderId($orderId);
-			$responce = $request->buildResponse($request->send(), Api\CancelInfo\Response::class);
-
-			$result->setData([
-				'CANCEL_STATE' => $responce->getCancelState(),
-			]);
-		}
-		catch (Main\SystemException $exception)
-		{
-			$result->addError(new Main\Error($exception->getMessage()));
-		}
-
-		return $result;
-	}
-
-	protected function cancelAction(int $orderId, bool $isTestMode, string $apiKey, string $state) : Delivery\Requests\Result
-	{
-		$result = new Delivery\Requests\Result();
-
-		try
-		{
-			$request = new Api\Cancel\Request();
-			$request->setTestMode($isTestMode);
-			$request->setApiKey($apiKey);
-			$request->setOrderId($orderId);
-			$request->setCancelState($state);
-			$request->buildResponse($request->send(), Api\Cancel\Response::class);
-		}
-		catch (Main\SystemException $exception)
-		{
-			$result->addError(new Main\Error($exception->getMessage()));
-		}
-
-		return $result;
+		return $request->buildResponse($request->send(), $responseClass);
 	}
 
 	/**
@@ -383,18 +358,17 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 			$deliveryRequest = Sale\Delivery\Requests\RequestTable::getById($requestId)->fetch();
 			$orderId = $deliveryRequest['EXTERNAL_ID'];
 
-			[$isTestMode, $apiKey] = $this->getDataForRequest($orderId);
-
-			$cancelResult = $this->cancelInfoAction($orderId, $isTestMode, $apiKey);
-
-			if (!$cancelResult->isSuccess()) { return $result; }
-			$data = $cancelResult->getData();
+			$cancelReponse = $this->sendRequest(
+				$orderId,
+				new Api\CancelInfo\Request(),
+				Api\CancelInfo\Response::class
+			);
 
 			$result = [
 				'CANCEL_STATE' => [
 					'TYPE' => 'ENUM',
 					'TITLE' => self::getMessage('CANCEL_INFO_TITLE'),
-					'VALUE' => $data['CANCEL_STATE'],
+					'VALUE' => $cancelReponse->getCancelState(),
 					'OPTIONS' => $this->getCancelStates(),
 					'DISABLED' => 'Y',
 				]
@@ -413,17 +387,12 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		];
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	public function delete($requestId) : Delivery\Requests\Result
 	{
 		$result = new Delivery\Requests\Result();
 		$transport = $this->getTransport($requestId);
 
-		if (empty($transport)) { return $result; }
-
-		$deleteResult = RepositoryTable::delete($transport['ID']);
+		$deleteResult = Internals\RepositoryTable::delete($transport->getId());
 
 		if (!$deleteResult->isSuccess())
 		{
@@ -441,34 +410,38 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 	public function getContent($requestId) : Delivery\Requests\Result
 	{
 		$result = new Delivery\Requests\Result();
-		$fields = [];
 
-		$transport = $this->getTransport($requestId, ['STATUS', 'TIMESTAMP_X']);
-
-		if (!empty($transport))
+		try
 		{
-			foreach ($transport as $code => $value)
+			$fields = [];
+
+			$transport = $this->getTransport($requestId);
+			$values = [
+				'STATUS' => $transport->getStatus(),
+				'TIMESTAMP_X' => $transport->getTimestampX(),
+			];
+
+			foreach ($values as $code => $value)
 			{
 				if (empty($value)) { continue; }
 
-				$value = $code === 'STATUS' ? static::getMessage('STATUS_' . $value) : $value;
+				if ($code === 'STATUS')
+				{
+					$value = static::getMessage('STATUS_' . $value);
+				}
 
 				$fields[] = [
 					'TITLE' => static::getMessage($code . '_TITLE'),
 					'VALUE' => $value,
 				];
 			}
-		}
 
-		if (empty($fields))
+			$result->setData($fields);
+		}
+		catch (Main\SystemException $exception)
 		{
-			$fields[] = [
-				'TITLE' => static::getMessage('STATUS_TITLE'),
-				'VALUE' => static::getMessage('STATUS_DEFAULT'),
-			];
+			$result->addError(new Main\Error('')); //todo text
 		}
-
-		$result->setData($fields);
 
 		return $result;
 	}
