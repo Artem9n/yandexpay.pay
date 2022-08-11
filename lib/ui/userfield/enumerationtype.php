@@ -97,6 +97,8 @@ class EnumerationType
 				. '</option>';
 		}
 
+		$result .= '</select>';
+
 		return $result;
 	}
 
