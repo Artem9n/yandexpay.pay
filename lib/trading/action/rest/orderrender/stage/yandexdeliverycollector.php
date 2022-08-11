@@ -60,6 +60,13 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 
 	protected function warehouse() : array
 	{
+		$validate = $this->yandexDelivery->validate();
+
+		if (!$validate->isSuccess())
+		{
+			throw new Main\SystemException('invalid warehouse');
+		}
+
 		$warehouse = $this->yandexDelivery->getWarehouse();
 
 		return [
