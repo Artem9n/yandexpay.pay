@@ -27,9 +27,8 @@ class OptionsCollector extends ResponseCollector
 	protected function availableShippingMethods(State\OrderCalculation $state) : void
 	{
 		$result = ['COURIER', 'PICKUP'];
-		$yandexDelivery = $state->options->getDeliveryOptions()->getYandexDelivery();
 
-		if ($yandexDelivery !== null)
+		if ($this->response->getField('shipping.yandexDelivery') !== null)
 		{
 			$result[] = 'YANDEX_DELIVERY';
 		}

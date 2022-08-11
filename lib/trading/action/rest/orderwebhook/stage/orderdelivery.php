@@ -34,62 +34,43 @@ class OrderDelivery
 
 		if ($status === null) { return; }
 
-		$shipmentIds = null;
-		$result = null;
-
-		/** @var \Bitrix\Sale\Shipment $item */
-		foreach ($state->order->getShipmentCollection() as $item)
+		/** @var \Bitrix\Sale\Shipment $shipment */
+		foreach ($state->order->getShipmentCollection() as $shipment)
 		{
-			$shipmentIds[] = $item->getId();
-		}
+			if ($shipment->isSystem()) { continue; }
 
-		if ($shipmentIds === null) { return; }
+			$delivery = $shipment->getDelivery();
+
+			if ($delivery === null) { continue; }
+
+			$requestHandler = $delivery->getDeliveryRequestHandler();
+
+			if (!($requestHandler instanceof Delivery\Yandex\RequestHandler)) { continue; }
+
+			$requestId = $this->getRequestIdByShipmentId($shipment->getId());
+
+			if ($requestId === null) { continue; }
+
+			$requestHandler->notifyStatus($requestId, $status);
+		}
+	}
+
+	protected function getRequestIdByShipmentId(int $shipmentId) : ?int
+	{
+		$result = null;
 
 		$query = Sale\Delivery\Requests\ShipmentTable::getList([
 			'filter' => [
-				'=SHIPMENT_ID' => $shipmentIds
-			]
-		]);
-
-		while ($shipment = $query->fetch())
-		{
-			$result[] = $shipment['REQUEST_ID'];
-		}
-
-		if ($result === null) { return; }
-
-		$existStates = [];
-
-		$queryState = Delivery\Yandex\Internals\RepositoryTable::getList([
-			'filter' => [
-				'=REQUEST_ID' => $result
+				'=SHIPMENT_ID' => $shipmentId
 			],
+			'limit' => 1
 		]);
 
-		while ($state = $queryState->fetch())
+		if ($shipment = $query->fetch())
 		{
-			$existStates[] = $state['ID'];
+			$result = $shipment['REQUEST_ID'];
 		}
 
-		if (empty($existStates))
-		{
-			foreach ($result as $requestId)
-			{
-				Delivery\Yandex\Internals\RepositoryTable::add([
-					'REQUEST_ID' => $requestId,
-					'STATUS' => $status,
-				]);
-			}
-		}
-		else
-		{
-			foreach ($existStates as $id)
-			{
-				Delivery\Yandex\Internals\RepositoryTable::update($id, [
-					'STATUS' => $status,
-					'TIMESTAMP_X' => new Main\Type\DateTime(),
-				]);
-			}
-		}
+		return $result;
 	}
 }

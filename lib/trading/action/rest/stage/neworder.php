@@ -70,7 +70,7 @@ class NewOrder
 
 	protected function fillTradingPlatform(State\OrderCalculation $state) : void
 	{
-		$platform = $state->environment->getPlatformRegistry();
+		$platform = $state->environment->getPlatform();
 		$state->order->fillTradingSetup($platform);
 	}
 }
