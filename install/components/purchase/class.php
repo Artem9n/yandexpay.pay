@@ -924,7 +924,7 @@ class Purchase extends \CBitrixComponent
 
 	protected function fillPlatform(EntityReference\Order $order) : void
 	{
-		$platform = $this->environment->getPlatformRegistry();
+		$platform = $this->environment->getPlatform();
 		$order->fillTradingSetup($platform);
 	}
 

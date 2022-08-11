@@ -21,6 +21,8 @@ class Platform extends Pay\Trading\Entity\Reference\Platform
 
 	public function install() : void
 	{
+		if ($this->getSystemPlatform()->isInstalled()) { return; }
+
 		$this->getSystemPlatform()->install();
 	}
 

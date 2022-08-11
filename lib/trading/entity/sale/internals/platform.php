@@ -12,8 +12,6 @@ class Platform extends Sale\TradingPlatform\Platform
 
 	public function install()
 	{
-		if ($this->isInstalled()) { return; }
-
 		$fields = [
 			'CODE' => $this->getCode(),
 			'CLASS' => '\\' . static::class,
@@ -24,5 +22,9 @@ class Platform extends Sale\TradingPlatform\Platform
 
 		$result = Sale\TradingPlatformTable::add($fields);
 		Exceptions\Facade::handleResult($result);
+
+		self::$instances[$this->getCode()] = new static($this->getCode());
+
+		return $result->getId();
 	}
 }
