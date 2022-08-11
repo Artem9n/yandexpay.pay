@@ -41,32 +41,24 @@
 		},
 
 		onChange: function(event) {
-
 			let value = event.currentTarget.value;
 
-			$.ajax({
-				url: '/bitrix/admin/get_user.php',
-				type: 'GET',
-				dataType: 'json',
-				data: {
-					ID: value,
-					ajax: 'Y',
-					lang: 'ru',
-					admin_section: 'Y'
-				},
-				success: (data) => {
-
+			fetch(`/bitrix/admin/get_user.php?ID=${value}&ajax=Y&admin_section=Y`, {
+				method: 'GET',
+			})
+				.then(response => response.json())
+				.then(result => {
 					const span = this.getElement('span', this.$el, 'nextAll');
 
-					if (data.NAME !== '') {
-						const link = `[<a target="_blank" class="tablebodylink" href="/bitrix/admin/user_edit.php?ID=${data.ID}&lang=ru">${data.ID}</a>] `
-							+ data.NAME;
+					if (result.NAME !== '') {
+						const link = `[<a target="_blank" class="tablebodylink" href="/bitrix/admin/user_edit.php?ID=${result.ID}&lang=ru">${result.ID}</a>] `
+							+ result.NAME;
 						span.html(link);
 					} else {
 						span.html('');
 					}
-				}
-			})
+				})
+				.catch(error => console.log(error) );
 		},
 
 		onClick: function() {
