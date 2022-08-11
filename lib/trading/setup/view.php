@@ -13,7 +13,7 @@ class View extends Storage\View
 	{
 		$environment = $this->getEnvironment();
 
-		return $this->getTableFields([
+		$result = $this->getTableFields([
 			'OVERRIDES' => [
 				'SITE_ID' => [
 					'TYPE' => 'enumeration',
@@ -25,5 +25,12 @@ class View extends Storage\View
 				],
 			],
 		]);
+
+		$result['YANDEX_DELIVERY'] = [
+			'TYPE' => 'yandexDelivery',
+			'NAME' => static::getMessage('YANDEX_DELIVERY'),
+		];
+
+		return $result;
 	}
 }

@@ -36,6 +36,7 @@ class SetupGrid extends Pay\Ui\Reference\Page
 				'ID',
 				'SITE_ID',
 				'PERSON_TYPE_ID',
+				'YANDEX_DELIVERY',
 				'ACTIVE',
 			],
 			'CONTEXT_MENU' => [
