@@ -76,6 +76,11 @@ class AdminGrid extends \CBitrixComponent
 	        $queryParams += $this->initPager($queryParams);
 	        $queryParams += $this->initSort();
 
+	        if ($this->hasPostAction())
+	        {
+		        $this->processPostAction($queryParams);
+	        }
+
 	        if ($this->isExportMode())
 	        {
 				$this->loadAll($queryParams);
@@ -212,6 +217,31 @@ class AdminGrid extends \CBitrixComponent
 			)
 		);
     }
+
+	protected function hasPostAction() : bool
+	{
+		return ($this->getPostAction() !== null);
+	}
+
+	protected function getPostAction() : string
+	{
+		return (string)$this->request->get('yapayAction');
+	}
+
+	protected function processPostAction($data) : void
+	{
+		try
+		{
+			$postAction = $this->getPostAction();
+			$provider = $this->getProvider();
+
+			$provider->processPostAction($postAction, $data);
+		}
+		catch (Main\SystemException $exception)
+		{
+			$this->addError($exception->getMessage());
+		}
+	}
 
     protected function initResult() : void
     {
