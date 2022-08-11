@@ -5,6 +5,7 @@ use Bitrix\Main;
 use Bitrix\Sale;
 use YandexPay\Pay\Delivery;
 use YandexPay\Pay\Exceptions;
+use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading;
 
 class AutoInstallDelivery
@@ -17,8 +18,7 @@ class AutoInstallDelivery
 
 			if (static::isInstalled()) { return; }
 
-			$id = static::installDelivery();
-			static::installRestrict($id);
+			static::installDelivery();
 		}
 		catch (Main\SystemException $exception)
 		{
@@ -26,54 +26,43 @@ class AutoInstallDelivery
 		}
 	}
 
-	protected static function fields() : array
-	{
-		return [
-			'NAME' => Delivery\Yandex\Handler::getClassTitle(),
-			'ACTIVE' => 'Y',
-			'PARENT_ID' => 0,
-			'DESCRIPTION' => Delivery\Yandex\Handler::getClassDescription(),
-			'CLASS_NAME' => '\\' . Delivery\Yandex\Handler::class,
-			'CODE' => 'yandex_delivery_pay',
-		];
-	}
-
 	protected static function isInstalled() : bool
 	{
-		$result = false;
-
 		try
 		{
-			Sale\Delivery\Services\Manager::getObjectByCode('yandex_delivery_pay');
-			$result	= true;
+			$service = Sale\Delivery\Services\Manager::getObjectByCode(Delivery\Yandex\Handler::CODE);
+
+			$result	= ($service !== null);
 		}
 		catch (Main\SystemException $exception)
 		{
-			//nothing
+			$result = false;
 		}
 
 		return $result;
 	}
 
-	protected static function installDelivery() : int
+	protected static function installDelivery() : void
 	{
-		$result = Sale\Delivery\Services\Table::add(static::fields());
-		Exceptions\Facade::handleResult($result);
+		$fields = [
+			'ACTIVE' => 'Y',
+			'PARENT_ID' => 0,
+			'CLASS_NAME' => Delivery\Yandex\Handler::class,
+		];
 
-		return $result->getId();
-	}
+		$service = Sale\Delivery\Services\Manager::createObject($fields);
 
-	protected static function installRestrict(int $id) : void
-	{
-		$result = Sale\Internals\ServiceRestrictionTable::add([
-			'SERVICE_ID' => $id,
-			'SERVICE_TYPE' => 0,
-			'CLASS_NAME' => '\\' . Trading\UseCase\Restrictions\ByPlatform\Delivery::class,
-			'PARAMS' => [
-				'INVERT' => 'N',
-			],
-		]);
+		Assert::notNull($service, '$service');
 
-		Exceptions\Facade::handleResult($result);
+		$fields = $service->prepareFieldsForSaving($fields);
+		$fields += [
+			'NAME' => $service::getClassTitle(),
+			'DESCRIPTION' => $service::getClassDescription(),
+			'CODE' => $service->getCode(),
+ 		];
+
+		$saveResult = Sale\Delivery\Services\Manager::add($fields);
+
+		Exceptions\Facade::handleResult($saveResult);
 	}
 }
