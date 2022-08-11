@@ -64,7 +64,7 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 
 		if (!$validate->isSuccess())
 		{
-			throw new Main\SystemException('invalid warehouse');
+			throw new Main\SystemException('invalid yandex delivery');
 		}
 
 		$warehouse = $this->yandexDelivery->getWarehouse();
