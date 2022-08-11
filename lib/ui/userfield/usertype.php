@@ -19,11 +19,13 @@ class UserType
 		$lastName = $userData['LAST_NAME'] ?? '';
 
 		return <<<OUTPUT
-			<input type="text" name="{$name}" id="{$name}" value="{$value}" size="5">
-			<button class="adm-btn js-plugin" type="button" data-plugin="Ui.UserType" data-url="/bitrix/admin/user_search.php?lang={$lang}">...</button>
-			<span class="userData">
-				[<a target="_blank" class="tablebodylink" href="/bitrix/admin/user_edit.php?ID={$value}&lang={$lang}">{$value}</a>] ({$login}) {$firstName} {$lastName}
-			</span>
+			<div class="yapay-user-type">
+				<input type="text" name="{$name}" id="{$name}" value="{$value}" size="5">
+				<button class="adm-btn js-plugin" type="button" data-plugin="Ui.UserType" data-url="/bitrix/admin/user_search.php?lang={$lang}">...</button>
+				<span class="yapay-user-data">
+					[<a target="_blank" class="tablebodylink" href="/bitrix/admin/user_edit.php?ID={$value}&lang={$lang}">{$value}</a>] ({$login}) {$firstName} {$lastName}
+				</span>
+			</div>
 OUTPUT;
 	}
 

@@ -190,3 +190,21 @@
 .adm-workarea textarea[readonly], .adm-workarea input[readonly]{
 	opacity: 1 !important;
 }
+
+.yapay-table-layout{
+	table-layout: fixed;
+}
+
+.yapay-user-type{
+	display: flex;
+	align-items: center;
+}
+
+.yapay-table-layout .yapay-user-data{
+	display: inline-block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: auto 0 1;
+	align-self: center;
+}
