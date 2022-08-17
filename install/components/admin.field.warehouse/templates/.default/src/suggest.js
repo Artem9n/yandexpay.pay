@@ -6,6 +6,8 @@ export class Suggest {
 
 	};
 
+	_itemsData = {};
+
 	constructor(element: $, options: Object = {}) {
 		this.$el = element;
 		this.el = this.$el[0];
@@ -15,112 +17,151 @@ export class Suggest {
 	}
 
 	initialize() {
+		this.bootWidget();
+		this.bind();
+	}
+
+	bind() {
+		this.handleMapDoubleClick(true);
+	}
+
+	handleMapDoubleClick(dir: boolean) : void {
+		this.options.map.events[dir ? 'add' : 'remove']("dblclick", this.onMapDoubleClick);
+	}
+
+	onMapDoubleClick = (e) => {
+		const coords = e.get('coords');
+
+		this.drawPlacemark(coords);
+		this.fillCoordinates(coords);
+
+		ymaps.geocode(coords)
+			.then((response) => {
+				const geoObject = response.geoObjects.get(0);
+				const title = this.geoObjectTitle(geoObject);
+				const address = this.geoObjectAddress(geoObject);
+
+				this.fillSuggest(title);
+				this.fillAddress(address);
+			});
+	}
+
+	bootWidget() {
 		this.widget = new SuggestWidget({
 			widget: {
-				scope: this.el
+				scope: this.el,
 			},
-			onSelect: this.onSelect,
-			search: this.search
-		});
-
-
-		this.options.map.events.add("dblclick", (e) => {
-
-			if (this.placemark != null)
-			{
-				this.options.map.geoObjects.remove(this.placemark);
-			}
-
-			let coords = e.get('coords');
-
-			ymaps.geocode(coords)
-				.then((response) => {
-					let text = response.geoObjects.get(0).properties.get('metaDataProperty').GeocoderMetaData.text;
-					$('[data-name="WAREHOUSE"]').val(text);
-				});
-
-			this.onSelect(coords);
+			onSelect: this.onSuggestSelect,
+			search: this.onSuggestSearch
 		});
 	}
 
-	onSelect = (value) => {
+	onSuggestSelect = (value) => {
+		if (this._itemsData[value] == null) {
+			throw new Error('cant find associated data for item');
+		}
 
-		ymaps.geocode(value).then((res) => {
+		const data = this._itemsData[value];
 
-			let geoObj = res.geoObjects.get(0);
-			let address = geoObj.properties.get('metaDataProperty').GeocoderMetaData.Address.Components;
-			let coordinates = geoObj.geometry.getCoordinates();
-			let bounds = geoObj.properties.get('boundedBy');
-
-			for (let i = 0; i < address.length; i++)
-			{
-				let test = address[i];
-
-				if (test.kind === 'country')
-				{
-					$('input[name*="COUNTRY"]').val(test.name);
-				}
-
-				if (test.kind === 'street' || test.kind === 'district')
-				{
-					$('input[name*="STREET"]').val(test.name);
-				}
-
-				if (test.kind === 'house')
-				{
-					$('input[name*="BUILDING"]').val(test.name);
-				}
-
-				if (test.kind === 'locality')
-				{
-					$('input[name*="LOCALITY"]').val(test.name);
-				}
-			}
-
-			$('input[name*="LOCATION_LAT"]').val(coordinates[0]);
-			$('input[name*="LOCATION_LON"]').val(coordinates[1]);
-
-			if (this.placemark != null)
-			{
-				this.options.map.geoObjects.remove(this.placemark);
-			}
-
-			this.placemark = new ymaps.Placemark(coordinates, {
-				balloonContentHeader: 'test',
-			}, {
-				preset: 'islands#blueDotIcon'
-			});
-
-			this.options.map.geoObjects.add(this.placemark);
-			this.options.map.setBounds(coordinates, {checkZoomRange:true, zoomMargin:5});
-		});
+		this.fillAddress(data.address);
+		this.fillCoordinates(data.coordinates);
+		this.drawPlacemark(data.coordinates);
+		this.moveCenter(data.coordinates);
 	}
 
-	search(request, onLoad, onComplete, onError){
+	onSuggestSearch = (request, onLoad, onComplete, onError) => {
+
+		this.widget.showLoading();
+
 		ymaps.geocode(request['QUERY'])
 			.then((response) => {
+				this.widget.hideLoading();
 
-				let so = this.opts, sv = this.vars, sc = this.ctrls, ctx = this;
+				const result = [];
 
-				sv.loader.show();
+				this._itemsData = {};
 
-				let len = response.geoObjects.getLength();
-				let text, geo ,result = [];
+				for (let i = 0; i < response.geoObjects.getLength(); i++) {
+					const geoObject = response.geoObjects.get(i);
+					const title = this.geoObjectTitle(geoObject);
 
-				for (let i = 0; i < len; i++) {
+					result.push({
+						VALUE: title,
+						DISPLAY: title,
+					});
 
-					text = response.geoObjects.get(i).properties.get('metaDataProperty').GeocoderMetaData.text;
-					geo = response.geoObjects.get(i).properties.get('boundedBy');
-
-					result[i] = {
-						VALUE: text,
-						DISPLAY: text,
+					this._itemsData[title] = {
+						coordinates: this.geoObjectCoordinates(geoObject),
+						address: this.geoObjectAddress(geoObject),
 					};
 				}
 
-				onLoad.apply(ctx, [result]);
-				onComplete.call(ctx);
+				onLoad.apply(this.widget, [result]);
+				onComplete.call(this.widget);
+			}).catch((e) => {
+				this.widget.hideLoading();
+
+				this.widget.showError('', false, e);
+				onComplete.call(this.widget);
+
+				if(BX.type.isFunction(onError)) {
+					onError.call(this.widget);
+				}
 			});
 	}
 
+	geoObjectCoordinates(geoObject) : Array {
+		return geoObject.geometry.getCoordinates();
+	}
+
+	geoObjectTitle(geoObject) : string {
+		return geoObject.properties.get('metaDataProperty').GeocoderMetaData.text;
+	}
+
+	geoObjectAddress(geoObject) : Object {
+		const address = geoObject.properties.get('metaDataProperty').GeocoderMetaData.Address.Components;
+		const map = {
+			country: 'COUNTRY',
+			street: 'STREET',
+			district: 'STREET',
+			house: 'BUILDING',
+			locality: 'LOCALITY',
+		};
+		const result = {};
+
+		for (let i = 0; i < address.length; i++) {
+			const part = address[i];
+			const target = map[part.kind];
+
+			if (target == null) { continue; }
+
+			result[target] = part.name;
+		}
+
+		return result;
+	}
+
+	fillSuggest(text: string) : void {
+		this.$el.find('input[data-name="WAREHOUSE"]').val(text);
+	}
+
+	fillAddress(address: Object) : void {
+		for (const [type, value] of Object.entries(address)) {
+			this.$el.find(`input[data-name="${type}"]`).val(value);
+		}
+	}
+
+	fillCoordinates(coordinates: Array) : void {
+		this.$el.find('input[data-name="LOCATION_LAT"]').val(coordinates[0]);
+		this.$el.find('input[data-name="LOCATION_LON"]').val(coordinates[1]);
+	}
+
+	drawPlacemark(coordinates: Array) : void {
+		this.options.map.geoObjects.removeAll();
+		this.options.map.geoObjects.add(new ymaps.Placemark(coordinates));
+	}
+
+	moveCenter(coordinates: Array) : void {
+		this.options.map.setCenter(coordinates);
+	}
 }

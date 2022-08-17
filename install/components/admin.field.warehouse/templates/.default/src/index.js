@@ -27,7 +27,10 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 		this._map = new ymaps.Map(element[0], {
 			center: [55.76, 37.64],
 			controls: ['zoomControl'],
+			behaviors: ['drag', 'scrollZoom', 'multiTouch'],
 			zoom: 10
+		}, {
+			yandexMapDisablePoiInteractivity: true,
 		});
 
 		return this._map;

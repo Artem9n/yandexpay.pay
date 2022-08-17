@@ -9,8 +9,21 @@ export class SuggestWidget extends BX.ui.autoComplete {
 		this.search = options.search;
 	}
 	handleInitStack(nf, owner, opts) {
-		this.sys.code = 'yapay-suggest';
+		this.setOptions();
 		super.handleInitStack(nf, owner, opts);
+	}
+	setOptions() {
+		BX.merge(this, {
+			opts: {
+				messages: {
+					nothingFound: 'Ничего не найдено',
+					error: 'Произошла ошибка',
+				},
+			},
+			sys: {
+				code: 'yapay-suggest'
+			}
+		});
 	}
 
 	downloadBundle(request, onLoad, onComplete, onError) {
@@ -23,4 +36,17 @@ export class SuggestWidget extends BX.ui.autoComplete {
 		this.onSelect(value);
 	}
 
+	showLoading() {
+		this.vars.loader.show();
+	}
+	hideLoading() {
+		this.vars.loader.hide();
+	}
+
+	showError(errorLabel, messages, sysDesc) {
+		if (errorLabel === '') {
+			errorLabel = this.opts.messages.error;
+		}
+		super.showError(errorLabel, messages, sysDesc);
+	}
 }
