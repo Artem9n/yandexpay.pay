@@ -326,7 +326,7 @@ class SummaryLayout extends AbstractLayout
 
 			$result[$fieldKey] = [
 				'TITLE' => $field['NAME'] ?? $field['EDIT_FORM_LABEL'] ?? $field['LIST_COLUMN_LABEL'] ?? $field['LIST_FILTER_LABEL'],
-				'CONTROL' => $control . $namespace,
+				'CONTROL' => $control,
 				'ROW_CLASS' => $row['ROW_CLASS'],
 				'VALIGN' => $row['VALIGN'],
 			];
