@@ -1,0 +1,355 @@
+.bx-yapay-warehouse-layout {
+	display: flex;
+	height: 600px;
+}
+
+.bx-yapay-warehouse-layout__map {
+	flex: auto 1 1;
+	position: relative;
+	background: #f3f3f3;
+	box-shadow: 0 0 10px 0 #00000014;
+}
+
+.bx-yapay-warehouse-layout__panel {
+	width: 30%;
+	min-width: 300px;
+	box-sizing: border-box;
+	background: #fff;
+	box-shadow: -4px 0 10px 0 #00000014;
+	z-index: 100;
+}
+
+.bx-yapay-warehouse-header {
+	padding: 20px;
+}
+
+.bx-yapay-warehouse-details {
+	height: calc(100% - 76px);
+	overflow: auto;
+	padding: 0 20px;
+}
+
+.bx-yapay-warehouse-clarify {
+	margin-bottom: 15px;
+}
+
+.bx-yapay-warehouse-detail {
+	margin-bottom: 20px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.bx-yapay-warehouse-detail__label {
+	width: 70px;
+	align-items: center;
+	text-align: end !important;
+	margin-right: 10px;
+}
+.bx-yapay-warehouse-detail__control {
+
+}
+.bx-yapay-warehouse-detail__control input[readonly] {
+	color: #767676;
+}
+
+/* absolute path to images is required to make crm-sale proxy work */
+
+.bx-sls .dropdown-block {
+	border: 1px solid #bdbdbd;
+	border-radius: 2px;
+	box-shadow: inset 0 1px 2px #ebebeb;
+	font-size: 14px;
+	padding: 4px 22px 4px 30px;
+	position: relative;
+	background-color: #fff;
+}
+
+.bx-sls .dropdown-block-ui {
+	font-size: 14px;
+	padding: 0 22px 0 30px;
+	position: relative;
+	background-color: #fff;
+	margin-top: 5px;
+}
+
+.bx-sls .dropdown-arrow {
+	/*noinspection CssUnknownTarget*/
+	background: url(/bitrix/components/bitrix/sale.location.selector.search/templates/.default/images/dropdown-errow.png) no-repeat center center;
+	height: 100%;
+	top: 0;
+	right: 0;
+	position: absolute;
+	width: 22px;
+}
+
+.bx-sls .bx-ui-yapay-suggest-container {
+	overflow: hidden;
+	min-height:25px;
+}
+
+.bx-sls .bx-ui-yapay-suggest-pane {
+	border: 1px solid #bdbdbd;
+	border-radius: 2px;
+	box-shadow: 0 2px 3px #c7c7c7;
+	box-sizing: border-box;
+	display: none;
+	max-height: 200px;
+	overflow-y: auto;
+	left: 0;
+	top: 35px;
+	padding: 5px 5px 3px 5px;
+	position: absolute;
+	width: 100%;
+}
+
+.bx-sls .dropdown-active .bx-ui-yapay-suggest-pane {
+	display: block;
+}
+
+.bx-sls .bx-ui-yapay-suggest-variants {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.bx-sls .dropdown-item {
+	border-radius: 2px;
+	padding: 7px 4px 7px 10px;
+	margin-bottom: 2px;
+}
+
+.bx-sls .dropdown-item:hover {
+	background-color: #f1f3f5;
+	cursor: pointer;
+}
+
+.bx-sls .dropdown-img {
+	border: none;
+	display: inline-block;
+	height: 12px;
+	margin: 3px 12px 0 0;
+	vertical-align: top;
+	width: 16px;
+}
+
+.bx-sls .dropdown-item-text {
+	/*makeup:color: #212121;*/
+	color: #aba8ac;
+	display: inline-block;
+	/*max-width: 220px;*/ /*silly limitation*/
+	vertical-align: top;
+}
+
+.bx-sls .dropdown-item-text span{
+	color: #25282c;
+}
+
+.bx-sls .dropdown-list-title {
+	border-bottom: 1px solid #e5e5e5;
+	height: 37px;
+	line-height: 37px;
+	padding-left: 8px;
+}
+
+.bx-sls .dropdown-icon {
+	/*noinspection CssUnknownTarget*/
+	background: url(/bitrix/components/bitrix/sale.location.selector.search/templates/.default/images/lens.png) no-repeat center center;
+	height: 14px;
+	left: 10px;
+	position: absolute;
+	top: 10px;
+	width: 14px;
+}
+
+.bx-sls .quick-locations{
+	margin-bottom: 5px;
+}
+.bx-sls .quick-location-tag {
+	background-color: #f2f5f8;
+	border: 1px solid #cad3dc;
+	border-radius: 3px;
+	color: #1e55b9;
+	display: inline-block;
+	font-size: 15px;
+	height: 27px;
+	line-height: 26px;
+	padding: 0 14px;
+	text-decoration: none;
+	margin: 0 3px 10px;
+}
+.bx-sls .quick-location-tag:hover{
+	background-color: #fafafa;
+}
+
+.bx-sls .dropdown-fade2white{
+	width: 46px;
+	height: 30px;
+	position: absolute;
+	top: 2px;
+	right: 0;
+
+	background: linear-gradient(to right, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 30%);
+}
+
+.bx-sls .bx-ui-yapay-suggest-clear{
+	/*noinspection CssUnknownTarget*/
+	background: url(/bitrix/panel/main/images/bx-admin-sprite-small.png) 6px -3386px no-repeat scroll;
+	width: 30px;
+	height: 30px;
+	cursor: hand;
+
+	position: absolute;
+	top: 2px;
+	right: 0;
+	display: block;
+}
+.bx-sls .bx-ui-yapay-suggest-clear:hover{
+	background-position: 6px -3418px;
+}
+
+.bx-sls .bx-ui-yapay-suggest-loader{
+	/*noinspection CssUnknownTarget*/
+	background-image: url(/bitrix/panel/main/images/waiter-white.gif) !important;
+	background-repeat: no-repeat !important;
+	background-position: right -1px !important;
+
+	width: 30px;
+	height: 30px;
+
+	position: absolute;
+	top: 3px;
+	right: 2px;
+	display: none;
+}
+
+.bx-sls .bx-ui-yapay-suggest-go-edit{
+	display: none;
+}
+
+.bx-sls .bx-ui-yapay-suggest-pane{
+	max-height: 300px;
+}
+
+.bx-sls input::-ms-clear {
+	display: none;
+}
+
+.bx-sls input[type="text"]{
+	position: relative;
+}
+
+.bx-sls .bx-ui-yapay-suggest-fake,
+.bx-sls .bx-ui-yapay-suggest-route {
+	position: absolute !important;
+	top: 0;
+	left: 0;
+
+	color: #000 !important;
+
+	opacity: 1 !important;
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+
+	padding:0 22px 0 0 !important;
+	background-position: right 1px;
+	background-repeat: no-repeat;
+
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	height: 33px;
+	width: 100%;
+	outline: none;
+	z-index:10;
+}
+.bx-sls .bx-ui-yapay-suggest-route{
+	color: #aba8ac !important;
+	z-index:5;
+}
+
+.bx-sls .bx-ui-yapay-suggest-pane{
+	background-color: #fff;
+	z-index: 999;
+	border: 1px solid #87919c;
+}
+
+.bx-sls .bx-ui-yapay-suggest-variants .bx-ui-yapay-suggest-variant,
+.bx-sls .bx-ui-yapay-suggest-error{
+	padding: 10px 10px;
+}
+.bx-sls .bx-ui-yapay-suggest-error{
+	color: #ff2222;
+	padding-left: 30px;
+	position: relative;
+}
+.bx-sls .bx-ui-yapay-suggest-error div{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 25px;
+	height: 25px;
+	/*noinspection CssUnknownTarget*/
+	background: url(/bitrix/panel/main/images/bx-admin-sprite-small.png) 6px -2895px no-repeat scroll;
+}
+.bx-sls .bx-ui-yapay-suggest-variants .bx-ui-yapay-suggest-variant:hover,
+.bx-sls .bx-ui-yapay-suggest-variant-active{
+	background-color: #E0E8EA;
+}
+
+.adm-sls-edit-link{
+	margin-top: 10px;
+}
+
+/* CSS-modes below: admin, public; */
+.bx-admin-mode .bx-sls-go-edit{
+	margin-left: 10px;
+	display: none;
+}
+
+.bx-admin-mode .dropdown-block {
+	border-color: #87919c #959ea9 #9ea7b1;
+	border-radius: 4px;
+	box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.3), 0 2px 2px -1px rgba(180, 188, 191, 0.7) inset;
+	height: 25px;
+}
+
+.bx-sls.bx-admin-mode .bx-ui-yapay-suggest-fake,
+.bx-sls.bx-admin-mode .bx-ui-yapay-suggest-route {
+	height: 25px;
+}
+
+.bx-admin-mode .dropdown-icon {
+	top: 7px;
+}
+
+.bx-admin-mode .dropdown-fade2white {
+	height: 22px;
+}
+
+.bx-admin-mode .dropdown-fade2white {
+	right: 1px;
+}
+
+.bx-admin-mode .bx-ui-yapay-suggest-clear {
+	background-position: 6px -3389px;
+	height: 22px;
+}
+
+.bx-admin-mode .bx-ui-yapay-suggest-clear:hover{
+	background-position: 6px -3421px;
+}
+
+.bx-admin-mode .bx-ui-yapay-suggest-loader {
+	background-position: right -4px !important;
+	height: 21px;
+}
+
+.bx-admin-mode .bx-ui-yapay-suggest-pane {
+	top: 27px;
+}
+
+.dropdown-block .dropdown-field {
+	display: none !important;
+}
