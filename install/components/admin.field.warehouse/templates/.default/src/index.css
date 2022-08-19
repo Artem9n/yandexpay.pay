@@ -1,0 +1,55 @@
+.bx-yapay-warehouse-layout {
+	display: flex;
+	height: 600px;
+}
+
+.bx-yapay-warehouse-layout__map {
+	flex: auto 1 1;
+	position: relative;
+	background: #f3f3f3;
+	box-shadow: 0 0 10px 0 #00000014;
+}
+
+.bx-yapay-warehouse-layout__panel {
+	width: 30%;
+	min-width: 300px;
+	box-sizing: border-box;
+	background: #fff;
+	box-shadow: -4px 0 10px 0 #00000014;
+	z-index: 100;
+}
+
+.bx-yapay-warehouse-header {
+	padding: 20px;
+}
+
+.bx-yapay-warehouse-details {
+	height: calc(100% - 76px);
+	overflow: auto;
+	padding: 0 20px;
+}
+
+.bx-yapay-warehouse-clarify {
+	margin-bottom: 15px;
+}
+
+.bx-yapay-warehouse-detail {
+	margin-bottom: 20px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.bx-yapay-warehouse-detail__label {
+	width: 70px;
+	align-items: center;
+	text-align: end !important;
+	margin-right: 10px;
+}
+.bx-yapay-warehouse-detail__control {
+
+}
+.bx-yapay-warehouse-detail__control input[readonly] {
+	color: #767676;
+}

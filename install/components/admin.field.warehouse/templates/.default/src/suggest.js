@@ -147,13 +147,13 @@ export class Suggest {
 
 	fillAddress(address: Object) : void {
 		for (const [type, value] of Object.entries(address)) {
-			this.$el.find(`input[data-name="${type}"]`).val(value);
+			this.options.details.find(`input[data-name="${type}"]`).val(value);
 		}
 	}
 
 	fillCoordinates(coordinates: Array) : void {
-		this.$el.find('input[data-name="LOCATION_LAT"]').val(coordinates[0]);
-		this.$el.find('input[data-name="LOCATION_LON"]').val(coordinates[1]);
+		this.options.details.find('input[data-name="LOCATION_LAT"]').val(coordinates[0]);
+		this.options.details.find('input[data-name="LOCATION_LON"]').val(coordinates[1]);
 	}
 
 	drawPlacemark(coordinates: Array) : void {

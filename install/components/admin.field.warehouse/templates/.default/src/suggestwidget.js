@@ -16,9 +16,12 @@ export class SuggestWidget extends BX.ui.autoComplete {
 		BX.merge(this, {
 			opts: {
 				messages: {
-					nothingFound: 'Ничего не найдено',
-					error: 'Произошла ошибка',
+					nothingFound: BX.message('YAPAY_FIELD_WAREHOUSE_SUGGEST_NOTING_FOUND'),
+					error: BX.message('YAPAY_FIELD_WAREHOUSE_SUGGEST_ERROR'),
 				},
+				bindEvents: {
+					init: function() {}, // disable set initial value
+				}
 			},
 			sys: {
 				code: 'yapay-suggest'

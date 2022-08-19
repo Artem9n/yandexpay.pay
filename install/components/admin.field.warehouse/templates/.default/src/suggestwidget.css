@@ -9,7 +9,6 @@
 	padding: 4px 22px 4px 30px;
 	position: relative;
 	background-color: #fff;
-	margin: 10px 0;
 }
 
 .bx-sls .dropdown-block-ui {
@@ -38,8 +37,8 @@
 .bx-sls .bx-ui-yapay-suggest-pane {
 	border: 1px solid #bdbdbd;
 	border-radius: 2px;
-	-webkit-box-shadow: 0 -2px 3px #c7c7c7;
-	box-shadow: 0 -2px 3px #c7c7c7;
+	-webkit-box-shadow: 0 2px 3px #c7c7c7;
+	box-shadow: 0 2px 3px #c7c7c7;
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	box-sizing: border-box;
@@ -47,7 +46,7 @@
 	max-height: 200px;
 	overflow-y: auto;
 	left: 0;
-	bottom: 35px !important;
+	top: 35px;
 	padding: 5px 5px 3px 5px;
 	position: absolute;
 	width: 100%;
@@ -298,4 +297,8 @@
 
 .bx-admin-mode .bx-ui-yapay-suggest-pane {
 	top: 27px;
+}
+
+.dropdown-block .dropdown-field {
+	display: none !important;
 }
