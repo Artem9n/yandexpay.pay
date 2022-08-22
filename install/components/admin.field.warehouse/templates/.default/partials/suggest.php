@@ -1,14 +1,31 @@
 <?php
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
 
-//sale/install/components/bitrix/sale.location.selector.search/templates/.default/template.php
+use Bitrix\Main\Localization\Loc;
+use YandexPay\Pay\Ui\UserField\Helper\Attributes;
+
+/** @var array $arResult */
 
 ?>
 <div class="bx-sls js-field-warehouse__suggest">
 	<div class="dropdown-block bx-ui-yapay-suggest-input-block">
 		<span class="dropdown-icon"></span>
-		<input type="text" autocomplete="off" class="dropdown-field" />
-
+		<?php
+		if (isset($fields['FULL_ADDRESS']))
+		{
+			echo Attributes::insert($fields['FULL_ADDRESS']['CONTROL'], [
+				'class' => 'dropdown-field',
+				'autocomplete' => 'off',
+				'placeholder' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_SUGGEST_PLACEHOLDER')
+			]);
+		}
+		else
+		{
+			?>
+			<input type="text" autocomplete="off" class="dropdown-field" />
+			<?php
+		}
+		?>
 		<div class="dropdown-fade2white"></div>
 		<div class="bx-ui-yapay-suggest-loader"></div>
 		<div class="bx-ui-yapay-suggest-clear" title=""></div>

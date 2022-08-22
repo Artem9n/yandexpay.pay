@@ -76,6 +76,10 @@ class Warehouse extends Settings\Reference\Fieldset
 	public function getFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return [
+			'FULL_ADDRESS' => [
+				'TYPE' => 'string',
+				'NAME' => self::getMessage('FULL_ADDRESS'),
+			],
 			'COUNTRY' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('COUNTRY'),

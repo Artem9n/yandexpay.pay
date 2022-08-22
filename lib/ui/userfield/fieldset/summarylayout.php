@@ -329,6 +329,7 @@ class SummaryLayout extends AbstractLayout
 				'CONTROL' => $control,
 				'ROW_CLASS' => $row['ROW_CLASS'],
 				'VALIGN' => $row['VALIGN'],
+				'VALUE' => $value,
 			];
 		}
 

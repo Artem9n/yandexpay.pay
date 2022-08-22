@@ -75,8 +75,6 @@ export class Suggest {
 
 		ymaps.geocode(request['QUERY'])
 			.then((response) => {
-				this.widget.hideLoading();
-
 				const result = [];
 
 				this._itemsData = {};
@@ -96,17 +94,15 @@ export class Suggest {
 					};
 				}
 
+				this.widget.hideLoading();
 				onLoad.apply(this.widget, [result]);
 				onComplete.call(this.widget);
-			}).catch((e) => {
+			})
+			.catch((e) => {
 				this.widget.hideLoading();
-
 				this.widget.showError('', false, e);
-				onComplete.call(this.widget);
-
-				if(BX.type.isFunction(onError)) {
-					onError.call(this.widget);
-				}
+				onComplete && onComplete.call(this.widget);
+				onError && onError.call(this.widget);
 			});
 	}
 
@@ -142,7 +138,7 @@ export class Suggest {
 	}
 
 	fillSuggest(text: string) : void {
-		this.$el.find('input[data-name="WAREHOUSE"]').val(text);
+		this.$el.find('input[data-name="FULL_ADDRESS"]').val(text);
 	}
 
 	fillAddress(address: Object) : void {
@@ -162,6 +158,6 @@ export class Suggest {
 	}
 
 	moveCenter(coordinates: Array) : void {
-		this.options.map.setCenter(coordinates);
+		this.options.map.setCenter(coordinates, 16);
 	}
 }

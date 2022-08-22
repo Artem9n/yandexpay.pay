@@ -29,10 +29,12 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 	postInitialize() {
 		this.bind();
 
-		MapsLoader.getInstance().load(this.options.apiKey)
+		MapsLoader.getInstance().load(this.options.apiKey + '12321')
 			.then(() => {
 				this.bootMap();
 				this.bootSuggest();
+				this.showSavedPlacemark();
+				this.focusSuggest();
 			});
 	}
 
@@ -69,16 +71,24 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 		this.toggleDetails();
 	}
 
-	toggleDetails() {
+	toggleDetails() : void {
 		const $button = this.getElement('clarify');
 
 		const newText = $button.data('alt');
 		$button.data('alt', $button.html());
 		$button.html(newText);
 
-		const $fields = this.getElement('details').find('input');
-		const isReadonly = $fields.prop('readonly');
-		$fields.prop('readonly', !isReadonly);
+		const $details = this.getElement('details');
+		const readonly = $details.hasClass('readonly');
+		$details.toggleClass('readonly');
+		$details.find('input').prop('readonly', !readonly);
+	}
+
+	openDetails() : void {
+		const $details = this.getElement('details');
+		if ($details.hasClass('readonly')) {
+			this.toggleDetails();
+		}
 	}
 
 	bootMap() {
@@ -105,18 +115,16 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 		});
 	}
 
-	search() {
-		const suggest = this.getElement('suggest');
-		const query = suggest.val();
+	showSavedPlacemark() : void {
+		const lat = this.$el.find('input[data-name="LOCATION_LAT"]').val();
+		const lon = this.$el.find('input[data-name="LOCATION_LON"]').val();
 
-		this._mapLibrary.geocode(query).then(
-			this.searchEnd,
-			this.searchStop
-		);
-	}
+		if (!lat || !lon) {
+			return;
+		}
 
-	searchStop = (error: Error) => {
-		// todo handle error
+		this._suggest.drawPlacemark([lat, lon]);
+		this._suggest.moveCenter([lat, lon]);
 	}
 
 	searchEnd = (response: Object) => {

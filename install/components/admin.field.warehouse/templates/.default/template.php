@@ -29,19 +29,23 @@ $messages = [
 ?>
 <div <?= Attributes::stringify($attributes) ?>>
 	<div class="bx-yapay-warehouse-layout js-plugin" data-plugin="Ui.Field.Warehouse" data-api-key="<?= htmlspecialcharsbx($apiKey) ?>">
+
 		<div class="bx-yapay-warehouse-layout__map js-field-warehouse__map"></div>
 		<div class="bx-yapay-warehouse-layout__panel">
 			<div class="bx-yapay-warehouse-header">
-				<?php
-				include __DIR__ . '/partials/suggest.php';
-				?>
+				<div class="bx-yapay-warehouse-suggest">
+					<?php
+					include __DIR__ . '/partials/suggest.php';
+					?>
+				</div>
+				<a href="#" class="bx-yapay-warehouse-clarify js-field-warehouse__clarify" type="button" data-alt="Скрыть">Уточнить</a>
 			</div>
-			<div class="bx-yapay-warehouse-details js-field-warehouse__details">
-				<button class="adm-btn bx-yapay-warehouse-clarify js-field-warehouse__clarify" type="button" data-alt="Скрыть">Уточнить</button>
-
+			<div class="bx-yapay-warehouse-details js-field-warehouse__details readonly">
 				<?php
-				foreach ($fields as $field)
+				foreach ($fields as $code => $field)
 				{
+					if ($code === 'FULL_ADDRESS') { continue; }
+
 					?>
 					<div class="bx-yapay-warehouse-detail">
 						<div class="bx-yapay-warehouse-detail__label"><?= $field['TITLE'] ?></div>
