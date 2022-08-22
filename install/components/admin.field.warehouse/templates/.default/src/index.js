@@ -24,6 +24,8 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 
 	destroy() {
 		this.unbind();
+		this.destroySuggest();
+		this.destroyMap();
 		super.destroy();
 	}
 
@@ -111,6 +113,13 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 		return this._map;
 	}
 
+	destroyMap() {
+		if (this._map == null) { return; }
+
+		this._map.destroy();
+		this._map = null;
+	}
+
 	bootSuggest() {
 		const element = this.getElement('suggest');
 
@@ -119,6 +128,13 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 			details: this.getElement('details'),
 			error: this.onSuggestError
 		});
+	}
+
+	destroySuggest() {
+		if (this._suggest == null) { return; }
+
+		this._suggest.destroy();
+		this._suggest = null;
 	}
 
 	onSuggestError = (message) => {

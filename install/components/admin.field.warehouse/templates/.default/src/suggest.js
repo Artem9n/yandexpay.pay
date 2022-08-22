@@ -21,8 +21,17 @@ export class Suggest {
 		this.bind();
 	}
 
+	destroy() {
+		this.unbind();
+		this.destroyWidget();
+	}
+
 	bind() {
 		this.handleMapDoubleClick(true);
+	}
+
+	unbind() {
+		this.handleMapDoubleClick(false);
 	}
 
 	handleMapDoubleClick(dir: boolean) : void {
@@ -57,6 +66,13 @@ export class Suggest {
 			onSelect: this.onSuggestSelect,
 			search: this.onSuggestSearch
 		});
+	}
+
+	destroyWidget() {
+		if (this.widget == null) { return; }
+
+		this.widget.destroy();
+		this.widget = null;
 	}
 
 	onSuggestSelect = (value) => {

@@ -8,6 +8,19 @@ export class SuggestWidget extends BX.ui.autoComplete {
 		this.onSelect = options.onSelect;
 		this.search = options.search;
 	}
+
+	destroy() {
+		this.cleanupDOM();
+	}
+
+	cleanupDOM() {
+		const input = this.ctrls?.inputs?.origin;
+		const container = this.ctrls?.container;
+
+		input && (input.style.display = '');
+		container && container.remove();
+	}
+
 	handleInitStack(nf, owner, opts) {
 		this.setOptions();
 		super.handleInitStack(nf, owner, opts);
