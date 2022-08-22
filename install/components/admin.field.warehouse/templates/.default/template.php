@@ -23,7 +23,10 @@ $assets->addJs('/bitrix/js/sale/core_ui_autocomplete.js');
 
 $messages = [
 	'YAPAY_FIELD_WAREHOUSE_SUGGEST_ERROR' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_SUGGEST_ERROR'),
+	'YAPAY_FIELD_WAREHOUSE_SUGGEST_MAP_ERROR' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_SUGGEST_MAP_ERROR'),
+	'YAPAY_FIELD_WAREHOUSE_CANT_LOAD_MAPS' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_CANT_LOAD_MAPS'),
 	'YAPAY_FIELD_WAREHOUSE_SUGGEST_NOTING_FOUND' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_SUGGEST_NOTING_FOUND'),
+	'YAPAY_FIELD_WAREHOUSE_MAPS_API_KEY_NOT_FOUND' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_MAPS_API_KEY_NOT_FOUND'),
 ];
 
 ?>
@@ -33,6 +36,9 @@ $messages = [
 		<div class="bx-yapay-warehouse-layout__map js-field-warehouse__map"></div>
 		<div class="bx-yapay-warehouse-layout__panel">
 			<div class="bx-yapay-warehouse-header">
+				<div class="bx-yapay-warehouse-error js-js-field-warehouse-error">
+
+				</div>
 				<div class="bx-yapay-warehouse-suggest">
 					<?php
 					include __DIR__ . '/partials/suggest.php';

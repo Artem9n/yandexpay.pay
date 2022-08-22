@@ -5,7 +5,7 @@ export class MapsLoader {
 	static defaults = {
 		scriptUrl: 'https://api-maps.yandex.ru/2.1?lang=ru&wizard=bitrix&load=package.full&mode=release', // todo locale and wizard
 		loadStep: 100,
-		loadTimeout: 30000,
+		loadTimeout: 5000,
 	};
 
 	_loadPromise;
@@ -29,6 +29,10 @@ export class MapsLoader {
 		const loaded = this.loaded();
 
 		if (loaded != null) { return Promise.resolve(loaded); }
+
+		if (apiKey == null || apiKey === '') {
+			return Promise.reject(new Error (BX.message('YAPAY_FIELD_WAREHOUSE_MAPS_API_KEY_NOT_FOUND')));
+		}
 
 		this._loadElapsed = 0;
 		this._loadPromise = new Promise((resolve, reject) => {
@@ -71,7 +75,7 @@ export class MapsLoader {
 		}
 
 		if (this._loadElapsed > this.options.loadTimeout) {
-			reject(new Error('cant load ymaps')); // todo lang message
+			reject(new Error(BX.message('YAPAY_FIELD_WAREHOUSE_CANT_LOAD_MAPS')));
 		}
 
 		setTimeout(

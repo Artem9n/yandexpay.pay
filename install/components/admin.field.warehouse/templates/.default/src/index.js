@@ -11,6 +11,7 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 		clarifyElement: '.js-field-warehouse__clarify',
 		detailsElement: '.js-field-warehouse__details',
 		dialogElement: '.bx-core-adm-dialog-content',
+		errorElement: '.js-js-field-warehouse-error',
 		apiKey: null,
 	};
 
@@ -29,12 +30,17 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 	postInitialize() {
 		this.bind();
 
-		MapsLoader.getInstance().load(this.options.apiKey + '12321')
+		MapsLoader.getInstance().load(this.options.apiKey)
 			.then(() => {
 				this.bootMap();
 				this.bootSuggest();
 				this.showSavedPlacemark();
 				this.focusSuggest();
+			})
+			.catch((error: Error) => {
+				this.showError(error.message);
+				this.openDetails();
+				this.focusDetails();
 			});
 	}
 
@@ -73,7 +79,6 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 
 	toggleDetails() : void {
 		const $button = this.getElement('clarify');
-
 		const newText = $button.data('alt');
 		$button.data('alt', $button.html());
 		$button.html(newText);
@@ -111,13 +116,20 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 
 		this._suggest = new Suggest(element, {
 			map: this._map,
-			details: this.getElement('details')
+			details: this.getElement('details'),
+			error: this.onSuggestError
 		});
 	}
 
+	onSuggestError = (message) => {
+		this.showError(message);
+		this.openDetails();
+		this.focusDetails();
+	}
+
 	showSavedPlacemark() : void {
-		const lat = this.$el.find('input[data-name="LOCATION_LAT"]').val();
-		const lon = this.$el.find('input[data-name="LOCATION_LON"]').val();
+		const lat = this.getElement('details').find('input[data-name="LOCATION_LAT"]').val();
+		const lon = this.getElement('details').find('input[data-name="LOCATION_LON"]').val();
 
 		if (!lat || !lon) {
 			return;
@@ -127,8 +139,15 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 		this._suggest.moveCenter([lat, lon]);
 	}
 
-	searchEnd = (response: Object) => {
-		console.log(response);
+	focusSuggest() : void {
+		this.$el.find('input[data-name="FULL_ADDRESS"]').focus();
 	}
 
+	focusDetails() : void {
+		this.getElement('details').find('input').first().focus();
+	}
+
+	showError(message) : void {
+		this.getElement('error').html(message).show();
+	}
 }

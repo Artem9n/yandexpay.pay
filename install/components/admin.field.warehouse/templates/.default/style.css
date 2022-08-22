@@ -84,6 +84,13 @@
 	margin-right: 10px;
 }
 
+.bx-yapay-warehouse-error {
+	display: none;
+	background: #ffcece;
+	padding: 10px 15px;
+	margin-bottom: 15px;
+}
+
 /* absolute path to images is required to make crm-sale proxy work */
 
 .bx-sls .dropdown-block {

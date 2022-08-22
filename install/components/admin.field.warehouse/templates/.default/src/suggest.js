@@ -43,6 +43,9 @@ export class Suggest {
 
 				this.fillSuggest(title);
 				this.fillAddress(address);
+			})
+			.catch(() => {
+				this.options.error(BX.message('YAPAY_FIELD_WAREHOUSE_SUGGEST_MAP_ERROR'));
 			});
 	}
 
@@ -100,6 +103,7 @@ export class Suggest {
 			})
 			.catch((e) => {
 				this.widget.hideLoading();
+				this.options.error(BX.message('YAPAY_FIELD_WAREHOUSE_SUGGEST_MAP_ERROR'));
 				this.widget.showError('', false, e);
 				onComplete && onComplete.call(this.widget);
 				onError && onError.call(this.widget);
