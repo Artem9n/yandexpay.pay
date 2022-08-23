@@ -51,7 +51,7 @@ class OrderDelivery
 
 			if ($requestId === null) { continue; }
 
-			$requestHandler->notifyStatus($requestId, $status);
+			$requestHandler->notifyStatus($requestId, $status, $state->order->getId());
 		}
 	}
 

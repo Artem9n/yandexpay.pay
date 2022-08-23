@@ -44,6 +44,8 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 	public const UNAVAILABLE_STATE_CANCEL = 'UNAVAILABLE'; //недоступно
 
 	protected $waitCreatedExternalIds = [];
+	protected $waitCreatedPayload = [];
+	protected $waitCreatedConfirm = [];
 	protected $alreadyBindRequestTableCreated = false;
 
 	public function __construct(Delivery\Services\Base $deliveryService)
@@ -63,7 +65,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 			{
 				$orderId = $this->getOrderIdByShipmentId($shipmentId);
 
-				$this->sendRequest(
+				$response = $this->sendRequest(
 					$orderId,
 					new Api\Create\Request(),
 					Api\Create\Response::class
@@ -77,7 +79,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 
 				$result->addResult($requestResult);
 
-				$this->waitRequestInstalled($orderId);
+				$this->waitRequestInstalled($orderId, $response->getDeliveryData(), $additional['CONFIRM']);
 			}
 			catch (Main\SystemException $exception)
 			{
@@ -88,9 +90,11 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		return $result;
 	}
 
-	protected function waitRequestInstalled(int $externalId) : void
+	protected function waitRequestInstalled(int $externalId, array $data = [], string $confirm = 'N') : void
 	{
 		$this->waitCreatedExternalIds[] = $externalId;
+		$this->waitCreatedPayload[$externalId] = $data;
+		$this->waitCreatedConfirm[$externalId] = $confirm;
 		$this->bindRequestTableCreated();
 	}
 
@@ -124,13 +128,33 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		Internals\RepositoryTable::add([
 			'REQUEST_ID' => $event->getParameter('id'),
 			'STATUS' => static::CREATED,
+			'PAYLOAD' => $this->waitCreatedPayload[$externalId],
+			'CONFIRM' => $this->waitCreatedConfirm[$externalId],
 		]);
 	}
 
-	public function notifyStatus(int $requestId, string $status) : void
+	public function notifyStatus(int $requestId, string $status, int $orderId) : void
 	{
 		$transport = $this->getTransport($requestId);
 		$transport->setStatus($status);
+		$transport->save();
+
+		if ($status === static::READY_FOR_APPROVAL_STATUS && $transport->getConfirm())
+		{
+			$response = $this->sendRequest(
+				$orderId,
+				new Api\Accept\Request(),
+				Api\Accept\Response::class
+			);
+
+			$this->notifyPayload($requestId, $response->getDeliveryData());
+		}
+	}
+
+	protected function notifyPayload(int $requestId, array $data) : void
+	{
+		$transport = $this->getTransport($requestId);
+		$transport->setPayload($data);
 		$transport->save();
 	}
 
@@ -246,11 +270,13 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 					throw new Main\SystemException(static::getMessage('ACCEPT_UNAVAILABLE'));
 				}
 
-				$this->sendRequest(
+				$response = $this->sendRequest(
 					$orderId,
 					new Api\Accept\Request(),
 					Api\Accept\Response::class
 				);
+
+				$this->notifyPayload($requestId, $response->getDeliveryData());
 			}
 			else if ($actionType === static::RENEW_ACTION_CODE)
 			{
@@ -374,6 +400,20 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 				]
 			];
 		}
+		else if ($formFieldsType === Delivery\Requests\Manager::FORM_FIELDS_TYPE_CREATE)
+		{
+			$result = [
+				'CONFIRM' => [
+					'TYPE' => 'ENUM',
+					'TITLE' => self::getMessage('CONFIRM_TITLE'),
+					'OPTIONS' => [
+						'N' => self::getMessage('CONFIRM_N'),
+						'Y' => self::getMessage('CONFIRM_Y'),
+					],
+					'VALUE' => 'N',
+				]
+			];
+		}
 
 		return $result;
 	}
@@ -416,9 +456,9 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 			$fields = [];
 
 			$transport = $this->getTransport($requestId);
+			$payload = $transport->getPayload();
 			$values = [
 				'STATUS' => $transport->getStatus(),
-				'TIMESTAMP_X' => $transport->getTimestampX(),
 			];
 
 			foreach ($values as $code => $value)
@@ -434,6 +474,17 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 					'TITLE' => static::getMessage($code . '_TITLE'),
 					'VALUE' => $value,
 				];
+			}
+
+			if (!empty($payload))
+			{
+				foreach ($payload as $code => $value)
+				{
+					$fields[] = [
+						'TITLE' => static::getMessage('PAYLOAD_' . $code . '_TITLE'),
+						'VALUE' => $value,
+					];
+				}
 			}
 
 			$result->setData($fields);
