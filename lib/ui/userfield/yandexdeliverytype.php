@@ -12,8 +12,6 @@ class YandexDeliveryType
 
 	public static function getAdminListViewHTML($userField, $htmlControl)
 	{
-		global $APPLICATION;
-
 		try
 		{
 			if (empty($userField['ENTITY_VALUE_ID'])) { return ''; }
@@ -40,14 +38,17 @@ class YandexDeliveryType
 			}
 			else
 			{
-				$url = sprintf('/bitrix/admin/sale_pay_system_edit.php?ID=%s&lang=%s', $setup->wakeupOptions()->getPaymentCard(), LANGUAGE_ID);
-				$uri = new Main\Web\Uri($url);
-				$uri->addParams([
+				$query = [
+					'ID' => $setup->wakeupOptions()->getPaymentCard(),
+					'lang' => LANGUAGE_ID,
 					'yapayAction' => 'installYandexDelivery',
 					'setupId' => $userField['ENTITY_VALUE_ID'],
-				]);
+				];
+
+				$path = BX_ROOT . '/admin/sale_pay_system_edit.php?' . http_build_query($query);
+
 				$message = static::getMessage('NOT_INSTALLED', [
-					'#ACTIVATE_LINK#' => $uri->getUri(),
+					'#ACTIVATE_LINK#' => $path,
 				]);
 			}
 		}
