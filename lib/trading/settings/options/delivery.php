@@ -102,7 +102,7 @@ class Delivery extends Fieldset
 				],
 			],
 			'WAREHOUSE' => $this->getWarehouse()->getFieldDescription($environment, $siteId) + [
-				'TYPE' => 'fieldset',
+				'TYPE' => 'warehouse',
 				'NAME' => self::getMessage('WAREHOUSE'),
 				'GROUP' => self::getMessage('GROUP_SETTINGS'),
 				'DEPEND' => [

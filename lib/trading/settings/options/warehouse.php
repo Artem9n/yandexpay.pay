@@ -67,8 +67,8 @@ class Warehouse extends Settings\Reference\Fieldset
 			'SETTINGS' => [
 				'SUMMARY' => '#COUNTRY#, #LOCALITY#, #STREET# (#BUILDING#)',
 				'LAYOUT' => 'summary',
-				'MODAL_WIDTH' => 450,
-				'MODAL_HEIGHT' => 300,
+				'MODAL_WIDTH' => 800,
+				'MODAL_HEIGHT' => 600,
 			],
 		];
 	}
@@ -76,6 +76,10 @@ class Warehouse extends Settings\Reference\Fieldset
 	public function getFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		return [
+			'FULL_ADDRESS' => [
+				'TYPE' => 'string',
+				'NAME' => self::getMessage('FULL_ADDRESS'),
+			],
 			'COUNTRY' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('COUNTRY'),

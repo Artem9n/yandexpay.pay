@@ -117,6 +117,8 @@
 			var oldField = this.getElement('field');
 			var newField = this.getElement('field', modalContent);
 
+			Plugin.manager.destroyContext(newField, this.options.elementNamespace);
+
 			newField.insertAfter(oldField);
 			oldField.remove();
 
@@ -151,7 +153,7 @@
 			cloneInstance.setParentField(this);
 			cloneInstance.initEdit(index);
 
-			Plugin.manager.initializeContext(modalContent);
+			Plugin.manager.initializeContext(modalContent, this.options.elementNamespace);
 
 			// handle
 
@@ -194,6 +196,10 @@
 		},
 
 		destroyModal: function() {
+			if (this._modal == null) { return; }
+
+			Plugin.manager.destroyContext(this.getModalContent(), this.options.elementNamespace);
+
 			this._modal = null;
 		},
 
