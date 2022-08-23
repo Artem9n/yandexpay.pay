@@ -30,5 +30,9 @@ class Grid extends Component\Model\Grid
 
 		$setup->syncSettings($values);
 		$setup->getSettings()->save(true);
+
+		$uri = new Main\Web\Uri($request->getRequestUri());
+		$uri->deleteParams(['yapayAction', 'setupId', 'BACKURL']);
+		LocalRedirect($uri->getUri());
 	}
 }

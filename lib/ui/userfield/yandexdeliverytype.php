@@ -40,16 +40,14 @@ class YandexDeliveryType
 			}
 			else
 			{
-				$actionUrl = $APPLICATION->GetCurPageParam(
-					http_build_query([
-						'yapayAction' => 'installYandexDelivery',
-						'setupId' => $userField['ENTITY_VALUE_ID'],
-					]),
-					false
-				);
-
+				$url = sprintf('/bitrix/admin/sale_pay_system_edit.php?ID=%s&lang=%s', $setup->wakeupOptions()->getPaymentCard(), LANGUAGE_ID);
+				$uri = new Main\Web\Uri($url);
+				$uri->addParams([
+					'yapayAction' => 'installYandexDelivery',
+					'setupId' => $userField['ENTITY_VALUE_ID'],
+				]);
 				$message = static::getMessage('NOT_INSTALLED', [
-					'#ACTIVATE_LINK#' => $actionUrl, // todo
+					'#ACTIVATE_LINK#' => $uri->getUri(),
 				]);
 			}
 		}
