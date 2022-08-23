@@ -26,15 +26,19 @@ class Rule
 	{
 		$platformId = static::getPlatformId();
 
-		return !empty($platformId);
+		return $platformId !== null;
 	}
 
 	public static function getParamsStructure() : array
 	{
 		return [
-			'INVERT' => [
-				'TYPE' => 'Y/N',
-				'LABEL' => Loc::getMessage('YANDEX_PAY_TRADING_USE_CASE_RESTRICTION_BY_PLATFORM_PARAM_INVERT'),
+			'VIEW' => [
+				'TYPE' => 'ENUM',
+				'LABEL' => Loc::getMessage('YANDEX_PAY_TRADING_USE_CASE_RESTRICTION_BY_PLATFORM_PARAM_VIEW'),
+				'OPTIONS' => [
+					'YANDEX_CHECKOUT' => Loc::getMessage('YANDEX_PAY_TRADING_USE_CASE_RESTRICTION_BY_PLATFORM_ONLY_YANDEX_CHECKOUT'),
+					'SITE' => Loc::getMessage('YANDEX_PAY_TRADING_USE_CASE_RESTRICTION_BY_PLATFORM_ONLY_SITE'),
+				]
 			],
 		];
 	}
@@ -43,7 +47,7 @@ class Rule
 	{
 		$result = in_array(static::getPlatformId(), $params, true);
 
-		if ($config['INVERT'] === 'Y')
+		if ($config['VIEW'] === 'SITE')
 		{
 			$result = !$result;
 		}

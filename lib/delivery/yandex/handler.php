@@ -56,7 +56,7 @@ class Handler extends Sale\Delivery\Services\Base
 			'SERVICE_TYPE' => 0,
 			'CLASS_NAME' => '\\' . Trading\UseCase\Restrictions\ByPlatform\Delivery::class,
 			'PARAMS' => [
-				'INVERT' => 'N',
+				'VIEW' => 'YANDEX_CHECKOUT',
 			],
 		]);
 
