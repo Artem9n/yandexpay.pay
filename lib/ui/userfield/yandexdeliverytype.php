@@ -39,7 +39,7 @@ class YandexDeliveryType
 			else
 			{
 				$query = [
-					'ID' => $setup->wakeupOptions()->getPaymentCard(),
+					'ID' => $options->getPaymentCard(),
 					'lang' => LANGUAGE_ID,
 					'yapayAction' => 'installYandexDelivery',
 					'setupId' => $userField['ENTITY_VALUE_ID'],
