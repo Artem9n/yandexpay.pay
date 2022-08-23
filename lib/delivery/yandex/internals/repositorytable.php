@@ -26,8 +26,7 @@ class RepositoryTable extends ORM\Data\DataManager
 				'primary' => true,
 			]),
 			'TIMESTAMP_X' => new ORM\Fields\DatetimeField('TIMESTAMP_X', [
-				'default_value' => function()
-				{
+				'default_value' => function() {
 					return new Main\Type\DateTime();
 				}
 			]),
@@ -42,6 +41,12 @@ class RepositoryTable extends ORM\Data\DataManager
 			new ORM\Fields\StringField('STATUS', [
 				'required' => true,
 			]),
+			new ORM\Fields\BooleanField('CONFIRM', [
+				'values' => ['N', 'Y'],
+				'default_value' => 'N',
+			]),
+			(new ORM\Fields\ArrayField('PAYLOAD'))
+				->configureSerializationPhp(),
 		];
 	}
 }

@@ -566,6 +566,26 @@ namespace YandexPay\Pay\Delivery\Yandex\Internals {
 	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model resetStatus()
 	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model unsetStatus()
 	 * @method \string fillStatus()
+	 * @method \boolean getConfirm()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model setConfirm(\boolean $confirm)
+	 * @method bool hasConfirm()
+	 * @method bool isConfirmFilled()
+	 * @method bool isConfirmChanged()
+	 * @method \boolean remindActualConfirm()
+	 * @method \boolean requireConfirm()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model resetConfirm()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model unsetConfirm()
+	 * @method \boolean fillConfirm()
+	 * @method array getPayload()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model setPayload(array $payload)
+	 * @method bool hasPayload()
+	 * @method bool isPayloadFilled()
+	 * @method bool isPayloadChanged()
+	 * @method array remindActualPayload()
+	 * @method array requirePayload()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model resetPayload()
+	 * @method \YandexPay\Pay\Delivery\Yandex\Internals\Model unsetPayload()
+	 * @method array fillPayload()
 	 *
 	 * Common methods:
 	 * ---------------
@@ -617,6 +637,10 @@ namespace YandexPay\Pay\Delivery\Yandex\Internals {
 	 * @method fillRequest()
 	 * @method \string[] getStatusList()
 	 * @method fillStatus()
+	 * @method \boolean[] getConfirmList()
+	 * @method fillConfirm()
+	 * @method array[] getPayloadList()
+	 * @method fillPayload()
 	 *
 	 * Common methods:
 	 * ---------------
