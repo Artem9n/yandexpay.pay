@@ -3,7 +3,7 @@ export class MapsLoader {
 	static instance;
 
 	static defaults = {
-		scriptUrl: 'https://api-maps.yandex.ru/2.1?lang=ru&wizard=bitrix&load=package.full&mode=release', // todo locale and wizard
+		scriptUrl: 'https://api-maps.yandex.ru/2.1?lang=ru&wizard=bitrix&load=package.full&mode=release',
 		loadStep: 100,
 		loadTimeout: 5000,
 	};

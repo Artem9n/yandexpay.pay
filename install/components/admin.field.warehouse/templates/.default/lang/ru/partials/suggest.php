@@ -1,3 +1,0 @@
-<?php
-
-$MESS['YAPAY_FIELD_WAREHOUSE_SUGGEST_PLACEHOLDER'] = '¬ведите адрес';
