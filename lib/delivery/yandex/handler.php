@@ -49,7 +49,18 @@ class Handler extends Sale\Delivery\Services\Base
 		return new RequestHandler($this);
 	}
 
-	public static function onAfterAdd($serviceId, array $fields = array())
+	public static function onAfterAdd($serviceId, array $fields = array()) : void
+	{
+		static::installRestriction($serviceId);
+		ShipmentRequestMarker::install();
+	}
+
+	public static function onAfterDelete($serviceId) : void
+	{
+		ShipmentRequestMarker::uninstall();
+	}
+
+	protected static function installRestriction($serviceId) : void
 	{
 		$result = Sale\Internals\ServiceRestrictionTable::add([
 			'SERVICE_ID' => $serviceId,
