@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Delivery\Yandex;
 
 use Bitrix\Main;
 use Bitrix\Sale;
+use Bitrix\Currency;
 use Bitrix\Sale\Delivery;
 use Bitrix\Sale\Shipment;
 use Sale\Handlers\PaySystem\YandexPayHandler;
@@ -18,35 +19,36 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 {
 	use Concerns\HasMessage;
 
-	/** @var \YandexPay\Pay\Trading\Entity\Reference\Environment */
+	/** @var TradingEntity\Reference\Environment */
 	protected $environment;
+	/** @var array  */
+	protected $waitCreatedExternalData = [];
+	/** @var bool  */
+	protected $alreadyBindRequestTableCreated = false;
+	/** @var array */
+	protected $transport = [];
 
 	public const CANCEL_ACTION_CODE = 'cancel';
 	public const RENEW_ACTION_CODE = 'renew';
 	public const ACCEPT_ACTION_CODE = 'accept';
 	public const CREATE_ACTION_CODE = 'create';
 
-	public const CREATED = 'CREATED'; //Идет вычисление стоимости доставки
-	public const ESTIMATING_STATUS = 'ESTIMATING'; //Идет вычисление стоимости доставки
-	public const EXPIRED_STATUS = 'EXPIRED'; //Доставка не подтверждена за отведенное время
-	public const READY_FOR_APPROVAL_STATUS = 'READY_FOR_APPROVAL'; //Доставка ждет подтверждения
-	public const COLLECTING_STATUS = 'COLLECTING'; //Идет процесс получения заказа службой доставки от продавца
-	public const PREPARING_STATUS = 'PREPARING'; //Идет подготовка к отправке покупателю
-	public const DELIVERING_STATUS = 'DELIVERING'; //Заказ доставляется покупателю
-	public const DELIVERED_STATUS = 'DELIVERED'; //Заказ доставлен
-	public const RETURNING_STATUS = 'RETURNING'; //Заказ возвращается обратно продавцу
-	public const RETURNED_STATUS = 'RETURNED'; //Заказ возвращен продавцу
-	public const FAILED_STATUS = 'FAILED'; //Доставка завершилась ошибкой
-	public const CANCELLED_STATUS = 'CANCELLED'; //Доставка отменена продавцом
+	public const CREATED = 'CREATED'; // The delivery request has been sent
+	public const ESTIMATING_STATUS = 'ESTIMATING'; // The cost of delivery is being calculated
+	public const EXPIRED_STATUS = 'EXPIRED'; // Delivery is not confirmed in the allotted time
+	public const READY_FOR_APPROVAL_STATUS = 'READY_FOR_APPROVAL'; // Delivery is waiting for confirmation
+	public const COLLECTING_STATUS = 'COLLECTING'; // There is a process of receiving an order by the delivery service from the seller
+	public const PREPARING_STATUS = 'PREPARING'; // Preparations are underway to ship to the buyer
+	public const DELIVERING_STATUS = 'DELIVERING'; // The order is delivered to the buyer
+	public const DELIVERED_STATUS = 'DELIVERED'; // The order has been delivered
+	public const RETURNING_STATUS = 'RETURNING'; // The order is returned to the seller
+	public const RETURNED_STATUS = 'RETURNED'; // The order has been returned to the seller
+	public const FAILED_STATUS = 'FAILED'; // Delivery failed with an error
+	public const CANCELLED_STATUS = 'CANCELLED'; // Delivery canceled by the seller
 
-	public const FREE_STATE_CANCEL = 'FREE'; //бесплатно
-	public const PAID_STATE_CANCEL = 'PAID'; //платно
-	public const UNAVAILABLE_STATE_CANCEL = 'UNAVAILABLE'; //недоступно
-
-	protected $waitCreatedExternalIds = [];
-	protected $waitCreatedPayload = [];
-	protected $waitCreatedConfirm = [];
-	protected $alreadyBindRequestTableCreated = false;
+	public const FREE_STATE_CANCEL = 'FREE';
+	public const PAID_STATE_CANCEL = 'PAID';
+	public const UNAVAILABLE_STATE_CANCEL = 'UNAVAILABLE';
 
 	public function __construct(Delivery\Services\Base $deliveryService)
 	{
@@ -79,7 +81,10 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 
 				$result->addResult($requestResult);
 
-				$this->waitRequestInstalled($orderId, $response->getDeliveryData(), $additional['CONFIRM']);
+				$this->waitRequestInstalled($orderId, [
+					'PAYLOAD' => $response->getDeliveryData(),
+					'CONFIRM' => $additional['CONFIRM'],
+				]);
 			}
 			catch (Main\SystemException $exception)
 			{
@@ -90,11 +95,9 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		return $result;
 	}
 
-	protected function waitRequestInstalled(int $externalId, array $data = [], string $confirm = 'N') : void
+	protected function waitRequestInstalled(int $externalId, array $data) : void
 	{
-		$this->waitCreatedExternalIds[] = $externalId;
-		$this->waitCreatedPayload[$externalId] = $data;
-		$this->waitCreatedConfirm[$externalId] = $confirm;
+		$this->waitCreatedExternalData[$externalId] = $data;
 		$this->bindRequestTableCreated();
 	}
 
@@ -119,25 +122,22 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 
 		if ($externalId === null) { return; }
 
-		$waitIndex = array_search($externalId, $this->waitCreatedExternalIds, true);
+		if (!isset($this->waitCreatedExternalData[$externalId])) { return; }
 
-		if ($waitIndex === false) { return; }
-
-		array_splice($this->waitCreatedExternalIds, $waitIndex, 1);
+		$data = $this->waitCreatedExternalData[$externalId];
 
 		Internals\RepositoryTable::add([
 			'REQUEST_ID' => $event->getParameter('id'),
 			'STATUS' => static::CREATED,
-			'PAYLOAD' => $this->waitCreatedPayload[$externalId],
-			'CONFIRM' => $this->waitCreatedConfirm[$externalId],
-		]);
+		] + $data);
+
+		unset($this->waitCreatedExternalData[$externalId]);
 	}
 
-	public function notifyStatus(int $requestId, string $status, int $orderId) : void
+	public function notifyTransport(int $requestId, string $status, int $orderId, int $shipmentId) : void
 	{
 		$transport = $this->getTransport($requestId);
 		$transport->setStatus($status);
-		$transport->save();
 
 		if ($status === static::READY_FOR_APPROVAL_STATUS && $transport->getConfirm())
 		{
@@ -147,21 +147,19 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 				Api\Accept\Response::class
 			);
 
-			$this->notifyPayload($requestId, $response->getDeliveryData());
+			$transport->setPayload($response->getDeliveryData());
 		}
-	}
 
-	protected function notifyPayload(int $requestId, array $data) : void
-	{
-		$transport = $this->getTransport($requestId);
-		$transport->setPayload($data);
 		$transport->save();
+
+		$message = $this->createMessage('process', static::getMessage('STATUS_' . $status), 'process');
+		$this->sendMessage('MANAGER', $message, $requestId, $shipmentId);
 	}
 
 	protected function getDataForRequest(int $orderId) : array
 	{
 		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
-		/** @var \Bitrix\Sale\Order $orderClassName */
+		/** @var Sale\Order $orderClassName */
 		$orderClassName = $registry->getOrderClassName();
 		$order = $orderClassName::load($orderId);
 
@@ -242,6 +240,15 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		];
 	}
 
+	protected function getCancelStates() : array
+	{
+		return [
+			static::FREE_STATE_CANCEL => static::getMessage('CANCEL_INFO_FREE'),
+			static::PAID_STATE_CANCEL => static::getMessage('CANCEL_INFO_PAID'),
+			static::UNAVAILABLE_STATE_CANCEL => static::getMessage('CANCEL_INFO_UNAVAILABLE'),
+		];
+	}
+
 	public function executeShipmentAction($requestId, $shipmentId, $actionType, array $additional) : Delivery\Requests\Result
 	{
 		return $this->executeAction($requestId, $actionType, $additional);
@@ -253,7 +260,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 
 		try
 		{
-			$request = Sale\Delivery\Requests\RequestTable::getById($requestId)->fetch();
+			$request = Delivery\Requests\RequestTable::getById($requestId)->fetch();
 
 			if (!$request)
 			{
@@ -261,7 +268,8 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 			}
 
 			$orderId = $request['EXTERNAL_ID'];
-			$transportStatus = $this->getTransport($requestId)->getStatus();
+			$transport = $this->getTransport($requestId);
+			$transportStatus = $transport->getStatus();
 
 			if ($actionType === static::ACCEPT_ACTION_CODE)
 			{
@@ -276,7 +284,8 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 					Api\Accept\Response::class
 				);
 
-				$this->notifyPayload($requestId, $response->getDeliveryData());
+				$transport->setPayload($response->getDeliveryData());
+				$transport->save();
 			}
 			else if ($actionType === static::RENEW_ACTION_CODE)
 			{
@@ -301,7 +310,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 				}
 
 				$request = new Api\Cancel\Request();
-				$request->setCancelState($additional['CANCEL_STATE']);
+				$request->setCancelState($state);
 
 				$this->sendRequest($orderId, $request, Api\Cancel\Response::class);
 			}
@@ -319,6 +328,16 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 	}
 
 	protected function getTransport(int $requestId) : Internals\Model
+	{
+		if (!isset($this->transport[$requestId]))
+		{
+			$this->transport[$requestId] = $this->loadTransport($requestId);
+		}
+
+		return $this->transport[$requestId];
+	}
+
+	protected function loadTransport(int $requestId) : Internals\Model
 	{
 		$query = Internals\RepositoryTable::getList([
 			'filter' => [ '=REQUEST_ID' => $requestId ],
@@ -381,7 +400,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 
 			if ($requestId === null) { return $result; }
 
-			$deliveryRequest = Sale\Delivery\Requests\RequestTable::getById($requestId)->fetch();
+			$deliveryRequest = Delivery\Requests\RequestTable::getById($requestId)->fetch();
 			$orderId = $deliveryRequest['EXTERNAL_ID'];
 
 			$cancelReponse = $this->sendRequest(
@@ -410,21 +429,12 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 						'N' => self::getMessage('CONFIRM_N'),
 						'Y' => self::getMessage('CONFIRM_Y'),
 					],
-					'VALUE' => 'N',
+					'VALUE' => 'Y',
 				]
 			];
 		}
 
 		return $result;
-	}
-
-	protected function getCancelStates() : array
-	{
-		return [
-			static::FREE_STATE_CANCEL => static::getMessage('CANCEL_INFO_FREE'),
-			static::PAID_STATE_CANCEL => static::getMessage('CANCEL_INFO_PAID'),
-			static::UNAVAILABLE_STATE_CANCEL => static::getMessage('CANCEL_INFO_UNAVAILABLE'),
-		];
 	}
 
 	public function delete($requestId) : Delivery\Requests\Result
@@ -480,6 +490,12 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 			{
 				foreach ($payload as $code => $value)
 				{
+					if ($code === 'PRICE' || $code === 'ACTUAL_PRICE')
+					{
+						$value = \CCurrencyLang::CurrencyFormat($value, Currency\CurrencyManager::getBaseCurrency());
+						$value = html_entity_decode($value); // double escaping output fix
+					}
+
 					$fields[] = [
 						'TITLE' => static::getMessage('PAYLOAD_' . $code . '_TITLE'),
 						'VALUE' => $value,
@@ -491,9 +507,94 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		}
 		catch (Main\SystemException $exception)
 		{
-			$result->addError(new Main\Error('')); //todo text
+			$result->addError(new Main\Error($exception->getMessage()));
 		}
 
 		return $result;
+	}
+
+	/**
+	 * @noinspection PhpUndefinedClassInspection
+	 * @noinspection PhpUndefinedNamespaceInspection
+	 *
+	 * @param string      $subject
+	 * @param string      $status
+	 * @param string      $semanticType [error, success, process]
+	 * @param string|null $body
+	 * @param string|null $type
+	 *
+	 * @return Delivery\Requests\Message\Message|null
+	 */
+	public function createMessage(
+		string $subject,
+		string $status,
+		string $semanticType,
+		string $body = null,
+		string $type = null
+
+	) : ?Delivery\Requests\Message\Message
+	{
+		$result = null;
+
+		try
+		{
+			Assert::classExists(Delivery\Requests\Message\Message::class);
+			Assert::classExists(Delivery\Requests\Message\Status::class);
+
+			$statusObject = new Delivery\Requests\Message\Status(
+				$status,
+				mb_strtolower($semanticType)
+			);
+
+			$result = new Delivery\Requests\Message\Message();
+			$result
+				->setSubject($subject)
+				->setStatus($statusObject);
+
+			if ($body !== null)
+			{
+				$result->setBody($body);
+			}
+
+			if ($type !== null)
+			{
+				$result->setType($type);
+			}
+		}
+		catch (Main\SystemException $exception)
+		{
+			//nothing
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @noinspection PhpUndefinedClassInspection
+	 * @noinspection PhpUndefinedNamespaceInspection
+	 *
+	 * @param string                                 $addressee [MANAGER, RECIPIENT]
+	 * @param Delivery\Requests\Message\Message|null $message
+	 * @param int                                    $requestId
+	 * @param int                                    $shipmentId
+	 *
+	 * @return void
+	 */
+	public function sendMessage(
+		string $addressee,
+		?Delivery\Requests\Message\Message $message,
+		int $requestId,
+		int $shipmentId
+	): void
+	{
+		if ($message === null) { return; }
+		if (!method_exists(Delivery\Requests\Manager::class, 'sendMessage')) { return; }
+
+		Delivery\Requests\Manager::sendMessage(
+			mb_strtoupper($addressee),
+			$message,
+			$requestId,
+			$shipmentId
+		);
 	}
 }

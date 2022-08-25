@@ -43,7 +43,7 @@ class RepositoryTable extends ORM\Data\DataManager
 			]),
 			new ORM\Fields\BooleanField('CONFIRM', [
 				'values' => ['N', 'Y'],
-				'default_value' => 'N',
+				'default_value' => 'Y',
 			]),
 			(new ORM\Fields\ArrayField('PAYLOAD'))
 				->configureSerializationPhp(),
