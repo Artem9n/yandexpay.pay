@@ -2,7 +2,6 @@
 namespace YandexPay\Pay\Trading\Action\Rest\OrderWebhook\Stage;
 
 use Bitrix\Sale;
-use Bitrix\Main;
 use YandexPay\Pay\Delivery;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Api;
@@ -51,7 +50,7 @@ class OrderDelivery
 
 			if ($requestId === null) { continue; }
 
-			$requestHandler->notifyStatus($requestId, $status, $state->order->getId());
+			$requestHandler->notifyTransport($requestId, $status, $state->order->getId(), $shipment->getId());
 		}
 	}
 
