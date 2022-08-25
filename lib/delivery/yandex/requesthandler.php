@@ -534,36 +534,27 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 
 	) : ?Delivery\Requests\Message\Message
 	{
-		$result = null;
+		if (!class_exists(Delivery\Requests\Message\Message::class)) { return null; }
+		if (!class_exists(Delivery\Requests\Message\Status::class)) { return null; }
 
-		try
+		$statusObject = new Delivery\Requests\Message\Status(
+			$status,
+			mb_strtolower($semanticType)
+		);
+
+		$result = new Delivery\Requests\Message\Message();
+		$result
+			->setSubject($subject)
+			->setStatus($statusObject);
+
+		if ($body !== null)
 		{
-			Assert::classExists(Delivery\Requests\Message\Message::class);
-			Assert::classExists(Delivery\Requests\Message\Status::class);
-
-			$statusObject = new Delivery\Requests\Message\Status(
-				$status,
-				mb_strtolower($semanticType)
-			);
-
-			$result = new Delivery\Requests\Message\Message();
-			$result
-				->setSubject($subject)
-				->setStatus($statusObject);
-
-			if ($body !== null)
-			{
-				$result->setBody($body);
-			}
-
-			if ($type !== null)
-			{
-				$result->setType($type);
-			}
+			$result->setBody($body);
 		}
-		catch (Main\SystemException $exception)
+
+		if ($type !== null)
 		{
-			//nothing
+			$result->setType($type);
 		}
 
 		return $result;
@@ -590,6 +581,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		if ($message === null) { return; }
 		if (!method_exists(Delivery\Requests\Manager::class, 'sendMessage')) { return; }
 
+		/** @noinspection PhpUndefinedMethodInspection */
 		Delivery\Requests\Manager::sendMessage(
 			mb_strtoupper($addressee),
 			$message,
