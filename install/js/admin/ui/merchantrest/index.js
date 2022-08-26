@@ -34,7 +34,13 @@
 				gateway_merchant_id: 'YANDEX_PAY_payture_PAYMENT_GATEWAY_API_KEY',
 				key: 'YANDEX_PAY_payture_PAYMENT_GATEWAY_API_KEY',
 				password: 'YANDEX_PAY_payture_PAYMENT_GATEWAY_PASSWORD'
-			}
+			},
+
+			alfabank: {
+				gateway_merchant_id: 'YANDEX_PAY_alfabank_PAYMENT_GATEWAY_USERNAME',
+				username: 'YANDEX_PAY_alfabank_PAYMENT_GATEWAY_USERNAME',
+				password: 'YANDEX_PAY_alfabank_PAYMENT_GATEWAY_PASSWORD',
+			},
 		},
 
 		handleConfirmMessage: function(dir) {
@@ -170,7 +176,7 @@
 
 		makeGateway: function() {
 			const select = document.querySelector(this.getElementSelector('selectGateway'));
-			return select.options[select.selectedIndex].text.toLowerCase();
+			return select.options[select.selectedIndex].value.toLowerCase();
 		},
 
 		makePayload: function() {
@@ -191,12 +197,17 @@
 
 				let inputVal = input.val();
 
-				if (inputVal.trim() === '')
+				if (name === 'gateway_merchant_id')
 				{
-					throw Error(this.options.notCreds);
+					inputVal = inputVal.replace('-api', '');
 				}
 
-				values[name] = input.val();
+				if (inputVal.trim() === '')
+				{
+					throw new Error(this.options.notCreds);
+				}
+
+				values[name] = inputVal;
 			}
 
 			return JSON.stringify(values);

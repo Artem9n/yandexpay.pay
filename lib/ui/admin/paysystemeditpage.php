@@ -84,7 +84,7 @@ class PaySystemEditPage
 			}
 		}
 
-		if ($gateway === Manager::PAYTURE)
+		if ($gateway === Manager::PAYTURE || $gateway === Manager::RBS_ALFA)
 		{
 			$result = false;
 		}

@@ -64,7 +64,8 @@ class Manager
 	public static function resolveGatewayRest(string $gatewayId) : bool
 	{
 		$list = [
-			static::PAYTURE => true
+			static::PAYTURE => true,
+			static::RBS_ALFA => true,
 		];
 
 		return isset($list[$gatewayId]);
