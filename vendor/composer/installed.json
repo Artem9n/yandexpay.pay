@@ -2,29 +2,28 @@
     "packages": [
         {
             "name": "firebase/php-jwt",
-            "version": "dev-add-ec-jwk-support",
-            "version_normalized": "dev-add-ec-jwk-support",
+            "version": "dev-main",
+            "version_normalized": "dev-main",
             "source": {
                 "type": "git",
-                "url": "https://github.com/firebase/php-jwt.git",
-                "reference": "9b6a65671fbfac3191401e7de5710a774165521f"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/9b6a65671fbfac3191401e7de5710a774165521f",
-                "reference": "9b6a65671fbfac3191401e7de5710a774165521f",
-                "shasum": ""
+                "url": "git@git.t-dir.com:support/php-jwt-for-bitrix.git",
+                "reference": "4eafc4f230c35944b0e438d25d24bcc42519efb7"
             },
             "require": {
-                "php": ">=5.3.0"
+                "php": "^7.1||^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": ">=4.8 <=9"
+                "guzzlehttp/guzzle": "^6.5||^7.4",
+                "phpspec/prophecy-phpunit": "^1.1",
+                "phpunit/phpunit": "^7.5||^9.5",
+                "psr/cache": "^1.0||^2.0",
+                "psr/http-client": "^1.0",
+                "psr/http-factory": "^1.0"
             },
             "suggest": {
                 "paragonie/sodium_compat": "Support EdDSA (Ed25519) signatures when libsodium is not present"
             },
-            "time": "2022-02-09T20:09:10+00:00",
+            "time": "2022-08-26T08:58:31+00:00",
             "type": "library",
             "installation-source": "source",
             "autoload": {
@@ -32,7 +31,6 @@
                     "Firebase\\JWT\\": "src"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
