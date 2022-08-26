@@ -1,5 +1,11 @@
 {
-    "require": {
-        "firebase/php-jwt": "dev-add-ec-jwk-support"
-    }
+	"repositories": [
+		{
+			"type": "git",
+			"url": "git@git.t-dir.com:support/php-jwt-for-bitrix.git"
+		}
+	],
+	"require": {
+		"firebase/php-jwt": "dev-main"
+	}
 }
