@@ -93,7 +93,7 @@
 
 /* absolute path to images is required to make crm-sale proxy work */
 
-.bx-sls .dropdown-block {
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-block {
 	border: 1px solid #bdbdbd;
 	border-radius: 2px;
 	box-shadow: inset 0 1px 2px #ebebeb;
@@ -103,7 +103,7 @@
 	background-color: #fff;
 }
 
-.bx-sls .dropdown-block-ui {
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-block-ui {
 	font-size: 14px;
 	padding: 0 22px 0 30px;
 	position: relative;
@@ -111,22 +111,13 @@
 	margin-top: 5px;
 }
 
-.bx-sls .dropdown-arrow {
-	/*noinspection CssUnknownTarget*/
-	background: url(/bitrix/components/bitrix/sale.location.selector.search/templates/.default/images/dropdown-errow.png) no-repeat center center;
-	height: 100%;
-	top: 0;
-	right: 0;
-	position: absolute;
-	width: 22px;
-}
 
-.bx-sls .bx-ui-yapay-suggest-container {
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-container {
 	overflow: hidden;
 	min-height:25px;
 }
 
-.bx-sls .bx-ui-yapay-suggest-pane {
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-pane {
 	border: 1px solid #bdbdbd;
 	border-radius: 2px;
 	box-shadow: 0 2px 3px #c7c7c7;
@@ -141,28 +132,28 @@
 	width: 100%;
 }
 
-.bx-sls .dropdown-active .bx-ui-yapay-suggest-pane {
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-active .bx-ui-yapay-suggest-pane {
 	display: block;
 }
 
-.bx-sls .bx-ui-yapay-suggest-variants {
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-variants {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
 
-.bx-sls .dropdown-item {
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-item {
 	border-radius: 2px;
 	padding: 7px 4px 7px 10px;
 	margin-bottom: 2px;
 }
 
-.bx-sls .dropdown-item:hover {
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-item:hover {
 	background-color: #f1f3f5;
 	cursor: pointer;
 }
 
-.bx-sls .dropdown-img {
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-img {
 	border: none;
 	display: inline-block;
 	height: 12px;
@@ -171,7 +162,7 @@
 	width: 16px;
 }
 
-.bx-sls .dropdown-item-text {
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-item-text {
 	/*makeup:color: #212121;*/
 	color: #aba8ac;
 	display: inline-block;
@@ -179,31 +170,31 @@
 	vertical-align: top;
 }
 
-.bx-sls .dropdown-item-text span{
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-item-text span {
 	color: #25282c;
 }
 
-.bx-sls .dropdown-list-title {
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-list-title {
 	border-bottom: 1px solid #e5e5e5;
 	height: 37px;
 	line-height: 37px;
 	padding-left: 8px;
 }
 
-.bx-sls .dropdown-icon {
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-icon {
 	/*noinspection CssUnknownTarget*/
-	background: url(/bitrix/components/bitrix/sale.location.selector.search/templates/.default/images/lens.png) no-repeat center center;
-	height: 14px;
-	left: 10px;
+	background: url(/bitrix/components/yandexpay.pay/admin.field.warehouse/templates/.default/images/icons.png) 0 -54px no-repeat scroll;
 	position: absolute;
-	top: 10px;
-	width: 14px;
+	height: 18px;
+	width: 18px;
+	left: 7px;
+	top: 7px;
 }
 
-.bx-sls .quick-locations{
+.bx-ui-yapay-suggest .quick-locations {
 	margin-bottom: 5px;
 }
-.bx-sls .quick-location-tag {
+.bx-ui-yapay-suggest .quick-location-tag {
 	background-color: #f2f5f8;
 	border: 1px solid #cad3dc;
 	border-radius: 3px;
@@ -216,11 +207,11 @@
 	text-decoration: none;
 	margin: 0 3px 10px;
 }
-.bx-sls .quick-location-tag:hover{
+.bx-ui-yapay-suggest .quick-location-tag:hover {
 	background-color: #fafafa;
 }
 
-.bx-sls .dropdown-fade2white{
+.bx-ui-yapay-suggest .bx-ui-yapay-dropdown-fade2white {
 	width: 46px;
 	height: 30px;
 	position: absolute;
@@ -230,25 +221,32 @@
 	background: linear-gradient(to right, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 30%);
 }
 
-.bx-sls .bx-ui-yapay-suggest-clear{
-	/*noinspection CssUnknownTarget*/
-	background: url(/bitrix/panel/main/images/bx-admin-sprite-small.png) 6px -3386px no-repeat scroll;
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-clear {
 	width: 30px;
 	height: 30px;
-	cursor: hand;
-
+	cursor: pointer;
 	position: absolute;
 	top: 2px;
 	right: 0;
 	display: block;
 }
-.bx-sls .bx-ui-yapay-suggest-clear:hover{
-	background-position: 6px -3418px;
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-clear:after {
+	content: "";
+	width: 18px;
+	height: 18px;
+	top: 5px;
+	left: 5px;
+	position: absolute;
+	/*noinspection CssUnknownTarget*/
+	background: url(/bitrix/components/yandexpay.pay/admin.field.warehouse/templates/.default/images/icons.png) 0 -36px no-repeat scroll;
+}
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-clear:hover:after {
+	background-position: 0 -18px;
 }
 
-.bx-sls .bx-ui-yapay-suggest-loader{
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-loader {
 	/*noinspection CssUnknownTarget*/
-	background-image: url(/bitrix/panel/main/images/waiter-white.gif) !important;
+	background-image: url(/bitrix/components/yandexpay.pay/admin.field.warehouse/templates/.default/images/loading.gif) !important;
 	background-repeat: no-repeat !important;
 	background-position: right -1px !important;
 
@@ -261,24 +259,24 @@
 	display: none;
 }
 
-.bx-sls .bx-ui-yapay-suggest-go-edit{
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-go-edit {
 	display: none;
 }
 
-.bx-sls .bx-ui-yapay-suggest-pane{
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-pane {
 	max-height: 300px;
 }
 
-.bx-sls input::-ms-clear {
+.bx-ui-yapay-suggest input::-ms-clear {
 	display: none;
 }
 
-.bx-sls input[type="text"]{
+.bx-ui-yapay-suggest input[type="text"] {
 	position: relative;
 }
 
-.bx-sls .bx-ui-yapay-suggest-fake,
-.bx-sls .bx-ui-yapay-suggest-route {
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-fake,
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-route {
 	position: absolute !important;
 	top: 0;
 	left: 0;
@@ -301,71 +299,67 @@
 	outline: none;
 	z-index:10;
 }
-.bx-sls .bx-ui-yapay-suggest-route{
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-route {
 	color: #aba8ac !important;
 	z-index:5;
 }
 
-.bx-sls .bx-ui-yapay-suggest-pane{
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-pane {
 	background-color: #fff;
 	z-index: 999;
 	border: 1px solid #87919c;
 }
 
-.bx-sls .bx-ui-yapay-suggest-variants .bx-ui-yapay-suggest-variant,
-.bx-sls .bx-ui-yapay-suggest-error{
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-variants .bx-ui-yapay-suggest-variant,
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-error {
 	padding: 10px 10px;
 }
-.bx-sls .bx-ui-yapay-suggest-error{
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-error {
 	color: #ff2222;
 	padding-left: 30px;
 	position: relative;
 }
-.bx-sls .bx-ui-yapay-suggest-error div{
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-error div {
 	position: absolute;
-	top: 0;
-	left: 0;
-	width: 25px;
-	height: 25px;
+	top: 7px;
+	left: 5px;
+	width: 18px;
+	height: 18px;
 	/*noinspection CssUnknownTarget*/
-	background: url(/bitrix/panel/main/images/bx-admin-sprite-small.png) 6px -2895px no-repeat scroll;
+	background: url(/bitrix/components/yandexpay.pay/admin.field.warehouse/templates/.default/images/icons.png) 0 0 no-repeat scroll;
 }
-.bx-sls .bx-ui-yapay-suggest-variants .bx-ui-yapay-suggest-variant:hover,
-.bx-sls .bx-ui-yapay-suggest-variant-active{
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-variants .bx-ui-yapay-suggest-variant:hover,
+.bx-ui-yapay-suggest .bx-ui-yapay-suggest-variant-active {
 	background-color: #E0E8EA;
 }
 
-.adm-sls-edit-link{
-	margin-top: 10px;
-}
-
 /* CSS-modes below: admin, public; */
-.bx-admin-mode .bx-sls-go-edit{
+.bx-admin-mode .bx-sls-go-edit {
 	margin-left: 10px;
 	display: none;
 }
 
-.bx-admin-mode .dropdown-block {
+.bx-admin-mode .bx-ui-yapay-dropdown-block {
 	border-color: #87919c #959ea9 #9ea7b1;
 	border-radius: 4px;
 	box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.3), 0 2px 2px -1px rgba(180, 188, 191, 0.7) inset;
 	height: 25px;
 }
 
-.bx-sls.bx-admin-mode .bx-ui-yapay-suggest-fake,
-.bx-sls.bx-admin-mode .bx-ui-yapay-suggest-route {
+.bx-ui-yapay-suggest.bx-admin-mode .bx-ui-yapay-suggest-fake,
+.bx-ui-yapay-suggest.bx-admin-mode .bx-ui-yapay-suggest-route {
 	height: 25px;
 }
 
-.bx-admin-mode .dropdown-icon {
+.bx-admin-mode .bx-ui-yapay-dropdown-icon {
 	top: 7px;
 }
 
-.bx-admin-mode .dropdown-fade2white {
+.bx-admin-mode .bx-ui-yapay-dropdown-fade2white {
 	height: 22px;
 }
 
-.bx-admin-mode .dropdown-fade2white {
+.bx-admin-mode .bx-ui-yapay-dropdown-fade2white {
 	right: 1px;
 }
 
@@ -387,6 +381,6 @@
 	top: 27px;
 }
 
-.dropdown-block .dropdown-field {
+.bx-ui-yapay-dropdown-block .bx-ui-yapay-dropdown-field {
 	opacity: 0;
 }

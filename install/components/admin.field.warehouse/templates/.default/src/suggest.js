@@ -3,7 +3,9 @@ import {SuggestWidget} from "./suggestwidget";
 export class Suggest {
 
 	static defaults = {
-
+		map: null,
+		details: null,
+		error: () => {},
 	};
 
 	_itemsData = {};
@@ -89,7 +91,6 @@ export class Suggest {
 	}
 
 	onSuggestSearch = (request, onLoad, onComplete, onError) => {
-
 		this.widget.showLoading();
 
 		ymaps.geocode(request['QUERY'])

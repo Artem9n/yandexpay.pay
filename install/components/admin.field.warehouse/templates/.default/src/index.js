@@ -11,7 +11,7 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 		clarifyElement: '.js-field-warehouse__clarify',
 		detailsElement: '.js-field-warehouse__details',
 		dialogElement: '.bx-core-adm-dialog-content',
-		errorElement: '.js-js-field-warehouse-error',
+		errorElement: '.js-field-warehouse__error',
 		apiKey: null,
 	};
 

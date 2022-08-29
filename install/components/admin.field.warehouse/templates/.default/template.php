@@ -25,7 +25,7 @@ $messages = [
 	'YAPAY_FIELD_WAREHOUSE_SUGGEST_ERROR' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_SUGGEST_ERROR'),
 	'YAPAY_FIELD_WAREHOUSE_SUGGEST_MAP_ERROR' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_SUGGEST_MAP_ERROR'),
 	'YAPAY_FIELD_WAREHOUSE_CANT_LOAD_MAPS' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_CANT_LOAD_MAPS'),
-	'YAPAY_FIELD_WAREHOUSE_SUGGEST_NOTING_FOUND' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_SUGGEST_NOTING_FOUND'),
+	'YAPAY_FIELD_WAREHOUSE_SUGGEST_NOTHING_FOUND' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_SUGGEST_NOTHING_FOUND'),
 	'YAPAY_FIELD_WAREHOUSE_MAPS_API_KEY_NOT_FOUND' => Loc::getMessage('YAPAY_FIELD_WAREHOUSE_MAPS_API_KEY_NOT_FOUND'),
 ];
 
@@ -36,7 +36,7 @@ $messages = [
 		<div class="bx-yapay-warehouse-layout__map js-field-warehouse__map"></div>
 		<div class="bx-yapay-warehouse-layout__panel">
 			<div class="bx-yapay-warehouse-header">
-				<div class="bx-yapay-warehouse-error js-js-field-warehouse-error">
+				<div class="bx-yapay-warehouse-error js-field-warehouse__error">
 
 				</div>
 				<div class="bx-yapay-warehouse-suggest">
@@ -44,7 +44,10 @@ $messages = [
 					include __DIR__ . '/partials/suggest.php';
 					?>
 				</div>
-				<a href="#" class="bx-yapay-warehouse-clarify js-field-warehouse__clarify" type="button" data-alt="Скрыть">Уточнить</a>
+				<a href="#" class="bx-yapay-warehouse-clarify js-field-warehouse__clarify" type="button"
+				   data-alt="<?= Loc::getMessage('YAPAY_FIELD_WAREHOUSE_DETAILS_BTN_CLOSE') ?>">
+					<?= Loc::getMessage('YAPAY_FIELD_WAREHOUSE_DETAILS_BTN_OPEN') ?>
+				</a>
 			</div>
 			<div class="bx-yapay-warehouse-details js-field-warehouse__details readonly">
 				<?php
