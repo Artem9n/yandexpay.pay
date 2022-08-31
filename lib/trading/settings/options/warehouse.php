@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Trading\Settings\Options;
 
+use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity;
 use YandexPay\Pay\Trading\Settings;
@@ -113,5 +114,25 @@ class Warehouse extends Settings\Reference\Fieldset
 				'NAME' => self::getMessage('LOCATION_LON'),
 			],
 		];
+	}
+
+	public function validateSelf() : Main\Result
+	{
+		$result = new Main\Result();
+		$errors = [];
+
+		foreach ($this->getRequiredFields() as $code => $value)
+		{
+			if ($value !== null) { continue; }
+
+			$errors[] = static::getMessage(sprintf('FIELD_%s_REQUIRED', $code));
+		}
+
+		if (!empty($errors))
+		{
+			$result->addError(new Main\Error(implode(', ', $errors)));
+		}
+
+		return $result;
 	}
 }

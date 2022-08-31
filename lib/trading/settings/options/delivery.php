@@ -7,6 +7,7 @@ use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity;
 use YandexPay\Pay\Trading\Settings\Reference\Fieldset;
 use YandexPay\Pay\Utils;
+use YandexPay\Pay\Ui;
 
 class Delivery extends Fieldset
 {
@@ -28,7 +29,22 @@ class Delivery extends Fieldset
 		return $this->getFieldset('WAREHOUSE');
 	}
 
-	public function getUserId() : ?string
+	public function getCatalogStore() : string
+	{
+		return (string)$this->getValue('CATALOG_STORE');
+	}
+
+	public function getStoreWarehouseField() : string
+	{
+		return $this->requireValue('STORE_WAREHOUSE');
+	}
+
+	public function getStoreContactField() : string
+	{
+		return $this->requireValue('STORE_CONTACT');
+	}
+
+	public function getEmergencyContact() : ?int
 	{
 		return $this->getValue('EMERGENCY_CONTACT') ?: null;
 	}
@@ -74,6 +90,14 @@ class Delivery extends Fieldset
 
 	public function getFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
+		return
+			$this->getCommonFields($environment, $siteId)
+			+ $this->getYandexDeliveryFields($environment, $siteId)
+			+ $this->getCatalogFields($environment, $siteId);
+	}
+
+	protected function getCommonFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
 		return [
 			'ID' => [
 				'TYPE' => 'enumeration',
@@ -85,7 +109,6 @@ class Delivery extends Fieldset
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
 				'NAME' => self::getMessage('TYPE'),
-				'HELP' => self::getMessage('TYPE_HELP'),
 				'VALUES' => [
 					[
 						'ID' => Entity\Sale\Delivery::PICKUP_TYPE,
@@ -101,11 +124,36 @@ class Delivery extends Fieldset
 					],
 				],
 			],
+		];
+	}
+
+	protected function getYandexDeliveryFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return [
+			'CATALOG_STORE' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('CATALOG_STORE'),
+				'GROUP' => self::getMessage('GROUP_SETTINGS'),
+				'VALUES' => $environment->getStore()->expressStrategyEnum(),
+				'DEPEND' => [
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
+					],
+				],
+				'SETTINGS' => [
+					'ALLOW_NO_VALUE' => 'Y',
+					'CAPTION_NO_VALUE' => self::getMessage('CATALOG_STORE_DEFAULT'),
+				],
+			],
 			'WAREHOUSE' => $this->getWarehouse()->getFieldDescription($environment, $siteId) + [
 				'TYPE' => 'warehouse',
 				'NAME' => self::getMessage('WAREHOUSE'),
-				'GROUP' => self::getMessage('GROUP_SETTINGS'),
 				'DEPEND' => [
+					'CATALOG_STORE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
+						'VALUE' => true,
+					],
 					'TYPE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_ANY,
 						'VALUE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
@@ -115,11 +163,61 @@ class Delivery extends Fieldset
 			'EMERGENCY_CONTACT' => [
 				'TYPE' => 'user',
 				'NAME' => self::getMessage('EMERGENCY_CONTACT'),
-				'GROUP' => self::getMessage('GROUP_SETTINGS'),
 				'DEPEND' => [
+					'CATALOG_STORE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
+						'VALUE' => true,
+					],
 					'TYPE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_ANY,
 						'VALUE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
+					],
+				],
+			],
+		];
+	}
+
+	protected function getHelpLinkUserField(string $typeId) : string
+	{
+		return sprintf('/bitrix/admin/userfield_edit.php?lang=ru&ENTITY_ID=CAT_STORE&USER_TYPE_ID=%s', $typeId);
+	}
+
+	protected function getCatalogFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		$warehouseEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_WAREHOUSE);
+		$contactEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_CONTACT);
+
+		$warehouseHelp = self::getMessage('STORE_WAREHOUSE_HELP', [
+			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\WarehouseType::USER_TYPE_ID)
+		]);
+		$contactHelp = self::getMessage('STORE_CONTACT_HELP', [
+			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\UserType::USER_TYPE_ID)
+		]);
+
+		return [
+			'STORE_WAREHOUSE' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('STORE_WAREHOUSE'),
+				'HELP' => !empty($warehouseEnum) ? $warehouseHelp : null,
+				'NOTE' => empty($warehouseEnum) ? $warehouseHelp : null,
+				'VALUES' => $warehouseEnum,
+				'DEPEND' => [
+					'CATALOG_STORE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
+						'VALUE' => false,
+					],
+				],
+			],
+			'STORE_CONTACT' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('STORE_CONTACT'),
+				'HELP' => !empty($contactEnum) ? $contactHelp : null,
+				'NOTE' => empty($contactEnum) ? $contactHelp : null,
+				'VALUES' => $contactEnum,
+				'DEPEND' => [
+					'CATALOG_STORE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
+						'VALUE' => false,
 					],
 				],
 			],
@@ -130,21 +228,21 @@ class Delivery extends Fieldset
 	{
 		$result = new Main\Result();
 
-		if ($this->getType() !==  Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE) { return $result; }
+		if (
+			$this->getType() !==  Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE
+			|| !empty($this->getCatalogStore())
+		) { return $result; }
 
 		$errors = [];
 
-		$warehouse = $this->getWarehouse();
-		$requiredFields = $warehouse->getRequiredFields();
+		$warehouse = $this->getWarehouse()->validate();
 
-		foreach ($requiredFields as $code => $value)
+		if (!$warehouse->isSuccess())
 		{
-			if ($value !== null) { continue; }
-
-			$errors[] = static::getMessage(sprintf('WAREHOUSE_FIELD_%s_REQUIRED', $code));
+			$result->addErrors($warehouse->getErrors());
 		}
 
-		if ($this->getUserId() === null)
+		if ($this->getEmergencyContact() === null)
 		{
 			$errors[] = static::getMessage('FIELD_EMERGENCY_REQUIRED');
 		}
