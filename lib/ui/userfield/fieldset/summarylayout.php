@@ -73,6 +73,8 @@ class SummaryLayout extends AbstractLayout
 
 	protected function editRow(string $name, $value, array $attributes = []) : string
 	{
+		Main\UI\Extension::load('yandexpaypay.admin.ui');
+
 		$value = $this->resolveRowValues($value);
 		$fields = $this->extendFields($name, $this->fields);
 		$summaryTemplate = $this->userField['SETTINGS']['SUMMARY'] ?? null;
@@ -248,13 +250,13 @@ class SummaryLayout extends AbstractLayout
 
 			$titleCell = $row['TITLE'];
 
-			if (!empty($field['HELP_MESSAGE']))
+			if (!empty($field['HELP']))
 			{
 				$titleHelp = sprintf(
 					'<span class="b-icon icon--question indent--right b-tag-tooltip--holder">'
 					. '<span class="b-tag-tooltip--content b-tag-tooltip--content_right">%s</span>'
 					. '</span>',
-					$field['HELP_MESSAGE']
+					$field['HELP']
 				);
 
 				$titleCell = $titleHelp . $titleCell;
@@ -268,7 +270,7 @@ class SummaryLayout extends AbstractLayout
 				UserField\Helper\Attributes::stringify($rowAttributes),
 				UserField\Helper\Attributes::stringify($titleAttributes),
 				$titleCell,
-				$row['CONTROL']
+				$row['CONTROL']  . $this->renderFieldEpilogRow($field)
 			);
 		}
 
@@ -354,5 +356,28 @@ class SummaryLayout extends AbstractLayout
 		}
 
 		return [$editable, $hidden];
+	}
+
+	protected function renderFieldEpilogRow(array $field) : string
+	{
+		$contents = '';
+
+		if (isset($field['DESCRIPTION']))
+		{
+			$contents .= sprintf('<small>%s</small>', $field['DESCRIPTION']);
+		}
+
+		if (isset($field['NOTE']))
+		{
+			$contents .= '<div class="b-admin-message-list compensate--spacing">';
+			$contents .= BeginNote();
+			$contents .= $field['NOTE'];
+			$contents .= EndNote();
+			$contents .= '</div>';
+		}
+
+		if ($contents === '') { return ''; }
+
+		return $contents;
 	}
 }
