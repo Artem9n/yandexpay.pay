@@ -178,17 +178,17 @@ class Address extends ActionReference\Dto
 		return $result;
 	}
 
-	public function getLat() : ?int
+	public function getLat() : ?float
 	{
 		$result = $this->getCoordinates();
 
-		return (int)$result['latitude'];
+		return (float)$result['latitude'];
 	}
 
-	public function getLon() : ?int
+	public function getLon() : ?float
 	{
 		$result = $this->getCoordinates();
 
-		return (int)$result['longitude'];
+		return (float)$result['longitude'];
 	}
 }
