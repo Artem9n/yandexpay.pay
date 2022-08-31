@@ -211,7 +211,7 @@ abstract class Order
 	}
 
 	/**
-	 * @return Main\Result
+	 * @return Sale\BasketBase
 	 */
 	public function getBasket() : Sale\BasketBase
 	{

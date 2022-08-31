@@ -17,6 +17,7 @@ abstract class Environment
 	protected $product;
 	protected $route;
 	protected $platform;
+	protected $store;
 
 	public function load() : void
 	{
@@ -232,5 +233,20 @@ abstract class Environment
 	protected function createPlatform() : Platform
 	{
 		throw new Main\NotImplementedException('createPlatform is missing');
+	}
+
+	public function getStore() : Store
+	{
+		if ($this->store === null)
+		{
+			$this->store = $this->createStore();
+		}
+
+		return $this->store;
+	}
+
+	protected function createStore() : Store
+	{
+		throw new Main\NotImplementedException('store is missing');
 	}
 }

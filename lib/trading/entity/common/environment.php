@@ -20,4 +20,9 @@ abstract class Environment extends EntityReference\Environment
 	{
 		return new Route($this);
 	}
+
+	protected function createStore() : EntityReference\Store
+	{
+		return new Store($this);
+	}
 }
