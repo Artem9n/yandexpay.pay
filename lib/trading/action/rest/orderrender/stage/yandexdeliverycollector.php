@@ -93,7 +93,7 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 		];
 	}
 
-	protected function warehouse() : array
+	protected function warehouse() : Options\Warehouse
 	{
 		$validate = $this->yandexDelivery->validate();
 
@@ -102,9 +102,7 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 			throw new Main\SystemException('invalid yandex delivery');
 		}
 
-		$warehouse = $this->yandexDelivery->getWarehouse();
-
-		return $this->warehouseAddress($warehouse);
+		return $this->yandexDelivery->getWarehouse();
 	}
 
 	protected function warehouseAddress(Options\Warehouse $warehouse) : array
