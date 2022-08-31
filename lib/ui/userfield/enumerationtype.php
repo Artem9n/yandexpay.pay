@@ -80,7 +80,7 @@ class EnumerationType
 
 			if (!empty($noValueCaption))
 			{
-				$result .= '<option value="0">' . htmlspecialcharsbx($noValueCaption) . '</option>';
+				$result .= '<option value="">' . htmlspecialcharsbx($noValueCaption) . '</option>';
 			}
 		}
 
