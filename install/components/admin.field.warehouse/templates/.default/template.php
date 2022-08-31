@@ -44,7 +44,7 @@ $messages = [
 					include __DIR__ . '/partials/suggest.php';
 					?>
 				</div>
-				<a href="#" class="bx-yapay-warehouse-clarify js-field-warehouse__clarify" type="button"
+				<a href="javascript:void()" class="bx-yapay-warehouse-clarify js-field-warehouse__clarify" type="button"
 				   data-alt="<?= Loc::getMessage('YAPAY_FIELD_WAREHOUSE_DETAILS_BTN_CLOSE') ?>">
 					<?= Loc::getMessage('YAPAY_FIELD_WAREHOUSE_DETAILS_BTN_OPEN') ?>
 				</a>
