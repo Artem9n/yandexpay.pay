@@ -6,31 +6,68 @@ use YandexPay\Pay\Data;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Action\Rest;
 use YandexPay\Pay\Trading\Settings\Options;
+use YandexPay\Pay\Trading\Action\Rest\Dto;
 
 class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 {
 	/** @var Options\Delivery */
 	protected $yandexDelivery;
+	/** @var Dto\Address|null  */
+	protected $address;
 
-	public function __construct(Options\Delivery $yandexDelivery, Rest\Reference\EffectiveResponse $response, string $key = '')
+	public function __construct(
+		Options\Delivery $yandexDelivery,
+		Rest\Reference\EffectiveResponse $response,
+		Dto\Address $address = null,
+		string $key = ''
+	)
 	{
 		parent::__construct($response, $key);
 
 		$this->yandexDelivery = $yandexDelivery;
+		$this->address = $address;
 	}
 
 	public function __invoke(Rest\State\OrderCalculation $state)
 	{
 		try
 		{
-			$contact = $this->contact($state);
+			$strategy = $this->yandexDelivery->getCatalogStore();
+
+			if ($strategy === '')
+			{
+				$contactId = $this->yandexDelivery->getEmergencyContact();
+				$warehouse = $this->warehouse();
+			}
+			else
+			{
+				$storeService = $state->environment->getStore();
+
+				$storeWarehouseField = $this->yandexDelivery->getStoreWarehouseField();
+				$storeContactField = $this->yandexDelivery->getStoreContactField();
+
+				$storeIds = $storeService->available($state->order);
+				$storeId = $storeService->expressStrategy($strategy)->resolve($storeIds, $this->address, [
+					'WAREHOUSE_FIELD' => $storeWarehouseField,
+					'CONTACT_FIELD' => $storeContactField,
+				]);
+
+				if ($storeId === null)
+				{
+					throw new Main\SystemException('not resolve store');
+				}
+
+				$contactId = $storeService->contact($storeId, $storeContactField);
+				$warehouse = $storeService->warehouse($storeId, $storeWarehouseField);
+			}
+
+			$contact = $this->contact($state, $contactId);
 
 			$this->write([
 				'contact' => $contact,
 				'emergencyContact' => $contact,
-				'address' => $this->warehouse(),
+				'address' => $this->warehouseAddress($warehouse),
 			]);
-
 		}
 		catch (Main\SystemException $exception)
 		{
@@ -38,13 +75,11 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 		}
 	}
 
-	protected function contact(Rest\State\OrderCalculation $state) : array
+	protected function contact(Rest\State\OrderCalculation $state, int $contactId = null) : array
 	{
-		$userId = $this->yandexDelivery->getUserId();
+		Assert::notNull($contactId, 'contact[userId]');
 
-		Assert::notNull($userId, 'contact[userId]');
-
-		$user = $state->environment->getUserRegistry()->getUser(['ID' => $userId]);
+		$user = $state->environment->getUserRegistry()->getUser(['ID' => $contactId]);
 		$useData = $user->getUserData();
 
 		$phone = $useData['PERSONAL_PHONE'] ?: $useData['PERSONAL_MOBILE'] ?: $useData['WORK_PHONE'] ?: '';
@@ -69,6 +104,11 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 
 		$warehouse = $this->yandexDelivery->getWarehouse();
 
+		return $this->warehouseAddress($warehouse);
+	}
+
+	protected function warehouseAddress(Options\Warehouse $warehouse) : array
+	{
 		return [
 			'country' => $warehouse->getCountry(),
 			'locality' => $warehouse->getLocality(),

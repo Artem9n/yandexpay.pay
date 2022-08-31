@@ -83,14 +83,16 @@ class Action extends Rest\Reference\EffectiveAction
 	protected function collectorYandexDelivery(Rest\Reference\EffectiveResponse $response, Request $request, Rest\State\OrderCalculation $state) : Rest\Pipeline
 	{
 		$pipeline = new Rest\Pipeline();
+		$address = $request->getAddress();
 		$yandexDelivery = $state->options->getDeliveryOptions()->getYandexDelivery();
 
-		if ($yandexDelivery === null) { return $pipeline; }
+		if ($yandexDelivery === null || $address === null) { return $pipeline; }
 
 		return $pipeline
 			->pipe(new Stage\YandexDeliveryCollector(
 				$yandexDelivery,
 				$response,
+				$request->getAddress(),
 				'shipping.yandexDelivery.warehouse'
 			));
 	}
