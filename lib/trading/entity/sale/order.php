@@ -50,6 +50,9 @@ class Order extends EntityReference\Order
 		if ($this->isStartField)
 		{
 			$hasMeaningfulFields = $this->internalOrder->isNew() || $this->internalOrder->hasMeaningfulField();
+
+			$this->refreshBasket();
+
 			$finalActionResult = $this->internalOrder->doFinalAction($hasMeaningfulFields);
 
 			if (!$finalActionResult->isSuccess())

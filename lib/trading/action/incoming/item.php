@@ -23,7 +23,7 @@ class Item extends Skeleton
 		return (int)$this->requireField('id');
 	}
 
-	public function getQuantity() : int
+	public function getQuantity() : float
 	{
 		return (float)$this->requireField('count');
 	}

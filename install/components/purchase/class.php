@@ -537,11 +537,12 @@ class Purchase extends \CBitrixComponent
 		{
 			$productId = $request->getProductId();
 			$offerId = $this->environment->getProduct()->resolveOffer($productId);
+			$ratio = \Bitrix\Catalog\ProductTable::getCurrentRatioWithMeasure($offerId);
 
 			$order->initEmptyBasket();
 
 			$basketData = $this->getProductBasketData($offerId);
-			$addResult = $order->addProduct($offerId, 1, $basketData);
+			$addResult = $order->addProduct($offerId, $ratio[$offerId]['RATIO'], $basketData);
 		}
 		elseif (
 			$mode === Pay\Injection\Behavior\Registry::BASKET

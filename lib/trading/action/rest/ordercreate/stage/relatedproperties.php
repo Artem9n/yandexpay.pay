@@ -10,7 +10,7 @@ class RelatedProperties
 	{
 		if (!empty($state->relatedProperties))
 		{
-			Utils\OrderProperties::setMeaningfulPropertyValues($state, $state->relatedProperties);
+			$state->order->fillProperties($state->relatedProperties);
 
 			$state->filledProperties += $state->relatedProperties;
 			$state->relatedProperties = [];
