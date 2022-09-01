@@ -37,7 +37,7 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 			if ($strategy === '')
 			{
 				$contactId = $this->yandexDelivery->getEmergencyContact();
-				$warehouse = $this->warehouse();
+				$warehouse = $this->yandexDelivery->getWarehouse();
 			}
 			else
 			{
@@ -91,18 +91,6 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 			'phone' => Data\Phone::format($phone),
 			'email' => $useData['EMAIL'] ?: null,
 		];
-	}
-
-	protected function warehouse() : Options\Warehouse
-	{
-		$validate = $this->yandexDelivery->validate();
-
-		if (!$validate->isSuccess())
-		{
-			throw new Main\SystemException('invalid yandex delivery');
-		}
-
-		return $this->yandexDelivery->getWarehouse();
 	}
 
 	protected function warehouseAddress(Options\Warehouse $warehouse) : array

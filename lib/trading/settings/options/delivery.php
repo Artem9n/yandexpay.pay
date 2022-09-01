@@ -44,9 +44,9 @@ class Delivery extends Fieldset
 		return $this->requireValue('STORE_CONTACT');
 	}
 
-	public function getEmergencyContact() : ?int
+	public function getEmergencyContact() : int
 	{
-		return $this->getValue('EMERGENCY_CONTACT') ?: null;
+		return $this->requireValue('EMERGENCY_CONTACT');
 	}
 
 	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
@@ -228,28 +228,30 @@ class Delivery extends Fieldset
 	{
 		$result = new Main\Result();
 
-		if (
-			$this->getType() !==  Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE
-			|| !empty($this->getCatalogStore())
-		) { return $result; }
+		if ($this->getType() !==  Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE) { return $result; }
 
-		$errors = [];
-
-		$warehouse = $this->getWarehouse()->validate();
-
-		if (!$warehouse->isSuccess())
+		if (empty($this->getCatalogStore()))
 		{
-			$result->addErrors($warehouse->getErrors());
+			$warehouse = $this->getWarehouse()->validate();
+
+			if (!$warehouse->isSuccess())
+			{
+				$result->addErrors($warehouse->getErrors());
+			}
+
+			if (empty($this->getValue('EMERGENCY_CONTACT')))
+			{
+				$result->addError(new Main\Error(static::getMessage('FIELD_EMERGENCY_REQUIRED')));
+			}
 		}
-
-		if ($this->getEmergencyContact() === null)
+		else
 		{
-			$errors[] = static::getMessage('FIELD_EMERGENCY_REQUIRED');
-		}
-
-		if (!empty($errors))
-		{
-			$result->addError(new Main\Error(implode(', ', $errors)));
+			foreach (['STORE_CONTACT', 'STORE_WAREHOUSE'] as $code)
+			{
+				if (!empty($this->getValue($code))) { continue; }
+				$message = static::getMessage(sprintf('FIELD_%s_REQUIRED', $code));
+				$result->addError(new Main\Error($message));
+			}
 		}
 
 		return $result;

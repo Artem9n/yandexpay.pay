@@ -16,3 +16,5 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_STORE_CONTACT'] = 'Контактно
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_STORE_CONTACT_HELP'] = '<a target="_blank" href="#LINK#">Создайте</a> пользовательское свойство склада, выбрав тип "Яндекс.Pay: контакт пользователя"';
 
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_EMERGENCY_REQUIRED'] = 'не заполнено поле Контактное лицо';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_STORE_CONTACT_REQUIRED'] = 'не установлено пользовательское свойство склада "Яндекс.Pay: адрес склада"';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_STORE_WAREHOUSE_REQUIRED'] = 'не установлено пользовательское свойство склада "Яндекс.Pay: контакт пользователя"';

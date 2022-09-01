@@ -38,10 +38,6 @@ class NearestStrategy extends AbstractStrategy
 			{
 				$warehouse->setValues($store['WAREHOUSE']);
 
-				$validate = $warehouse->validate();
-
-				if (!$validate->isSuccess()) { continue; }
-
 				$distance[$storeId] = $this->getDistance(
 					$address->getLat(),
 					$address->getLon(),

@@ -11,14 +11,14 @@ class Warehouse extends Settings\Reference\Fieldset
 {
 	use Concerns\HasMessage;
 
-	public function getCountry() : ?string
+	public function getCountry() : string
 	{
-		return $this->getValue('COUNTRY')  ?: null;
+		return $this->requireValue('COUNTRY');
 	}
 
-	public function getLocality() : ?string
+	public function getLocality() : string
 	{
-		return $this->getValue('LOCALITY')  ?: null;
+		return $this->requireValue('LOCALITY');
 	}
 
 	public function getStreet() : ?string
@@ -26,9 +26,9 @@ class Warehouse extends Settings\Reference\Fieldset
 		return $this->getValue('STREET') ?: null;
 	}
 
-	public function getBuilding() : ?string
+	public function getBuilding() : string
 	{
-		return $this->getValue('BUILDING') ?: null;
+		return $this->requireValue('BUILDING');
 	}
 
 	public function getEntrance() : ?string
@@ -41,24 +41,24 @@ class Warehouse extends Settings\Reference\Fieldset
 		return $this->getValue('FLOOR') ?: null;
 	}
 
-	public function getLon() : ?float
+	public function getLon() : float
 	{
-		return $this->getValue('LOCATION_LON') ?: null;
+		return $this->requireValue('LOCATION_LON');
 	}
 
-	public function getLat() : ?float
+	public function getLat() : float
 	{
-		return $this->getValue('LOCATION_LAT') ?: null;
+		return $this->requireValue('LOCATION_LAT');
 	}
 
 	public function getRequiredFields() : array
 	{
 		return [
-			'COUNTRY' => $this->getCountry(),
-			'LOCALITY' => $this->getLocality(),
-			'BUILDING' => $this->getBuilding(),
-			'LOCATION_LON' => $this->getLon(),
-			'LOCATION_LAT' => $this->getLat(),
+			'COUNTRY',
+			'LOCALITY',
+			'BUILDING',
+			'LOCATION_LON',
+			'LOCATION_LAT',
 		];
 	}
 
@@ -119,18 +119,12 @@ class Warehouse extends Settings\Reference\Fieldset
 	public function validateSelf() : Main\Result
 	{
 		$result = new Main\Result();
-		$errors = [];
 
-		foreach ($this->getRequiredFields() as $code => $value)
+		foreach ($this->getRequiredFields() as $code)
 		{
-			if ($value !== null) { continue; }
-
-			$errors[] = static::getMessage(sprintf('FIELD_%s_REQUIRED', $code));
-		}
-
-		if (!empty($errors))
-		{
-			$result->addError(new Main\Error(implode(', ', $errors)));
+			if (!empty($this->getValue($code))) { continue; }
+			$message = static::getMessage(sprintf('FIELD_%s_REQUIRED', $code));
+			$result->addError(new Main\Error($message));
 		}
 
 		return $result;
