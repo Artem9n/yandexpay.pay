@@ -11,6 +11,11 @@ class Warehouse extends Settings\Reference\Fieldset
 {
 	use Concerns\HasMessage;
 
+	public function getFullAddress() : string
+	{
+		return (string)$this->getValue('FULL_ADDRESS');
+	}
+
 	public function getCountry() : string
 	{
 		return $this->requireValue('COUNTRY');

@@ -102,6 +102,7 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 			'building' => $warehouse->getBuilding(),
 			'entrance' => $warehouse->getEntrance(),
 			'floor' => $warehouse->getFloor(),
+			'addressLine' => $warehouse->getFullAddress(),
 			'location' => [
 				'longitude' => $warehouse->getLon(),
 				'latitude' => $warehouse->getLat(),
