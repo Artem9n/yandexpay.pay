@@ -388,13 +388,6 @@ class Order extends EntityReference\Order
 		}
 	}
 
-	public function fillTradingSetup(EntityReference\Platform $platform) : void
-	{
-		$salePlatform = $platform->getSalePlatform();
-		$bindingCollection = $this->internalOrder->getTradeBindingCollection();
-		$bindingCollection->createItem($salePlatform);
-	}
-
 	public function getBasket() : Sale\BasketBase
 	{
 		$order = $this->internalOrder;
@@ -765,7 +758,7 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setPersonTypeId($personType);
 	}
 
-	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
+	public function createShipment(int $deliveryId, float $price = null, array $store = null, array $data = null) : Main\Result
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
@@ -841,7 +834,7 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	public function fillPropertiesDelivery(array $address, string $type = Delivery::DELIVERY_TYPE) : void
+	public function fillPropertiesDelivery(array $address) : void
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
@@ -857,7 +850,7 @@ class Order extends EntityReference\Order
 
 		try
 		{
-			$delivery = Delivery\Factory::make($deliveryService, $type);
+			$delivery = Delivery\Factory::make($deliveryService, Delivery::DELIVERY_TYPE);
 			$delivery->markSelectedDelivery($this->internalOrder, $address);
 		}
 		catch (Main\ArgumentException $exception)
@@ -953,9 +946,12 @@ class Order extends EntityReference\Order
 		$payment->setField('SUM', $price);
 	}
 
-	public function add(string $externalId) : Main\Result
+	public function add($externalId) : Main\Result
 	{
 		$result = new Main\Result();
+
+		/*$this->syncOrderPrice();*/
+		//$this->syncOrderPaymentSum();
 
 		$orderResult = $this->internalOrder->save();
 

@@ -110,7 +110,6 @@ class Purchase extends \CBitrixComponent
 
 		$order->initialize();
 
-		$this->fillPlatform($order);
 		$this->fillPersonType($order);
 		$this->wakeUpBasket($order, $request);
 
@@ -160,7 +159,6 @@ class Purchase extends \CBitrixComponent
 
 		$order->initialize();
 
-		$this->fillPlatform($order);
 		$this->fillPersonType($order);
 		$this->fillLocation($order, $request->getAddress());
 		$this->fillBasket($order, $request->getItems());
@@ -197,11 +195,11 @@ class Purchase extends \CBitrixComponent
 		];
 	}
 
-	protected function restrictedDeliveries(EntityReference\Order $order) : array
+	protected function restrictedDeliveries(EntityReference\Order $order, int $mode = Sale\Delivery\Restrictions\Manager::MODE_CLIENT) : array
 	{
 		$result = [];
 		$deliveryService = $this->environment->getDelivery();
-		$compatibleIds = $deliveryService->getRestricted($order);
+		$compatibleIds = $deliveryService->getRestricted($order, $mode);
 
 		if (empty($compatibleIds)) { return $result; }
 
@@ -277,14 +275,13 @@ class Purchase extends \CBitrixComponent
 
 		$order->initialize();
 
-		$this->fillPlatform($order);
 		$this->fillPersonType($order);
 		$this->fillBasket($order, $request->getItems());
 		$order->createPayment($request->getPaySystemId());
 
 		$order->finalize();
 
-		$deliveries = $this->restrictedDeliveries($order);
+		$deliveries = $this->restrictedDeliveries($order, Sale\Delivery\Restrictions\Manager::MODE_MANAGER);
 		$deliveries = $this->filterDeliveryByType($deliveries, EntitySale\Delivery::PICKUP_TYPE);
 		$bounds = $request->getBounds()->getFields();
 
@@ -320,7 +317,6 @@ class Purchase extends \CBitrixComponent
 
 		$order->initialize();
 
-		$this->fillPlatform($order);
 		$this->fillPersonType($order);
 		$this->fillBasket($order, $request->getItems());
 		$order->createPayment($request->getPaySystemId());
@@ -412,7 +408,6 @@ class Purchase extends \CBitrixComponent
 
 		$order->initialize();
 
-		$this->fillPlatform($order);
 		$this->fillPersonType($order);
 		$this->fillStatus($order);
 		$this->fillProperties($order, $request);
@@ -921,12 +916,6 @@ class Purchase extends \CBitrixComponent
 		$personTypeResult = $order->setPersonType($this->setup->getPersonTypeId());
 
 		Exceptions\Facade::handleResult($personTypeResult);
-	}
-
-	protected function fillPlatform(EntityReference\Order $order) : void
-	{
-		$platform = $this->environment->getPlatform();
-		$order->fillTradingSetup($platform);
 	}
 
 	protected function setMeaningfulPropertyValues(EntityReference\Order $order, $values) : void
