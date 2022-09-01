@@ -37,21 +37,17 @@ class NearestStrategy extends AbstractStrategy
 
 			foreach ($stores as $storeId => $store)
 			{
-				try
-				{
-					$warehouse->setValues($store['WAREHOUSE']);
+				$warehouse->setValues($store['WAREHOUSE']);
+				$validateResult = $warehouse->validate();
 
-					$distance[$storeId] = $this->getDistance(
-						$address->getLat(),
-						$address->getLon(),
-						$warehouse->getLat(),
-						$warehouse->getLon()
-					);
-				}
-				catch (Main\SystemException $exception)
-				{
-					continue;
-				}
+				if (!$validateResult->isSuccess()) { continue; }
+
+				$distance[$storeId] = $this->getDistance(
+					$address->getLat(),
+					$address->getLon(),
+					$warehouse->getLat(),
+					$warehouse->getLon()
+				);
 			}
 
 			if (empty($distance)) { return null; }
