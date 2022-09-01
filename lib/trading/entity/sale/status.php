@@ -83,6 +83,7 @@ class Status
 		$query = Sale\Internals\StatusTable::getList([
 			'filter' => [
 				'TYPE' => \Bitrix\Sale\OrderStatus::TYPE,
+				'STATUS_LANG.LID' => LANGUAGE_ID,
 			],
 			'select' => [
 				'ID',
