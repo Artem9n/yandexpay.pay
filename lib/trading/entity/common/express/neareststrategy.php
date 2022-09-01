@@ -2,6 +2,7 @@
 namespace YandexPay\Pay\Trading\Entity\Common\Express;
 
 use Bitrix\Catalog;
+use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Rest\Dto;
 use YandexPay\Pay\Trading\Settings\Options;
@@ -36,14 +37,21 @@ class NearestStrategy extends AbstractStrategy
 
 			foreach ($stores as $storeId => $store)
 			{
-				$warehouse->setValues($store['WAREHOUSE']);
+				try
+				{
+					$warehouse->setValues($store['WAREHOUSE']);
 
-				$distance[$storeId] = $this->getDistance(
-					$address->getLat(),
-					$address->getLon(),
-					$warehouse->getLat(),
-					$warehouse->getLon()
-				);
+					$distance[$storeId] = $this->getDistance(
+						$address->getLat(),
+						$address->getLon(),
+						$warehouse->getLat(),
+						$warehouse->getLon()
+					);
+				}
+				catch (Main\SystemException $exception)
+				{
+					continue;
+				}
 			}
 
 			if (empty($distance)) { return null; }
