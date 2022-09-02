@@ -25,7 +25,7 @@ class Registry
 
 		foreach ($resultList as $eventResult)
 		{
-			/** @var  \Bitrix\Main\EventResult $eventResult*/
+			/** @var  Main\EventResult $eventResult*/
 			if ($eventResult->getType() !== Main\EventResult::SUCCESS) { continue; }
 
 			$params = $eventResult->getParameters();
@@ -38,7 +38,7 @@ class Registry
 
 		if(!empty($customClasses))
 		{
-			\Bitrix\Main\Loader::registerAutoLoadClasses(null, $customClasses);
+			Main\Loader::registerAutoLoadClasses(null, $customClasses);
 
 			foreach ($customClasses as $className => $path)
 			{
