@@ -79,6 +79,7 @@ class NearestStrategy extends AbstractStrategy
 				'!' . $context['CONTACT_FIELD'] => false,
 			],
 			'select' => ['ID', $context['WAREHOUSE_FIELD'], $context['CONTACT_FIELD']],
+			'order' => [ 'SORT' => 'ASC' ],
 		]);
 
 		while ($store = $query->fetch())
