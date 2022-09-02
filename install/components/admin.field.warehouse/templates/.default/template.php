@@ -55,6 +55,11 @@ $messages = [
 				{
 					if ($code === 'FULL_ADDRESS') { continue; }
 
+					if ($field['MANDATORY'] === 'Y')
+					{
+						$field['TITLE'] = sprintf('<strong>%s</strong>', $field['TITLE']);
+					}
+
 					?>
 					<div class="bx-yapay-warehouse-detail">
 						<div class="bx-yapay-warehouse-detail__label"><?= $field['TITLE'] ?></div>

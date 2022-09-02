@@ -89,10 +89,12 @@ class Warehouse extends Settings\Reference\Fieldset
 			'COUNTRY' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('COUNTRY'),
+				'MANDATORY' => 'Y',
 			],
 			'LOCALITY' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('LOCALITY'),
+				'MANDATORY' => 'Y',
 			],
 			'STREET' => [
 				'TYPE' => 'string',
@@ -101,6 +103,7 @@ class Warehouse extends Settings\Reference\Fieldset
 			'BUILDING' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('BUILDING'),
+				'MANDATORY' => 'Y',
 			],
 			'ENTRANCE' => [
 				'TYPE' => 'string',
@@ -113,10 +116,12 @@ class Warehouse extends Settings\Reference\Fieldset
 			'LOCATION_LAT' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('LOCATION_LAT'),
+				'MANDATORY' => 'Y',
 			],
 			'LOCATION_LON' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('LOCATION_LON'),
+				'MANDATORY' => 'Y',
 			],
 		];
 	}

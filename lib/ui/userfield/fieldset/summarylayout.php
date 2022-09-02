@@ -332,6 +332,7 @@ class SummaryLayout extends AbstractLayout
 				'ROW_CLASS' => $row['ROW_CLASS'],
 				'VALIGN' => $row['VALIGN'],
 				'VALUE' => $value,
+				'MANDATORY' => $field['MANDATORY'] ?? 'N',
 			];
 		}
 
