@@ -36,16 +36,15 @@ class Registry
 			}
 		}
 
-		if(!empty($customClasses))
-		{
-			Main\Loader::registerAutoLoadClasses(null, $customClasses);
+		if(empty($customClasses)) { return; }
 
-			foreach ($customClasses as $className => $path)
-			{
-				$pos = mb_strpos($className, 'Strategy');
-				$type = mb_strtolower(mb_substr($className, 0, $pos));
-				static::$strategy[$type] = $className;
-			}
+		Main\Loader::registerAutoLoadClasses(null, $customClasses);
+
+		foreach ($customClasses as $className => $path)
+		{
+			$pos = mb_strpos($className, 'Strategy');
+			$type = mb_strtolower(mb_substr($className, 0, $pos));
+			static::$strategy[$type] = $className;
 		}
 	}
 
