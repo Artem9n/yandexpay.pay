@@ -36,7 +36,7 @@ class Registry
 			}
 		}
 
-		if(empty($customClasses)) { return; }
+		if (empty($customClasses)) { return; }
 
 		Main\Loader::registerAutoLoadClasses(null, $customClasses);
 
