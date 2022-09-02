@@ -2,7 +2,6 @@
 namespace YandexPay\Pay\Trading\Entity\Common\Express;
 
 use Bitrix\Catalog;
-use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Rest\Dto;
 use YandexPay\Pay\Trading\Settings\Options;
