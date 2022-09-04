@@ -206,6 +206,10 @@ class Delivery extends Fieldset
 						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
 						'VALUE' => false,
 					],
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
+					],
 				],
 			],
 			'STORE_CONTACT' => [
@@ -218,6 +222,10 @@ class Delivery extends Fieldset
 					'CATALOG_STORE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
 						'VALUE' => false,
+					],
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
 					],
 				],
 			],
