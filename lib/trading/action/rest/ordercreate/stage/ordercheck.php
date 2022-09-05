@@ -94,8 +94,6 @@ class OrderCheck
 
 	protected function checkTotal(State\OrderCalculation $state) : void
 	{
-		if ($this->request->getDeliveryType() === 'YANDEX_DELIVERY') { return; }
-
 		$orderPrice = $state->order->getOrderPrice();
 		$requestPrice = $this->request->getOrderAmount();
 

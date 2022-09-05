@@ -97,10 +97,6 @@ class Action extends Rest\Reference\EffectiveAction
 		{
 			$result->pipe(new Rest\OrderCreate\Stage\PickupProperties($request->getPickup()));
 		}
-		elseif ($type === 'YANDEX_DELIVERY')
-		{
-			//todo may be
-		}
 		else
 		{
 			$result->pipe(new Rest\OrderCreate\Stage\DeliveryProperties($request->getAddress()));
