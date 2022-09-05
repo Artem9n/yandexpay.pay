@@ -51,8 +51,10 @@
 					const span = this.getElement('span', this.$el, 'nextAll');
 
 					if (result.NAME !== '') {
-						const link = `[<a target="_blank" class="tablebodylink" href="/bitrix/admin/user_edit.php?ID=${result.ID}&lang=ru">${result.ID}</a>] `
-							+ result.NAME;
+						const link = `[<a target="_blank" class="tablebodylink" 
+							href="/bitrix/admin/user_edit.php?ID=${BX.util.htmlspecialchars(result.ID)}
+							&lang=ru">${BX.util.htmlspecialchars(result.ID)}</a>] `
+							+ BX.util.htmlspecialchars(result.NAME);
 						span.html(link);
 					} else {
 						span.html('');
