@@ -518,6 +518,8 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 
 	protected function getCurrency() : ?string
 	{
+		if (!Main\Loader::includeModule('currency')) { return null; }
+
 		$result = null;
 
 		$query = Currency\CurrencyTable::getList([
