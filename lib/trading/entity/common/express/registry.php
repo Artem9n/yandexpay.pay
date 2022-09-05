@@ -38,17 +38,13 @@ class Registry
 
 		if (empty($customClasses)) { return; }
 
-		Main\Loader::registerAutoLoadClasses(null, $customClasses);
-
-		foreach ($customClasses as $className => $path)
+		foreach ($customClasses as $type => $className)
 		{
-			$pos = mb_strpos($className, 'Strategy');
-			$type = mb_strtolower(mb_substr($className, 0, $pos));
 			static::$strategy[$type] = $className;
 		}
 	}
 
-	public static function getStrategyList() : ?array
+	protected static function userStrategies() : ?array
 	{
 		if (static::$strategy === null)
 		{
@@ -64,14 +60,14 @@ class Registry
 			static::NEAREST,
 		];
 
-		$customTypes = static::getStrategyList() ?? [];
+		$customTypes = static::userStrategies() ?? [];
 
 		return array_merge($result, array_keys($customTypes));
 	}
 
 	public static function make(string $type) : AbstractStrategy
 	{
-		$customStrategy = static::getStrategyList();
+		$customStrategy = static::userStrategies();
 		$className = __NAMESPACE__ . '\\' . ucfirst($type) . 'Strategy';
 
 		if ($customStrategy !== null && isset($customStrategy[$type]))
