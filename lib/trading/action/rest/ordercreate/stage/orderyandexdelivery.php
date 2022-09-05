@@ -41,7 +41,7 @@ class OrderYandexDelivery
 
 		if ($fromDate !== null && $toDate !== null)
 		{
-			$comment = sprintf('%s' . PHP_EOL .'%s', $fromDate->format('d.m.Y H:i'), $toDate->format('d.m.Y H:i'));
+			$comment = sprintf('%s' . PHP_EOL .'%s', (string)$fromDate, (string)$toDate);
 		}
 
 		$data += array_filter([
