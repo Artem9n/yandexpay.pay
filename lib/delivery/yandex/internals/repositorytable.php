@@ -41,7 +41,7 @@ class RepositoryTable extends ORM\Data\DataManager
 			new ORM\Fields\StringField('STATUS', [
 				'required' => true,
 			]),
-			new ORM\Fields\BooleanField('CONFIRM', [
+			new ORM\Fields\BooleanField('AUTOCONFIRM', [
 				'values' => ['N', 'Y'],
 				'default_value' => 'Y',
 			]),

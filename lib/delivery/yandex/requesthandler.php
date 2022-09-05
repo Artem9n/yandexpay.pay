@@ -83,7 +83,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 
 				$this->waitRequestInstalled($orderId, [
 					'PAYLOAD' => $response->getDeliveryData(),
-					'CONFIRM' => $additional['CONFIRM'],
+					'AUTOCONFIRM' => $additional['AUTOCONFIRM'],
 				]);
 			}
 			catch (Main\SystemException $exception)
@@ -139,7 +139,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		$transport = $this->getTransport($requestId);
 		$transport->setStatus($status);
 
-		if ($status === static::READY_FOR_APPROVAL_STATUS && $transport->getConfirm())
+		if ($status === static::READY_FOR_APPROVAL_STATUS && $transport->getAutoconfirm())
 		{
 			$response = $this->sendRequest(
 				$orderId,
@@ -422,7 +422,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		else if ($formFieldsType === Delivery\Requests\Manager::FORM_FIELDS_TYPE_CREATE)
 		{
 			$result = [
-				'CONFIRM' => [
+				'AUTOCONFIRM' => [
 					'TYPE' => 'ENUM',
 					'TITLE' => self::getMessage('CONFIRM_TITLE'),
 					'OPTIONS' => [
@@ -454,7 +454,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 
 	public function hasCallbackTrackingSupport(): bool
 	{
-		return true;
+		return false;
 	}
 
 	public function getContent($requestId) : Delivery\Requests\Result
@@ -470,6 +470,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 			$values = [
 				'STATUS' => $transport->getStatus(),
 			];
+			$currency = $this->getCurrency();
 
 			foreach ($values as $code => $value)
 			{
@@ -492,7 +493,9 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 				{
 					if ($code === 'PRICE' || $code === 'ACTUAL_PRICE')
 					{
-						$value = \CCurrencyLang::CurrencyFormat($value, Currency\CurrencyManager::getBaseCurrency());
+						$value = $currency !== null
+							? \CCurrencyLang::CurrencyFormat($value, $currency)
+							: sprintf('%s %s', $value, 'RUB');
 						$value = html_entity_decode($value); // double escaping output fix
 					}
 
@@ -508,6 +511,29 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		catch (Main\SystemException $exception)
 		{
 			$result->addError(new Main\Error($exception->getMessage()));
+		}
+
+		return $result;
+	}
+
+	protected function getCurrency() : ?string
+	{
+		$result = null;
+
+		$query = Currency\CurrencyTable::getList([
+			'filter' => [
+				[
+					'LOGIC' => 'OR',
+					['=CURRENCY' => 'RUB'],
+					['=CURRENCY' => 'RUR'],
+				]
+			],
+			'limit' => 1
+		]);
+
+		if ($currency = $query->fetch())
+		{
+			$result = $currency['CURRENCY'];
 		}
 
 		return $result;
