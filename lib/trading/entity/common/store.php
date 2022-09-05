@@ -75,21 +75,40 @@ class Store extends Pay\Trading\Entity\Reference\Store
 		$result = [];
 
 		$basket = $order->getBasket();
-		$productIds = [];
+		$basketProducts = [];
 
 		/** @var \Bitrix\Sale\BasketItem $basketItem */
 		foreach ($basket as $basketItem)
 		{
-			$productIds[] = $basketItem->getProductId();
+			$productId = $basketItem->getProductId();
+
+			if (isset($basketProducts[$productId]))
+			{
+				$basketProducts[$productId] += $basketItem->getQuantity();
+				continue;
+			}
+
+			$basketProducts[$productId] = $basketItem->getQuantity();
 		}
 
-		if (empty($productIds)) { return $result; }
+		if (empty($basketProducts)) { return $result; }
 
-		$storesProduct = $this->getStoresProduct($productIds);
+		$storesProduct = $this->getStoresProduct(array_keys($basketProducts));
 
-		foreach ($storesProduct as $storeId => $products)
+		foreach ($storesProduct as $storeId => $storeProducts)
 		{
-			$notAvailable = array_diff($productIds, $products);
+			$notAvailable = [];
+
+			foreach ($basketProducts as $productId => $quantity)
+			{
+				if (
+					!isset($storeProducts[$productId])
+					|| $quantity > $storeProducts[$productId]
+				)
+				{
+					$notAvailable[] = $productId;
+				}
+			}
 
 			if (!empty($notAvailable)) { continue; }
 
@@ -108,12 +127,12 @@ class Store extends Pay\Trading\Entity\Reference\Store
 				'=PRODUCT_ID' => $productIds,
 				'>AMOUNT' => 0,
 			],
-			'select' => [ 'ID', 'STORE_ID', 'PRODUCT_ID' ],
+			'select' => [ 'ID', 'STORE_ID', 'PRODUCT_ID', 'AMOUNT' ],
 		]);
 
 		while ($product = $query->fetch())
 		{
-			$result[$product['STORE_ID']][] = $product['PRODUCT_ID'];
+			$result[$product['STORE_ID']][$product['PRODUCT_ID']] = (float)$product['AMOUNT'];
 		}
 
 		return $result;
