@@ -8,6 +8,7 @@ use Bitrix\Sale\Delivery;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading;
 use YandexPay\Pay\Exceptions;
+use YandexPay\Pay\Trading\Entity\Sale\Platform as TradingPlatform;
 
 if (!Main\Loader::includeModule('sale')) { return; }
 
@@ -29,6 +30,13 @@ class Handler extends Sale\Delivery\Services\Base
 		return self::getMessage('DESCRIPTION');
 	}
 
+	public function prepareFieldsForSaving(array $fields) : array
+	{
+		$fields['CODE'] = self::CODE;
+
+		return parent::prepareFieldsForSaving($fields);
+	}
+
 	protected function calculateConcrete(Sale\Shipment $shipment) : Delivery\CalculationResult
 	{
 		return (new Delivery\CalculationResult())
@@ -41,7 +49,45 @@ class Handler extends Sale\Delivery\Services\Base
 
 	public function isCompatible(Sale\Shipment $shipment) : bool
 	{
-		return true;
+		$order = $shipment->getOrder();
+
+		if ($order === null) { return false; }
+
+		$tradingPlatform = $this->tradingPlatformOrder($order->getTradeBindingCollection());
+		$platformId = $this->getPlatformId();
+
+		if ($platformId === null) { return false; }
+
+		return in_array($platformId, $tradingPlatform, true);
+	}
+
+	protected function getPlatformId() : ?int
+	{
+		$platform = Sale\TradingPlatformTable::getList([
+			'filter' => [
+				'=CODE' => TradingPlatform::TRADING_PLATFORM_CODE
+			],
+			'limit' => 1,
+		])->fetch();
+
+		return $platform['ID'] ?? null;
+	}
+
+	protected function tradingPlatformOrder(Sale\TradeBindingCollection $collection) : array
+	{
+		$result = [];
+
+		/** @var Sale\TradeBindingEntity $trading */
+		foreach ($collection as $trading)
+		{
+			$platformId = (int)$trading->getField('TRADING_PLATFORM_ID');
+
+			if ($platformId <= 0) { continue; }
+
+			$result[] = $platformId;
+		}
+
+		return $result;
 	}
 
 	public function getDeliveryRequestHandler() : RequestHandler
@@ -57,7 +103,14 @@ class Handler extends Sale\Delivery\Services\Base
 
 	public static function onAfterDelete($serviceId) : void
 	{
-		ShipmentRequestMarker::uninstall();
+		try
+		{
+			Sale\Delivery\Services\Manager::getObjectByCode(self::CODE);
+		}
+		catch (Main\SystemException $exception)
+		{
+			ShipmentRequestMarker::uninstall();
+		}
 	}
 
 	protected static function installRestriction($serviceId) : void
