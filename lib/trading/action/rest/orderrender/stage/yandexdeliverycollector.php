@@ -47,6 +47,9 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 				$storeContactField = $this->yandexDelivery->getStoreContactField();
 
 				$storeIds = $storeService->available($state->order);
+
+				if (empty($storeIds)) { return; }
+
 				$storeId = $storeService->expressStrategy($strategy)->resolve($storeIds, $this->address, [
 					'WAREHOUSE_FIELD' => $storeWarehouseField,
 					'CONTACT_FIELD' => $storeContactField,
