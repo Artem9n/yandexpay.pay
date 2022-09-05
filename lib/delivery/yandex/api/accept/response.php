@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Delivery\Yandex\Api\Accept;
 
+use Bitrix\Main;
 use YandexPay\Pay\Trading\Action\Api;
 
 class Response extends Api\Reference\Response
@@ -23,20 +24,24 @@ class Response extends Api\Reference\Response
 
 	public function getDeliveryCreated() : string
 	{
-		$value = $this->requireField('data.delivery.created');
-		$date = new \DateTime($value);
-		$date->setTimezone((new \DateTime())->getTimeZone());
+		$date = Main\Type\DateTime::createFromPhp(
+			\DateTime::createFromFormat('Y-m-d\TH:i:s.uP', $this->requireField('data.delivery.created'))
+		);
 
-		return $date->format('d.m.Y H:i:s');
+		$date->setDefaultTimeZone();
+
+		return (string)$date;
 	}
 
 	public function getDeliveryUpdated() : string
 	{
-		$value = $this->requireField('data.delivery.updated');
-		$date = new \DateTime($value);
-		$date->setTimezone((new \DateTime())->getTimeZone());
+		$date = Main\Type\DateTime::createFromPhp(
+			\DateTime::createFromFormat('Y-m-d\TH:i:s.uP', $this->requireField('data.delivery.updated'))
+		);
 
-		return $date->format('d.m.Y H:i:s');
+		$date->setDefaultTimeZone();
+
+		return (string)$date;
 	}
 
 	public function getDeliveryData() : array

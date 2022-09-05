@@ -2,14 +2,16 @@
 
 namespace YandexPay\Pay\Delivery\Yandex\Api\Create;
 
-use Bitrix\Main\SystemException;
+use Bitrix\Main;
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Api;
 
 class Response extends Api\Reference\Response
 {
+	use Concerns\HasMessage;
+
 	public const DELIVERY_STATUS_SUCCESS = 'SUCCESS';
 	public const DELIVERY_STATUS_FAIL = 'FAILED';
-
 
 	public function getDeliveryStatus() : string
 	{
@@ -23,20 +25,24 @@ class Response extends Api\Reference\Response
 
 	public function getDeliveryCreated() : string
 	{
-		$value = $this->requireField('data.delivery.created');
-		$date = new \DateTime($value);
-		$date->setTimezone((new \DateTime())->getTimeZone());
+		$date = Main\Type\DateTime::createFromPhp(
+			\DateTime::createFromFormat('Y-m-d\TH:i:s.uP', $this->requireField('data.delivery.created'))
+		);
 
-		return $date->format('d.m.Y H:i:s');
+		$date->setDefaultTimeZone();
+
+		return (string)$date;
 	}
 
 	public function getDeliveryUpdated() : string
 	{
-		$value = $this->requireField('data.delivery.updated');
-		$date = new \DateTime($value);
-		$date->setTimezone((new \DateTime())->getTimeZone());
+		$date = Main\Type\DateTime::createFromPhp(
+			\DateTime::createFromFormat('Y-m-d\TH:i:s.uP', $this->requireField('data.delivery.updated'))
+		);
 
-		return $date->format('d.m.Y H:i:s');
+		$date->setDefaultTimeZone();
+
+		return (string)$date;
 	}
 
 	public function getDeliveryData() : array
@@ -54,7 +60,7 @@ class Response extends Api\Reference\Response
 
 		if ($this->getDeliveryStatus() === static::DELIVERY_STATUS_FAIL)
 		{
-			throw new SystemException('Доставка завершилась ошибкой'); //todo message
+			throw new Main\SystemException(self::getMessage('FAIL'));
 		}
 	}
 }

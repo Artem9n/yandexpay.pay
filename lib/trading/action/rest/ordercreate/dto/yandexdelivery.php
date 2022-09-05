@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\OrderCreate\Dto;
 
+use Bitrix\Main;
 use YandexPay\Pay\Trading\Action;
 
 class YandexDelivery extends Delivery
@@ -15,21 +16,29 @@ class YandexDelivery extends Delivery
 		return (string)$this->requireField('title');
 	}
 
-	public function getFromDateTime() : ?\DateTime
+	public function getFromDateTime() : ?Main\Type\DateTime
 	{
-		$date = $this->getField('fromDatetime');
+		$value = $this->getField('fromDatetime');
 
-		if ($date === null) { return null; }
+		if ($value === null) { return null; }
 
-		return new \DateTime($date);
+		$date = new Main\Type\DateTime($value, \DateTimeInterface::ATOM);
+
+		$date->setDefaultTimeZone();
+
+		return $date;
 	}
 
-	public function getToDatetime() : ?\DateTime
+	public function getToDatetime() : ?Main\Type\DateTime
 	{
-		$date = $this->getField('toDatetime');
+		$value = $this->getField('toDatetime');
 
-		if ($date === null) { return null; }
+		if ($value === null) { return null; }
 
-		return new \DateTime($date);
+		$date = new Main\Type\DateTime($value, \DateTimeInterface::ATOM);
+
+		$date->setDefaultTimeZone();
+
+		return $date;
 	}
 }
