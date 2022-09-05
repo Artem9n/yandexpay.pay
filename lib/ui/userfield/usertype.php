@@ -63,6 +63,8 @@ OUTPUT;
 
 	protected static function getUserData(string $id) : array
 	{
+		if (empty($id)) { return []; }
+
 		$result = [];
 
 		$query = Main\UserTable::getList([

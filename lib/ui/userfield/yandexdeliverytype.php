@@ -32,7 +32,7 @@ class YandexDeliveryType
 				else
 				{
 					$message = static::getMessage('INVALID', [
-						'#MESSAGE#' => implode(PHP_EOL, $validateResult->getErrorMessages()),
+						'#MESSAGE#' => implode(', ', $validateResult->getErrorMessages()),
 					]);
 				}
 			}

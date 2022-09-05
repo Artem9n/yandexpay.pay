@@ -36,6 +36,7 @@ class DeliveryCollection extends FieldsetCollection
 			if ($model->getType() !== Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE) { continue; }
 
 			$result = $model;
+			break;
 		}
 
 		return $result;
