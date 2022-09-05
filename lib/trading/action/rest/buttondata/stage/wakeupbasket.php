@@ -25,11 +25,10 @@ class WakeUpBasket
 			$productId = $this->productId;
 			$offerId = $state->environment->getProduct()->resolveOffer($productId);
 
-			$ratio = \Bitrix\Catalog\ProductTable::getCurrentRatioWithMeasure($offerId);
 			$state->order->initEmptyBasket();
 
 			$basketData = $this->getProductBasketData($state, $offerId);
-			$addResult = $state->order->addProduct($offerId, $ratio[$offerId]['RATIO'], $basketData);
+			$addResult = $state->order->addProduct($offerId, 1, $basketData);
 		}
 		elseif (
 			$this->mode === Pay\Injection\Behavior\Registry::BASKET

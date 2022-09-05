@@ -56,6 +56,7 @@ class Product extends EntityReference\Product
 		$parentIds = array_unique($offerParentMap);
 		$parents = $this->loadElements($parentIds, [ 'XML_ID' ]);
 		$result = [];
+		$ratio = \Bitrix\Catalog\ProductTable::getCurrentRatioWithMeasure($productIds);
 
 		foreach ($productIds as $productId)
 		{
@@ -79,6 +80,11 @@ class Product extends EntityReference\Product
 			if ($validationError !== null)
 			{
 				$basketData['ERROR'] = $validationError;
+			}
+
+			if (isset($ratio[$productId]))
+			{
+				$basketData['RATIO'] = $ratio[$productId]['RATIO'];
 			}
 
 			$result[$productId] = $basketData;

@@ -32,7 +32,20 @@ class Order extends EntityReference\Order
 
 	public function finalize() : Main\Result
 	{
-		return $this->unfreeze();
+		$this->internalOrder->setMathActionOnly(false);
+		$result = $this->refreshBasket();
+
+		if ($result->isSuccess())
+		{
+			$unfreezeResult = $this->unfreeze();
+
+			if (!$unfreezeResult->isSuccess())
+			{
+				$result->addErrors($unfreezeResult->getErrors());
+			}
+		}
+
+		return $result;
 	}
 
 	public function freeze() : void
@@ -41,7 +54,7 @@ class Order extends EntityReference\Order
 		$this->internalOrder->setMathActionOnly(true);
 	}
 
-	public function unfreeze()
+	public function unfreeze() : Main\Result
 	{
 		$result = new Main\Result();
 
@@ -50,8 +63,6 @@ class Order extends EntityReference\Order
 		if ($this->isStartField)
 		{
 			$hasMeaningfulFields = $this->internalOrder->isNew() || $this->internalOrder->hasMeaningfulField();
-
-			$this->refreshBasket();
 
 			$finalActionResult = $this->internalOrder->doFinalAction($hasMeaningfulFields);
 
@@ -105,7 +116,7 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setBasket($basket);
 	}
 
-	public function refreshBasket()
+	protected function refreshBasket() : Sale\Result
 	{
 		return $this->getBasket()->refresh();
 	}
@@ -425,6 +436,8 @@ class Order extends EntityReference\Order
 
 	public function addProduct($productId, $count = 1, array $data = null) : Main\Result
 	{
+		$count = $data['RATIO'] ?? $count;
+
 		$basket = $this->getBasket();
 		$basketFields = $this->getProductBasketFields($productId, $count, $data);
 
