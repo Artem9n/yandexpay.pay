@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
+use Bitrix\Main;
 use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
 use YandexPay\Pay\Trading\Action\Rest\Dto\Cart;
 use YandexPay\Pay\Trading\Action\Rest\State;
@@ -64,8 +65,9 @@ class NewBasket
 		{
 			$productId = $product->getProductId();
 			$quantity = $product->getCount();
+			$basketData = $this->getProductBasketData($state, $productId);
 
-			$addResult = $state->order->addProduct($productId, $quantity);
+			$addResult = $state->order->addProduct($productId, $quantity, $basketData);
 			$addData = $addResult->getData();
 
 			Exceptions\Facade::handleResult($addResult, DtoProperty::class);
@@ -111,6 +113,22 @@ class NewBasket
 			$result = $state->order->deleteBasketItem($basketCode);
 			Exceptions\Facade::handleResult($result, DtoProperty::class);
 		}
+	}
+
+	protected function getProductBasketData(State\OrderCalculation $state, int $productId) : array
+	{
+		$environmentProduct = $state->environment->getProduct();
+		$fewData = $environmentProduct->getBasketData([$productId]);
+		$itemData = $fewData[$productId] ?? null;
+
+		Assert::notNull($itemData, '$enviromentProduct->getBasketData()');
+
+		if (isset($itemData['ERROR']))
+		{
+			throw new Main\SystemException($itemData['ERROR']);
+		}
+
+		return $itemData;
 	}
 }
 

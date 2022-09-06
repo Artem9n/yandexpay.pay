@@ -436,8 +436,6 @@ class Order extends EntityReference\Order
 
 	public function addProduct($productId, $count = 1, array $data = null) : Main\Result
 	{
-		$count = $data['RATIO'] ?? $count;
-
 		$basket = $this->getBasket();
 		$basketFields = $this->getProductBasketFields($productId, $count, $data);
 
@@ -647,6 +645,11 @@ class Order extends EntityReference\Order
 			'MODULE' => 'catalog',
 			'PRODUCT_PROVIDER_CLASS' => Catalog\Product\Basket::getDefaultProviderName(),
 		];
+
+		if (isset($data['RATIO']) && $data['RATIO'] > 0)
+		{
+			$result['QUANTITY'] = ceil($result['QUANTITY'] / $data['RATIO']) * $data['RATIO'];
+		}
 
 		if ($data !== null)
 		{
