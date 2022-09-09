@@ -28,7 +28,8 @@ class WakeUpBasket
 			$state->order->initEmptyBasket();
 
 			$basketData = $this->getProductBasketData($state, $offerId);
-			$addResult = $state->order->addProduct($offerId, 1, $basketData);
+			$quantity = $basketData['RATIO'] ?? 1;
+			$addResult = $state->order->addProduct($offerId, $quantity, $basketData);
 		}
 		elseif (
 			$this->mode === Pay\Injection\Behavior\Registry::BASKET

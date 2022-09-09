@@ -546,7 +546,8 @@ class Purchase extends \CBitrixComponent
 			$order->initEmptyBasket();
 
 			$basketData = $this->getProductBasketData($offerId);
-			$addResult = $order->addProduct($offerId, 1, $basketData);
+			$quantity = $basketData['RATIO'] ?? 1;
+			$addResult = $order->addProduct($offerId, $quantity, $basketData);
 		}
 		elseif (
 			$mode === Pay\Injection\Behavior\Registry::BASKET
