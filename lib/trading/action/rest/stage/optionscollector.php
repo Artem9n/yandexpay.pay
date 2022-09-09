@@ -21,6 +21,8 @@ class OptionsCollector extends ResponseCollector
 			'CASH_ON_DELIVERY' => $state->options->getPaymentCash(),
 		]));
 
+		$result[] = 'SPLIT';
+
 		$this->write(array_values($result), 'availablePaymentMethods');
 	}
 
