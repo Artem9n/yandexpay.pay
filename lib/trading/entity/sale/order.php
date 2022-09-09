@@ -646,11 +646,6 @@ class Order extends EntityReference\Order
 			'PRODUCT_PROVIDER_CLASS' => Catalog\Product\Basket::getDefaultProviderName(),
 		];
 
-		if (isset($data['RATIO']) && $data['RATIO'] > 0)
-		{
-			$result['QUANTITY'] = ceil($result['QUANTITY'] / $data['RATIO']) * $data['RATIO'];
-		}
-
 		if ($data !== null)
 		{
 			$result = $data + $result; // user data priority
