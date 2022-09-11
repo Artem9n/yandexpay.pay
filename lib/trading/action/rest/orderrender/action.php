@@ -89,7 +89,7 @@ class Action extends Rest\Reference\EffectiveAction
 		if ($yandexDelivery === null || $address === null) { return $pipeline; }
 
 		return $pipeline
-			->pipe(new Stage\YandexDeliveryCollector(
+			->pipe(new Rest\Stage\YandexDeliveryCollector(
 				$yandexDelivery,
 				$response,
 				$request->getAddress(),
