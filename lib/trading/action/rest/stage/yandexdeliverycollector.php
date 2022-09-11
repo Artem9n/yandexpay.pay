@@ -1,5 +1,5 @@
 <?php
-namespace YandexPay\Pay\Trading\Action\Rest\OrderRender\Stage;
+namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
 use Bitrix\Main;
 use YandexPay\Pay\Data;
