@@ -33,4 +33,14 @@ abstract class AbstractAdapter
 	{
 
 	}
+
+	public function markSelectedDelivery(Sale\OrderBase $order, array $address) : void
+	{
+
+	}
+
+	public function onAfterOrderSave(Sale\OrderBase $order) : void
+	{
+
+	}
 }

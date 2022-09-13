@@ -8,7 +8,6 @@ use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Catalog;
-use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 
 class Order extends EntityReference\Order
 {
@@ -17,6 +16,9 @@ class Order extends EntityReference\Order
 	/** @var Sale\OrderBase */
 	protected $calculatable;
 	protected $isStartField;
+
+	/** @var Delivery\AbstractAdapter */
+	protected $delivery = null;
 
 	public function __construct(Environment $environment, Sale\OrderBase $internalOrder)
 	{
@@ -831,24 +833,30 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	public function fillPropertiesDelivery(array $address) : void
+	protected function getDeliveryService() : ?Sale\Delivery\Services\Base
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
-		$deliveryService = null;
 
 		/** @var \Bitrix\Sale\Shipment $shipment */
 		foreach ($shipmentCollection as $shipment)
 		{
 			if ($shipment->isSystem()) { continue; }
 
-			$deliveryService = $shipment->getDelivery();
+			return $shipment->getDelivery();
 		}
+
+		return null;
+	}
+
+	public function fillPropertiesDelivery(array $address) : void
+	{
+		$deliveryService = $this->getDeliveryService();
 
 		try
 		{
-			$delivery = Delivery\Factory::make($deliveryService, Delivery::DELIVERY_TYPE);
-			$delivery->markSelectedDelivery($this->internalOrder, $address);
+			$this->delivery = Delivery\Factory::make($deliveryService, Delivery::DELIVERY_TYPE);
+			$this->delivery->markSelectedDelivery($this->internalOrder, $address);
 		}
 		catch (Main\ArgumentException $exception)
 		{
@@ -858,26 +866,27 @@ class Order extends EntityReference\Order
 
 	public function fillPropertiesStore(string $storeId, string $address) : void
 	{
-		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
-		$shipmentCollection = $this->internalOrder->getShipmentCollection();
-		$deliveryService = null;
-
-		/** @var \Bitrix\Sale\Shipment $shipment */
-		foreach ($shipmentCollection as $shipment)
-		{
-			if ($shipment->isSystem()) { continue; }
-			$deliveryService = $shipment->getDelivery();
-		}
+		$deliveryService = $this->getDeliveryService();
 
 		try
 		{
-			$delivery = Delivery\Factory::make($deliveryService, Delivery::PICKUP_TYPE);
-			$delivery->markSelected($this->internalOrder, $storeId, $address);
+			$this->delivery = Delivery\Factory::make($deliveryService, Delivery::PICKUP_TYPE);
+			$this->delivery->markSelected($this->internalOrder, $storeId, $address);
 		}
 		catch (Main\ArgumentException $exception)
 		{
 			//nothing
 		}
+	}
+
+	protected function deliveryOnAfterOrderSave() : void
+	{
+		if ($this->delivery === null)
+		{
+			return;
+		}
+
+		$this->delivery->onAfterOrderSave($this->internalOrder);
 	}
 
 	public function recalculateShipment() : Main\Result
@@ -958,6 +967,8 @@ class Order extends EntityReference\Order
 		}
 		else
 		{
+			$this->deliveryOnAfterOrderSave();
+
 			$orderId = $orderResult->getId();
 			$orderExportId = $orderId;
 			$orderAccountNumber = $this->getAccountNumber();
