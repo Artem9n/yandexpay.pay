@@ -17,6 +17,7 @@ class Factory
 	public const OZON_DELIVERY = 'ozon:delivery';
 	public const BOXBERRY_PVZ = 'boxberry:pvz';
 	public const DPD_PICKUP = 'dpd:pickup';
+	public const DPD_COURIER = 'dpd:courier';
 	public const RUSSIAN_POST = 'russianPost:pickup';
 	public const RUSSIAN_COURIER = 'russianPost:courier';
 
@@ -56,7 +57,8 @@ class Factory
 			static::SDEK_PICKUP,
 			static::SDEK_COURIER,
 			//static::SDEK_POSTAMAT,
-			//static::DPD_PICKUP,
+			static::DPD_PICKUP,
+			static::DPD_COURIER,
 			static::BOXBERRY_PVZ,
 			static::RUSSIAN_POST,
 			static::RUSSIAN_COURIER,
