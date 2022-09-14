@@ -29,6 +29,12 @@ class Delivery extends Fieldset
 		return $this->getFieldset('WAREHOUSE');
 	}
 
+	public function getSchedule() : ScheduleOptions
+	{
+		/** @noinspection PhpIncompatibleReturnTypeInspection */
+		return $this->getFieldsetCollection('SCHEDULE');
+	}
+
 	public function getCatalogStore() : string
 	{
 		return (string)$this->getValue('CATALOG_STORE');
@@ -57,8 +63,8 @@ class Delivery extends Fieldset
 			'SETTINGS' => [
 				'SUMMARY' => '#TYPE# &laquo;#ID#&raquo;',
 				'LAYOUT' => 'summary',
-				'MODAL_WIDTH' => 550,
-				'MODAL_HEIGHT' => 300,
+				'MODAL_WIDTH' => 650,
+				'MODAL_HEIGHT' => 400,
 				'DEFAULT_VALUE' => $defaultsValue,
 			],
 		];
@@ -160,6 +166,20 @@ class Delivery extends Fieldset
 					],
 				],
 			],
+			'SCHEDULE' => $this->getSchedule()->getFieldDescription($environment, $siteId) + [
+				'TYPE' => 'schedule',
+				'NAME' => self::getMessage('SCHEDULE'),
+				'DEPEND' => [
+					'CATALOG_STORE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
+						'VALUE' => true,
+					],
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
+					],
+				],
+			],
 			'EMERGENCY_CONTACT' => [
 				'TYPE' => 'user',
 				'NAME' => self::getMessage('EMERGENCY_CONTACT'),
@@ -186,12 +206,16 @@ class Delivery extends Fieldset
 	{
 		$warehouseEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_WAREHOUSE);
 		$contactEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_CONTACT);
+		$scheduleEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_SCHEDULE);
 
 		$warehouseHelp = self::getMessage('STORE_WAREHOUSE_HELP', [
 			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\WarehouseType::USER_TYPE_ID)
 		]);
 		$contactHelp = self::getMessage('STORE_CONTACT_HELP', [
 			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\UserType::USER_TYPE_ID)
+		]);
+		$scheduleHelp = self::getMessage('STORE_SCHEDULE_HELP', [
+			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\ScheduleType::USER_TYPE_ID)
 		]);
 
 		return [
@@ -201,6 +225,23 @@ class Delivery extends Fieldset
 				'HELP' => !empty($warehouseEnum) ? $warehouseHelp : null,
 				'NOTE' => empty($warehouseEnum) ? $warehouseHelp : null,
 				'VALUES' => $warehouseEnum,
+				'DEPEND' => [
+					'CATALOG_STORE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
+						'VALUE' => false,
+					],
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
+					],
+				],
+			],
+			'STORE_SCHEDULE' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('STORE_SCHEDULE'),
+				'HELP' => !empty($scheduleEnum) ? $scheduleHelp : null,
+				'NOTE' => empty($scheduleEnum) ? $scheduleHelp : null,
+				'VALUES' => $scheduleEnum,
 				'DEPEND' => [
 					'CATALOG_STORE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
@@ -269,6 +310,13 @@ class Delivery extends Fieldset
 	{
 		return [
 			'WAREHOUSE' => Warehouse::class,
+		];
+	}
+
+	protected function getFieldsetCollectionMap() : array
+	{
+		return [
+			'SCHEDULE' => ScheduleOptions::class,
 		];
 	}
 }
