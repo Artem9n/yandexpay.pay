@@ -81,7 +81,7 @@ class WarehouseType extends FieldsetType
 		$userField['SETTINGS'] += [
 			'SUMMARY' => '#COUNTRY#, #LOCALITY#, #STREET#, #BUILDING#',
 			'LAYOUT' => 'summary',
-			'MODAL_WIDTH' => 800,
+			'MODAL_WIDTH' => 1000,
 			'MODAL_HEIGHT' => 600,
 		];
 
