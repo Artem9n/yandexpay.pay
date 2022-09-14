@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Trading\Settings\Options;
 
+use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Settings\Reference\FieldsetCollection;
 
