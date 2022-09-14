@@ -11,9 +11,12 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_CATALOG_STORE_DEFAULT'] = 'Т
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_WAREHOUSE'] = 'Адрес склада';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_EMERGENCY_CONTACT'] = 'Контактное лицо';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_STORE_WAREHOUSE'] = 'Адрес склада';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_SCHEDULE'] = 'Расписание';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_STORE_WAREHOUSE_HELP'] = '<a target="_blank" href="#LINK#">Создайте</a> пользовательское свойство склада, выбрав тип "Яндекс.Pay: адрес склада"';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_STORE_CONTACT'] = 'Контактное лицо';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_STORE_CONTACT_HELP'] = '<a target="_blank" href="#LINK#">Создайте</a> пользовательское свойство склада, выбрав тип "Яндекс.Pay: контакт пользователя"';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_STORE_SCHEDULE'] = 'Расписание склада';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_STORE_SCHEDULE_HELP'] = '<a target="_blank" href="#LINK#">Создайте</a> пользовательское свойство склада, выбрав тип "Яндекс.Pay: расписание склада (укажите опцию Множественное)"';
 
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_EMERGENCY_REQUIRED'] = 'не заполнено поле Контактное лицо';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_STORE_CONTACT_REQUIRED'] = 'не установлено пользовательское свойство склада "Яндекс.Pay: адрес склада"';
