@@ -10,28 +10,33 @@ use YandexPay\Pay\Trading\Settings\Options;
 
 class Store extends Pay\Trading\Entity\Reference\Store
 {
+	protected $userFields;
+
 	public function getFields(string $behavior = null) : array
 	{
 		if ($behavior === static::FIELD_BEHAVIOR_WAREHOUSE)
 		{
-			return $this->getUserFields(Pay\Ui\UserField\WarehouseType::USER_TYPE_ID);
+			return $this->getUserFieldsForType(Pay\Ui\UserField\WarehouseType::USER_TYPE_ID);
 		}
 
 		if ($behavior === static::FIELD_BEHAVIOR_CONTACT)
 		{
-			return $this->getUserFields(Pay\Ui\UserField\UserType::USER_TYPE_ID);
+			return $this->getUserFieldsForType(Pay\Ui\UserField\UserType::USER_TYPE_ID);
+		}
+
+		if ($behavior === static::FIELD_BEHAVIOR_SCHEDULE)
+		{
+			return $this->getUserFieldsForType(Pay\Ui\UserField\ScheduleType::USER_TYPE_ID);
 		}
 
 		throw new Main\NotImplementedException(sprintf('% behavior not implementd', $behavior));
 	}
 
-	protected function getUserFields(string $userTypeId) : array
+	protected function getUserFieldsForType(string $userTypeId) : array
 	{
-		global $USER_FIELD_MANAGER;
+		$userFields = $this->getUserFields();
 
 		$result = [];
-
-		$userFields = $USER_FIELD_MANAGER->GetUserFields('CAT_STORE', 0, LANGUAGE_ID);
 
 		if (empty($userFields)) { return $result; }
 
@@ -46,6 +51,23 @@ class Store extends Pay\Trading\Entity\Reference\Store
 		}
 
 		return $result;
+	}
+
+	protected function getUserFields() : array
+	{
+		if ($this->userFields === null)
+		{
+			$this->userFields = $this->loadUserFields();
+		}
+
+		return $this->userFields;
+	}
+
+	protected function loadUserFields() : array
+	{
+		global $USER_FIELD_MANAGER;
+
+		return $USER_FIELD_MANAGER->GetUserFields('CAT_STORE', 0, LANGUAGE_ID);
 	}
 
 	public function expressStrategyEnum() : array
