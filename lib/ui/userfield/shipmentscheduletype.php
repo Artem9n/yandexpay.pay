@@ -7,11 +7,11 @@ use YandexPay\Pay\Trading\Settings\Options;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 
 /** @noinspection PhpUnused */
-class ScheduleType extends FieldsetType
+class ShipmentScheduleType extends FieldsetType
 {
 	use Concerns\HasMessage;
 
-	public const USER_TYPE_ID = 'yapay_schedule';
+	public const USER_TYPE_ID = 'yapay_shipment_schedule';
 
 	public function getUserTypeDescription() : array
 	{
@@ -40,20 +40,28 @@ class ScheduleType extends FieldsetType
 		return $value;
 	}
 
-	protected static function asMultiple(array $userField, ?array $htmlControl) : array
+	protected static function makeLayout($userField, $htmlControl) : Fieldset\AbstractLayout
 	{
-		if (is_array($userField['VALUE']))
-		{
-			foreach ($userField['VALUE'] as &$value)
-			{
-				if (is_array($value)) { continue; }
+		$userField = static::userFieldDefaults($userField);
 
-				$value = unserialize($value, [ 'allowed_classes' => false ]);
-			}
-			unset($value);
-		}
+		return parent::makeLayout($userField, $htmlControl);
+	}
 
-		return parent::asMultiple($userField, $htmlControl);
+	protected static function userFieldDefaults(array $userField) : array
+	{
+		$userField['NAME'] = static::getMessage('NAME');
+
+		if (!isset($userField['SETTINGS'])) { $userField['SETTINGS'] = []; }
+
+		$userField['SETTINGS'] += [
+			'SUMMARY' => '#SCHEDULE# (#HOLIDAY.CALENDAR#)',
+			'PLACEHOLDER' => self::getMessage('PLACEHOLDER'),
+			'LAYOUT' => 'summary',
+			'MODAL_WIDTH' => 600,
+			'MODAL_HEIGHT' => 450,
+		];
+
+		return $userField;
 	}
 
 	protected static function asSingle(array $userField, ?array $htmlControl)
@@ -70,7 +78,7 @@ class ScheduleType extends FieldsetType
 	{
 		if (isset($userField['FIELDS'])) { return $userField['FIELDS']; }
 
-		$option = new Options\ScheduleOption();
+		$option = new Options\ShipmentSchedule();
 		$environment = EntityRegistry::getEnvironment();
 		$siteId = $environment->getSite()->getDefault();
 
