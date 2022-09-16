@@ -24,9 +24,9 @@ class Store extends Pay\Trading\Entity\Reference\Store
 			return $this->getUserFieldsForType(Pay\Ui\UserField\UserType::USER_TYPE_ID);
 		}
 
-		if ($behavior === static::FIELD_BEHAVIOR_SCHEDULE)
+		if ($behavior === static::FIELD_BEHAVIOR_SHIPMENT_SCHEDULE)
 		{
-			return $this->getUserFieldsForType(Pay\Ui\UserField\ScheduleType::USER_TYPE_ID);
+			return $this->getUserFieldsForType(Pay\Ui\UserField\ShipmentScheduleType::USER_TYPE_ID);
 		}
 
 		throw new Main\NotImplementedException(sprintf('% behavior not implementd', $behavior));
@@ -160,43 +160,34 @@ class Store extends Pay\Trading\Entity\Reference\Store
 		return $result;
 	}
 
-	public function warehouse(int $storeId, string $fieldName) : Options\Warehouse
+	public function warehouse(array $store, string $warehouseFieldName) : Options\Warehouse
 	{
 		$result = new Options\Warehouse();
 
-		$query = Catalog\StoreTable::getList([
-			'filter' => [
-				'=ID' => $storeId,
-			],
-			'select' => ['ID', $fieldName],
-			'limit' => 1,
-		]);
+		$values = $store[$warehouseFieldName];
 
-		if ($store = $query->fetch())
+		if (!empty($values))
 		{
-			$values = unserialize($store[$fieldName], [ 'allowed_classes' => false ]);
-
 			$result->setValues($values);
 		}
 
 		return $result;
 	}
 
-	public function contact(int $storeId, string $fieldName) : ?int
+	public function contact(array $store, string $contactFieldName) : ?int
 	{
-		$result = null;
+		return $store[$contactFieldName] ?? null;
+	}
 
-		$query = Catalog\StoreTable::getList([
-			'filter' => [
-				'=ID' => $storeId,
-			],
-			'select' => ['ID', $fieldName],
-			'limit' => 1,
-		]);
+	public function schedule(array $store, string $scheduleFieldName) : Options\ShipmentSchedule
+	{
+		$result = new Options\ShipmentSchedule;
 
-		if ($store = $query->fetch())
+		$values = $store[$scheduleFieldName];
+
+		if (!empty($values))
 		{
-			$result = $store[$fieldName];
+			$result->setValues($values);
 		}
 
 		return $result;
