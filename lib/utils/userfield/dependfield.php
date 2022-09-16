@@ -1,6 +1,8 @@
 <?php
 namespace YandexPay\Pay\Utils\Userfield;
 
+use YandexPay\Pay\Utils;
+
 class DependField
 {
 	public const RULE_ANY = 'ANY';
@@ -13,7 +15,7 @@ class DependField
 
 		foreach ($rules as $fieldName => $rule)
 		{
-			$value = $values[$fieldName] ?? null;
+			$value = Utils\BracketChain::get($values, $fieldName);
 
 			switch ($rule['RULE'])
 			{
