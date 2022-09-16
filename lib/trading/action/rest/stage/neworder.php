@@ -49,13 +49,6 @@ class NewOrder
 
 	protected function fillCoupons(State\OrderCalculation $state) : void
 	{
-		$coupons = Sale\DiscountCouponsManager::get(true, [], true, true);
-
-		foreach ($coupons as $coupon)
-		{
-			Sale\DiscountCouponsManager::delete($coupon['COUPON']);
-		}
-
 		if ($this->coupons === null) { return; }
 
 		foreach ($this->coupons as $coupon)
