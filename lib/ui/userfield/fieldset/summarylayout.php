@@ -173,7 +173,7 @@ class SummaryLayout extends AbstractLayout
 		$hasGroupFields = false;
 
 		$result = sprintf('<table %s>', UserField\Helper\Attributes::stringify(array_filter([
-			'class' => 'edit-table yapay-table-layout ' . $this->getFieldsetName('summary__field'),
+			'class' => 'edit-table ' . $this->getFieldsetName('summary__field'),
 			'width' => '100%',
 			'data-plugin' => 'Field.Fieldset.Row',
 			'data-element-namespace' => $this->hasParentFieldset() ? '.' . $this->fieldsetName : null,
