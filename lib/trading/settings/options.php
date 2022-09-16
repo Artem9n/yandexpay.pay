@@ -18,7 +18,8 @@ class Options extends Reference\Skeleton
 	{
 		return $this->getValue('DELIVERY_STRICT', false);
 	}
-	
+
+	/** @noinspection PhpIncompatibleReturnTypeInspection */
 	public function getDeliveryOptions() : Options\DeliveryCollection
 	{
 		return $this->getFieldsetCollection('DELIVERY_OPTIONS');

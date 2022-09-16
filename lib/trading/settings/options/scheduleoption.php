@@ -2,12 +2,10 @@
 
 namespace YandexPay\Pay\Trading\Settings\Options;
 
-use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity;
-use YandexPay\Pay\Trading\Settings;
 
-class ScheduleOption extends Settings\Reference\Fieldset
+class ScheduleOption extends IntervalOption
 {
 	use Concerns\HasMessage;
 
@@ -15,6 +13,23 @@ class ScheduleOption extends Settings\Reference\Fieldset
 
 	public const WEEKDAY_FIRST = 1;
 	public const WEEKDAY_LAST = 7;
+
+	public function isMatchWeekday(int $weekday) : bool
+	{
+		$from = $this->getFromWeekday();
+		$to = $this->getToWeekday();
+
+		if ($from <= $to)
+		{
+			$result = ($weekday >= $from && $weekday <= $to);
+		}
+		else
+		{
+			$result = ($weekday >= $from || $weekday <= $to);
+		}
+
+		return $result;
+	}
 
 	public function getFromWeekday() : string
 	{
@@ -36,26 +51,33 @@ class ScheduleOption extends Settings\Reference\Fieldset
 		return $this->requireValue('END');
 	}
 
+	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return parent::getFieldDescription($environment, $siteId) + [
+				'SETTINGS' => [
+					'SUMMARY' => '#FROM_WEEKDAY#-#TO_WEEKDAY# (#FROM_TIME#-#TO_TIME#)',
+				],
+			];
+	}
+
 	public function getFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
-		return [
+		$selfFields = [
 			'FROM_WEEKDAY' => [
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
+				'NAME' => static::getMessage('FROM_WEEKDAY'),
 				'VALUES' => $this->getWeekdayEnum(),
 			],
 			'TO_WEEKDAY' => [
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
+				'NAME' => static::getMessage('TO_WEEKDAY'),
 				'VALUES' => $this->getWeekdayEnum(),
 			],
-			'START' => [
-				'TYPE' => 'time',
-			],
-			'END' => [
-				'TYPE' => 'time',
-			],
 		];
+
+		return $selfFields + parent::getFields($environment, $siteId);
 	}
 
 	protected function getWeekdayEnum() : array

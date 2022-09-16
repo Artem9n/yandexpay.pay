@@ -23,16 +23,16 @@ class Delivery extends Fieldset
 		return $this->requireValue('TYPE');
 	}
 
+	/** @noinspection PhpIncompatibleReturnTypeInspection */
 	public function getWarehouse() : Warehouse
 	{
-		/** @noinspection PhpIncompatibleReturnTypeInspection */
 		return $this->getFieldset('WAREHOUSE');
 	}
 
-	public function getSchedule() : ScheduleOptions
+	/** @noinspection PhpIncompatibleReturnTypeInspection */
+	public function getShipmentSchedule() : ShipmentSchedule
 	{
-		/** @noinspection PhpIncompatibleReturnTypeInspection */
-		return $this->getFieldsetCollection('SCHEDULE');
+		return $this->getFieldset('SHIPMENT_SCHEDULE');
 	}
 
 	public function getCatalogStore() : string
@@ -53,6 +53,11 @@ class Delivery extends Fieldset
 	public function getEmergencyContact() : int
 	{
 		return $this->requireValue('EMERGENCY_CONTACT');
+	}
+
+	public function getStoreShipmentSchedule() : string
+	{
+		return $this->requireValue('STORE_SHIPMENT_SCHEDULE');
 	}
 
 	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
@@ -139,6 +144,7 @@ class Delivery extends Fieldset
 			'CATALOG_STORE' => [
 				'TYPE' => 'enumeration',
 				'NAME' => self::getMessage('CATALOG_STORE'),
+				'HELP' => self::getMessage('CATALOG_STORE_HELP'),
 				'GROUP' => self::getMessage('GROUP_SETTINGS'),
 				'VALUES' => $environment->getStore()->expressStrategyEnum(),
 				'DEPEND' => [
@@ -155,6 +161,7 @@ class Delivery extends Fieldset
 			'WAREHOUSE' => $this->getWarehouse()->getFieldDescription($environment, $siteId) + [
 				'TYPE' => 'warehouse',
 				'NAME' => self::getMessage('WAREHOUSE'),
+				'HELP' => self::getMessage('WAREHOUSE_HELP'),
 				'DEPEND' => [
 					'CATALOG_STORE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
@@ -166,9 +173,10 @@ class Delivery extends Fieldset
 					],
 				],
 			],
-			'SCHEDULE' => $this->getSchedule()->getFieldDescription($environment, $siteId) + [
-				'TYPE' => 'schedule',
-				'NAME' => self::getMessage('SCHEDULE'),
+			'SHIPMENT_SCHEDULE' => $this->getShipmentSchedule()->getFieldDescription($environment, $siteId) + [
+				'TYPE' => 'shipmentschedule',
+				'NAME' => self::getMessage('SHIPMENT_SCHEDULE'),
+				'HELP' => self::getMessage('SHIPMENT_SCHEDULE_HELP'),
 				'DEPEND' => [
 					'CATALOG_STORE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
@@ -183,6 +191,7 @@ class Delivery extends Fieldset
 			'EMERGENCY_CONTACT' => [
 				'TYPE' => 'user',
 				'NAME' => self::getMessage('EMERGENCY_CONTACT'),
+				'HELP' => self::getMessage('EMERGENCY_CONTACT_HELP'),
 				'DEPEND' => [
 					'CATALOG_STORE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
@@ -206,7 +215,7 @@ class Delivery extends Fieldset
 	{
 		$warehouseEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_WAREHOUSE);
 		$contactEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_CONTACT);
-		$scheduleEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_SCHEDULE);
+		$scheduleEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_SHIPMENT_SCHEDULE);
 
 		$warehouseHelp = self::getMessage('STORE_WAREHOUSE_HELP', [
 			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\WarehouseType::USER_TYPE_ID)
@@ -214,8 +223,8 @@ class Delivery extends Fieldset
 		$contactHelp = self::getMessage('STORE_CONTACT_HELP', [
 			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\UserType::USER_TYPE_ID)
 		]);
-		$scheduleHelp = self::getMessage('STORE_SCHEDULE_HELP', [
-			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\ScheduleType::USER_TYPE_ID)
+		$scheduleHelp = self::getMessage('STORE_SHIPMENT_SCHEDULE_HELP', [
+			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\ShipmentScheduleType::USER_TYPE_ID)
 		]);
 
 		return [
@@ -236,9 +245,9 @@ class Delivery extends Fieldset
 					],
 				],
 			],
-			'STORE_SCHEDULE' => [
+			'STORE_SHIPMENT_SCHEDULE' => [
 				'TYPE' => 'enumeration',
-				'NAME' => self::getMessage('STORE_SCHEDULE'),
+				'NAME' => self::getMessage('STORE_SHIPMENT_SCHEDULE'),
 				'HELP' => !empty($scheduleEnum) ? $scheduleHelp : null,
 				'NOTE' => empty($scheduleEnum) ? $scheduleHelp : null,
 				'VALUES' => $scheduleEnum,
@@ -295,7 +304,7 @@ class Delivery extends Fieldset
 		}
 		else
 		{
-			foreach (['STORE_CONTACT', 'STORE_WAREHOUSE'] as $code)
+			foreach (['STORE_CONTACT', 'STORE_WAREHOUSE', 'STORE_SHIPMENT_SCHEDULE'] as $code)
 			{
 				if (!empty($this->getValue($code))) { continue; }
 				$message = static::getMessage(sprintf('FIELD_%s_REQUIRED', $code));
@@ -310,13 +319,7 @@ class Delivery extends Fieldset
 	{
 		return [
 			'WAREHOUSE' => Warehouse::class,
-		];
-	}
-
-	protected function getFieldsetCollectionMap() : array
-	{
-		return [
-			'SCHEDULE' => ScheduleOptions::class,
+			'SHIPMENT_SCHEDULE' => ShipmentSchedule::class,
 		];
 	}
 }
