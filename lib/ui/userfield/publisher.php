@@ -10,7 +10,7 @@ class Publisher extends Event\Regular
 	{
 		$result = [];
 
-		foreach (['warehouse', 'user', 'schedule'] as $type)
+		foreach (['warehouse', 'user', 'shipmentschedule'] as $type)
 		{
 			$result[] = [
 				'module' => 'main',
