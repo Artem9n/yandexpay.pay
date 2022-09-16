@@ -84,19 +84,7 @@ class EnumerationType
 			}
 		}
 
-		$useDefaultValue = ((string)$arHtmlControl['VALUE'] === '');
-		$valueMap = static::getValueMap($arHtmlControl['VALUE']);
-
-		foreach (static::toArray($enum) as $option)
-		{
-			$isSelected = $useDefaultValue ? $option['DEF'] === 'Y' : isset($valueMap[$option['ID']]);
-
-			$result .=
-				'<option value="' . $option['ID'] . '" ' . ($isSelected ? 'selected' : '') . '>'
-				. $option['VALUE']
-				. '</option>';
-		}
-
+		$result .= static::getOptionsHtml($enum, $arHtmlControl['VALUE'], $settings);
 		$result .= '</select>';
 
 		return $result;
@@ -175,7 +163,7 @@ class EnumerationType
 		return $result;
 	}
 
-	public static function toArray($enum)
+	public static function toArray($enum) : array
 	{
 		if (is_array($enum))
 		{
@@ -215,7 +203,7 @@ class EnumerationType
 		return str_replace($search, $replace, $string);
 	}
 
-	protected static function getValueMap($value)
+	protected static function getValueMap($value) : array
 	{
 		if (is_array($value))
 		{
@@ -243,5 +231,44 @@ class EnumerationType
 		}
 
 		return $settings;
+	}
+
+	protected static function getOptionsHtml($options, $value, $settings) : string
+	{
+		$useDefaultValue = ($value === null);
+		$valueMap = static::getValueMap($value);
+		$activeGroup = null;
+		$defaultGroup = !empty($settings['DEFAULT_GROUP']) ? $settings['DEFAULT_GROUP'] : null;
+		$result = '';
+
+		foreach (static::toArray($options) as $option)
+		{
+			$isSelected = $useDefaultValue ? $option['DEF'] === 'Y' : isset($valueMap[$option['ID']]);
+			$optionGroup = isset($option['GROUP']) && $option['GROUP'] !== '' ? $option['GROUP'] : $defaultGroup;
+
+			if ($optionGroup !== $activeGroup)
+			{
+				if ($activeGroup !== null)
+				{
+					$result .= '</optgroup>';
+				}
+
+				$activeGroup = $optionGroup;
+
+				if ($optionGroup !== null)
+				{
+					$result .= '<optgroup label="' . str_replace('"', '\\"', $optionGroup) . '">';
+				}
+			}
+
+			$result .=
+				'<option value="' . $option['ID'] . '" ' . ($isSelected ? 'selected' : '') . '>'
+				. $option['VALUE']
+				. '</option>';
+		}
+
+		if ($activeGroup !== null) { $result .= '</optgroup>'; }
+
+		return $result;
 	}
 }
