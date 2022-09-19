@@ -58,6 +58,7 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 					'WAREHOUSE_FIELD' => $storeWarehouseField,
 					'CONTACT_FIELD' => $storeContactField,
 					'SHIPMENT_SCHEDULE_FIELD' => $storeScheduleField,
+					'SITE_ID' => $state->setup->getSiteId(),
 				]);
 
 				if ($store === null)

@@ -75,11 +75,16 @@ class NearestStrategy extends AbstractStrategy
 			'filter' => [
 				'ACTIVE' => 'Y',
 				'ID' => $storeIds,
+				[
+					'LOGIC' => 'OR',
+					['=SITE_ID' => $context['SITE_ID']],
+					['SITE_ID' => false],
+				],
 				'!' . $context['WAREHOUSE_FIELD'] => false,
 				'!' . $context['CONTACT_FIELD'] => false,
 				'!' . $context['SHIPMENT_SCHEDULE_FIELD'] => false,
 			],
-			'select' => ['ID', $context['WAREHOUSE_FIELD'], $context['CONTACT_FIELD'], $context['SHIPMENT_SCHEDULE_FIELD']],
+			'select' => ['ID', 'SITE_ID', $context['WAREHOUSE_FIELD'], $context['CONTACT_FIELD'], $context['SHIPMENT_SCHEDULE_FIELD']],
 			'order' => [ 'SORT' => 'ASC' ],
 		]);
 
