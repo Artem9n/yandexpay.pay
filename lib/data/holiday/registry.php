@@ -27,9 +27,9 @@ class Registry
 	protected static function systemTypes() : array
 	{
 		return [
+			static::BLANK,
 			static::PRODUCTION,
 			static::NATIONAL,
-			static::BLANK,
 			static::MANUAL,
 		];
 	}
