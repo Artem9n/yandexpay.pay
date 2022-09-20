@@ -269,7 +269,7 @@ class AdminForm extends \CBitrixComponent
     {
         \CAdminMessage::ShowMessage([
             'TYPE' => 'ERROR',
-            'MESSAGE' => implode('<br />', $this->arResult['ERRORS']),
+            'MESSAGE' => implode(', ', $this->arResult['ERRORS']),
             'HTML' => true
         ]);
     }
