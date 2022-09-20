@@ -86,7 +86,7 @@ class Order extends EntityReference\Order
 			$basketClassName = $registry->getBasketClassName();
 			$basket = $basketClassName::loadItemsForFUser($fuserId, $this->internalOrder->getSiteId());
 
-			$result = $this->internalOrder->setBasket($basket);
+			$result = $this->internalOrder->setBasket($basket->getOrderableItems());
 
 			if ($basket->count() === 0)
 			{
@@ -220,7 +220,6 @@ class Order extends EntityReference\Order
 		foreach ($basket as $basketItem)
 		{
 			if (!$basketItem->canBuy()) { continue; }
-			if ($basketItem->getFinalPrice() <= 0) { continue; }
 
 			$result[] = $basketItem->getBasketCode();
 		}

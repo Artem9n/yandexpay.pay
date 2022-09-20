@@ -55,7 +55,6 @@ class ShipmentScheduleType extends FieldsetType
 
 		$userField['SETTINGS'] += [
 			'SUMMARY' => '#SCHEDULE# (#HOLIDAY.CALENDAR#)',
-			'PLACEHOLDER' => self::getMessage('PLACEHOLDER'),
 			'LAYOUT' => 'summary',
 			'MODAL_WIDTH' => 600,
 			'MODAL_HEIGHT' => 450,
