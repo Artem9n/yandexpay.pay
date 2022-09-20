@@ -80,7 +80,7 @@ class AutoInstallInjection extends Reference\Event\Regular
 	{
 		$fields = static::getSettingsFields($setup);
 		$values = [ 'PAYSYSTEM_CARD' => $paySystemId ];
-		$values += static::collectDefaultSettings($fields);
+		$values += static::collectDefaultSettings($fields, null, ['DELIVERY_OPTIONS']);
 
 		$values = static::applyFieldsBeforeSave($setup->getId(), $fields, $values);
 
@@ -101,13 +101,15 @@ class AutoInstallInjection extends Reference\Event\Regular
 		return $fields;
 	}
 
-	public static function collectDefaultSettings(array $fields, string $name = null) : array
+	public static function collectDefaultSettings(array $fields, array $exactField = null, array $skipField = null) : array
 	{
 		$values = [];
 
 		foreach ($fields as $fieldName => $field)
 		{
-			if ($name !== null && $fieldName !== $name) { continue; }
+			if ($exactField !== null && !in_array($fieldName, $exactField, true)) { continue; }
+
+			if ($skipField !== null && in_array($fieldName, $skipField, true)) { continue; }
 
 			if (isset($field['SETTINGS']['DEFAULT_VALUE']))
 			{

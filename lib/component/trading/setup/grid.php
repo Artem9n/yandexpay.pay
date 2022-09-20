@@ -27,7 +27,7 @@ class Grid extends Component\Model\Grid
 		$optionsValues = $options->getValues();
 
 		$fields = AutoInstallInjection::getSettingsFields($setup);
-		$values = AutoInstallInjection::collectDefaultSettings($fields, 'DELIVERY_OPTIONS');
+		$values = AutoInstallInjection::collectDefaultSettings($fields, ['DELIVERY_OPTIONS']);
 		$values['DELIVERY_OPTIONS'] = array_merge($values['DELIVERY_OPTIONS'], $optionsValues['DELIVERY_OPTIONS']);
 
 		$setup->syncSettings($values);
