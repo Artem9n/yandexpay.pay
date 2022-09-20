@@ -16,15 +16,30 @@ class ScheduleOptions extends IntervalOptions
 		return ScheduleOption::class;
 	}
 
-	/** @return ScheduleOption[] */
-	public function getOptions() : array
+	public function getWeeklyOptions() : array
 	{
 		$result = [];
 
 		foreach ($this->collection as $option)
 		{
-			$result[] = $option;
+			if ($option->isValid())
+			{
+				$result[] = $option;
+			}
 		}
+
+		return $result;
+	}
+
+	public function validate() : Main\Result
+	{
+		$result = new Main\Result();
+
+		$periods = $this->getWeeklyOptions();
+
+		if(!empty($periods)) { return $result; }
+
+		$result->addError(new Main\Error(self::getMessage('NOT_VALID_SCHEDULE')));
 
 		return $result;
 	}

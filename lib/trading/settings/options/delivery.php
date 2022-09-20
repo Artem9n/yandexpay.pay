@@ -282,21 +282,12 @@ class Delivery extends Fieldset
 		];
 	}
 
-	protected function validateFieldset() : Main\Result
+	protected function validateSelf() : Main\Result
 	{
 		$result = new Main\Result();
 
-		if ($this->getType() !==  Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE) { return $result; }
-
 		if (empty($this->getCatalogStore()))
 		{
-			$warehouse = $this->getWarehouse()->validate();
-
-			if (!$warehouse->isSuccess())
-			{
-				$result->addErrors($warehouse->getErrors());
-			}
-
 			if (empty($this->getValue('EMERGENCY_CONTACT')))
 			{
 				$result->addError(new Main\Error(static::getMessage('FIELD_EMERGENCY_REQUIRED')));
@@ -321,5 +312,23 @@ class Delivery extends Fieldset
 			'WAREHOUSE' => Warehouse::class,
 			'SHIPMENT_SCHEDULE' => ShipmentSchedule::class,
 		];
+	}
+
+	protected function validateFieldset() : Main\Result
+	{
+		$result = new Main\Result();
+
+		if (!empty($this->getCatalogStore())) { return $result; }
+
+		return parent::validateFieldset();
+	}
+
+	public function validate() : Main\Result
+	{
+		$result = new Main\Result();
+
+		if ($this->getType() !==  Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE) { return $result; }
+
+		return parent::validate();
 	}
 }

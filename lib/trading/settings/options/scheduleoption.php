@@ -31,24 +31,32 @@ class ScheduleOption extends IntervalOption
 		return $result;
 	}
 
-	public function getFromWeekday() : string
+	public function getFromWeekday() : ?string
 	{
-		return $this->requireValue('FROM_WEEKDAY');
+		return $this->getValue('FROM_WEEKDAY') ?: null;
 	}
 
-	public function getToWeekday() : string
+	public function getToWeekday() : ?string
 	{
-		return $this->requireValue('TO_WEEKDAY');
+		return $this->getValue('TO_WEEKDAY') ?: null;
 	}
 
-	public function getStart() : string
+	protected function isValidWeekday($number) : bool
 	{
-		return $this->requireValue('START');
+		return ($number !== null && $number >= static::WEEKDAY_FIRST && $number <= static::WEEKDAY_LAST);
 	}
 
-	public function getEnd() : string
+	public function isValid() : bool
 	{
-		return $this->requireValue('END');
+		$timeValid = parent::isValid();
+		$fromWeekday = $this->getFromWeekday();
+		$toWeekday = $this->getToWeekday();
+
+		return (
+			$this->isValidWeekday($fromWeekday)
+			&& $this->isValidWeekday($toWeekday)
+			&& $timeValid
+		);
 	}
 
 	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array

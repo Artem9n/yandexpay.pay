@@ -57,23 +57,6 @@ class IntervalOption extends Settings\Reference\Fieldset
 		return $result;
 	}
 
-	/*public function applyFromTime(Main\Type\DateTime $date)
-	{
-		$fromTime = $this->getFromTime();
-		list($hour, $minutes) = Market\Data\Time::parse($fromTime);
-
-		if ($hour === null)
-		{
-			$hour = 0;
-			$minutes = 0;
-		}
-
-		$date = clone $date;
-		$date->setTime($hour, $minutes);
-
-		return $date;
-	}*/
-
 	public function getFromTime() : ?string
 	{
 		return $this->getValue('FROM_TIME') ?: null;
