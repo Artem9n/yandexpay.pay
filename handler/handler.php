@@ -157,8 +157,6 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		/** @var \Bitrix\Sale\BasketItem $basketItem */
 		foreach ($basket as $basketItem)
 		{
-			if ($basketItem->getFinalPrice() <= 0) { continue; }
-
 			$result['items'][] = [
 				'label'     => $basketItem->getField('NAME'),
 				'amount'    => $basketItem->getFinalPrice(),
