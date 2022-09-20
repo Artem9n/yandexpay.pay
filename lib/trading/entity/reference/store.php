@@ -8,6 +8,7 @@ abstract class Store
 {
 	public const FIELD_BEHAVIOR_WAREHOUSE = 'warehouse';
 	public const FIELD_BEHAVIOR_CONTACT = 'contact';
+	public const FIELD_BEHAVIOR_SHIPMENT_SCHEDULE = 'shipmentschedule';
 
 	protected $environment;
 

@@ -23,6 +23,11 @@ class BracketChain extends DotChain
 					$keyPart = $key;
 					$keyOffset = $keyLength;
 				}
+				else if ($arrayEnd === 0)
+				{
+					$keyOffset = 1;
+					continue;
+				}
 				else
 				{
 					$keyPart = mb_substr($key, $keyOffset, $arrayEnd - $keyOffset);

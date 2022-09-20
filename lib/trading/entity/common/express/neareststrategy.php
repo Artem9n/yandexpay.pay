@@ -18,7 +18,7 @@ class NearestStrategy extends AbstractStrategy
 		return self::getMessage('TITLE');
 	}
 
-	public function resolve(array $storeIds, Dto\Address $address = null, array $context = []) : ?int
+	public function resolve(array $storeIds, Dto\Address $address = null, array $context = []) : ?array
 	{
 		$stores = $this->getStores($storeIds, $context);
 
@@ -26,8 +26,7 @@ class NearestStrategy extends AbstractStrategy
 
 		if ($address === null)
 		{
-			$stores = array_keys($stores);
-			$result = $stores[0];
+			$result = reset($stores);
 		}
 		else
 		{
@@ -36,7 +35,7 @@ class NearestStrategy extends AbstractStrategy
 
 			foreach ($stores as $storeId => $store)
 			{
-				$warehouse->setValues($store['WAREHOUSE']);
+				$warehouse->setValues($store[$context['WAREHOUSE_FIELD']]);
 				$validateResult = $warehouse->validate();
 
 				if (!$validateResult->isSuccess()) { continue; }
@@ -51,7 +50,8 @@ class NearestStrategy extends AbstractStrategy
 
 			if (empty($distance)) { return null; }
 
-			$result = array_keys($distance, min($distance))[0];
+			$key = array_keys($distance, min($distance))[0];
+			$result = $stores[$key] ?? null;
 		}
 
 		return $result;
@@ -75,16 +75,33 @@ class NearestStrategy extends AbstractStrategy
 			'filter' => [
 				'ACTIVE' => 'Y',
 				'ID' => $storeIds,
+				[
+					'LOGIC' => 'OR',
+					['=SITE_ID' => $context['SITE_ID']],
+					['SITE_ID' => false],
+				],
 				'!' . $context['WAREHOUSE_FIELD'] => false,
 				'!' . $context['CONTACT_FIELD'] => false,
+				'!' . $context['SHIPMENT_SCHEDULE_FIELD'] => false,
 			],
-			'select' => ['ID', $context['WAREHOUSE_FIELD'], $context['CONTACT_FIELD']],
+			'select' => ['ID', 'SITE_ID', $context['WAREHOUSE_FIELD'], $context['CONTACT_FIELD'], $context['SHIPMENT_SCHEDULE_FIELD']],
 			'order' => [ 'SORT' => 'ASC' ],
 		]);
 
 		while ($store = $query->fetch())
 		{
-			$store['WAREHOUSE'] = unserialize($store[$context['WAREHOUSE_FIELD']], [ 'allowed_classes' => false ]);
+			$warehouse = $store[$context['WAREHOUSE_FIELD']];
+			$schedule = $store[$context['SHIPMENT_SCHEDULE_FIELD']];
+
+			if (!is_array($warehouse))
+			{
+				$store[$context['WAREHOUSE_FIELD']] = unserialize($warehouse, [ 'allowed_classes' => false ]);
+			}
+
+			if (!is_array($schedule))
+			{
+				$store[$context['SHIPMENT_SCHEDULE_FIELD']] = unserialize($schedule, [ 'allowed_classes' => false ]);
+			}
 
 			$result[$store['ID']] = $store;
 		}

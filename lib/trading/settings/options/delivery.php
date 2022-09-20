@@ -23,10 +23,16 @@ class Delivery extends Fieldset
 		return $this->requireValue('TYPE');
 	}
 
+	/** @noinspection PhpIncompatibleReturnTypeInspection */
 	public function getWarehouse() : Warehouse
 	{
-		/** @noinspection PhpIncompatibleReturnTypeInspection */
 		return $this->getFieldset('WAREHOUSE');
+	}
+
+	/** @noinspection PhpIncompatibleReturnTypeInspection */
+	public function getShipmentSchedule() : ShipmentSchedule
+	{
+		return $this->getFieldset('SHIPMENT_SCHEDULE');
 	}
 
 	public function getCatalogStore() : string
@@ -49,6 +55,11 @@ class Delivery extends Fieldset
 		return $this->requireValue('EMERGENCY_CONTACT');
 	}
 
+	public function getStoreShipmentSchedule() : string
+	{
+		return $this->requireValue('STORE_SHIPMENT_SCHEDULE');
+	}
+
 	public function getFieldDescription(Entity\Reference\Environment $environment, string $siteId) : array
 	{
 		$defaultsValue = $this->makeDeliveryOptionsDefaults($environment, $siteId);
@@ -57,8 +68,8 @@ class Delivery extends Fieldset
 			'SETTINGS' => [
 				'SUMMARY' => '#TYPE# &laquo;#ID#&raquo;',
 				'LAYOUT' => 'summary',
-				'MODAL_WIDTH' => 550,
-				'MODAL_HEIGHT' => 300,
+				'MODAL_WIDTH' => 650,
+				'MODAL_HEIGHT' => 400,
 				'DEFAULT_VALUE' => $defaultsValue,
 			],
 		];
@@ -133,6 +144,7 @@ class Delivery extends Fieldset
 			'CATALOG_STORE' => [
 				'TYPE' => 'enumeration',
 				'NAME' => self::getMessage('CATALOG_STORE'),
+				'HELP' => self::getMessage('CATALOG_STORE_HELP'),
 				'GROUP' => self::getMessage('GROUP_SETTINGS'),
 				'VALUES' => $environment->getStore()->expressStrategyEnum(),
 				'DEPEND' => [
@@ -149,6 +161,22 @@ class Delivery extends Fieldset
 			'WAREHOUSE' => $this->getWarehouse()->getFieldDescription($environment, $siteId) + [
 				'TYPE' => 'warehouse',
 				'NAME' => self::getMessage('WAREHOUSE'),
+				'HELP' => self::getMessage('WAREHOUSE_HELP'),
+				'DEPEND' => [
+					'CATALOG_STORE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
+						'VALUE' => true,
+					],
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
+					],
+				],
+			],
+			'SHIPMENT_SCHEDULE' => $this->getShipmentSchedule()->getFieldDescription($environment, $siteId) + [
+				'TYPE' => 'shipmentschedule',
+				'NAME' => self::getMessage('SHIPMENT_SCHEDULE'),
+				'HELP' => self::getMessage('SHIPMENT_SCHEDULE_HELP'),
 				'DEPEND' => [
 					'CATALOG_STORE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
@@ -163,6 +191,7 @@ class Delivery extends Fieldset
 			'EMERGENCY_CONTACT' => [
 				'TYPE' => 'user',
 				'NAME' => self::getMessage('EMERGENCY_CONTACT'),
+				'HELP' => self::getMessage('EMERGENCY_CONTACT_HELP'),
 				'DEPEND' => [
 					'CATALOG_STORE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
@@ -186,12 +215,16 @@ class Delivery extends Fieldset
 	{
 		$warehouseEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_WAREHOUSE);
 		$contactEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_CONTACT);
+		$scheduleEnum = $environment->getStore()->getFields(Entity\Reference\Store::FIELD_BEHAVIOR_SHIPMENT_SCHEDULE);
 
 		$warehouseHelp = self::getMessage('STORE_WAREHOUSE_HELP', [
 			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\WarehouseType::USER_TYPE_ID)
 		]);
 		$contactHelp = self::getMessage('STORE_CONTACT_HELP', [
 			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\UserType::USER_TYPE_ID)
+		]);
+		$scheduleHelp = self::getMessage('STORE_SHIPMENT_SCHEDULE_HELP', [
+			'#LINK#' => $this->getHelpLinkUserField(Ui\UserField\ShipmentScheduleType::USER_TYPE_ID)
 		]);
 
 		return [
@@ -201,6 +234,23 @@ class Delivery extends Fieldset
 				'HELP' => !empty($warehouseEnum) ? $warehouseHelp : null,
 				'NOTE' => empty($warehouseEnum) ? $warehouseHelp : null,
 				'VALUES' => $warehouseEnum,
+				'DEPEND' => [
+					'CATALOG_STORE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
+						'VALUE' => false,
+					],
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE,
+					],
+				],
+			],
+			'STORE_SHIPMENT_SCHEDULE' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('STORE_SHIPMENT_SCHEDULE'),
+				'HELP' => !empty($scheduleEnum) ? $scheduleHelp : null,
+				'NOTE' => empty($scheduleEnum) ? $scheduleHelp : null,
+				'VALUES' => $scheduleEnum,
 				'DEPEND' => [
 					'CATALOG_STORE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_EMPTY,
@@ -232,21 +282,12 @@ class Delivery extends Fieldset
 		];
 	}
 
-	protected function validateFieldset() : Main\Result
+	protected function validateSelf() : Main\Result
 	{
 		$result = new Main\Result();
 
-		if ($this->getType() !==  Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE) { return $result; }
-
 		if (empty($this->getCatalogStore()))
 		{
-			$warehouse = $this->getWarehouse()->validate();
-
-			if (!$warehouse->isSuccess())
-			{
-				$result->addErrors($warehouse->getErrors());
-			}
-
 			if (empty($this->getValue('EMERGENCY_CONTACT')))
 			{
 				$result->addError(new Main\Error(static::getMessage('FIELD_EMERGENCY_REQUIRED')));
@@ -254,7 +295,7 @@ class Delivery extends Fieldset
 		}
 		else
 		{
-			foreach (['STORE_CONTACT', 'STORE_WAREHOUSE'] as $code)
+			foreach (['STORE_CONTACT', 'STORE_WAREHOUSE', 'STORE_SHIPMENT_SCHEDULE'] as $code)
 			{
 				if (!empty($this->getValue($code))) { continue; }
 				$message = static::getMessage(sprintf('FIELD_%s_REQUIRED', $code));
@@ -269,6 +310,25 @@ class Delivery extends Fieldset
 	{
 		return [
 			'WAREHOUSE' => Warehouse::class,
+			'SHIPMENT_SCHEDULE' => ShipmentSchedule::class,
 		];
+	}
+
+	protected function validateFieldset() : Main\Result
+	{
+		$result = new Main\Result();
+
+		if (!empty($this->getCatalogStore())) { return $result; }
+
+		return parent::validateFieldset();
+	}
+
+	public function validate() : Main\Result
+	{
+		$result = new Main\Result();
+
+		if ($this->getType() !==  Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE) { return $result; }
+
+		return parent::validate();
 	}
 }

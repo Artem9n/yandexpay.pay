@@ -1,4 +1,5 @@
 <?php
+
 namespace YandexPay\Pay\Ui\UserField;
 
 use YandexPay\Pay\Reference\Concerns;
@@ -6,11 +7,11 @@ use YandexPay\Pay\Trading\Settings\Options;
 use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 
 /** @noinspection PhpUnused */
-class WarehouseType extends FieldsetType
+class ShipmentScheduleType extends FieldsetType
 {
 	use Concerns\HasMessage;
 
-	public const USER_TYPE_ID = 'yapay_warehouse';
+	public const USER_TYPE_ID = 'yapay_shipment_schedule';
 
 	public function getUserTypeDescription() : array
 	{
@@ -29,7 +30,7 @@ class WarehouseType extends FieldsetType
 	}
 
 	/** @noinspection PhpUnusedParameterInspection */
-	public static function onBeforeSave(array $userField, $value) : string
+	public static function onBeforeSave(array $userField, $value)
 	{
 		if (is_array($value))
 		{
@@ -37,6 +38,30 @@ class WarehouseType extends FieldsetType
 		}
 
 		return $value;
+	}
+
+	protected static function makeLayout($userField, $htmlControl) : Fieldset\AbstractLayout
+	{
+		$userField = static::userFieldDefaults($userField);
+
+		return parent::makeLayout($userField, $htmlControl);
+	}
+
+	protected static function userFieldDefaults(array $userField) : array
+	{
+		$userField['NAME'] = static::getMessage('NAME');
+
+		if (!isset($userField['SETTINGS'])) { $userField['SETTINGS'] = []; }
+
+		$userField['SETTINGS'] += [
+			'SUMMARY' => '#SCHEDULE# (#HOLIDAY.CALENDAR#)',
+			'PLACEHOLDER' => self::getMessage('PLACEHOLDER'),
+			'LAYOUT' => 'summary',
+			'MODAL_WIDTH' => 600,
+			'MODAL_HEIGHT' => 450,
+		];
+
+		return $userField;
 	}
 
 	protected static function asSingle(array $userField, ?array $htmlControl)
@@ -49,50 +74,11 @@ class WarehouseType extends FieldsetType
 		return parent::asSingle($userField, $htmlControl);
 	}
 
-	protected static function makeLayout($userField, $htmlControl) : Fieldset\AbstractLayout
-	{
-		$userField = static::userFieldDefaults($userField);
-		$fields = static::getFields($userField);
-
-		$result = new Fieldset\SummaryLayout($userField, $htmlControl['NAME'], $fields);
-		$result->formRenderer(static function(array $fields, array $values, array $settings = []) {
-			global $APPLICATION;
-
-			ob_start();
-
-			$APPLICATION->IncludeComponent('yandexpay.pay:admin.field.warehouse', '', [
-				'FIELDS' => $fields,
-				'VALUES' => $values,
-				'SETTINGS' => $settings,
-			]);
-
-			return ob_get_clean();
-		});
-
-		return $result;
-	}
-
-	protected static function userFieldDefaults(array $userField) : array
-	{
-		$userField['NAME'] = static::getMessage('NAME');
-
-		if (!isset($userField['SETTINGS'])) { $userField['SETTINGS'] = []; }
-
-		$userField['SETTINGS'] += [
-			'SUMMARY' => '#COUNTRY#, #LOCALITY#, #STREET#, #BUILDING#',
-			'LAYOUT' => 'summary',
-			'MODAL_WIDTH' => 1000,
-			'MODAL_HEIGHT' => 600,
-		];
-
-		return $userField;
-	}
-
 	public static function getFields(array $userField) : array
 	{
 		if (isset($userField['FIELDS'])) { return $userField['FIELDS']; }
 
-		$option = new Options\Warehouse();
+		$option = new Options\ShipmentSchedule();
 		$environment = EntityRegistry::getEnvironment();
 		$siteId = $environment->getSite()->getDefault();
 

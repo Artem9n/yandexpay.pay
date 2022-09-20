@@ -48,9 +48,9 @@ class UserType
 
 		return <<<OUTPUT
 			<div class="yapay-user-type">
-				<input type="text" name="{$name}" id="{$name}" value="{$value}" size="5">
-				<button class="adm-btn js-plugin" type="button" data-plugin="Ui.UserType" data-url="/bitrix/admin/user_search.php?lang={$lang}">...</button>
-				<span class="yapay-user-data">{$userHtml}</span>
+				<input class="yapay-user-type-item" type="text" name="{$name}" id="{$name}" value="{$value}" size="5">
+				<button class="yapay-user-type-item adm-btn js-plugin" type="button" data-plugin="Ui.UserType" data-url="/bitrix/admin/user_search.php?lang={$lang}">...</button>
+				<span class="yapay-user-type-item yapay-user-data">{$userHtml}</span>
 			</div>
 OUTPUT;
 	}

@@ -24,13 +24,24 @@ class CouponsCollector extends ResponseCollector
 			{
 				$status = 'EXPIRED';
 			}
-			else if ($coupon['STATUS'] === Sale\DiscountCouponsManager::STATUS_NOT_FOUND)
+			else if (
+				$coupon['STATUS'] === Sale\DiscountCouponsManager::STATUS_NOT_FOUND
+				|| $coupon['STATUS'] === Sale\DiscountCouponsManager::STATUS_NOT_APPLYED
+				|| $coupon['STATUS'] === Sale\DiscountCouponsManager::STATUS_ENTERED
+			)
 			{
 				$status = 'INVALID';
 			}
 			else
 			{
 				$isFind = true;
+			}
+
+			if (isset($coupon['CHECK_CODE_TEXT']))
+			{
+				$coupon['STATUS_TEXT'] = is_array($coupon['CHECK_CODE_TEXT'])
+					? implode(', ', $coupon['CHECK_CODE_TEXT'])
+					: $coupon['CHECK_CODE_TEXT'];
 			}
 
 			$result[] = [
