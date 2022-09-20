@@ -602,7 +602,11 @@ class Delivery extends EntityReference\Delivery
 			'filter' => [
 				'!=GPS_N' => false,
 				'!=GPS_S' => false,
-				'=SITE_ID' => $siteId,
+				[
+					'LOGIC' => 'OR',
+					['=SITE_ID' => $siteId],
+					['SITE_ID' => false],
+				],
 			],
 			'order' => [
 				'SORT' => 'ASC',
