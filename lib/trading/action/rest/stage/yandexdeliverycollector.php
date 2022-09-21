@@ -176,9 +176,9 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 		return $result;
 	}
 
-	protected function customCollector(Options\HolidayOption $holiday) : array
+	protected function customCollector(Options\HolidayOption $holiday) : ?array
 	{
-		$result = [];
+		$result = null;
 		$calendar = $holiday->getCalendar();
 		$holidays = array_flip($calendar->holidays());
 		$workdays = array_flip($calendar->workdays());
