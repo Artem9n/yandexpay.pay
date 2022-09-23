@@ -11,6 +11,7 @@ use Sale\Handlers\PaySystem\YandexPayHandler;
 use YandexPay\Pay\Delivery\Yandex\Api;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Trading\Action;
 use YandexPay\Pay\Trading\Entity as TradingEntity;
 
 if (!Main\Loader::includeModule('sale')) { return; }
@@ -148,6 +149,16 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 			);
 
 			$transport->setPayload($response->getDeliveryData());
+		}
+		else
+		{
+			$response = $this->sendRequest(
+				$orderId,
+				new Action\Api\Order\Request(),
+				Action\Api\Order\Response::class
+			);
+
+			$transport->setPayload($response->getDelivery()->getData());
 		}
 
 		$transport->save();
@@ -355,14 +366,14 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 	 * @template T
 	 *
 	 * @param int $orderId
-	 * @param Api\Reference\Request $request
+	 * @param Action\Api\Reference\Request $request
 	 * @param class-string<T> $responseClass
 	 *
 	 * @return T
 	 */
 	protected function sendRequest(
 		int $orderId,
-		Api\Reference\Request $request,
+		Action\Api\Reference\Request $request,
 		string $responseClass
 	)
 	{
@@ -370,7 +381,11 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 
 		$request->setTestMode($isTestMode);
 		$request->setApiKey($apiKey);
-		$request->setOrderId($orderId);
+
+		if (method_exists($request, 'setOrderId'))
+		{
+			$request->setOrderId($orderId);
+		}
 
 		return $request->buildResponse($request->send(), $responseClass);
 	}

@@ -12,10 +12,16 @@ class Response extends Api\Reference\Response
 		return $this->getChildModel('data.order');
 	}
 
+	public function getDelivery() : Api\Order\Dto\Delivery
+	{
+		return $this->getChildModel('data.delivery');
+	}
+
 	protected function modelMap() : array
 	{
 		return [
-			'data.order' => Api\Order\Dto\Order::class
+			'data.order' => Api\Order\Dto\Order::class,
+			'data.delivery' => Api\Order\Dto\Delivery::class,
 		];
 	}
 }
