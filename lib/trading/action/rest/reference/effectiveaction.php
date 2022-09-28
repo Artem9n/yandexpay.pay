@@ -189,6 +189,7 @@ abstract class EffectiveAction extends HttpAction
 		$state->options = $this->options;
 		$state->environment = EntityRegistry::getEnvironment();
 		$state->isTestMode = $this->isTestMode;
+		$state->logger = $this->logger;
 	}
 
 	/**
