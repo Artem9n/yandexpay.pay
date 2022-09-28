@@ -362,7 +362,7 @@ class Delivery extends EntityReference\Delivery
 		$shipment->setDeliveryService($deliveryService);
 	}
 
-	public function getDeliveryService($deliveryId) : Sale\Delivery\Services\Base
+	public function getDeliveryService(int $deliveryId) : Sale\Delivery\Services\Base
 	{
 		if (!isset($this->deliveryServices[$deliveryId]))
 		{

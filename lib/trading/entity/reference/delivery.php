@@ -129,4 +129,9 @@ class Delivery
 	{
 		throw new NotImplementedException('getDefaultAddress is missing');
 	}
+
+	public function getDeliveryService(int $deliveryId) : Sale\Delivery\Services\Base
+	{
+		throw new NotImplementedException('getDeliveryService is missing');
+	}
 }
