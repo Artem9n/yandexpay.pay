@@ -8,11 +8,11 @@ $MESS['YANDEX_PAY_MAIN_DESCRIPTION'] = 'Yandex Pay — удобныи? и безопасныи? спос
 $MESS['YANDEX_PAY_TEST_MODE_NAME'] = 'Тестовый режим';
 $MESS['YANDEX_PAY_TEST_MODE_DESCRIPTION'] = 'Если отмечено, платежная служба будет работать в тестовом режиме. При пустом значении будет стандартный режим работы.';
 
-$MESS['YANDEX_PAY_MERCHANT_ID_NAME'] = 'Идентификатор продавца';
-$MESS['YANDEX_PAY_MERCHANT_ID_DESCRIPTION'] = 'Идентификатор, который продавец получает при регистрации в Yandex Pay';
+$MESS['YANDEX_PAY_MERCHANT_ID_NAME'] = 'Merchant ID';
+$MESS['YANDEX_PAY_MERCHANT_ID_DESCRIPTION'] = 'Merchant ID, который продавец получает при регистрации в Yandex Pay';
 
-$MESS['YANDEX_PAY_REST_API_KEY_NAME'] = 'Api key yandex pay';
-$MESS['YANDEX_PAY_REST_API_KEY_DESCRIPTION'] = 'Для запросов по новой модели оплаты полученный от Yandex Pay';
+$MESS['YANDEX_PAY_REST_API_KEY_NAME'] = 'Ключ Yandex Pay Merchant API';
+$MESS['YANDEX_PAY_REST_API_KEY_DESCRIPTION'] = 'Для аутентификация запроса продавца';
 
 $MESS['YANDEX_PAY_MERCHANT_NAME_NAME'] = 'Имя продавца';
 $MESS['YANDEX_PAY_MERCHANT_NAME_DESCRIPTION'] = 'Имя, которое продавец указывает при регистрации в Yandex Pay';
@@ -23,6 +23,9 @@ $MESS['YANDEX_PAY_VARIANT_BUTTON_WHITE'] = 'Белая';
 $MESS['YANDEX_PAY_VARIANT_BUTTON_COUNTER'] = 'Белая с контуром';
 $MESS['YANDEX_PAY_VARIANT_BUTTON_BLACK'] = 'Черная';
 $MESS['YANDEX_PAY_NOTIFY_URL'] = 'Адрес для уведомлений';
+
+$MESS['YANDEX_PAY_LOG_LEVEL_NAME'] = 'Содержание журнала событий';
+$MESS['YANDEX_PAY_LOG_LEVEL_DESCRIPTION'] = 'Выберите вариант «Информация» — тогда в журнале событий будут отображаться ошибки и любые действия с заказами.';
 
 $MESS['YANDEX_PAY_WIDTH_BUTTON_NAME'] = 'Ширина кнопки';
 $MESS['YANDEX_PAY_WIDTH_BUTTON_DESCRIPTION'] = 'Выберите вариант размещения кнопки по ширине';
