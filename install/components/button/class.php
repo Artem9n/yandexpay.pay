@@ -7,6 +7,7 @@ use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Main\Localization\Loc;
 use YandexPay\Pay\Config;
+use YandexPay\Pay\Logger;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading;
 use YandexPay\Pay\Injection;
@@ -56,11 +57,9 @@ class TradingButton extends \CBitrixComponent
 		}
 		catch (Main\SystemException $exception)
 		{
-			// todo  loggers
-
-			/*echo '<pre>';
-			print_r($exception->getMessage());
-			echo '</pre>';*/
+			$logger = new Logger\Logger();
+			$logger->setUrl($this->request->getRequestUri());
+			$logger->error(...(new Logger\Formatter\Exception($exception))->forLogger());
 		}
 	}
 
