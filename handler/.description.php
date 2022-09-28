@@ -110,6 +110,19 @@ $data = [
 				'VALUE' => Utils\Url::absolutizePath(BX_ROOT . '/tools/yandexpay.pay/sale_ps_yandexpay_result.php')
 			],
 		],
+		'YANDEX_PAY_LOG_LEVEL' => [
+			'NAME' => Loc::getMessage('YANDEX_PAY_LOG_LEVEL_NAME'),
+			'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_LOG_LEVEL_DESCRIPTION'),
+			'SORT' => 355,
+			'INPUT' => [
+				'TYPE' => 'ENUM',
+				'OPTIONS' => \YandexPay\Pay\Logger\Level::getEnum(),
+			],
+			'DEFAULT' => [
+				'PROVIDER_VALUE'    => \YandexPay\Pay\Logger\Level::INFO,
+				'PROVIDER_KEY'      => 'INPUT',
+			]
+		],
 		'YANDEX_PAY_STATUS_ORDER_AUTO_PAY' => [
 			'NAME' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_AUTO_PAY_NAME'),
 			'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_STATUS_ORDER_AUTO_PAY_DESCRIPTION'),
