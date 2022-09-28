@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Trading\Settings;
 
 use Bitrix\Main;
 use YandexPay\Pay\Config;
+use YandexPay\Pay\Logger;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity;
 use YandexPay\Pay\Injection;
@@ -57,6 +58,11 @@ class Options extends Reference\Skeleton
 	public function useBuyerEmail() : bool
 	{
 		return $this->getProperty('EMAIL') !== null;
+	}
+
+	public function getLogLevel() : string
+	{
+		return $this->requireValue('LOG_LEVEL');
 	}
 
 	public function getSuccessUrl() : string
@@ -146,6 +152,7 @@ class Options extends Reference\Skeleton
 			+ $this->getBuyerProperties($environment, $siteId)
 			+ $this->getAddressFields($environment, $siteId)
 			+ $this->getCommentFields($environment, $siteId)
+			+ $this->getLoggerFields($environment, $siteId)
 			+ $this->getSuccessUrlFields($environment, $siteId)
 			+ $this->getSolutionFields($environment, $siteId)
 			+ $this->getEditSolutionFields($environment, $siteId)
@@ -317,6 +324,41 @@ class Options extends Reference\Skeleton
 				],
 			],
 		];
+	}
+
+	protected function getLoggerFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		$logLevels = $this->makeLogLevels();
+
+		return [
+			'LOG_LEVEL' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('LOG_LEVEL_NAME'),
+				'HELP' => self::getMessage('LOG_LEVEL_HELP'),
+				'GROUP' => self::getMessage('YANDEX_PAY'),
+				'SORT' => 3990,
+				'VALUES' => $logLevels,
+				'SETTINGS' => [
+					'ALLOW_NO_VALUE' => 'N',
+					'DEFAULT_VALUE' => Logger\Level::INFO,
+				],
+			],
+		];
+	}
+
+	protected function makeLogLevels() : array
+	{
+		$result = [];
+
+		foreach (Logger\Level::getEnum() as $id => $value)
+		{
+			$result[$id] = [
+				'ID' => $id,
+				'VALUE' => $value,
+			];
+		}
+
+		return $result;
 	}
 
 	protected function getSuccessUrlFields(Entity\Reference\Environment $environment, string $siteId) : array
