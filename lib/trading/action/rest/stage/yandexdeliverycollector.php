@@ -3,6 +3,7 @@ namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
 use Bitrix\Main;
 use YandexPay\Pay\Data;
+use YandexPay\Pay\Logger;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Action\Rest;
 use YandexPay\Pay\Trading\Settings\Options;
@@ -82,7 +83,9 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 		}
 		catch (Main\SystemException $exception)
 		{
-			trigger_error($exception->getMessage(), E_USER_WARNING);
+			$state->logger->warning(...(new Logger\Formatter\Exception($exception, [
+				'AUDIT' => Logger\Audit::YANDEX_DELIVERY
+			]))->forLogger());
 		}
 	}
 
