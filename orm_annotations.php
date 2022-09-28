@@ -704,3 +704,184 @@ namespace YandexPay\Pay\Delivery\Yandex\Internals {
 	 */
 	class EO_Repository_Entity extends \Bitrix\Main\ORM\Entity {}
 }
+
+/* ORMENTITYANNOTATION:YandexPay\Pay\Logger\Table */
+namespace YandexPay\Pay\Logger {
+	/**
+	 * EO_NNM_Object
+	 * @see \YandexPay\Pay\Logger\Table
+	 *
+	 * Custom methods:
+	 * ---------------
+	 *
+	 * @method \int getId()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object setId(\int $id)
+	 * @method bool hasId()
+	 * @method bool isIdFilled()
+	 * @method bool isIdChanged()
+	 * @method \Bitrix\Main\Type\DateTime getTimestampX()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object setTimestampX(\Bitrix\Main\Type\DateTime $timestampX)
+	 * @method bool hasTimestampX()
+	 * @method bool isTimestampXFilled()
+	 * @method bool isTimestampXChanged()
+	 * @method \Bitrix\Main\Type\DateTime remindActualTimestampX()
+	 * @method \Bitrix\Main\Type\DateTime requireTimestampX()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object resetTimestampX()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object unsetTimestampX()
+	 * @method \Bitrix\Main\Type\DateTime fillTimestampX()
+	 * @method \string getLevel()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object setLevel(\string $level)
+	 * @method bool hasLevel()
+	 * @method bool isLevelFilled()
+	 * @method bool isLevelChanged()
+	 * @method \string remindActualLevel()
+	 * @method \string requireLevel()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object resetLevel()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object unsetLevel()
+	 * @method \string fillLevel()
+	 * @method \string getAudit()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object setAudit(\string $audit)
+	 * @method bool hasAudit()
+	 * @method bool isAuditFilled()
+	 * @method bool isAuditChanged()
+	 * @method \string remindActualAudit()
+	 * @method \string requireAudit()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object resetAudit()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object unsetAudit()
+	 * @method \string fillAudit()
+	 * @method \string getMessage()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object setMessage(\string $message)
+	 * @method bool hasMessage()
+	 * @method bool isMessageFilled()
+	 * @method bool isMessageChanged()
+	 * @method \string remindActualMessage()
+	 * @method \string requireMessage()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object resetMessage()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object unsetMessage()
+	 * @method \string fillMessage()
+	 * @method \string getUrl()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object setUrl(\string $url)
+	 * @method bool hasUrl()
+	 * @method bool isUrlFilled()
+	 * @method bool isUrlChanged()
+	 * @method \string remindActualUrl()
+	 * @method \string requireUrl()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object resetUrl()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object unsetUrl()
+	 * @method \string fillUrl()
+	 *
+	 * Common methods:
+	 * ---------------
+	 *
+	 * @property-read \Bitrix\Main\ORM\Entity $entity
+	 * @property-read array $primary
+	 * @property-read int $state @see \Bitrix\Main\ORM\Objectify\State
+	 * @property \Bitrix\Main\Authentication\Context $authContext
+	 * @method mixed get($fieldName)
+	 * @method mixed remindActual($fieldName)
+	 * @method mixed require($fieldName)
+	 * @method bool has($fieldName)
+	 * @method bool isFilled($fieldName)
+	 * @method bool isChanged($fieldName)
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object set($fieldName, $value)
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object reset($fieldName)
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object unset($fieldName)
+	 * @method void addTo($fieldName, $value)
+	 * @method void removeFrom($fieldName, $value)
+	 * @method void removeAll($fieldName)
+	 * @method \Bitrix\Main\ORM\Data\Result delete()
+	 * @method void fill($fields = \Bitrix\Main\ORM\Fields\FieldTypeMask::ALL) flag or array of field names
+	 * @method mixed[] collectValues($valuesType = \Bitrix\Main\ORM\Objectify\Values::ALL, $fieldsMask = \Bitrix\Main\ORM\Fields\FieldTypeMask::ALL)
+	 * @method \Bitrix\Main\ORM\Data\AddResult|\Bitrix\Main\ORM\Data\UpdateResult|\Bitrix\Main\ORM\Data\Result save()
+	 * @method static \YandexPay\Pay\Logger\EO_NNM_Object wakeUp($data)
+	 */
+	class EO_NNM_Object {
+		/* @var \YandexPay\Pay\Logger\Table */
+		static public $dataClass = '\YandexPay\Pay\Logger\Table';
+		/**
+		 * @param bool|array $setDefaultValues
+		 */
+		public function __construct($setDefaultValues = true) {}
+	}
+}
+namespace YandexPay\Pay\Logger {
+	/**
+	 * EO__Collection
+	 *
+	 * Custom methods:
+	 * ---------------
+	 *
+	 * @method \int[] getIdList()
+	 * @method \Bitrix\Main\Type\DateTime[] getTimestampXList()
+	 * @method fillTimestampX()
+	 * @method \string[] getLevelList()
+	 * @method fillLevel()
+	 * @method \string[] getAuditList()
+	 * @method fillAudit()
+	 * @method \string[] getMessageList()
+	 * @method fillMessage()
+	 * @method \string[] getUrlList()
+	 * @method fillUrl()
+	 *
+	 * Common methods:
+	 * ---------------
+	 *
+	 * @property-read \Bitrix\Main\ORM\Entity $entity
+	 * @method void add(\YandexPay\Pay\Logger\EO_NNM_Object $object)
+	 * @method bool has(\YandexPay\Pay\Logger\EO_NNM_Object $object)
+	 * @method bool hasByPrimary($primary)
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object getByPrimary($primary)
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object[] getAll()
+	 * @method bool remove(\YandexPay\Pay\Logger\EO_NNM_Object $object)
+	 * @method void removeByPrimary($primary)
+	 * @method void fill($fields = \Bitrix\Main\ORM\Fields\FieldTypeMask::ALL) flag or array of field names
+	 * @method static \YandexPay\Pay\Logger\EO__Collection wakeUp($data)
+	 * @method \Bitrix\Main\ORM\Data\Result save($ignoreEvents = false)
+	 * @method void offsetSet() ArrayAccess
+	 * @method void offsetExists() ArrayAccess
+	 * @method void offsetUnset() ArrayAccess
+	 * @method void offsetGet() ArrayAccess
+	 * @method void rewind() Iterator
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object current() Iterator
+	 * @method mixed key() Iterator
+	 * @method void next() Iterator
+	 * @method bool valid() Iterator
+	 * @method int count() Countable
+	 */
+	class EO__Collection implements \ArrayAccess, \Iterator, \Countable {
+		/* @var \YandexPay\Pay\Logger\Table */
+		static public $dataClass = '\YandexPay\Pay\Logger\Table';
+	}
+}
+namespace YandexPay\Pay\Logger {
+	/**
+	 * @method static EO__Query query()
+	 * @method static EO__Result getByPrimary($primary, array $parameters = array())
+	 * @method static EO__Result getById($id)
+	 * @method static EO__Result getList(array $parameters = array())
+	 * @method static EO__Entity getEntity()
+	 * @method static \YandexPay\Pay\Logger\EO_NNM_Object createObject($setDefaultValues = true)
+	 * @method static \YandexPay\Pay\Logger\EO__Collection createCollection()
+	 * @method static \YandexPay\Pay\Logger\EO_NNM_Object wakeUpObject($row)
+	 * @method static \YandexPay\Pay\Logger\EO__Collection wakeUpCollection($rows)
+	 */
+	class Table extends \Bitrix\Main\ORM\Data\DataManager {}
+	/**
+	 * @method EO__Result exec()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object fetchObject()
+	 * @method \YandexPay\Pay\Logger\EO__Collection fetchCollection()
+	 */
+	class EO__Query extends \Bitrix\Main\ORM\Query\Query {}
+	/**
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object fetchObject()
+	 * @method \YandexPay\Pay\Logger\EO__Collection fetchCollection()
+	 */
+	class EO__Result extends \Bitrix\Main\ORM\Query\Result {}
+	/**
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object createObject($setDefaultValues = true)
+	 * @method \YandexPay\Pay\Logger\EO__Collection createCollection()
+	 * @method \YandexPay\Pay\Logger\EO_NNM_Object wakeUpObject($row)
+	 * @method \YandexPay\Pay\Logger\EO__Collection wakeUpCollection($rows)
+	 */
+	class EO__Entity extends \Bitrix\Main\ORM\Entity {}
+}

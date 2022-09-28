@@ -36,7 +36,16 @@ class PaySystemTab extends Pay\Reference\Event\Regular
 				'TITLE' => self::getMessage('TITLE'),
 				'CONTENT' => sprintf(
 					'<tr><td id="yapay-paysystem-trading-container">%s</td></tr>',
-					static::renderTradingList($paySystemId)
+					static::renderTradingList()
+				),
+			],
+			[
+				'DIV' => 'yapay_log',
+				'TAB' => self::getMessage('TITLE_LOG'),
+				'TITLE' => self::getMessage('TITLE_LOG'),
+				'CONTENT' => sprintf(
+					'<tr><td id="yapay-paysystem-log-container">%s</td></tr>',
+					static::renderLogList()
 				),
 			]
 		]);
@@ -68,7 +77,30 @@ class PaySystemTab extends Pay\Reference\Event\Regular
 		return ($paySystem['ACTION_FILE'] === 'yandexpay');
 	}
 
-	protected static function renderTradingList(int $paySystemId) : string
+	protected static function renderLogList() : string
+	{
+		global $APPLICATION;
+
+		ob_start();
+
+		try
+		{
+			$controller = new Pay\Ui\Trading\LogTabGrid();
+
+			$controller->checkReadAccess();
+			$controller->loadModules();
+
+			$controller->show();
+		}
+		catch (Main\SystemException $exception)
+		{
+			\CAdminMessage::ShowMessage($exception->getMessage());
+		}
+
+		return ob_get_clean();
+	}
+
+	protected static function renderTradingList() : string
 	{
 		global $APPLICATION;
 

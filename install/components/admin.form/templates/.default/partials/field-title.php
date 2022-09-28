@@ -11,7 +11,7 @@ $isRequired = ($field['MANDATORY'] === 'Y');
 if (!empty($field['HELP']))
 {
 	?><span class="b-icon icon--question indent--right b-tag-tooltip--holder">
-		<span class="b-tag-tooltip--content"><?= $field['HELP']; ?></span>
+		<span class="b-tag-tooltip--content b-tag-tooltip--content_right"><?= $field['HELP']; ?></span>
 	</span><?php
 }
 

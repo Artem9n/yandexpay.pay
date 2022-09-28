@@ -52,11 +52,11 @@ abstract class AbstractProvider
 
 	public function processAjaxAction(string $action, array $data) : void
 	{
-		throw new Main\SystemException('ACTION_NOT_FOUND');
+
 	}
 
 	public function processPostAction(string $action, array $data) : void
 	{
-		throw new Main\SystemException('ACTION_NOT_FOUND');
+
 	}
 }
