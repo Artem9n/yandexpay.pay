@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\PickupDetail\Stage;
 
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
 use YandexPay\Pay\Trading\Action\Rest\PickupDetail;
 use YandexPay\Pay\Trading\Action\Rest\Reference\EffectiveResponse;
@@ -11,35 +12,65 @@ use YandexPay\Pay\Trading\Entity\Sale\Delivery;
 
 class PickupDetailCollector extends ResponseCollector
 {
+	use Concerns\HasMessage;
+
 	protected $request;
+	protected $deliveryId;
+	protected $storeId;
+	protected $locationId;
+	protected $zip;
 
 	public function __construct(EffectiveResponse $response, PickupDetail\Request $request, string $key = '')
 	{
 		parent::__construct($response, $key);
 
 		$this->request = $request;
+		$this->deliveryId = $request->getPickupId();
+		$this->storeId = $request->getStoreId();
+		$this->locationId = $request->getLocationId();
+		$this->zip = $request->getZip();
 	}
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		$deliveryService = $state->environment->getDelivery()->getDeliveryService($this->request->getPickupId());
-		$pickup = Delivery\Factory::make($deliveryService, 'pickup');
-		$pickup->prepareCalculatePickup($this->request->getPickupId(), $this->request->getStoreId(), $this->request->getLocationId(), $this->request->getZip());
+		$deliveryService = $state->environment->getDelivery()->getDeliveryService($this->deliveryId);
+		$pickup = Delivery\Factory::make($deliveryService, Delivery::PICKUP_TYPE);
+		$pickup->prepareCalculatePickup($this->deliveryId, $this->storeId, $this->locationId, $this->zip);
 
 		$state->order->clearCalculatable();
 
 		$state->order->setLocation($this->request->getLocationId());
 
-		$calculationResult = $state->environment->getDelivery()->calculate($this->request->getPickupId(), $state->order);
+		$isComatible = $state->environment->getDelivery()->isCompatible($this->deliveryId, $state->order);
+		$deliveryName = $deliveryService->getNameWithParent();
+
+		if (!$isComatible)
+		{
+			$message = self::getMessage('PICKUP_NOT_COMPATIBLE', [
+				'#STORE_ID#' => $this->storeId,
+				'#DELIVERY_ID#' => $this->deliveryId,
+				'#NAME#' => $deliveryName
+			]);
+
+			throw new DtoProperty($message, 'OTHER');
+		}
+
+		$calculationResult = $state->environment->getDelivery()->calculate($this->deliveryId, $state->order);
 
 		if (!$calculationResult->isSuccess())
 		{
-			throw new DtoProperty(implode(', ', $calculationResult->getErrorMessages()), 'OTHER');
+			$message = self::getMessage('PICKUP_NOT_CALCULATE', [
+				'#STORE_ID#' => $this->storeId,
+				'#DELIVERY_ID#' => $this->deliveryId,
+				'#NAME#' => $deliveryName,
+				'#ERROR_MESSAGES#' => implode(', ', $calculationResult->getErrorMessages()),
+			]);
+
+			throw new DtoProperty($message, 'OTHER');
 		}
 
-		$store = $pickup->getDetailPickup($this->request->getStoreId());
-
-		$result = $this->collectPickupOption($calculationResult, $store, $this->request->getLocationId());
+		$store = $pickup->getDetailPickup($this->storeId);
+		$result = $this->collectPickupOption($calculationResult, $store, $this->locationId);
 
 		$this->write($result);
 	}

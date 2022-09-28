@@ -1,32 +1,65 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
-use Bitrix\Sale;
+use YandexPay\Pay\Logger;
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Rest\State;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 
 class OrderDeliveryCollector extends ResponseCollector
 {
+	use Concerns\HasMessage;
+
 	public function __invoke(State\OrderCalculation $state)
 	{
 		$result = [];
 
 		$deliveries = $this->restrictedDeliveries($state);
 		$deliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::DELIVERY_TYPE);
+		$logMessages = [];
 
 		foreach ($deliveries as $deliveryId)
 		{
-			if (!$state->environment->getDelivery()->isCompatible($deliveryId, $state->order)) { continue; }
+			$deliveryName = $state->environment->getDelivery()->getDeliveryService($deliveryId)->getNameWithParent();
+
+			if (!$state->environment->getDelivery()->isCompatible($deliveryId, $state->order))
+			{
+				$logMessages[] = self::getMessage('DELIVERY_NOT_COMPATIBLE', [
+					'#ID#' => $deliveryId,
+					'#NAME#' => $deliveryName,
+				]);
+
+				continue;
+			}
 
 			$calculationResult = $state->environment->getDelivery()->calculate($deliveryId, $state->order);
 
-			if (!$calculationResult->isSuccess()) { continue; }
+			if (!$calculationResult->isSuccess())
+			{
+				$logMessages[] = self::getMessage('DELIVERY_NOT_CALCULATE', [
+					'#ID#' => $deliveryId,
+					'#NAME#' => $deliveryName,
+					'#ERROR_MESSAGES#' => implode(', ', $calculationResult->getErrorMessages()),
+				]);
+
+				continue;
+			}
 
 			$result[] = $this->collectDeliveryOption($calculationResult);
 		}
 
+		$this->writeLogger($state, $logMessages);
 		$this->write($result);
+	}
+
+	protected function writeLogger(State\OrderCalculation $state, array $messages) : void
+	{
+		if (empty($messages)) { return; }
+
+		$state->logger->warning(implode(', ', $messages), [
+			'AUDIT' => Logger\Audit::DELIVERY_COLLECTOR,
+		]);
 	}
 
 	protected function restrictedDeliveries(State\OrderCalculation $state) : array

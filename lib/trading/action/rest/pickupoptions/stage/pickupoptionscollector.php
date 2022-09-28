@@ -27,8 +27,6 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 
 		foreach ($deliveries as $deliveryId)
 		{
-			//if (!$state->environment->getDelivery()->isCompatible($deliveryId, $state->order)) { continue; }
-
 			$allStores = $state->environment->getDelivery()->getPickupStores($deliveryId, $state->order, $this->bounds);
 
 			foreach ($allStores as $locationId => $stores)
