@@ -4,6 +4,8 @@ namespace YandexPay\Pay\Components;
 
 use Bitrix\Main;
 use Bitrix\Main\Localization\Loc;
+use YandexPay\Pay\Logger;
+use YandexPay\Pay\Psr;
 use YandexPay\Pay\Trading\Action as TradingAction;
 
 if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true) { die(); }
@@ -17,6 +19,9 @@ class PurchaseRest extends \CBitrixComponent
 	private const HTTP_STATUS_404 = '404 Not Found';
 	private const HTTP_STATUS_500 = '500 Internal server error';
 
+	/** @var Psr\Log\LoggerInterface $logger */
+	protected $logger;
+
 	public function executeComponent()
 	{
 		try
@@ -25,13 +30,20 @@ class PurchaseRest extends \CBitrixComponent
 			$this->parseUrl();
 
 			$path = $this->getActionPath();
+
+			$this->bootLogger($path);
+
 			$action = $this->resolveAction($path);
+			$action->setLogger($this->logger);
 
 			$action->passHttp($this->request);
 			$action->bootstrap();
 
+			$this->logRequest($this->request);
+
 			$response = $action->process();
 
+			$this->logResponse($response);
 			$this->sendResponse($response);
 		}
 		catch (TradingAction\Rest\Exceptions\ActionNotImplemented $exception)
@@ -41,6 +53,7 @@ class PurchaseRest extends \CBitrixComponent
 				'reason' => 'Action not found',
 			]);
 
+			$this->logResponse($response);
 			$this->sendResponse($response);
 		}
 		catch (TradingAction\Rest\Exceptions\RequestAuthentication $exception)
@@ -49,6 +62,7 @@ class PurchaseRest extends \CBitrixComponent
 				'reasonCode' => 'FORBIDDEN',
 			]);
 
+			$this->logResponse($response, Psr\Log\LogLevel::CRITICAL);
 			$this->sendResponse($response);
 		}
 		catch (TradingAction\Reference\Exceptions\DtoProperty $exception)
@@ -57,12 +71,14 @@ class PurchaseRest extends \CBitrixComponent
 				'reasonCode' => $exception->getParameter()
 			]);
 
+			$this->logResponse($response, Psr\Log\LogLevel::ERROR);
 			$this->sendResponse($response);
 		}
 		catch (\Throwable $exception)
 		{
 			$response = $this->makeExceptionResponse($exception, static::HTTP_STATUS_500);
 
+			$this->logResponse($response, Psr\Log\LogLevel::ERROR);
 			$this->sendResponse($response);
 		}
 	}
@@ -77,6 +93,12 @@ class PurchaseRest extends \CBitrixComponent
 
 			throw new Main\SystemException($message);
 		}
+	}
+
+	protected function bootLogger(string $path) : void
+	{
+		$this->logger = new Logger\Logger();
+		$this->logger->setUrl($path);
 	}
 
 	protected function parseUrl() : void
@@ -162,6 +184,20 @@ class PurchaseRest extends \CBitrixComponent
 		$response->setStatus($status);
 
 		return $response;
+	}
+
+	protected function logRequest(Main\HttpRequest $request) : void
+	{
+ 		if ($this->logger === null) { return; }
+
+		$this->logger->debug(...(new Logger\Formatter\HttpRequest($request))->forLogger());
+	}
+
+	protected function logResponse(Main\HttpResponse $response, string $level = Psr\Log\LogLevel::DEBUG) : void
+	{
+ 		if ($this->logger === null) { return; }
+
+		$this->logger->log($level, ...(new Logger\Formatter\HttpResponse($response))->forLogger());
 	}
 
 	protected function sendResponse(Main\HttpResponse $response) : void
