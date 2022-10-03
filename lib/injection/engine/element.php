@@ -2,6 +2,7 @@
 namespace YandexPay\Pay\Injection\Engine;
 
 use Bitrix\Main;
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Logger;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Entity as TradingEntity;
@@ -42,9 +43,9 @@ class Element extends AbstractEngine
 		catch (Main\SystemException $exception)
 		{
 			$logger = new Logger\Logger();
-			$logger->setUrl(static::getRequest()->getRequestUri());
 			$logger->warning(...(new Logger\Formatter\Exception($exception, [
-				'AUDIT' => Logger\Audit::INJECTION_ELEMENT
+				'AUDIT' => Logger\Audit::INJECTION_ELEMENT,
+				'URL' => static::getRequest()->getRequestUri(),
 			]))->forLogger());
 			$result = null;
 		}
@@ -79,8 +80,6 @@ class Element extends AbstractEngine
 		$required = [
 			'ELEMENT_ID' => true,
 			'ELEMENT_CODE' => true,
-			'ID' => true,
-			'CODE' => true,
 		];
 
 		if (count(array_intersect_key($variables, $required)) === 0)
@@ -90,9 +89,7 @@ class Element extends AbstractEngine
 
 		$map = [
 			'ELEMENT_CODE' => '=CODE',
-			'CODE' => '=CODE',
 			'ELEMENT_ID' => '=ID',
-			'ID' => '=ID',
 			'SECTION_CODE' => '=SECTION_CODE',
 			'SECTION_ID' => '=SECTION_ID',
 		];
@@ -171,7 +168,7 @@ class Element extends AbstractEngine
 		return $pageVariables + $queryVariables;
 	}
 
-	protected static function parsePageTemplate(string $templatePage) : ?array
+	protected static function parsePageTemplate(string $templatePage) : array
 	{
 		$engine = new \CComponentEngine();
 
@@ -194,7 +191,7 @@ class Element extends AbstractEngine
 
 		if ($matched !== 'target')
 		{
-			throw new Main\ArgumentException('page not matched');
+			throw new Main\SystemException('page not matched');
 		}
 
 		return $variables;
