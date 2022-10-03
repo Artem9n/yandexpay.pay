@@ -23,11 +23,14 @@ abstract class EffectiveAction extends HttpAction
 	{
 		$this->bootJwt();
 		$this->bootJson();
+		$this->request = $this->convertHttpToRequest(Request::class);
+		$this->bootHttpHost($this->request->getHttpHost());
 	}
 
 	protected function bootJwt() : void
 	{
-		try {
+		try
+		{
 			$filter = new Utils\JwtBodyFilter($this->jwkUrl());
 			$this->httpRequest->addFilter($filter);
 		}
@@ -49,6 +52,15 @@ abstract class EffectiveAction extends HttpAction
 	{
 		$setup = $this->loadSetup($setupId);
 		$this->passTrading($setup);
+	}
+
+	protected function bootHttpHost(string $httpHost) : void
+	{
+		$isSetHttpHost = (string)Config::getOption('set_http_host', 'N');
+
+		if ($httpHost === '' && $isSetHttpHost === 'Y') { return; }
+
+		$_SERVER['HTTP_HOST'] = $httpHost;
 	}
 
 	protected function bootMerchant(string $merchantId) : void

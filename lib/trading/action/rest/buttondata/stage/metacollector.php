@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\ButtonData\Stage;
 
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Trading\Action\Rest\ButtonData\Request;
 use YandexPay\Pay\Trading\Action\Rest\Reference\EffectiveResponse;
 use YandexPay\Pay\Trading\Action\Rest\Stage\ResponseCollector;
@@ -23,6 +24,13 @@ class MetaCollector extends ResponseCollector
 			(string)$state->fUserId,
 			(string)$this->setupId,
 		];
+
+		$isSetHttpHost = (string)Config::getOption('set_http_host', 'N');
+
+		if ($isSetHttpHost === 'Y')
+		{
+			$userData[] = $_SERVER['HTTP_HOST'];
+		}
 
 		$this->write(implode(':', $userData));
 	}

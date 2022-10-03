@@ -12,23 +12,30 @@ class EffectiveRequest extends Dto
 
 	public function getUserId() : int
 	{
-		[$userId, $fUserId, $setupId] = $this->getMetadata();
+		[$userId, $fUserId, $setupId, $httpHost] = $this->getMetadata();
 
 		return (int)$userId;
 	}
 
 	public function getFUserId() : int
 	{
-		[$userId, $fUserId, $setupId] = $this->getMetadata();
+		[$userId, $fUserId, $setupId, $httpHost] = $this->getMetadata();
 
 		return (int)$fUserId;
 	}
 
 	public function getSetupId() : int
 	{
-		[$userId, $fUserId, $setupId] = $this->getMetadata();
+		[$userId, $fUserId, $setupId, $httpHost] = $this->getMetadata();
 
 		return (int)$setupId;
+	}
+
+	public function getHttpHost() : string
+	{
+		[$userId, $fUserId, $setupId, $httpHost] = $this->getMetadata();
+
+		return (string)$httpHost;
 	}
 
 	public function getMerchantId() : string
