@@ -6,12 +6,12 @@ use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 
 class UserAuthorize
 {
-	public function __invoke(State\Payment $state)
+	public function __invoke(State\Order $state)
 	{
 		$this->authorize($state);
 	}
 
-	protected function authorize(State\Payment $state) : void
+	protected function authorize(State\Order $state) : void
 	{
 		global $USER;
 

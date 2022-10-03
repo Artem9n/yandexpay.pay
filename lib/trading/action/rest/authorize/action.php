@@ -15,10 +15,10 @@ class Action extends Rest\Reference\EffectiveAction
 	{
 		$request = $this->convertHttpToRequest(Request::class);
 		$response = $this->makeResponse();
-		$state = $this->makeState(Rest\State\Payment::class);
+		$state = $this->makeState(Rest\State\Order::class);
 
 		(new Rest\Pipeline())
-			->pipe(new Rest\Stage\OrderLoad($request->getOrderId(), $request->getHash()))
+			->pipe(new Rest\Authorize\Stage\OrderLoad($request->getOrderId(), $request->getHash()))
 			->pipe(new Rest\Authorize\Stage\UserAuthorize())
 			->pipe(new Rest\Authorize\Stage\RedirectCollector($response, $request->getSuccessUrl(), 'redirect'))
 			->process($state);

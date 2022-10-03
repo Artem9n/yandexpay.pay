@@ -15,7 +15,7 @@ class RedirectCollector extends ResponseCollector
 		$this->successUrl = trim($successUrl, '/');
 	}
 
-	public function __invoke(State\Payment $state)
+	public function __invoke(State\Order $state)
 	{
 		$orderId = $state->order->getId();
 
