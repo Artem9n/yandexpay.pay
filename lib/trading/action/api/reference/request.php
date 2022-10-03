@@ -3,12 +3,15 @@
 namespace YandexPay\Pay\Trading\Action\Api\Reference;
 
 use Bitrix\Main;
+use YandexPay\Pay\Logger;
+use YandexPay\Pay\Psr;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Action;
 
 Main\Localization\Loc::loadMessages(__FILE__);
 
 abstract class Request
+	implements Psr\Log\LoggerAwareInterface
 {
 	public const DATA_TYPE_JSON = 'json';
 	public const DATA_TYPE_HTTP = 'http';
@@ -17,6 +20,18 @@ abstract class Request
 	protected $isTestMode = false;
 	/** @var string */
 	protected $apiKey;
+	/** @var Psr\Log\LoggerInterface */
+	protected $logger;
+
+	public function __construct()
+	{
+		$this->logger = new Logger\NullLogger();
+	}
+
+	public function setLogger(Psr\Log\LoggerInterface $logger) : void
+	{
+		$this->logger = $logger;
+	}
 
 	public function getUrl() : string
 	{
@@ -94,9 +109,7 @@ abstract class Request
 	{
 		$client = $this->buildClient();
 
-		$this->queryClient($client);
-
-		$httpResponse = $client->getResult();
+		$httpResponse = $this->queryClient($client);
 
 		$errors = $client->getError();
 
@@ -161,17 +174,16 @@ abstract class Request
 		return [];
 	}
 
-	protected function queryClient(Main\Web\HttpClient $client) : string
+	protected function queryClient(Main\Web\HttpClient $client) : ?string
 	{
 		$method = $this->getMethod();
 		$url = $this->getUrl();
 		$queryData = $this->getQuery();
-		$postData = null;
-		$result = null;
 
 		if ($method === Main\Web\HttpClient::HTTP_GET)
 		{
 			$fullUrl = $this->appendUrlQuery($url, $queryData);
+			$postData = null;
 		}
 		else
 		{
@@ -179,9 +191,17 @@ abstract class Request
 			$postData = $this->formatQueryData($queryData);
 		}
 
+		$this->logger->debug(...(new Logger\Formatter\OutgoingRequest($fullUrl, $queryData))->forLogger());
+
 		if ($client->query($method, $fullUrl, $postData))
 		{
 			$result = $client->getResult();
+			$this->logger->debug(...(new Logger\Formatter\OutgoingResponse($fullUrl, $result))->forLogger());
+		}
+		else
+		{
+			$result = null;
+			$this->logger->debug(...(new Logger\Formatter\OutgoingHttpError($fullUrl, $client))->forLogger());
 		}
 
 		return $result;
