@@ -27,26 +27,11 @@ class Cleaner extends Reference\Event\Regular
 
 	protected static function cleanTable(Main\Type\DateTime $dateTime) : void
 	{
-		$delete = [];
+		$batch = new Reference\Storage\Facade\DeleteBatch(Table::class);
 
-		$query = Table::getList([
-			'filter' => [
-				'<=TIMESTAMP_X' => $dateTime,
-			],
-			'select' => [ 'ID' ],
+		$batch->run([
+			'filter' => [ '<=TIMESTAMP_X' => $dateTime ],
 		]);
-
-		while ($row = $query->fetch())
-		{
-			$delete[] = $row['ID'];
-		}
-
-		if (empty($delete)) { return; }
-
-		foreach ($delete as $id)
-		{
-			Table::delete($id);
-		}
 	}
 
 	protected static function getExpireDays() : int
