@@ -31,6 +31,11 @@ class EffectiveRequest extends Dto
 		return (int)$setupId;
 	}
 
+	public function getMerchantId() : string
+	{
+		return $this->requireField('merchantId');
+	}
+
 	public function getCurrencyCode()
 	{
 		return $this->requireField('currencyCode');
