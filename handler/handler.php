@@ -11,6 +11,8 @@ use Bitrix\Sale\PaySystem\ServiceResult;
 use YandexPay\Pay\Config;
 use YandexPay\Pay\Exceptions\Secure3dRedirect;
 use YandexPay\Pay\Gateway;
+use YandexPay\Pay\Logger;
+use YandexPay\Pay\Psr;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Entity\Registry;
 use YandexPay\Pay\Ui\Admin\PaySystemEditPage;
@@ -198,6 +200,9 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		}
 		catch (Main\SystemException $exception)
 		{
+			$logger = $this->logger($payment);
+			$logger->error(...(new Logger\Formatter\Exception($exception))->forLogger());
+
 			$result->addError(new Main\Error($exception->getMessage()));
 		}
 
@@ -390,6 +395,11 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return $this->getParamValue($payment, 'STATUS_ORDER_CANCEL') ?? '';
 	}
 
+	public function logLevel(Payment $payment) : string
+	{
+		return $this->getParamValue($payment, 'LOG_LEVEL') ?? '';
+	}
+
 	public function isAutoPay(Payment $payment) : bool
 	{
 		return ($this->getParamValue($payment, 'STATUS_ORDER_AUTO_PAY') === 'Y');
@@ -402,35 +412,65 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function cancel(Payment $payment) : void
 	{
-		$request = new Api\Cancel\Request();
+		$logger = $this->logger($payment);
 
-		$apiKey = $this->getApiKey($payment);
+		$this->queryApi(
+			$payment,
+			Api\Cancel\Request::class,
+			Api\Cancel\Response::class,
+			$logger
+		);
 
-		if ($apiKey === null) { return; }
-
-		$request->setApiKey($apiKey);
-		$request->setTestMode($this->isTestMode($payment));
-		$request->setPayment($payment);
-
-		$data = $request->send();
-
-		$request->buildResponse($data, Api\Cancel\Response::class);
+		$logger->info(Main\Localization\Loc::getMessage('PAYMENT_CANCELLED', [
+			'#ORDER_ID#' => $payment->getOrderId()
+		]), ['AUDIT' => Logger\Audit::OUTGOING_REQUEST]);
 	}
 
 	public function confirm(Payment $payment) : void
 	{
-		$request = new Api\Capture\Request();
+		$logger = $this->logger($payment);
+
+		$this->queryApi(
+			$payment,
+			Api\Capture\Request::class,
+			Api\Capture\Response::class,
+			$logger
+		);
+
+		$logger->info(Main\Localization\Loc::getMessage('PAYMENT_CONFIMED', [
+			'#ORDER_ID#' => $payment->getOrderId()
+		]), ['AUDIT' => Logger\Audit::OUTGOING_REQUEST]);
+	}
+
+	/**
+	 * @param Payment $payment
+	 * @param class-string<Api\Reference\Request> $requestClass
+	 * @param class-string<Api\Reference\Response> $responseClass
+	 * @param Psr\Log\LoggerInterface|null $logger
+	 */
+	protected function queryApi(Payment $payment, string $requestClass, string $responseClass, Psr\Log\LoggerInterface $logger = null) : void
+	{
+		$request = new $requestClass();
 
 		$apiKey = $this->getApiKey($payment);
 
 		if ($apiKey === null) { return; }
 
+		$request->setLogger($logger ?? new Logger\NullLogger());
 		$request->setApiKey($apiKey);
 		$request->setTestMode($this->isTestMode($payment));
 		$request->setPayment($payment);
 
 		$data = $request->send();
 
-		$request->buildResponse($data, Api\Capture\Response::class);
+		$request->buildResponse($data, $responseClass);
+	}
+
+	protected function logger(Payment $payment) : Logger\Logger
+	{
+		$logger = new Logger\Logger();
+		$logger->setLevel($this->logLevel($payment));
+
+		return $logger;
 	}
 }
