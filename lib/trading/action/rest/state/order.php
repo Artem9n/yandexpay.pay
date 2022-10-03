@@ -13,4 +13,6 @@ class Order extends Common
 	public $basket;
 	/** @var Sale\Delivery\Services\Base */
 	public $delivery;
+	/** @var \Sale\Handlers\PaySystem\YandexPayHandler */
+	public $handler;
 }
