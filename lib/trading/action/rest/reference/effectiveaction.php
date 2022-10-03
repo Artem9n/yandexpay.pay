@@ -58,9 +58,10 @@ abstract class EffectiveAction extends HttpAction
 	{
 		$isSetHttpHost = (string)Config::getOption('set_http_host', 'N');
 
-		if ($httpHost === '' && $isSetHttpHost === 'Y') { return; }
-
-		$_SERVER['HTTP_HOST'] = $httpHost;
+		if ($isSetHttpHost === 'Y' && $httpHost !== '')
+		{
+			$_SERVER['HTTP_HOST'] = $httpHost;
+		}
 	}
 
 	protected function bootMerchant(string $merchantId) : void
