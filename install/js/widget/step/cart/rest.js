@@ -29,7 +29,9 @@ export default class RestProxy extends Proxy {
 	}
 
 	createPayment(node, paymentData) {
-		if (this._mounted === true) { return; }
+		if (this._mounted != null) { return; }
+
+		this._mounted = false;
 
 		YaPay.createCheckout(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then((payment) => {
@@ -61,6 +63,7 @@ export default class RestProxy extends Proxy {
 				});
 			})
 			.catch((err) => {
+				this._mounted = null;
 				node.remove();
 				this.cart.showError('yapayPayment','payment not created', err);
 			});
