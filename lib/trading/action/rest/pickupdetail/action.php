@@ -6,32 +6,47 @@ use YandexPay\Pay\Trading\Action\Rest;
 
 class Action extends Rest\Reference\EffectiveAction
 {
+	/** @var Request */
+	protected $request;
+
+	public function bootstrap() : void
+	{
+		parent::bootstrap();
+		$this->request = $this->convertHttpToRequest(Request::class);
+		$this->bootSetup($this->request->getSetupId());
+		$this->bootMerchant($this->request->getMerchantId());
+	}
+
 	public function process() : Main\HttpResponse
 	{
-		$request = $this->convertHttpToRequest(Request::class);
 		$response = $this->makeResponse();
 		$state = $this->makeState(Rest\State\PickupDetail::class);
 
 		(new Rest\Pipeline())
-			->pipe($this->calculationPipeline($request))
-			->pipe($this->collectorPipeline($response, $request))
+			->pipe($this->calculationPipeline())
+			->pipe($this->collectorPipeline($response))
 			->process($state);
 
 		return $this->convertResponseToHttp($response);
 	}
 
-	protected function calculationPipeline(Request $request) : Rest\Pipeline
+	protected function calculationPipeline() : Rest\Pipeline
 	{
 		return (new Rest\Pipeline())
-			->pipe(new Rest\Stage\NewOrder($request->getUserId(), $request->getFUserId(), $request->getCurrencyCode(), $request->getCoupons()))
+			->pipe(new Rest\Stage\NewOrder(
+				$this->request->getUserId(),
+				$this->request->getFUserId(),
+				$this->request->getCurrencyCode(),
+				$this->request->getCoupons()
+			))
 			->pipe(new Rest\Stage\OrderInitialize())
-			->pipe(new Rest\Stage\NewBasket($request->getItems()))
+			->pipe(new Rest\Stage\NewBasket($this->request->getItems()))
 			->pipe(new Rest\Stage\OrderFinalizer());
 	}
 
-	protected function collectorPipeline(Rest\Reference\EffectiveResponse $response, Request $request) : Rest\Pipeline
+	protected function collectorPipeline(Rest\Reference\EffectiveResponse $response) : Rest\Pipeline
 	{
 		return (new Rest\Pipeline())
-			->pipe(new Stage\PickupDetailCollector($response, $request, 'pickupOption'));
+			->pipe(new Stage\PickupDetailCollector($response, $this->request, 'pickupOption'));
 	}
 }
