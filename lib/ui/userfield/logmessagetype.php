@@ -119,7 +119,7 @@ class LogMessageType extends EnumerationType
 			'boundingBox',
 			'pickupPointId',
 			'cart',
-			'reason',
+			'reasonCode',
 			'event',
 			'refundAmount',
 		];
@@ -134,7 +134,7 @@ class LogMessageType extends EnumerationType
 		{
 			if (isset($data[$value]))
 			{
-				if ($value === 'reason')
+				if ($value === 'reasonCode')
 				{
 					$result = $data[$value];
 				}
