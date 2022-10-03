@@ -8,11 +8,11 @@ $MESS['YANDEX_PAY_MAIN_DESCRIPTION'] = 'Yandex Pay — удобныи? и безопасныи? спос
 $MESS['YANDEX_PAY_TEST_MODE_NAME'] = 'Тестовый режим';
 $MESS['YANDEX_PAY_TEST_MODE_DESCRIPTION'] = 'Если отмечено, платежная служба будет работать в тестовом режиме. При пустом значении будет стандартный режим работы.';
 
-$MESS['YANDEX_PAY_MERCHANT_ID_NAME'] = 'Merchant ID';
-$MESS['YANDEX_PAY_MERCHANT_ID_DESCRIPTION'] = 'Merchant ID, который продавец получает при регистрации в Yandex Pay';
+$MESS['YANDEX_PAY_MERCHANT_ID_NAME'] = 'Идентификатор продавца';
+$MESS['YANDEX_PAY_MERCHANT_ID_DESCRIPTION'] = 'Идентификатор, который продавец получает при регистрации в Yandex Pay';
 
-$MESS['YANDEX_PAY_REST_API_KEY_NAME'] = 'Ключ Yandex Pay Merchant API';
-$MESS['YANDEX_PAY_REST_API_KEY_DESCRIPTION'] = 'Для аутентификация запроса продавца';
+$MESS['YANDEX_PAY_REST_API_KEY_NAME'] = 'Api key yandex pay';
+$MESS['YANDEX_PAY_REST_API_KEY_DESCRIPTION'] = 'Для запросов по новой модели оплаты полученный от Yandex Pay';
 
 $MESS['YANDEX_PAY_MERCHANT_NAME_NAME'] = 'Имя продавца';
 $MESS['YANDEX_PAY_MERCHANT_NAME_DESCRIPTION'] = 'Имя, которое продавец указывает при регистрации в Yandex Pay';
