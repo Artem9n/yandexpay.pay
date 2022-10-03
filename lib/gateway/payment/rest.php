@@ -2,16 +2,13 @@
 
 namespace YandexPay\Pay\Gateway\Payment;
 
-use Bitrix\Main\SystemException;
 use YandexPay\Pay\Gateway\BaseRest;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Api;
+use YandexPay\Pay\Logger;
 
 class Rest
 {
-	public const STATUS_REFUND_PENDING = 'PENDING';  // на рассмотрение
-	public const STATUS_REFUND_SUCCESS = 'SUCCESS';  // успешный
-
 	/** @var BaseRest */
 	protected $gateway;
 
@@ -22,8 +19,18 @@ class Rest
 		$this->gateway = $gateway;
 	}
 
+	protected function logger() : Logger\Logger
+	{
+		$logger = new Logger\Logger();
+		$logger->setLevel($this->gateway->getParameter('YANDEX_PAY_LOG_LEVEL', true));
+
+		return $logger;
+	}
+
 	public function refund() : void
 	{
+		$logger = $this->logger();
+
 		$request = new Api\Refund\Request();
 
 		$isTestMode = $this->gateway->isTestHandlerMode();
@@ -34,6 +41,7 @@ class Rest
 
 		if ($apiKey === null) { return; }
 
+		$request->setLogger($logger);
 		$request->setApiKey($apiKey);
 		$request->setTestMode($isTestMode);
 		$request->setPayment($this->gateway->getPayment());
@@ -43,11 +51,15 @@ class Rest
 
 		$operation = $response->getOperation();
 
-		if ($operation->getStatus() === static::STATUS_REFUND_PENDING)
-		{
-			$messageCode = sprintf('OPERATION_%s_%s', $operation->getOperationType(), $operation->getStatus());
-			throw new SystemException(static::getMessage($messageCode));
-		}
+		$message = static::getMessage(
+			sprintf('OPERATION_%s_%s', $operation->getOperationType(), $operation->getStatus()), [
+				'#ORDER_ID#' => $this->gateway->getOrderId(),
+			]
+		);
+
+		$logger->info($message, [
+			'AUDIT' => Logger\Audit::OUTGOING_REQUEST,
+		]);
 	}
 
 	public function startPay() : array
