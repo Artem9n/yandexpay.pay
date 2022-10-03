@@ -23,16 +23,6 @@ abstract class EffectiveAction extends HttpAction
 	{
 		$this->bootJwt();
 		$this->bootJson();
-
-		if ($this->httpRequest->get('orderId') === null)
-		{
-			$this->bootSetup();
-			$this->bootMerchant();
-		}
-		else
-		{
-			$this->bootMerchantOrder();
-		}
 	}
 
 	protected function bootJwt() : void
@@ -55,73 +45,34 @@ abstract class EffectiveAction extends HttpAction
 		$this->httpRequest->addFilter($filter);
 	}
 
-	protected function bootSetup() : void
+	protected function bootSetup(int $setupId) : void
 	{
-		$setup = $this->loadSetup();
+		$setup = $this->loadSetup($setupId);
 		$this->passTrading($setup);
 	}
 
-	protected function bootMerchant(int $paySystemId = null, string $personTypeId = null) : void
+	protected function bootMerchant(string $merchantId) : void
 	{
 		if (!Main\Loader::includeModule('sale')) { return; }
 
-		$paySystemId = $paySystemId ?? $this->options->getPaymentCard();
-		$personTypeId = $personTypeId ?? $this->setup->getPersonTypeId();
+		$paySystemId = $this->options->getPaymentCard();
+		$personTypeId = $this->setup->getPersonTypeId();
 
-		$merchantId = Sale\BusinessValue::get(
+		$optionMerchantId = Sale\BusinessValue::get(
 			'YANDEX_PAY_MERCHANT_ID',
 			Sale\PaySystem\Service::PAY_SYSTEM_PREFIX . $paySystemId,
 			$personTypeId
 		);
 
-		if ($merchantId === null)
+		if ($optionMerchantId === null)
 		{
 			throw new RequestAuthentication('not setting payment merchantId');
 		}
 
-		if ($this->httpRequest->get('merchantId') !== $merchantId)
+		if ($merchantId !== $optionMerchantId)
 		{
 			throw new RequestAuthentication('Invalid merchantId');
 		}
-	}
-
-	protected function bootMerchantOrder() : void
-	{
-		$orderId = $this->httpRequest->get('orderId');
-
-		if (!Main\Loader::includeModule('sale')) { return; }
-
-		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
-		/** @var \Bitrix\Sale\Order $orderClassName */
-		$orderClassName = $registry->getOrderClassName();
-		/** @var \Bitrix\Sale\Order $order */
-		$order = $orderClassName::load($orderId);
-
-		if ($order === null)
-		{
-			throw new DtoProperty('order not found', 'ORDER_NOT_FOUND');
-		}
-
-		$paySystemId = null;
-
-		$paymentCollection = $order->getPaymentCollection();
-
-		/** @var \Bitrix\Sale\Payment $paymentItem */
-		foreach ($paymentCollection as $paymentItem)
-		{
-			if (!$paymentItem->isInner())
-			{
-				$paySystemId = $paymentItem->getPaymentSystemId();
-				break;
-			}
-		}
-
-		if ($paySystemId === null)
-		{
-			throw new DtoProperty('paySystem not found', 'PAYSYSTEM_NOT_FOUND');
-		}
-
-		$this->bootMerchant($paySystemId, $order->getPersonTypeId());
 	}
 
 	protected function jwkUrl() : string
@@ -134,10 +85,8 @@ abstract class EffectiveAction extends HttpAction
 		return $result;
 	}
 
-	protected function loadSetup() : TradingSetup\Model
+	protected function loadSetup(int $setupId) : TradingSetup\Model
 	{
-		$setupId = $this->getSetupId();
-
 		$query = TradingSetup\RepositoryTable::getList([
 			'filter' => [
 				'=ID' => $setupId,
@@ -154,13 +103,6 @@ abstract class EffectiveAction extends HttpAction
 		}
 
 		return $result;
-	}
-
-	protected function getSetupId() : int
-	{
-		[$userId, $fUserId, $setupId] = explode(':', $this->httpRequest->get('metadata'));
-
-		return (int)$setupId;
 	}
 
 	/**
