@@ -17,6 +17,7 @@ class Installer
 	public function install() : void
 	{
 		$this->createTable();
+		$this->createIndexes();
 		$this->alterArrayText();
 	}
 
@@ -41,6 +42,26 @@ class Installer
 				$sqlHelper->quote($tableName),
 				$sqlHelper->quote($columnName)
 			));
+		}
+	}
+
+	protected function createIndexes() : void
+	{
+		$className = $this->entity->getDataClass();
+		$connection = $this->entity->getConnection();
+		$tableName = $this->entity->getDBTableName();
+
+		if (!method_exists($className, 'getTableIndexes')) { return; }
+
+		if (empty($className::getTableIndexes())) { return; }
+
+		foreach ($className::getTableIndexes() as $index => $fields)
+		{
+			$name = 'IX_' . $tableName . '_' . $index;
+
+			if ($connection->isIndexExists($tableName, $fields)) { continue; }
+
+			$connection->createIndex($tableName, $name, $fields);
 		}
 	}
 }

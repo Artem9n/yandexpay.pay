@@ -7,6 +7,13 @@ use YandexPay\Pay\Reference\Storage;
 
 class Table extends ORM\Data\DataManager implements Pay\Reference\Storage\HasView
 {
+	public static function getTableIndexes() : array
+	{
+		return [
+			0 => ['TIMESTAMP_X'],
+		];
+	}
+
 	public static function getView() : Storage\View
 	{
 		return new View(static::class);
@@ -54,10 +61,10 @@ class Table extends ORM\Data\DataManager implements Pay\Reference\Storage\HasVie
 				],
 			]),
 			new ORM\Fields\TextField('MESSAGE', [
-				'required' => true,
+				//'required' => true,
 			]),
 			new ORM\Fields\StringField('URL', [
-				'required' => true,
+				//'required' => true,
 			]),
 		];
 	}
