@@ -22,12 +22,12 @@ class OrderPay
 		$this->request = $request;
 	}
 
-	public function __invoke(State\Payment $state)
+	public function __invoke(State\Order $state)
 	{
 		$this->processOrder($state);
 	}
 
-	protected function processOrder(State\Payment $state) : void
+	protected function processOrder(State\Order $state) : void
 	{
 		if ($state->order->isCanceled()) { return; }
 

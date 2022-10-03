@@ -6,7 +6,7 @@ use YandexPay\Pay\Trading\Action\Rest\State;
 
 class OrderSave
 {
-	public function __invoke(State\Payment $state)
+	public function __invoke(State\Order $state)
 	{
 		$saveResult = $state->order->save();
 

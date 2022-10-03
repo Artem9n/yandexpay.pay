@@ -22,12 +22,12 @@ class OrderDelivery
 		$this->request = $request;
 	}
 
-	public function __invoke(State\Payment $state)
+	public function __invoke(State\Order $state)
 	{
 		$this->processTransportDelivery($state);
 	}
 
-	protected function processTransportDelivery(State\Payment $state) : void
+	protected function processTransportDelivery(State\Order $state) : void
 	{
 		$status = $this->request->getOrder()->getDeliveryStatus();
 

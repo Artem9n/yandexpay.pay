@@ -22,12 +22,12 @@ class OrderOperation
 		$this->request = $request;
 	}
 
-	public function __invoke(State\Payment $state)
+	public function __invoke(State\Order $state)
 	{
 		$this->processOperation($state);
 	}
 
-	protected function processOperation(State\Payment $state) : void
+	protected function processOperation(State\Order $state) : void
 	{
 		$result = new Sale\Result();
 

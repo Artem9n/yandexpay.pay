@@ -16,11 +16,6 @@ class Request extends Rest\Reference\EffectiveRequest
 		return $this->getChildModel('operation');
 	}
 
-	public function getMerchantId() : string
-	{
-		return $this->requireField('merchantId');
-	}
-
 	public function getEventTime() : string
 	{
 		return $this->getField('eventTime');
