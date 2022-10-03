@@ -22,8 +22,8 @@ class Action extends Rest\Reference\EffectiveAction
 		$this->request = $this->convertHttpToRequest(Request::class);
 		$this->state = $this->makeState(Rest\State\Order::class);
 
-		$orderId = $this->request->getEvent() === 'ORDER_STATUS_UPDATED' ?
-			$this->request->getOrder()->getId()
+		$orderId = $this->request->getEvent() === 'ORDER_STATUS_UPDATED'
+			? $this->request->getOrder()->getId()
 			: $this->request->getOperation()->getOrderId();
 
 		(new Rest\Pipeline())
