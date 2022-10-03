@@ -2,7 +2,7 @@
 namespace YandexPay\Pay\Injection\Engine;
 
 use Bitrix\Main;
-use YandexPay\Pay\Injection;
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Entity as TradingEntity;
 
@@ -70,6 +70,8 @@ class Element extends AbstractEngine
 		$required = [
 			'ELEMENT_ID' => true,
 			'ELEMENT_CODE' => true,
+			'ID' => true,
+			'CODE' => true,
 		];
 
 		if (count(array_intersect_key($variables, $required)) === 0)
@@ -79,7 +81,9 @@ class Element extends AbstractEngine
 
 		$map = [
 			'ELEMENT_CODE' => '=CODE',
+			'CODE' => '=CODE',
 			'ELEMENT_ID' => '=ID',
+			'ID' => '=ID',
 			'SECTION_CODE' => '=SECTION_CODE',
 			'SECTION_ID' => '=SECTION_ID',
 		];
@@ -170,6 +174,7 @@ class Element extends AbstractEngine
 
 		$sefFolder = '/';
 		$templatePage = mb_substr($templatePage, mb_strlen($sefFolder));
+		$greedyPart = (string)Config::getOption('injection_engine_element_greedy', '');
 		$request = static::getRequest();
 
 		$matched = $engine->guessComponentPath(
@@ -179,9 +184,21 @@ class Element extends AbstractEngine
 			$request->getRequestedPage()
 		);
 
+		if (!$matched && $greedyPart !== '')
+		{
+			$templatePage .= $greedyPart;
+
+			$matched = $engine->guessComponentPath(
+				$sefFolder,
+				[ 'target' => $templatePage ],
+				$variables,
+				$request->getRequestedPage()
+			);
+		}
+
 		if ($matched !== 'target')
 		{
-			throw new Main\SystemException('page not matched');
+			throw new Main\ArgumentException('page not matched');
 		}
 
 		return $variables;
