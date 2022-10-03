@@ -6,54 +6,88 @@ use YandexPay\Pay\Trading\Action\Rest;
 
 class Action extends Rest\Reference\EffectiveAction
 {
-	public function process() : Main\HttpResponse
-	{
-		$request = $this->convertHttpToRequest(Request::class);
-		$response = $this->makeResponse();
+	/** @var Request */
+	protected $request;
+	/** @var Rest\State\Order */
+	protected $stateOrder;
 
-		if ($request->getOrderId() !== null)
+	public function bootstrap() : void
+	{
+		parent::bootstrap();
+		$this->bootMerchantOrder();
+	}
+
+	protected function bootMerchantOrder() : void
+	{
+		$this->request = $this->convertHttpToRequest(Request::class);
+
+		if ($this->request->getOrderId() !== null)
 		{
-			$this->processOrder($request, $response);
+			$this->stateOrder = $this->makeState(Rest\State\Order::class);
+
+			(new Rest\Pipeline())
+				->pipe(new Rest\Stage\OrderLoad(
+					$this->request->getOrderId(),
+					$this->request->getMerchantId()
+				))
+				->process($this->stateOrder);
 		}
 		else
 		{
-			$this->processCheckout($request, $response);
+			$this->bootSetup($this->request->getSetupId());
+			$this->bootMerchant($this->request->getMerchantId());
+		}
+	}
+
+	public function process() : Main\HttpResponse
+	{
+		$response = $this->makeResponse();
+
+		if ($this->request->getOrderId() !== null)
+		{
+			$this->processOrder($response);
+		}
+		else
+		{
+			$this->processCheckout($response);
 		}
 
 		return $this->convertResponseToHttp($response);
 	}
 
-	protected function processOrder(Request $request, Rest\Reference\EffectiveResponse $response) : void
+	protected function processOrder(Rest\Reference\EffectiveResponse $response) : void
 	{
-		$state = $this->makeState(Rest\State\Order::class);
-
 		(new Rest\Pipeline())
-			->pipe(new Rest\OrderRender\Stage\OrderLoad($request->getOrderId()))
 			->pipe(new Rest\OrderRender\Stage\OptionsCollector($response))
 			->pipe(new Rest\OrderRender\Stage\ItemsCollector($response, 'cart.items'))
 			->pipe(new Rest\OrderRender\Stage\TotalCollector($response, 'cart.total'))
-			->process($state);
+			->process($this->stateOrder);
 	}
 
-	protected function processCheckout(Request $request, Rest\Reference\EffectiveResponse $response) : void
+	protected function processCheckout(Rest\Reference\EffectiveResponse $response) : void
 	{
 		$state = $this->makeState(Rest\State\OrderCalculation::class);
 
 		(new Rest\Pipeline())
-			->pipe($this->calculationPipeline($request))
-			->pipe($this->collectorYandexDelivery($response, $request, $state))
+			->pipe($this->calculationPipeline())
+			->pipe($this->collectorYandexDelivery($response, $state))
 			->pipe($this->collectorPipeline($response))
-			->pipe($this->collectorDelivery($response, $request))
+			->pipe($this->collectorDelivery($response))
 			->process($state);
 	}
 
-	protected function calculationPipeline(Request $request) : Rest\Pipeline
+	protected function calculationPipeline() : Rest\Pipeline
 	{
 		return (new Rest\Pipeline())
-			->pipe(new Rest\Stage\NewOrder($request->getUserId(), $request->getFUserId(), $request->getCurrencyCode(), $request->getCoupons()))
+			->pipe(new Rest\Stage\NewOrder(
+				$this->request->getUserId(),
+				$this->request->getFUserId(),
+				$this->request->getCurrencyCode(),
+				$this->request->getCoupons()
+			))
 			->pipe(new Rest\Stage\OrderInitialize())
-			->pipe(new Rest\Stage\OrderLocation($request->getAddress()))
-			->pipe(new Rest\Stage\NewBasket($request->getItems()))
+			->pipe(new Rest\Stage\OrderLocation($this->request->getAddress()))
+			->pipe(new Rest\Stage\NewBasket($this->request->getItems()))
 			->pipe(new Rest\Stage\OrderPaySystem())
 			->pipe(new Rest\Stage\OrderFinalizer());
 	}
@@ -68,11 +102,11 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe(new Rest\Stage\OrderTotalCollector($response, 'cart.total'));
 	}
 
-	protected function collectorDelivery(Rest\Reference\EffectiveResponse $response, Request $request) : Rest\Pipeline
+	protected function collectorDelivery(Rest\Reference\EffectiveResponse $response) : Rest\Pipeline
 	{
 		$result = new Rest\Pipeline();
 
-		if ($request->getAddress() !== null)
+		if ($this->request->getAddress() !== null)
 		{
 			$result->pipe(new Rest\Stage\OrderDeliveryCollector($response, 'shipping.availableCourierOptions'));
 		}
@@ -80,10 +114,10 @@ class Action extends Rest\Reference\EffectiveAction
 		return $result;
 	}
 
-	protected function collectorYandexDelivery(Rest\Reference\EffectiveResponse $response, Request $request, Rest\State\OrderCalculation $state) : Rest\Pipeline
+	protected function collectorYandexDelivery(Rest\Reference\EffectiveResponse $response, Rest\State\OrderCalculation $state) : Rest\Pipeline
 	{
 		$pipeline = new Rest\Pipeline();
-		$address = $request->getAddress();
+		$address = $this->request->getAddress();
 		$yandexDelivery = $state->options->getDeliveryOptions()->getYandexDelivery();
 
 		if ($yandexDelivery === null || $address === null) { return $pipeline; }
@@ -92,7 +126,7 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe(new Rest\Stage\YandexDeliveryCollector(
 				$yandexDelivery,
 				$response,
-				$request->getAddress(),
+				$address,
 				'shipping.yandexDelivery.warehouse'
 			));
 	}
