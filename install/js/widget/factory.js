@@ -2,13 +2,18 @@ import SolutionRegistry from './solutionregistry';
 import NodePreserver from "./ui/nodepreserver";
 import Utils from './utils/template';
 import {EventProxy} from "./utils/eventproxy";
+import {Sdkloader} from "./sdkloader";
+import {Intersection} from "./intersection";
+import Template from "./utils/template";
 
 export default class Factory {
 
 	static defaults = {
 		solution: null,
-		template: '<div id="yandexpay" class="bx-yapay-drawer"></div>',
+		template: '<div id="#ID#" class="bx-yapay-drawer"></div>',
 		containerSelector: '.bx-yapay-drawer',
+		loaderTemplate: '<div class="bx-yapay-skeleton-loading width--#WIDTH#"></div>',
+		loaderSelector: '.bx-yapay-skeleton-loading',
 		preserve: false,
 		waitLimit: 30,
 		waitTimeout: 1000,
@@ -31,16 +36,23 @@ export default class Factory {
 		return Promise.resolve()
 			.then(() => this.waitElement(selector))
 			.then((anchor) => this.checkElement(anchor))
-			.then((anchor) => {
-				const element = this.renderElement(anchor, position);
-				const widget = this.install(element);
-
+			.then((anchor) => this.renderElement(anchor, position))
+			.then((element) => this.create(element))
+			.then((widget) => {
 				if (this.getOption('preserve')) {
 					this.preserve(selector, position, widget);
 				}
 
 				return widget;
-			})
+			});
+	}
+
+	create(element) {
+		return Promise.resolve(element)
+			.then((element) => this.insertLoader(element))
+			.then((element) => this.intersection(element))
+			.then((element) => Sdkloader.getInstance().load().then(() => element))
+			.then((element) => this.install(element));
 	}
 
 	checkElement(anchor) {
@@ -71,6 +83,12 @@ export default class Factory {
 		}
 
 		return result;
+	}
+
+	intersection(element: HTMLElement) {
+		const interseciton = new Intersection(element);
+
+		return interseciton.wait();
 	}
 	
 	preserve(selector, position, widget) {
@@ -107,6 +125,17 @@ export default class Factory {
 
 	install(element) {
 		return new BX.YandexPay.Widget(element);
+	}
+
+	insertLoader(element) {
+		const width = this.getOption('buttonWidth') || 'AUTO';
+
+		element.innerHTML = Template.compile(this.getOption('loaderTemplate'), {
+			width: width.toLowerCase(),
+			label: this.getOption('label'),
+		});
+
+		return element;
 	}
 
 	waitElement(selector) {
@@ -221,10 +250,11 @@ export default class Factory {
 
 	renderElement(anchor, position) {
 		const selector = this.getOption('containerSelector');
-		const width = this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto;
+		const width = this.getOption('buttonWidth') || 'AUTO';
 		const html = Utils.compile(this.getOption('template'), {
 			label: this.getOption('label'),
 			width: width.toLowerCase(),
+			id: this.getOption('containerId'),
 		});
 		let elements = Utils.toElements(html);
 		let result = null;
