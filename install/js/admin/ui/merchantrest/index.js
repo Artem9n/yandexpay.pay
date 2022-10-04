@@ -41,6 +41,12 @@
 				username: 'YANDEX_PAY_alfabank_PAYMENT_GATEWAY_USERNAME',
 				password: 'YANDEX_PAY_alfabank_PAYMENT_GATEWAY_PASSWORD',
 			},
+
+			mtsbank: {
+				gateway_merchant_id: 'YANDEX_PAY_mts_PAYMENT_GATEWAY_USERNAME',
+				username: 'YANDEX_PAY_mts_PAYMENT_GATEWAY_USERNAME',
+				password: 'YANDEX_PAY_mts_PAYMENT_GATEWAY_PASSWORD',
+			},
 		},
 
 		handleConfirmMessage: function(dir) {
@@ -176,7 +182,14 @@
 
 		makeGateway: function() {
 			const select = document.querySelector(this.getElementSelector('selectGateway'));
-			return select.options[select.selectedIndex].value.toLowerCase();
+			let value = select.options[select.selectedIndex].value.toLowerCase();
+
+			if (value === 'mts')
+			{
+				value += 'bank';
+			}
+
+			return value;
 		},
 
 		makePayload: function() {
