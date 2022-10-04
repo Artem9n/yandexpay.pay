@@ -3,7 +3,8 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
 
 /**
  * @var array $params
- * @var $this \Sale\Handlers\PaySystem\YandexPayHandler
+ * @var \Sale\Handlers\PaySystem\YandexPayHandler $this
+ * @var CMain $APPLICATION
  */
 
 use Bitrix\Main\Localization\Loc;
@@ -33,21 +34,33 @@ $widgetOptions = array_intersect_key($params, [
 	'isRest' => true,
 	'metadata' => true,
 ]);
+
+// widget index
+
+$widgetIndex = (int)$APPLICATION->GetPageProperty('yandexpay_widget_index');
+$containerId = 'yandexpay' . ($widgetIndex > 0 ? '-' . $widgetIndex : '');
+
+$APPLICATION->SetPageProperty('yandexpay_widget_index', ++$widgetIndex);
 ?>
 
 <div>
 	<?= Loc::getMessage('YANDEX_MARKET_SALE_SUM_DESCRIPTION', ['#SUM#' => CurrencyFormat($params['order']['total'], $params['currency'])])?>
 </div>
-<div id="yandexpay" class="bx-yapay-drawer"></div>
+<div id="<?= $containerId ?>" class="bx-yapay-drawer"></div>
 
 <script>
 	(function() {
 		const factory = new BX.YandexPay.Factory();
-		const element = document.getElementById('yandexpay');
+		const element = document.getElementById('<?= $containerId ?>');
 		const options = <?= Json::encode($widgetOptions) ?>;
-		const widget = factory.install(element);
 
-		widget.setOptions(options);
-		widget.payment(<?= Json::encode($params['order']) ?>);
+		factory.create(element)
+			.then((widget) => {
+				widget.setOptions(options);
+				widget.payment(<?= Json::encode($params['order']) ?>);
+			})
+			.catch((error) => {
+				console.warn(error);
+			});
 	})();
 </script>
