@@ -19,7 +19,7 @@
 			confirmMessageTypeSuccess: 'merchant-data',
 			confirmMessageTypeFailure: 'error',
 
-			fieldsetElement: 'form',
+			fieldsetElement: 'table',
 			fieldElement: 'td',
 			inputElement: 'input',
 			nameMerchantId: 'YANDEX_PAY_MERCHANT_ID',
@@ -33,7 +33,7 @@
 
 		onConfirmMessage: function(evt) {
 			const data = this.toObject(evt.originalEvent.data);
-
+			console.log(data);
 			if (data.source === this.options.confirmMessageSource) {
 				this.handleConfirmMessage(false);
 				this.popup.close();
