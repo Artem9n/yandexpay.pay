@@ -32,6 +32,7 @@ class LogTabGrid extends Pay\Ui\Reference\Page
 			'SUBLIST_TARGET' => 'Y',
 			'LIST_FIELDS' => [
 				'TIMESTAMP_X',
+				'SETUP_ID',
 				'LEVEL',
 				'AUDIT',
 				'MESSAGE',

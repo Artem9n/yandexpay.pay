@@ -34,6 +34,7 @@ class Table extends ORM\Data\DataManager implements Pay\Reference\Storage\HasVie
 			new ORM\Fields\DatetimeField('TIMESTAMP_X', [
 				'required' => true,
 			]),
+			new ORM\Fields\IntegerField('SETUP_ID'),
 			new ORM\Fields\EnumField('LEVEL', [
 				'required' => true,
 				'values' => [

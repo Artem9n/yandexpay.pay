@@ -136,7 +136,7 @@ class LogMessageType extends EnumerationType
 			{
 				if ($value === 'reasonCode')
 				{
-					$result = $data[$value];
+					$result = $data[$value] ?: $data['reason'];
 				}
 				else if ($value === 'event')
 				{
