@@ -27,8 +27,10 @@ export class Sdkloader {
 			script.src = 'https://pay.yandex.ru/sdk/v1/pay.js';
 
 			script.onload = () => {
-				this._loadPromise = null;
-				resolve();
+				this.loopGlobal(() => {
+					this._loadPromise = null;
+					resolve();
+				});
 			};
 			script.onerror = () => {
 				this._loadPromise = null;
@@ -43,7 +45,16 @@ export class Sdkloader {
 		return this._loadPromise;
 	}
 
+	loopGlobal(resolve) : void {
+		if (this.testGlobal()) {
+			resolve();
+			return;
+		}
+
+		setTimeout(() => { this.loopGlobal(resolve) }, 100);
+	}
+
 	testGlobal() : boolean {
-		return window.YaPay != null;
+		return window.YaPay?.createPayment != null;
 	}
 }
