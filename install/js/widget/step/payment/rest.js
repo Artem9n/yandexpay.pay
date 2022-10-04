@@ -24,6 +24,7 @@ export default class RestProxy extends Proxy {
 		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then((payment) => {
 
+				this.order.removeLoader();
 				// Смонтировать кнопку в DOM.
 				payment.mountButton(node, {
 					type: YaPay.ButtonType.Pay,

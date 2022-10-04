@@ -48,6 +48,7 @@ export default class SiteProxy extends Proxy {
 					width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
 				});
 
+				this.order.removeLoader();
 				button.mount(node);
 
 				button.on(YaPay.ButtonEventType.Click, function onPaymentButtonClick() {

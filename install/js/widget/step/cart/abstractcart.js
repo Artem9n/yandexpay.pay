@@ -3,9 +3,6 @@ import AbstractStep from '../abstractstep';
 import { ready } from "../../utils/ready";
 import RestProxy from "./rest";
 import SiteProxy from "./site";
-import {EventProxy} from "../../utils/eventproxy";
-
-const YaPay = window.YaPay;
 
 export default class AbstractCart extends AbstractStep {
 

@@ -3,15 +3,15 @@ import AbstractStep from '../abstractstep';
 import RestProxy from './rest';
 import SiteProxy from './site';
 
-const YaPay = window.YaPay;
-
 export default class AbstractPayment extends AbstractStep {
 
 	static defaults = {
-		template: '<div class="alert alert-success" role="alert"><strong>#MESSAGE#</strong></div>'
+		template: '<div class="alert alert-success" role="alert"><strong>#MESSAGE#</strong></div>',
+		loaderSelector: '.bx-yapay-skeleton-loading',
 	}
 
 	render(node, data) {
+		this.element = node;
 		this.proxy = this.getOption('isRest')
 			? new RestProxy(this)
 			: new SiteProxy(this);
@@ -31,5 +31,13 @@ export default class AbstractPayment extends AbstractStep {
 
 	createPayment(node, paymentData) {
 		this.proxy.createPayment(node, paymentData);
+	}
+
+	removeLoader() {
+		const loader = this.element.querySelector(this.getOption('loaderSelector'));
+
+		if (loader == null) { return; }
+
+		loader.remove();
 	}
 }
