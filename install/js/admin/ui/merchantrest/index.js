@@ -42,10 +42,15 @@
 				password: 'YANDEX_PAY_alfabank_PAYMENT_GATEWAY_PASSWORD',
 			},
 
-			mtsbank: {
+			mts: {
 				gateway_merchant_id: 'YANDEX_PAY_mts_PAYMENT_GATEWAY_USERNAME',
 				username: 'YANDEX_PAY_mts_PAYMENT_GATEWAY_USERNAME',
 				password: 'YANDEX_PAY_mts_PAYMENT_GATEWAY_PASSWORD',
+				acquirer: 'MTS',
+			},
+
+			mapGateway: {
+				mts: 'rbs',
 			},
 		},
 
@@ -124,7 +129,6 @@
 			const { screen } = window;
 			const [width, height] = formSize;
 
-			// NB: Если экран маленький, то не отдаем параметры
 			if (screen.width < width || screen.height < height) {
 				return undefined;
 			}
@@ -175,21 +179,19 @@
 			url.searchParams.append('domains', formData.data.SITE_DOMAINS);
 			url.searchParams.append('name', formData.data.SHOP_NAME);
 			url.searchParams.append('callback_url', formData.data.CALLBACK_URL);
-			url.searchParams.append('gateway', this.makeGateway());
+			url.searchParams.append('gateway', this.makeGatewayName());
 
 			return url.href;
 		},
 
 		makeGateway: function() {
 			const select = document.querySelector(this.getElementSelector('selectGateway'));
-			let value = select.options[select.selectedIndex].value.toLowerCase();
+			return select.options[select.selectedIndex].value.toLowerCase();
+		},
 
-			if (value === 'mts')
-			{
-				value += 'bank';
-			}
-
-			return value;
+		makeGatewayName: function() {
+			const gateway = this.makeGateway();
+			return this.options.mapGateway[gateway] ?? gateway;
 		},
 
 		makePayload: function() {
@@ -205,6 +207,12 @@
 				if (!selectors.hasOwnProperty(name)) { continue; }
 
 				let value = selectors[name];
+
+				if (name === 'acquirer')
+				{
+					values[name] = value;
+					continue;
+				}
 
 				const input = fieldset.find(`input[name*="${value}"]`).filter('[type="text"]');
 
