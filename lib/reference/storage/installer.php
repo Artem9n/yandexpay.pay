@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Reference\Storage;
 
 use Bitrix\Main\DB\Connection;
 use Bitrix\Main;
+use YandexPay\Pay\Reference\Storage;
 
 class Installer
 {
@@ -19,6 +20,7 @@ class Installer
 		$this->createTable();
 		$this->createIndexes();
 		$this->alterArrayText();
+		$this->alterLongText();
 	}
 
 	protected function createTable() : void
@@ -39,6 +41,25 @@ class Installer
 
 			$connection->queryExecute(sprintf(
 				'ALTER TABLE %s MODIFY COLUMN %s text',
+				$sqlHelper->quote($tableName),
+				$sqlHelper->quote($columnName)
+			));
+		}
+	}
+
+	protected function alterLongText() : void
+	{
+		foreach ($this->entity->getFields() as $field)
+		{
+			if (!($field instanceof Storage\Field\LongTextField)) { continue; }
+
+			$connection = $this->entity->getConnection();
+			$sqlHelper = $connection->getSqlHelper();
+			$tableName = $this->entity->getDBTableName();
+			$columnName = $field->getColumnName();
+
+			$connection->queryExecute(sprintf(
+				'ALTER TABLE %s MODIFY COLUMN %s longtext',
 				$sqlHelper->quote($tableName),
 				$sqlHelper->quote($columnName)
 			));

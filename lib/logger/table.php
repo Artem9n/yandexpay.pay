@@ -61,12 +61,8 @@ class Table extends ORM\Data\DataManager implements Pay\Reference\Storage\HasVie
 					Audit::UNKNOWN => Audit::UNKNOWN,
 				],
 			]),
-			new ORM\Fields\TextField('MESSAGE', [
-				//'required' => true,
-			]),
-			new ORM\Fields\StringField('URL', [
-				//'required' => true,
-			]),
+			new Storage\Field\LongTextField('MESSAGE', []),
+			new ORM\Fields\StringField('URL', []),
 		];
 	}
 }
