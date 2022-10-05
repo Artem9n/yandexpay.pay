@@ -119,7 +119,7 @@ class Delivery extends EntityReference\Delivery
 
 			$validServices = Sale\Delivery\Services\Manager::checkServiceRestriction(
 				$deliveryIds,
-				$siteId, BySite::class
+				$siteId, '\\' . BySite::class
 			);
 
 			if (is_array($validServices))

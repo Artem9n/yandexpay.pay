@@ -57,7 +57,7 @@ class OrderDeliveryCollector extends ResponseCollector
 	{
 		if (empty($messages)) { return; }
 
-		$state->logger->warning(implode(', ', $messages), [
+		$state->logger->warning(implode(PHP_EOL, $messages), [
 			'AUDIT' => Logger\Audit::DELIVERY_COLLECTOR,
 		]);
 	}
