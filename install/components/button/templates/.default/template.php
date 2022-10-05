@@ -2,8 +2,10 @@
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
 
 /**
- * @var $this \CBitrixComponentTemplate
+ * @var CMain $APPLICATION
+ * @var CBitrixComponentTemplate $this
  * @var array $arResult
+ * @var array $arParams
  */
 
 use Bitrix\Main;
@@ -18,13 +20,33 @@ $this->setFrameMode(true); // not need dynamic area
 
 try
 {
-	echo Extension::getHtml('yandexpaypay.widget');
+	// assets
 
-	if (!empty($arResult['PARAMS']['solution']))
+	if ($APPLICATION->GetPageProperty('yandexpay_extension_widget') !== 'Y')
 	{
-		$solution = Solution\Registry::getInstance($arResult['PARAMS']['solution']);
-		echo $solution->getExtension();
+		$APPLICATION->SetPageProperty('yandexpay_extension_widget', 'Y');
+		echo str_replace('<script', '<script defer ', Extension::getHtml('yandexpaypay.widget'));
 	}
+
+	if (
+		!empty($arResult['PARAMS']['solution'])
+		&& $APPLICATION->GetPageProperty('yandexpay_extension_' . $arResult['PARAMS']['solution']) !== 'Y'
+	)
+	{
+		$APPLICATION->SetPageProperty('yandexpay_extension_' . $arResult['PARAMS']['solution'], 'Y');
+
+		$solution = Solution\Registry::getInstance($arResult['PARAMS']['solution']);
+		echo str_replace('<script', '<script defer ', $solution->getExtension());
+	}
+
+	// widget index
+
+	$widgetIndex = (int)$APPLICATION->GetPageProperty('yandexpay_widget_index');
+	$containerId = 'yandexpay' . ($widgetIndex > 0 ? '-' . $widgetIndex : '');
+
+	$APPLICATION->SetPageProperty('yandexpay_widget_index', ++$widgetIndex);
+
+	// draw
 
 	$widgetOptions = array_diff_key($arResult['PARAMS'], [ 'order' => true , 'selector' => true, 'position' => true]);
 	$widgetOptions += (array)($arParams['~WIDGET_OPTIONS'] ?? []);
@@ -35,6 +57,7 @@ try
 	]);
 	$factoryOptions += (array)($arParams['~FACTORY_OPTIONS'] ?? []);
 	$factoryOptions['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
+	$factoryOptions['containerId'] = $containerId;
 	$order = $arResult['PARAMS']['order'];
 	$selector = $arResult['PARAMS']['selector'];
 	$position = $arResult['PARAMS']['position'];
@@ -44,18 +67,35 @@ try
 		?>
 		<script>
 			(function() {
-				const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
-				const selector = '<?= htmlspecialcharsback($selector) ?>';
-				const position = '<?= $position?>';
+				wait();
 
-				factory.inject(selector, position)
-					.then((widget) => {
-						widget.setOptions(<?= Json::encode($widgetOptions) ?>);
-						widget.cart();
-					})
-					.catch((error) => {
-						console.warn(error);
-					});
+				function wait() {
+					if (
+						typeof BX !== 'undefined'
+						&& typeof BX.YandexPay !== 'undefined'
+						&& typeof BX.YandexPay.Factory !== 'undefined'
+					) {
+						ready();
+						return;
+					}
+
+					setTimeout(wait, 500);
+				}
+
+				function ready() {
+					const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
+					const selector = '<?= htmlspecialcharsback($selector) ?>';
+					const position = '<?= $position?>';
+
+					factory.inject(selector, position)
+						.then((widget) => {
+							widget.setOptions(<?= Json::encode($widgetOptions) ?>);
+							widget.cart();
+						})
+						.catch((error) => {
+							console.warn(error);
+						});
+				};
 			})();
 		</script>
 		<?php
@@ -63,15 +103,37 @@ try
 	else
 	{
 		?>
-		<div id="yandexpay" class="yandex-pay"></div>
+		<div id="<?= $containerId ?>" class="yandex-pay"></div>
 		<script>
 			(function() {
-				const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
-				const element = document.getElementById('yandexpay');
-				const widget = factory.install(element);
+				wait();
 
-				widget.setOptions(<?= Json::encode($widgetOptions) ?>);
-				widget.cart();
+				function wait() {
+					if (
+						typeof BX !== 'undefined'
+						&& typeof BX.YandexPay !== 'undefined'
+						&& typeof BX.YandexPay.Factory !== 'undefined'
+					) {
+						ready();
+						return;
+					}
+
+					setTimeout(wait, 500);
+				}
+
+				function ready() {
+					const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
+					const element = document.getElementById('<?= $containerId?>');
+
+					factory.create(element)
+						.then((widget) => {
+							widget.setOptions(<?= Json::encode($widgetOptions) ?>);
+							widget.cart();
+						})
+						.catch((error) => {
+							console.warn(error);
+						});
+				};
 			})();
 		</script>
 		<?php

@@ -1,8 +1,6 @@
 import Template from '../utils/template';
 import AbstractStep from './abstractstep';
 
-const YaPay = window.YaPay;
-
 export default class Payment extends AbstractStep {
 
 	static defaults = {

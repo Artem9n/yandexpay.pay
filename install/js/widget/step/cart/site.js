@@ -333,7 +333,6 @@ export default class SiteProxy extends Proxy {
 
 	restoreButton(node) {
 		if (this.cart.paymentButton == null) {
-			this.cart.insertLoader();
 			return;
 		}
 

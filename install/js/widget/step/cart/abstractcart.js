@@ -3,14 +3,10 @@ import AbstractStep from '../abstractstep';
 import { ready } from "../../utils/ready";
 import RestProxy from "./rest";
 import SiteProxy from "./site";
-import {EventProxy} from "../../utils/eventproxy";
-
-const YaPay = window.YaPay;
 
 export default class AbstractCart extends AbstractStep {
 
 	static defaults = {
-		loaderTemplate: '<div class="bx-yapay-skeleton-loading width--#WIDTH#"></div>',
 		loaderSelector: '.bx-yapay-skeleton-loading',
 	}
 
@@ -24,7 +20,6 @@ export default class AbstractCart extends AbstractStep {
 		this.paymentData = this.getPaymentData();
 
 		this.bootSolution();
-		this.insertLoader();
 		this.setupPaymentCash();
 		this.delayBootstrap();
 	}
@@ -120,15 +115,6 @@ export default class AbstractCart extends AbstractStep {
 		}
 
 		alert(notify);
-	}
-
-	insertLoader() {
-		const width = this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto;
-
-		this.element.innerHTML = Template.compile(this.getOption('loaderTemplate'), {
-			width: width.toLowerCase(),
-			label: this.getOption('label'),
-		});
 	}
 
 	removeLoader() {

@@ -102,7 +102,6 @@ export default class RestProxy extends Proxy {
 
 	restoreButton(node) {
 		if (this.payment == null) {
-			this.cart.insertLoader();
 			return;
 		}
 
