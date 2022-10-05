@@ -47,7 +47,7 @@ class LogLevelType extends EnumerationType
 
 			$result .= '<nobr>';
 			$result .= sprintf(
-		'<img class="b-log-icon" src="/bitrix/images/%s/logger/%s.gif" width="14" height="14" 
+		'<img class="b-log-icon" src="/bitrix/images/%s/%s.gif" width="14" height="14"
 				style="display: inline-block;
 				vertical-align: middle;
 				position: relative;
