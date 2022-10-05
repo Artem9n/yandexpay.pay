@@ -75,13 +75,13 @@ class TradingButton extends \CBitrixComponent
 
 		$handler = $this->getHandler($paySystemId);
 
-		$params = $handler->getParamsBusValue(); // todo make dummy payment with PERSON_TYPE
+		$params = $this->getHandlerParams($handler, $paySystemId, $setup->getPersonTypeId());
 
 		$gateway = $handler->getGateway();
 		$gateway->setParameters($params);
 
 		$this->arResult['PARAMS'] = [
-			'env'               => $handler->isTestMode() ? 'SANDBOX' : 'PRODUCTION',
+			'env'               => $params['YANDEX_PAY_TEST_MODE'] === 'Y' ? 'SANDBOX' : 'PRODUCTION',
 			'merchantId'        => $params['YANDEX_PAY_MERCHANT_ID'],
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
 			'buttonTheme'       => $this->arParams['VARIANT_BUTTON'],
@@ -108,6 +108,30 @@ class TradingButton extends \CBitrixComponent
 			'solution'          => $options->getSolution(),
 			'currencyCode'      => Currency\CurrencyManager::getBaseCurrency(),
 		];
+	}
+
+	protected function getHandlerParams(YandexPayHandler $handler, int $paySystemId, int $personType) : array
+	{
+		$result = [];
+
+		$codes = $handler->getDescription();
+		$data = [];
+
+		if ($codes['CODES'])
+		{
+			$data = array_keys($codes['CODES']);
+		}
+
+		foreach ($data as $code)
+		{
+			$result[$code] = Sale\BusinessValue::get(
+				$code,
+				Sale\PaySystem\Service::PAY_SYSTEM_PREFIX . $paySystemId,
+				$personType
+			);
+		}
+
+		return $result;
 	}
 
 	protected function getRestUrl() : string

@@ -21,7 +21,7 @@
 			confirmMessageTypeSuccess: 'merchant-data',
 			confirmMessageTypeFailure: 'error',
 
-			fieldsetElement: 'form',
+			fieldsetElement: 'table',
 			fieldElement: 'td',
 			inputElement: 'input',
 			nameMerchantId: 'YANDEX_PAY_MERCHANT_ID',

@@ -34,7 +34,7 @@ class PersonType extends Pay\Trading\Entity\Reference\PersonType
 
 		$query = Sale\Internals\PersonTypeTable::getList([
 			'filter' => $filter,
-			'select' => [ 'ID', 'NAME' ],
+			'select' => [ 'ID', 'NAME', 'LID' ],
 			'order' => [ 'SORT' => 'ASC', 'ID' => 'ASC' ]
 		]);
 
@@ -42,7 +42,7 @@ class PersonType extends Pay\Trading\Entity\Reference\PersonType
 		{
 			$result[] = [
 				'ID' => $row['ID'],
-				'VALUE' => $row['NAME'],
+				'VALUE' => sprintf('[%s] %s', $row['LID'], $row['NAME']),
 			];
 		}
 
