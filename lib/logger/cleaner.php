@@ -5,7 +5,7 @@ use Bitrix\Main;
 use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference;
 
-class Cleaner extends Reference\Event\Regular
+class Cleaner extends Reference\Agent\Regular
 {
 	public static function getDefaultParams() : array
 	{

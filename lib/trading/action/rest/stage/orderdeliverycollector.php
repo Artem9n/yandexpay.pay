@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
+use Bitrix\Main;
 use YandexPay\Pay\Logger;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Rest\State;
@@ -37,10 +38,12 @@ class OrderDeliveryCollector extends ResponseCollector
 
 			if (!$calculationResult->isSuccess())
 			{
+				$message = implode(', ', $calculationResult->getErrorMessages());
+
 				$logMessages[] = self::getMessage('DELIVERY_NOT_CALCULATE', [
 					'#ID#' => $deliveryId,
 					'#NAME#' => $deliveryName,
-					'#ERROR_MESSAGES#' => implode(', ', $calculationResult->getErrorMessages()),
+					'#ERROR_MESSAGES#' => Main\Text\Encoding::convertEncodingToCurrent($message),
 				]);
 
 				continue;
