@@ -97,7 +97,9 @@ export default class SiteProxy extends Proxy {
 	}
 
 	createPayment(node, paymentData) {
-		if (this._mounted === true) { return; }
+		if (this._mounted != null) { return; }
+
+		this._mounted = false;
 
 		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
 			.then((payment) => {
@@ -180,6 +182,7 @@ export default class SiteProxy extends Proxy {
 				});
 			})
 			.catch((err) => {
+				this._mounted = null;
 				this.cart.showError('yapayPayment','payment not created', err);
 			});
 	}
