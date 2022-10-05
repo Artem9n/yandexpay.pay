@@ -84,7 +84,11 @@ class PaySystemEditPage
 			}
 		}
 
-		if ($gateway === Manager::PAYTURE || $gateway === Manager::RBS_ALFA)
+		if (
+			$gateway === Manager::PAYTURE
+			|| $gateway === Manager::RBS_ALFA
+			|| $gateway === Manager::RBS_MTS
+		)
 		{
 			$result = false;
 		}

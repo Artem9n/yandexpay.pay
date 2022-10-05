@@ -66,6 +66,7 @@ class Manager
 		$list = [
 			static::PAYTURE => true,
 			static::RBS_ALFA => true,
+			static::RBS_MTS => true,
 		];
 
 		return isset($list[$gatewayId]);
