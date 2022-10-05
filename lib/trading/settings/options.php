@@ -60,9 +60,9 @@ class Options extends Reference\Skeleton
 		return $this->getProperty('EMAIL') !== null;
 	}
 
-	public function getLogLevel() : string
+	public function getLogLevel() : ?string
 	{
-		return $this->requireValue('LOG_LEVEL');
+		return $this->getValue('LOG_LEVEL');
 	}
 
 	public function getSuccessUrl() : string

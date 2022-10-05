@@ -20,9 +20,13 @@ class OrderDeliveryCollector extends ResponseCollector
 		$deliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::DELIVERY_TYPE);
 		$logMessages = [];
 
+		$yandexDelivery = $state->environment->getDelivery()->getYandexDeliveryService();
+		$yandexDeliveryId = $yandexDelivery !== null ? (int)$yandexDelivery->getId() : 0;
+
 		foreach ($deliveries as $deliveryId)
 		{
-			$deliveryName = $state->environment->getDelivery()->getDeliveryService($deliveryId)->getNameWithParent();
+			$deliveryService = $state->environment->getDelivery()->getDeliveryService($deliveryId);
+			$deliveryName = $deliveryService->getNameWithParent();
 
 			if (!$state->environment->getDelivery()->isCompatible($deliveryId, $state->order))
 			{
@@ -33,6 +37,8 @@ class OrderDeliveryCollector extends ResponseCollector
 
 				continue;
 			}
+
+			if ($yandexDeliveryId > 0 && (int)$deliveryId === $yandexDeliveryId) { continue; }
 
 			$calculationResult = $state->environment->getDelivery()->calculate($deliveryId, $state->order);
 
