@@ -49,14 +49,6 @@ export default class Factory {
 			.then((widget) => Sdkloader.getInstance().load().then(() => widget));
 	}
 
-	create(element) {
-		return Promise.resolve(element)
-			.then((element) => this.install(element))
-			.then((widget) => this.insertLoader(widget))
-			.then((widget) => this.intersection(widget.el).then(() => widget))
-			.then((widget) => Sdkloader.getInstance().load().then(() => widget));
-	}
-
 	checkElement(anchor) {
 		const selector = this.getOption('containerSelector');
 		const contains = (

@@ -62,58 +62,38 @@ try
 	$selector = $arResult['PARAMS']['selector'];
 	$position = $arResult['PARAMS']['position'];
 
-	if (!empty($selector))
+	if (empty($selector))
 	{
-		?>
-		<script>
-			(function() {
-				<?php
-				echo file_get_contents(__DIR__ . '/init.js');
-				?>
-				function run() {
-					const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
-					const selector = '<?= htmlspecialcharsback($selector) ?>';
-					const position = '<?= $position?>';
+		$selector = '#' . $containerId . '-container';
+		$position = 'afterbegin';
 
-					factory.inject(selector, position)
-						.then((widget) => {
-							widget.setOptions(<?= Json::encode($widgetOptions) ?>);
-							widget.cart();
-						})
-						.catch((error) => {
-							console.warn(error);
-						});
-				}
-			})();
-		</script>
+		?>
+		<div id="<?= $containerId . '-container' ?>" class="yandex-pay"></div>
 		<?php
 	}
-	else
-	{
-		?>
-		<div id="<?= $containerId ?>" class="yandex-pay"></div>
-		<script>
-			(function() {
-				<?php
-				echo file_get_contents(__DIR__ . '/init.js');
-				?>
-				function run() {
-					const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
-					const element = document.getElementById('<?= $containerId?>');
+	?>
+	<script>
+		(function() {
+			<?php
+			echo file_get_contents(__DIR__ . '/init.js');
+			?>
+			function run() {
+				const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
+				const selector = '<?= htmlspecialcharsback($selector) ?>';
+				const position = '<?= $position?>';
 
-					factory.create(element)
-						.then((widget) => {
-							widget.setOptions(<?= Json::encode($widgetOptions) ?>);
-							widget.cart();
-						})
-						.catch((error) => {
-							console.warn(error);
-						});
-				}
-			})();
-		</script>
-		<?php
-	}
+				factory.inject(selector, position)
+					.then((widget) => {
+						widget.setOptions(<?= Json::encode($widgetOptions) ?>);
+						widget.cart();
+					})
+					.catch((error) => {
+						console.warn(error);
+					});
+			}
+		})();
+	</script>
+	<?php
 }
 catch (Main\SystemException $exception)
 {
