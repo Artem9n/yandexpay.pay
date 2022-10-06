@@ -25,7 +25,7 @@ try
 	if ($APPLICATION->GetPageProperty('yandexpay_extension_widget') !== 'Y')
 	{
 		$APPLICATION->SetPageProperty('yandexpay_extension_widget', 'Y');
-		echo str_replace('<script', '<script defer ', Extension::getHtml('yandexpaypay.widget'));
+		echo Extension::getHtml('yandexpaypay.widget');
 	}
 
 	if (
@@ -36,7 +36,7 @@ try
 		$APPLICATION->SetPageProperty('yandexpay_extension_' . $arResult['PARAMS']['solution'], 'Y');
 
 		$solution = Solution\Registry::getInstance($arResult['PARAMS']['solution']);
-		echo str_replace('<script', '<script defer ', $solution->getExtension());
+		echo $solution->getExtension();
 	}
 
 	// widget index
@@ -67,22 +67,10 @@ try
 		?>
 		<script>
 			(function() {
-				wait();
-
-				function wait() {
-					if (
-						typeof BX !== 'undefined'
-						&& typeof BX.YandexPay !== 'undefined'
-						&& typeof BX.YandexPay.Factory !== 'undefined'
-					) {
-						ready();
-						return;
-					}
-
-					setTimeout(wait, 500);
-				}
-
-				function ready() {
+				<?php
+				echo file_get_contents(__DIR__ . '/init.js');
+				?>
+				function run() {
 					const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
 					const selector = '<?= htmlspecialcharsback($selector) ?>';
 					const position = '<?= $position?>';
@@ -95,7 +83,7 @@ try
 						.catch((error) => {
 							console.warn(error);
 						});
-				};
+				}
 			})();
 		</script>
 		<?php
@@ -106,22 +94,10 @@ try
 		<div id="<?= $containerId ?>" class="yandex-pay"></div>
 		<script>
 			(function() {
-				wait();
-
-				function wait() {
-					if (
-						typeof BX !== 'undefined'
-						&& typeof BX.YandexPay !== 'undefined'
-						&& typeof BX.YandexPay.Factory !== 'undefined'
-					) {
-						ready();
-						return;
-					}
-
-					setTimeout(wait, 500);
-				}
-
-				function ready() {
+				<?php
+				echo file_get_contents(__DIR__ . '/init.js');
+				?>
+				function run() {
 					const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
 					const element = document.getElementById('<?= $containerId?>');
 
@@ -133,7 +109,7 @@ try
 						.catch((error) => {
 							console.warn(error);
 						});
-				};
+				}
 			})();
 		</script>
 		<?php
