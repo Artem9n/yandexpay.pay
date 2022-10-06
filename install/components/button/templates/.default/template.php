@@ -66,6 +66,9 @@ try
 	{
 		$selector = '#' . $containerId . '-container';
 		$position = 'afterbegin';
+		$factoryOptions += [
+			'preserve' => false,
+		];
 
 		?>
 		<div id="<?= $containerId . '-container' ?>" class="yandex-pay"></div>
