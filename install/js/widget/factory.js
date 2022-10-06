@@ -12,7 +12,6 @@ export default class Factory {
 		solution: null,
 		template: '<div id="#ID#" class="bx-yapay-drawer"></div>',
 		containerSelector: '.bx-yapay-drawer',
-		loaderTemplate: '<div class="bx-yapay-skeleton-loading width--#WIDTH#"></div>',
 		loaderSelector: '.bx-yapay-skeleton-loading',
 		preserve: false,
 		waitLimit: 30,
@@ -37,22 +36,25 @@ export default class Factory {
 			.then(() => this.waitElement(selector))
 			.then((anchor) => this.checkElement(anchor))
 			.then((anchor) => this.renderElement(anchor, position))
-			.then((element) => this.create(element))
+			.then((element) => this.install(element))
+			.then((widget) => this.insertLoader(widget))
 			.then((widget) => {
 				if (this.getOption('preserve')) {
 					this.preserve(selector, position, widget);
 				}
 
 				return widget;
-			});
+			})
+			.then((widget) => this.intersection(widget.el).then(() => widget))
+			.then((widget) => Sdkloader.getInstance().load().then(() => widget));
 	}
 
 	create(element) {
 		return Promise.resolve(element)
-			.then((element) => this.insertLoader(element))
-			.then((element) => this.intersection(element))
-			.then((element) => Sdkloader.getInstance().load().then(() => element))
-			.then((element) => this.install(element));
+			.then((element) => this.install(element))
+			.then((widget) => this.insertLoader(widget))
+			.then((widget) => this.intersection(widget.el).then(() => widget))
+			.then((widget) => Sdkloader.getInstance().load().then(() => widget));
 	}
 
 	checkElement(anchor) {
@@ -127,15 +129,15 @@ export default class Factory {
 		return new BX.YandexPay.Widget(element);
 	}
 
-	insertLoader(element) {
+	insertLoader(widget) {
 		const width = this.getOption('buttonWidth') || 'AUTO';
 
-		element.innerHTML = Template.compile(this.getOption('loaderTemplate'), {
+		widget.go('loader', {
 			width: width.toLowerCase(),
 			label: this.getOption('label'),
 		});
 
-		return element;
+		return widget;
 	}
 
 	waitElement(selector) {

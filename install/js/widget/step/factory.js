@@ -1,6 +1,7 @@
 import Secure3d from './secure3d';
 import Finish from './finish';
 import Failure from './failure';
+import Loader from './loader';
 import AbstractPayment from './payment/abstractpayment';
 import AbstractCart from './cart/abstractcart';
 
@@ -24,6 +25,8 @@ export default class Factory {
 			return new AbstractPayment(widget, options);
 		} else if (type === 'cart') {
 			return new AbstractCart(widget, options);
+		} else if (type === 'loader') {
+			return new Loader(widget, options);
 		}
 
 		throw new Error('unknown step ' + type);
