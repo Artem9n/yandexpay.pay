@@ -75,7 +75,7 @@ try
 	<script>
 		(function() {
 			<?php
-			echo file_get_contents(__DIR__ . '/init.js');
+			echo file_get_contents(__DIR__ . '/init.min.js');
 			?>
 			function run() {
 				const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
