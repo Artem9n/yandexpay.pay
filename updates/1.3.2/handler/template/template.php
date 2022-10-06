@@ -1,0 +1,66 @@
+<?php
+if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
+
+/**
+ * @var array $params
+ * @var \Sale\Handlers\PaySystem\YandexPayHandler $this
+ * @var CMain $APPLICATION
+ */
+
+use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Web\Json;
+use Bitrix\Main\UI\Extension;
+
+Loc::loadMessages(__FILE__);
+
+echo Extension::getHtml('yandexpaypay.widget');
+
+$widgetOptions = array_intersect_key($params, [
+	'requestSign' => true,
+	'env' => true,
+	'merchantId' => true,
+	'merchantName' => true,
+	'buttonTheme' => true,
+	'buttonWidth' => true,
+	'cardNetworks' => true,
+	'gateway' => true,
+	'gatewayMerchantId' => true,
+	'externalId' => true,
+    'paySystemId' => true,
+    'currency' => true,
+	'notifyUrl' => true,
+	'restUrl' => true,
+	'successUrl' => true,
+	'isRest' => true,
+	'metadata' => true,
+]);
+
+// widget index
+
+$widgetIndex = (int)$APPLICATION->GetPageProperty('yandexpay_widget_index');
+$containerId = 'yandexpay' . ($widgetIndex > 0 ? '-' . $widgetIndex : '');
+
+$APPLICATION->SetPageProperty('yandexpay_widget_index', ++$widgetIndex);
+?>
+
+<div>
+	<?= Loc::getMessage('YANDEX_MARKET_SALE_SUM_DESCRIPTION', ['#SUM#' => CurrencyFormat($params['order']['total'], $params['currency'])])?>
+</div>
+<div id="<?= $containerId ?>" class="bx-yapay-drawer"></div>
+
+<script>
+	(function() {
+		const factory = new BX.YandexPay.Factory();
+		const element = document.getElementById('<?= $containerId ?>');
+		const options = <?= Json::encode($widgetOptions) ?>;
+
+		factory.create(element)
+			.then((widget) => {
+				widget.setOptions(options);
+				widget.payment(<?= Json::encode($params['order']) ?>);
+			})
+			.catch((error) => {
+				console.warn(error);
+			});
+	})();
+</script>
