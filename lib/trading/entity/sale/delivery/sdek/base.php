@@ -143,6 +143,7 @@ class Base extends AbstractAdapter
 				if ($property->getField('CODE') !== $sdekAddressCode) { continue; }
 
 				$propAddress = $property;
+				break;
 			}
 		}
 
