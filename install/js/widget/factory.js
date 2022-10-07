@@ -39,13 +39,14 @@ export default class Factory {
 			.then((element) => this.install(element))
 			.then((widget) => this.insertLoader(widget))
 			.then((widget) => {
+				const intersection = new Intersection(widget.el);
+				
 				if (this.getOption('preserve')) {
-					this.preserve(selector, position, widget);
+					this.preserve(selector, position, widget, intersection);
 				}
 
-				return widget;
+				return intersection.wait().then(() => widget);
 			})
-			.then((widget) => this.intersection(widget.el).then(() => widget))
 			.then((widget) => Sdkloader.getInstance().load().then(() => widget));
 	}
 
@@ -78,19 +79,13 @@ export default class Factory {
 
 		return result;
 	}
-
-	intersection(element: HTMLElement) {
-		const interseciton = new Intersection(element);
-
-		return interseciton.wait();
-	}
 	
-	preserve(selector, position, widget) {
+	preserve(selector, position, widget, intersection) {
 		const preserver = new NodePreserver(widget.el, Object.assign({}, this.preserveOptions(), {
 			restore: () => {
 				preserver.destroy();
 				// noinspection JSIgnoredPromiseFromCall
-				this.restore(selector, position, widget);
+				this.restore(selector, position, widget, intersection);
 			},
 		}));
 	}
@@ -101,16 +96,17 @@ export default class Factory {
 		return typeof preserveOption === 'object' ? preserveOption : {};
 	}
 
-	restore(selector, position, widget) {
+	restore(selector, position, widget, intersection) {
 		return Promise.resolve()
 			.then(() => this.waitElement(selector))
 			.then((anchor) => {
 				const element = this.renderElement(anchor, position);
 
 				widget.restore(element);
+				intersection?.restore(element);
 
 				if (this.getOption('preserve')) {
-					this.preserve(selector, position, widget);
+					this.preserve(selector, position, widget, intersection);
 				}
 
 				return widget;
