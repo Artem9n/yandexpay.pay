@@ -291,6 +291,6 @@ export default class Factory {
 	}
 
 	getOption(name) {
-		return this.options[name] ?? this.defaults[name]
+		return this.options[name] ?? this.defaults[name];
 	}
 }
