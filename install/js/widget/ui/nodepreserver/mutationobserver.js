@@ -67,7 +67,19 @@ export default class MutationObserver extends MutationSkeleton {
 	getAnchor() {
 		if (this.options.anchor == null) { return document.body; }
 
-		return this.el.closest(this.options.anchor);
+		let matched = null;
+
+		for (let selector of this.options.anchor.split(',')) {
+			selector = selector.trim();
+
+			if (selector === '') { continue; }
+
+			matched = this.el.closest(selector);
+
+			if (matched != null) { break; }
+		}
+
+		return matched;
 	}
 
 }
