@@ -6,7 +6,7 @@ export default class Order extends Page {
 		factory.extendDefaults({
 			preserve: {
 				mutation: {
-					anchor: '.bx-soa-cart-total',
+					anchor: '#bx-soa-total-mobile, .bx-soa-cart-total',
 					delay: null,
 				},
 			},
