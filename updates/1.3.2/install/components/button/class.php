@@ -57,9 +57,9 @@ class TradingButton extends \CBitrixComponent
 		}
 		catch (Main\SystemException $exception)
 		{
-			$logger = new Logger\Logger();
+			/*$logger = new Logger\Logger();
 			$logger->setUrl($this->request->getRequestUri());
-			$logger->error(...(new Logger\Formatter\Exception($exception))->forLogger());
+			$logger->error(...(new Logger\Formatter\Exception($exception))->forLogger());*/
 		}
 	}
 

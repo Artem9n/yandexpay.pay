@@ -120,7 +120,7 @@ class Element extends AbstractEngine
 
 		if (!$row)
 		{
-			throw new Main\SystemException('cant find element');
+			throw new Main\ArgumentException('cant find element');
 		}
 
 		return (int)$row['ID'];
