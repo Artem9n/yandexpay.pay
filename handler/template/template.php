@@ -13,7 +13,13 @@ use Bitrix\Main\UI\Extension;
 
 Loc::loadMessages(__FILE__);
 
-echo Extension::getHtml('yandexpaypay.widget');
+// assets
+
+if ($APPLICATION->GetPageProperty('yandexpay_extension_widget') !== 'Y')
+{
+	$APPLICATION->SetPageProperty('yandexpay_extension_widget', 'Y');
+	echo Extension::getHtml('yandexpaypay.widget');
+}
 
 $widgetOptions = array_intersect_key($params, [
 	'requestSign' => true,
@@ -41,26 +47,44 @@ $widgetIndex = (int)$APPLICATION->GetPageProperty('yandexpay_widget_index');
 $containerId = 'yandexpay' . ($widgetIndex > 0 ? '-' . $widgetIndex : '');
 
 $APPLICATION->SetPageProperty('yandexpay_widget_index', ++$widgetIndex);
+
+//draw
+
+$factoryOptions = array_intersect_key($params, [
+	'buttonWidth' => true,
+]);
+
+$position = 'afterbegin';
+$selector = '#' . $containerId . '-container';
+$factoryOptions += [
+	'preserve' => false,
+	'containerId' => $containerId,
+];
 ?>
 
 <div>
 	<?= Loc::getMessage('YANDEX_MARKET_SALE_SUM_DESCRIPTION', ['#SUM#' => CurrencyFormat($params['order']['total'], $params['currency'])])?>
 </div>
-<div id="<?= $containerId ?>" class="bx-yapay-drawer"></div>
+<div id="<?= $containerId . '-container' ?>"></div>
 
 <script>
 	(function() {
-		const factory = new BX.YandexPay.Factory();
-		const element = document.getElementById('<?= $containerId ?>');
-		const options = <?= Json::encode($widgetOptions) ?>;
+		<?php
+		echo file_get_contents(__DIR__ . '/init.min.js');
+		?>
+		function run() {
+			const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
+			const selector = '<?= htmlspecialcharsback($selector) ?>';
+			const position = '<?= $position?>';
 
-		factory.create(element)
-			.then((widget) => {
-				widget.setOptions(options);
-				widget.payment(<?= Json::encode($params['order']) ?>);
-			})
-			.catch((error) => {
-				console.warn(error);
-			});
+			factory.inject(selector, position)
+				.then((widget) => {
+					widget.setOptions(<?= Json::encode($widgetOptions) ?>);
+					widget.payment(<?= Json::encode($params['order']) ?>);
+				})
+				.catch((error) => {
+					console.warn(error);
+				});
+		}
 	})();
 </script>
