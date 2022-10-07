@@ -56,7 +56,7 @@ class Base extends AbstractAdapter
 		$result = [];
 
 		$query = \sqlSdekCity::select([], [
-			'NAME' => $locationsName
+			'NAME' => $locationsName,
 		]);
 
 		while ($location = $query->Fetch())
@@ -131,11 +131,29 @@ class Base extends AbstractAdapter
 			$property->setValue($tariff);
 		}
 
-		$propAddress = $order->getPropertyCollection()->getAddress();
+		$value = sprintf('%s #S%s', $address, $storeId);
+		$sdekAddressCode = \Ipolh\SDEK\option::get('pvzPicker');
+		$propertyCollection = $order->getPropertyCollection();
+		$propAddress = null;
 
-		if ($propAddress === null) { return; }
+		if ($sdekAddressCode)
+		{
+			foreach ($propertyCollection as $property)
+			{
+				if ($property->getField('CODE') !== $sdekAddressCode) { continue; }
 
-		$propAddress->setValue(sprintf('%s #%s', $address, $storeId));
+				$propAddress = $property;
+			}
+		}
+
+		if ($propAddress === null)
+		{
+			$propAddress = $propertyCollection->getAddress();
+
+			if ($propAddress === null) { return; }
+		}
+
+		$propAddress->setValue($value);
 	}
 
 	public function getDetailPickup(string $storeId) : array
