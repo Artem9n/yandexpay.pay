@@ -235,7 +235,7 @@ class EnumerationType
 
 	protected static function getOptionsHtml($options, $value, $settings) : string
 	{
-		$useDefaultValue = ($value === null);
+		$useDefaultValue = ((string)$value === '');
 		$valueMap = static::getValueMap($value);
 		$activeGroup = null;
 		$defaultGroup = !empty($settings['DEFAULT_GROUP']) ? $settings['DEFAULT_GROUP'] : null;
