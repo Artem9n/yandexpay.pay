@@ -1,12 +1,15 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\OrderCreate\Stage;
 
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Rest\Utils;
 use YandexPay\Pay\Trading\Action\Rest\OrderCreate\Request;
 use YandexPay\Pay\Trading\Action\Rest\State;
 
 class OrderProperties
 {
+	use Concerns\HasMessage;
+
 	protected $request;
 
 	public function __construct(Request $request)
@@ -54,11 +57,24 @@ class OrderProperties
 
 		if ($address === null) { return; }
 
-		$comment = $address->getComment();
+		$comment = (string)$address->getComment();
+		$delivery = $this->request->getDelivery();
 
-		if ((string)$comment !== '' && $state->options->useComment())
+		if ($delivery !== null)
 		{
-			$state->order->setComment($comment);
+			$deliveryDate = $delivery->getCustomerChoiceDate();
+
+			if ($deliveryDate !== null)
+			{
+				$comment .= PHP_EOL . self::getMessage('DELIVERY_DATE', [
+					'#DATE#' => $deliveryDate
+				]);
+			}
+		}
+
+		if ($comment !== '' && $state->options->useComment())
+		{
+			$state->order->setComment(trim($comment));
 		}
 	}
 }

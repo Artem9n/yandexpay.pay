@@ -15,4 +15,9 @@ class Delivery extends ActionReference\Dto
 	{
 		return (float)$this->requireField('amount');
 	}
+
+	public function getCustomerChoiceDate() : ?string
+	{
+		return $this->getField('customerChoice.date');
+	}
 }
