@@ -42,6 +42,15 @@ class DeliveryCollection extends FieldsetCollection
 		return $result;
 	}
 
+	public function isCourierDelivery(int $serviceId) : bool
+	{
+		$service = $this->getItemByServiceId($serviceId);
+
+		if ($service === null) { return false; }
+
+		return $service->getType() === Entity\Sale\Delivery::DELIVERY_TYPE;
+	}
+
 	public function getItemByServiceId(int $serviceId) : ?Delivery
 	{
 		$result = null;

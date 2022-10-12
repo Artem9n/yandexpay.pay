@@ -8,10 +8,15 @@ use YandexPay\Pay\Trading\Entity;
 use YandexPay\Pay\Trading\Settings\Reference\Fieldset;
 use YandexPay\Pay\Utils;
 use YandexPay\Pay\Ui;
+use YandexPay\Pay\Result;
 
 class Delivery extends Fieldset
 {
 	use Concerns\HasMessage;
+
+	public const PERIOD_WEEKEND_RULE_EDGE = 'edge';
+	public const PERIOD_WEEKEND_RULE_FULL = 'full';
+	public const PERIOD_WEEKEND_RULE_NONE = 'none';
 
 	public function getServiceId() : int
 	{
@@ -33,6 +38,28 @@ class Delivery extends Fieldset
 	public function getShipmentSchedule() : ShipmentSchedule
 	{
 		return $this->getFieldset('SHIPMENT_SCHEDULE');
+	}
+
+	/** @noinspection PhpIncompatibleReturnTypeInspection */
+	public function getCourierSchedule() : ScheduleOptions
+	{
+		return $this->getFieldsetCollection('COURIER_SCHEDULE');
+	}
+
+	/** @noinspection PhpIncompatibleReturnTypeInspection */
+	public function getHoliday() : HolidayOption
+	{
+		return $this->getFieldset('HOLIDAY');
+	}
+
+	public function getShipmentDelay() : ?string
+	{
+		return $this->getValue('SHIPMENT_DELAY');
+	}
+
+	public function getPeriodWeekendRule() : string
+	{
+		return $this->getValue('PERIOD_WEEKEND_RULE', static::PERIOD_WEEKEND_RULE_NONE);
 	}
 
 	public function getCatalogStore() : string
@@ -68,8 +95,8 @@ class Delivery extends Fieldset
 			'SETTINGS' => [
 				'SUMMARY' => '#TYPE# &laquo;#ID#&raquo;',
 				'LAYOUT' => 'summary',
-				'MODAL_WIDTH' => 650,
-				'MODAL_HEIGHT' => 400,
+				'MODAL_WIDTH' => 750,
+				'MODAL_HEIGHT' => 500,
 				'DEFAULT_VALUE' => $defaultsValue,
 			],
 		];
@@ -103,6 +130,8 @@ class Delivery extends Fieldset
 	{
 		return
 			$this->getCommonFields($environment, $siteId)
+			+ $this->getCourierDeliveryFields($environment, $siteId)
+			+ $this->getHolidayFields($environment, $siteId)
 			+ $this->getYandexDeliveryFields($environment, $siteId)
 			+ $this->getCatalogFields($environment, $siteId);
 	}
@@ -136,6 +165,73 @@ class Delivery extends Fieldset
 				],
 			],
 		];
+	}
+
+	protected function getCourierDeliveryFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return [
+			'COURIER_SCHEDULE' => $this->getCourierSchedule()->getFieldDescription($environment, $siteId) + [
+				'TYPE' => 'fieldset',
+				'NAME' => self::getMessage('COURIER_SCHEDULE'),
+				'HELP' => self::getMessage('COURIER_SCHEDULE_HELP'),
+				'GROUP' => self::getMessage('COURIER_GROUP'),
+				'DEPEND' => [
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Entity\Sale\Delivery::DELIVERY_TYPE,
+					],
+				],
+			],
+			'SHIPMENT_DELAY' => [
+				'TYPE' => 'time',
+				'NAME' => self::getMessage('SHIPMENT_DELAY'),
+				'HELP' => self::getMessage('SHIPMENT_DELAY_HELP'),
+				'DEPEND' => [
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Entity\Sale\Delivery::DELIVERY_TYPE,
+					],
+				],
+			],
+			'PERIOD_WEEKEND_RULE' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('PERIOD_WEEKEND_RULE'),
+				'HELP' => self::getMessage('PERIOD_WEEKEND_RULE_HELP'),
+				'VALUES' => [
+					[
+						'ID' => static::PERIOD_WEEKEND_RULE_FULL,
+						'VALUE' => self::getMessage('PERIOD_WEEKEND_RULE_FULL'),
+					],
+					[
+						'ID' => static::PERIOD_WEEKEND_RULE_NONE,
+						'VALUE' => self::getMessage('PERIOD_WEEKEND_RULE_NONE'),
+					],
+				],
+				'SETTINGS' => [
+					'ALLOW_NO_VALUE' => 'N',
+				],
+				'DEPEND' => [
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Entity\Sale\Delivery::DELIVERY_TYPE,
+					],
+				],
+			],
+		];
+	}
+
+	protected function getHolidayFields(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		$defaults = [
+			'DEPEND' => [
+				'TYPE' => [
+					'RULE' => Utils\Userfield\DependField::RULE_ANY,
+					'VALUE' => Entity\Sale\Delivery::DELIVERY_TYPE,
+				],
+			],
+		];
+
+		return $this->getHoliday()->getHolidayFields($environment, $siteId, $defaults);
 	}
 
 	protected function getYandexDeliveryFields(Entity\Reference\Environment $environment, string $siteId) : array
@@ -282,6 +378,22 @@ class Delivery extends Fieldset
 		];
 	}
 
+	protected function getFieldsetMap() : array
+	{
+		return [
+			'WAREHOUSE' => Warehouse::class,
+			'SHIPMENT_SCHEDULE' => ShipmentSchedule::class,
+			'HOLIDAY' => HolidayOption::class,
+		];
+	}
+
+	protected function getFieldsetCollectionMap() : array
+	{
+		return [
+			'COURIER_SCHEDULE' => ScheduleOptions::class,
+		];
+	}
+
 	protected function validateSelf() : Main\Result
 	{
 		$result = new Main\Result();
@@ -306,14 +418,6 @@ class Delivery extends Fieldset
 		return $result;
 	}
 
-	protected function getFieldsetMap() : array
-	{
-		return [
-			'WAREHOUSE' => Warehouse::class,
-			'SHIPMENT_SCHEDULE' => ShipmentSchedule::class,
-		];
-	}
-
 	protected function validateFieldset() : Main\Result
 	{
 		$result = new Main\Result();
@@ -327,8 +431,21 @@ class Delivery extends Fieldset
 	{
 		$result = new Main\Result();
 
-		if ($this->getType() !==  Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE) { return $result; }
+		if ($this->getType() === Entity\Sale\Delivery::YANDEX_DELIVERY_TYPE)
+		{
+			$result = Result\Facade::merge(
+				$this->validateSelf(),
+				$this->validateFieldset()
+			);
+		}
+		else if (
+			$this->getType() === Entity\Sale\Delivery::DELIVERY_TYPE
+			&& !empty($this->getCourierSchedule()->getValues())
+		)
+		{
+			$result = $this->validateFieldsetCollection();
+		}
 
-		return parent::validate();
+		return $result;
 	}
 }

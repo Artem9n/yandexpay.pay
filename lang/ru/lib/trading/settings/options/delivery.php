@@ -28,3 +28,18 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_EMERGENCY_REQUIRED'] =
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_STORE_CONTACT_REQUIRED'] = 'не установлено пользовательское свойство склада "Яндекс.Pay: адрес склада"';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_STORE_WAREHOUSE_REQUIRED'] = 'не установлено пользовательское свойство склада "Яндекс.Pay: контакт пользователя"';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_STORE_SHIPMENT_SCHEDULE_REQUIRED'] = 'не установлено пользовательское свойство склада "Яндекс.Pay: график склада"';
+
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_COURIER_SCHEDULE'] = 'Расписание';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_COURIER_SCHEDULE_HELP'] = 'На основе расписания будет сформирован список возможных дат доставки и временных интервалов, доступных покупателю для выбора. <br><br>На каждый день можно создать до 5 интервалов.';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_COURIER_GROUP'] = 'График доставки';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_SHIPMENT_DELAY'] = 'Задержка отгрузки';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_SHIPMENT_DELAY_HELP'] = 'Время необходимое магазину для передачи заказа в службу доставки';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_PERIOD_WEEKEND_RULE'] = 'Учет выходных';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_PERIOD_WEEKEND_RULE_HELP'] = 'Как будет изменена первая дата доставки, если срок доставки от 2 до 4 дней:
+<ul>
+<li>Срок доставки указан в рабочих днях — второй рабочий день ^1;</li>
+<li>Служба доставки учитывает выходные — второй день.</li>
+</ul>
+^1 если заказ выполняется в нерабочее время с учетом задержки отгрузки, отсчет начнется со следующего рабочего дня.';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_PERIOD_WEEKEND_RULE_FULL'] = 'Срок доставки указан в рабочих днях';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_PERIOD_WEEKEND_RULE_NONE'] = 'Служба доставки учитывает выходные';

@@ -51,54 +51,7 @@ class ShipmentSchedule extends Settings\Reference\Fieldset
 
 	protected function getHolidayFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
-		$result = [];
-		$defaults = [
-			'GROUP' => self::getMessage('HOLIDAY_GROUP'),
-		];
-
-		foreach ($this->getHoliday()->getFields($environment, $siteId) as $name => $field)
-		{
-			$key = sprintf('HOLIDAY[%s]', $name);
-			$overrides = $this->getHolidayFieldOverrides($name);
-
-			if (isset($field['DEPEND']))
-			{
-				$newDepend = [];
-
-				foreach ($field['DEPEND'] as $dependName => $rule)
-				{
-					$newName = sprintf('[HOLIDAY][%s]', $dependName);
-					$newDepend[$newName] = $rule;
-				}
-
-				$field['DEPEND'] = $newDepend;
-			}
-
-			$result[$key] = $overrides + $field + $defaults;
-		}
-
-		return $result;
-	}
-
-	protected function getHolidayFieldOverrides(string $name) : array
-	{
-		$langKeys = [
-			'NAME' => '',
-			'HELP_MESSAGE' => 'HELP',
-		];
-		$result = [];
-
-		foreach ($langKeys as $resultKey => $type)
-		{
-			$suffix = ($type !== '' ? '_' . $type : '');
-			$message = (string)static::getMessage('HOLIDAY_' . $name . $suffix, null, '');
-
-			if ($message === '') { continue; }
-
-			$result[$resultKey] = $message;
-		}
-
-		return $result;
+		return $this->getHoliday()->getHolidayFields($environment, $siteId);
 	}
 
 	protected function getFieldsetCollectionMap() : array

@@ -2,5 +2,4 @@
 
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_SHIPMENT_SCHEDULE_SCHEDULE'] = 'Расписание';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_SHIPMENT_SCHEDULE_SCHEDULE_GROUP'] = 'Режим работы';
-$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_SHIPMENT_SCHEDULE_HOLIDAY_GROUP'] = 'Праздничные дни';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_SHIPMENT_SCHEDULE_SCHEDULE_HELP'] = 'На основе расписания будет сформирован список возможных дат доставки и временных интервалов, доступных покупателю для выбора.';
