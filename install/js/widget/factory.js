@@ -13,7 +13,9 @@ export default class Factory {
 		template: '<div id="#ID#" class="bx-yapay-drawer"></div>',
 		containerSelector: '.bx-yapay-drawer',
 		loaderSelector: '.bx-yapay-skeleton-loading',
-		preserve: false,
+		preserve: {
+			composite: true,
+		},
 		waitLimit: 30,
 		waitTimeout: 1000,
 	}
