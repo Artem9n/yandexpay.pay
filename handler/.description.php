@@ -1,6 +1,7 @@
 <?php
 
 use Bitrix\Main;
+use Bitrix\Sale;
 use Bitrix\Main\Localization\Loc;
 use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Utils;
@@ -232,6 +233,7 @@ try
 {
 	$gateway = null;
 	$request = Main\Application::getInstance()->getContext()->getRequest();
+	$apiKey = null;
 
 	if ($request->get('PS_MODE') !== null)
 	{
@@ -244,6 +246,10 @@ try
 	else if (isset($this) && $this instanceof \Sale\Handlers\PaySystem\YandexPayHandler)
 	{
 		$handlerMode = $this->getHandlerMode();
+		$apiKey = Sale\BusinessValue::get(
+			'YANDEX_PAY_REST_API_KEY',
+			Sale\PaySystem\Service::PAY_SYSTEM_PREFIX . $request->get('ID')
+		);
 
 		if ($handlerMode === null)
 		{
@@ -256,16 +262,9 @@ try
 				'limit' => 1
 			]);
 
-			if (($system = $query->fetch()) && $system['PS_MODE'] !== '')
+			if (($system = $query->fetch()) && (string)$system['PS_MODE'] !== '')
 			{
 				$gateway = Gateway\Manager::getProvider($system['PS_MODE']);
-			}
-
-			if ($gateway === null)
-			{
-				$list = Gateway\Manager::getHandlerModeList();
-				reset($list);
-				$gateway = Gateway\Manager::getProvider(key($list));
 			}
 		}
 		else
@@ -276,8 +275,35 @@ try
 
 	if ($gateway !== null)
 	{
-		$data['CODES'] += $gateway->getParams();
-		$psDescription = $gateway->getDescription();
+		if (Gateway\Manager::resolveGatewayRest($gateway->getId()))
+		{
+			if ($apiKey === null)
+			{
+				$data['CODES'] += $gateway->getParams();
+				$filter = new Utils\PsModeFilter();
+				$filter->setPsMode($gateway->getId());
+				$request->addFilter($filter);
+			}
+			else
+			{
+				unset(
+					$data['CODES']['YANDEX_PAY_MERCHANT_NAME'],
+					$data['CODES']['YANDEX_PAY_NOTIFY_URL']
+				);
+			}
+		}
+		else
+		{
+			$data['CODES'] += $gateway->getParams();
+			$psDescription = $gateway->getDescription();
+		}
+	}
+	else
+	{
+		unset(
+			$data['CODES']['YANDEX_PAY_MERCHANT_NAME'],
+			$data['CODES']['YANDEX_PAY_NOTIFY_URL']
+		);
 	}
 }
 catch (\Bitrix\Main\SystemException $exception)

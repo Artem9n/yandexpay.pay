@@ -2,67 +2,37 @@
 
 namespace YandexPay\Pay\Gateway\Payment;
 
-use YandexPay\Pay\Gateway\BaseRest;
-use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Gateway;
 use YandexPay\Pay\Trading\Action\Api;
-use YandexPay\Pay\Logger;
 
-class Rest
+class Rest extends Gateway\BaseRest
 {
-	/** @var BaseRest */
-	protected $gateway;
-
-	use Concerns\HasMessage;
-
-	public function __construct(BaseRest $gateway)
+	public function getId() : string
 	{
-		$this->gateway = $gateway;
+		return Gateway\Manager::REST;
 	}
 
-	protected function logger() : Logger\Logger
+	public function isRest() : bool
 	{
-		$logger = new Logger\Logger();
-		$logger->setLevel($this->gateway->getParameter('YANDEX_PAY_LOG_LEVEL', true));
-
-		return $logger;
-	}
-
-	public function refund() : void
-	{
-		$logger = $this->logger();
-
-		$request = new Api\Refund\Request();
-
-		$isTestMode = $this->gateway->isTestHandlerMode();
-
-		$apiKey = $isTestMode ?
-			$this->gateway->getParameter('YANDEX_PAY_MERCHANT_ID', true)
-			: $this->gateway->getParameter('YANDEX_PAY_REST_API_KEY', true);
-
-		if ($apiKey === null) { return; }
-
-		$request->setLogger($logger);
-		$request->setApiKey($apiKey);
-		$request->setTestMode($isTestMode);
-		$request->setPayment($this->gateway->getPayment());
-
-		$data = $request->send();
-		$response = $request->buildResponse($data, Api\Refund\Response::class);
-
-		$operation = $response->getOperation();
-
-		$message = static::getMessage(
-			sprintf('OPERATION_%s_%s', $operation->getOperationType(), $operation->getStatus()), [
-				'#ORDER_ID#' => $this->gateway->getOrderId(),
-			]
-		);
-
-		$logger->info($message, [
-			'AUDIT' => Logger\Audit::OUTGOING_REQUEST,
-		]);
+		return true;
 	}
 
 	public function startPay() : array
+	{
+		return [];
+	}
+
+	public function getPaymentIdFromRequest() : ?int
+	{
+		return null;
+	}
+
+	public function refundSelf() : void
+	{
+
+	}
+
+	protected function getUrlList() : array
 	{
 		return [];
 	}

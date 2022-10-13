@@ -49,6 +49,8 @@ class PaySystemEditPage
 		{
 			$provider = Manager::getProvider($gateway);
 
+			if (Manager::resolveGatewayRest($provider->getId())) { return $result; }
+
 			$result[$provider->getId()] = $provider->getName();
 		}
 
@@ -88,6 +90,7 @@ class PaySystemEditPage
 			$gateway === Manager::PAYTURE
 			|| $gateway === Manager::RBS_ALFA
 			|| $gateway === Manager::RBS_MTS
+			|| $gateway === null
 		)
 		{
 			$result = false;

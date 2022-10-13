@@ -2,21 +2,16 @@
 
 namespace YandexPay\Pay\Gateway;
 
+use YandexPay\Pay\Trading\Action\Api;
+use YandexPay\Pay\Logger;
+
 abstract class BaseRest extends Base
 {
-	protected $restProxy;
-
-	public function __construct()
-	{
-		parent::__construct();
-		$this->restProxy = new Payment\Rest($this);
-	}
-
 	public function refund(): void
 	{
 		if ($this->isRest())
 		{
-			$this->restProxy->refund();
+			$this->refundRest();
 			return;
 		}
 
@@ -43,5 +38,48 @@ abstract class BaseRest extends Base
 		}
 
 		return $result;
+	}
+
+	protected function logger() : Logger\Logger
+	{
+		$logger = new Logger\Logger();
+		$logger->setLevel($this->getParameter('YANDEX_PAY_LOG_LEVEL', true));
+
+		return $logger;
+	}
+
+	public function refundRest() : void
+	{
+		$logger = $this->logger();
+
+		$request = new Api\Refund\Request();
+
+		$isTestMode = $this->isTestHandlerMode();
+
+		$apiKey = $isTestMode ?
+			$this->getParameter('YANDEX_PAY_MERCHANT_ID', true)
+			: $this->getParameter('YANDEX_PAY_REST_API_KEY', true);
+
+		if ($apiKey === null) { return; }
+
+		$request->setLogger($logger);
+		$request->setApiKey($apiKey);
+		$request->setTestMode($isTestMode);
+		$request->setPayment($this->getPayment());
+
+		$data = $request->send();
+		$response = $request->buildResponse($data, Api\Refund\Response::class);
+
+		$operation = $response->getOperation();
+
+		$message = static::getMessage(
+			sprintf('OPERATION_%s_%s', $operation->getOperationType(), $operation->getStatus()), [
+				'#ORDER_ID#' => $this->getOrderId(),
+			]
+		);
+
+		$logger->info($message, [
+			'AUDIT' => Logger\Audit::OUTGOING_REQUEST,
+		]);
 	}
 }

@@ -221,7 +221,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function getGateway(): Gateway\Base
 	{
-		$type = $this->getHandlerMode();
+		$type = $this->getHandlerMode() ?? Gateway\Manager::REST;
 
 		Assert::notNull($type, 'gatewayType');
 
@@ -362,7 +362,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	public function getHandlerMode(): ?string
 	{
-		return $this->service->getField('PS_MODE');
+		return $this->service->getField('PS_MODE') ?: null;
 	}
 
 	public function isNewWindow(): bool
