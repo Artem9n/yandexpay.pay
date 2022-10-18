@@ -38,7 +38,6 @@ class AutoInstallPaySystem
 		return [
 			'ACTION_FILE' => 'yandexpay',
 			'ACTIVE' => 'N',
-			'PS_MODE' => Gateway\Manager::PAYTURE,
 			'PSA_NAME' => 'Yandex Pay',
 			'NEW_WINDOW' => 'N',
 			'NAME' => 'Yandex Pay',
