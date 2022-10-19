@@ -12,6 +12,8 @@ abstract class AbstractAdapter
 
 	abstract public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void;
 
+	abstract public function load() : bool;
+
 	/**
 	 * @param \Bitrix\Sale\OrderBase              $order
 	 * @param \Bitrix\Sale\Delivery\Services\Base $service

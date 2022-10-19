@@ -3,6 +3,7 @@
 namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Boxberry;
 
 use Bitrix\Sale;
+use Bitrix\Main;
 use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
@@ -16,6 +17,11 @@ class Base extends AbstractAdapter
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
 		return false;
+	}
+
+	public function load() : bool
+	{
+		return Main\Loader::includeModule('up.boxberrydelivery');
 	}
 
 	protected function getType() : string

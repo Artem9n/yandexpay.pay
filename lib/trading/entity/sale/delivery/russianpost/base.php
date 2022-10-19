@@ -17,6 +17,11 @@ class Base extends AbstractAdapter
 		return false;
 	}
 
+	public function load() : bool
+	{
+		return Main\Loader::includeModule('russianpost.post');
+	}
+
 	public function getServiceType() : string
 	{
 		return '';

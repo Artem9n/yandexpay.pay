@@ -11,10 +11,7 @@ class Pvz extends Base
 {
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
-		if (
-			!($service instanceof Sale\Delivery\Services\AutomaticProfile)
-			&& !Main\Loader::includeModule('up.boxberrydelivery')
-		) { return false; }
+		if (!($service instanceof Sale\Delivery\Services\AutomaticProfile)) { return false; }
 
 		$code = $service->getCode();
 

@@ -25,6 +25,11 @@ class Base extends AbstractAdapter
 		return false;
 	}
 
+	public function load() : bool
+	{
+		return false;
+	}
+
 	protected function getType() : string
 	{
 		return '';
