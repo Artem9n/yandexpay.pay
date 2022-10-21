@@ -49,7 +49,15 @@ class PaySystemEditPage
 		{
 			$provider = Manager::getProvider($gateway);
 
-			if (Manager::resolveGatewayRest($provider->getId())) { return $result; }
+			if (Manager::resolveGatewayRest($provider->getId()))
+			{
+				$apiKey = Sale\BusinessValue::get(
+					'YANDEX_PAY_REST_API_KEY',
+					Sale\PaySystem\Service::PAY_SYSTEM_PREFIX . $paySystemId
+				);
+
+				if ((string)$apiKey !== '') { return $result; }
+			}
 
 			$result[$provider->getId()] = $provider->getName();
 		}
