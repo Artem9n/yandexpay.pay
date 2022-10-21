@@ -9,7 +9,7 @@ class Collection
 {
 	public static function render($name, array $values, \Closure $renderer, array $attributes = []) : string
 	{
-		Main\UI\Extension::load('yandexpaypay.admin.field.row');
+		Main\UI\Extension::load('yandexpaypay.admin.field.raw');
 
 		$valueIndex = 0;
 

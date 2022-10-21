@@ -45,42 +45,45 @@ class StringType
 		return static::callParent('getFilterData', [$arUserField, $arHtmlControl]);
 	}
 
-	public static function GetEditFormHtmlMulty($userField, $htmlControl)
+	public static function GetEditFormHtmlMulty($userField, $htmlControl) : string
 	{
 		$values = Helper\Value::asMultiple($userField, $htmlControl);
-		$tableAttributes = Fieldset\Helper::makeChildAttributes($userField);
-		$inputAttributes = Helper\Attributes::extractFromSettings($userField['SETTINGS']);
-		$valueIndex = 0;
-		$minCount = isset($userField['SETTINGS']['MIN_COUNT']) ? max(1, (int)$userField['SETTINGS']['MIN_COUNT']) : 1;
-		$inputCount = max(count($values), $minCount);
+		$values = static::sanitizeMultipleValues($values);
+		$attributes = Fieldset\Helper::makeChildAttributes($userField);
 
-		$result = sprintf('<table %s>', Helper\Attributes::stringify($tableAttributes));
-
-		for ($i = 0; $i < $inputCount; $i++)
-		{
-			$value = $values[$i] ?? null;
-
-			$result .= '<tr><td>';
-			$result .= static::getEditInput($userField, [
-				'NAME' => $userField['FIELD_NAME'] . '[' . $valueIndex . ']',
+		$renderer = static function($name, $value) use ($userField) {
+			return static::GetEditFormHTML($userField, [
+				'NAME' => $name,
 				'VALUE' => $value,
-			], $inputAttributes);
-			$result .= '</td></tr>';
+			]);
+		};
 
-			++$valueIndex;
+		return View\Collection::render($userField['FIELD_NAME'], $values, $renderer, $attributes);
+	}
+
+	protected static function sanitizeMultipleValues(array $values) : array
+	{
+		$result = [];
+
+		foreach ($values as $value)
+		{
+			if (is_scalar($value) && (string)$value !== '')
+			{
+				$result[] = htmlspecialcharsbx($value);
+			}
 		}
-
-		$result .= '</table>';
 
 		return $result;
 	}
 
 	public static function getEditFormHTML($userField, $htmlControl) : string
 	{
-		$htmlControl['VALUE'] = Helper\Value::asSingle($userField, $htmlControl);
 		$attributes = Helper\Attributes::extractFromSettings($userField['SETTINGS']);
 
-		return static::getEditInput($userField, $htmlControl, $attributes);
+		$result = static::getEditInput($userField, $htmlControl);
+		$result = Helper\Attributes::insert($result, $attributes);
+
+		return $result;
 	}
 
 	public static function GetAdminListViewHtml($userField, $htmlControl) : string
