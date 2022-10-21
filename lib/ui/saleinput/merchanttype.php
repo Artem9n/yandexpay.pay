@@ -26,11 +26,12 @@ class MerchantType extends Internals\Input\StringInput
 
 		if (!Ui\Admin\PaySystemEditPage::validateMerchantButton())
 		{
-			$plugin = 'RestField';
+			$plugin = 'ConsoleField';
 		}
 
 		Main\UI\Extension::load('yandexpaypay.admin.ui.merchantbutton');
 		Main\UI\Extension::load('yandexpaypay.admin.ui.merchantrest');
+		Main\UI\Extension::load('yandexpaypay.admin.ui.merchantconsole');
 
 		$attributes = [
 			'type' => 'button',
