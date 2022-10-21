@@ -346,7 +346,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	 */
 	public static function getHandlerModeList(): array
 	{
-		$result = Gateway\Manager::getHandlerModeList();
+		$result = [];
 
 		if (PaySystemEditPage::isTarget())
 		{

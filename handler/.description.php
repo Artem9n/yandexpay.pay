@@ -280,9 +280,6 @@ try
 			if ($apiKey === null)
 			{
 				$data['CODES'] += $gateway->getParams();
-				$filter = new Utils\PsModeFilter();
-				$filter->setPsMode($gateway->getId());
-				$request->addFilter($filter);
 			}
 			else
 			{
