@@ -173,8 +173,9 @@
 				merchant_name: data.data.SHOP_NAME,
 				merchant_url: data.data.SITE_DOMAIN,
 				callback_url: data.data.CALLBACK_URL,
-				token: data.data.MERCHANT_TOKEN,
+				merchant_auth_token: data.data.MERCHANT_TOKEN,
 				cms_type: 'Bitrix',
+				onboard_supported: false,
 			};
 		},
 	}, {
