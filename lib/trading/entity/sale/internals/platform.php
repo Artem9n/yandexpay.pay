@@ -2,9 +2,12 @@
 
 namespace YandexPay\Pay\Trading\Entity\Sale\Internals;
 
+use Bitrix\Main;
 use Bitrix\Sale;
 use YandexPay\Pay\Exceptions;
 use YandexPay\Pay\Reference\Concerns;
+
+if (!Main\Loader::includeModule('sale')) { return; }
 
 class Platform extends Sale\TradingPlatform\Platform
 {
