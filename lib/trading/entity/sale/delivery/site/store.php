@@ -12,6 +12,11 @@ use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 /** @property Sale\Delivery\Services\Configurable $service */
 class Store extends AbstractAdapter
 {
+	public function load() : bool
+	{
+		return true;
+	}
+
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
 		if (!($service instanceof Sale\Delivery\Services\Configurable)) { return false; }

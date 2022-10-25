@@ -19,6 +19,11 @@ class Base extends AbstractAdapter
 		return false;
 	}
 
+	public function load() : bool
+	{
+		return Main\Loader::includeModule('ipol.sdek');
+	}
+
 	protected function getType() : string
 	{
 		return '';
@@ -26,8 +31,6 @@ class Base extends AbstractAdapter
 
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		if (!Main\Loader::includeModule('ipol.sdek')) { return []; }
-
 		$stores = $this->loadStores($bounds);
 
 		if (empty($stores)) { return []; }
@@ -140,8 +143,6 @@ class Base extends AbstractAdapter
 
 	public function getDetailPickup(string $storeId) : array
 	{
-		if (!Main\Loader::includeModule('ipol.sdek')) { return []; }
-
 		$result = [];
 
 		$pickupList = \CDeliverySDEK::getListFile();

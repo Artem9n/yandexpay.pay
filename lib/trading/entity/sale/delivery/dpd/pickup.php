@@ -25,6 +25,12 @@ class Pickup extends AbstractAdapter
 		return $code === 'ipolh_dpd:PICKUP';
 	}
 
+
+	public function load() : bool
+	{
+		return Main\Loader::includeModule('ipol.dpd');
+	}
+
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		if (!Main\Loader::includeModule('ipol.dpd')) { return []; }

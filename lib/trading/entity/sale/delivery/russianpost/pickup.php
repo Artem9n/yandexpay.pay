@@ -15,10 +15,7 @@ class Pickup extends Base
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
-		if (
-			!($service instanceof \Sale\Handlers\Delivery\RussianpostProfile)
-			&& !Main\Loader::includeModule('russianpost.post')
-		) { return false; }
+		if (!($service instanceof \Sale\Handlers\Delivery\RussianpostProfile)) { return false; }
 
 		$code = $service->getCode();
 
