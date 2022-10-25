@@ -1,5 +1,6 @@
 import MutationFactory from "./nodepreserver/mutationfactory";
 import Subscriber from "./nodepreserver/subscriber";
+import Composite from "./nodepreserver/composite";
 
 export default class NodePreserver {
 
@@ -7,12 +8,15 @@ export default class NodePreserver {
 		restore: null,
 		subscriber: null,
 		mutation: true,
+		composite: true,
 	}
 
 	/** @var MutationSkeleton */
 	mutation;
 	/** @var Subscriber */
 	subscriber;
+	/** @var Composite */
+	composite;
 
 	constructor(element, options = {}) {
 		this.el = element;
@@ -30,11 +34,13 @@ export default class NodePreserver {
 	install() {
 		this.installMutation();
 		this.installSubscriber();
+		this.installComposite();
 	}
 
 	uninstall() {
 		this.uninstallMutation();
 		this.uninstallSubscriber();
+		this.uninstallComposite();
 	}
 
 	installMutation() {
@@ -60,6 +66,18 @@ export default class NodePreserver {
 
 		this.subscriber.destroy();
 		this.subscriber = null;
+	}
+
+	installComposite() {
+		if (!this.isEnabled('composite')) { return; }
+
+		this.composite = new Composite(this.el, this.driverOptions('composite'));
+	}
+
+	uninstallComposite() {
+		if (this.composite == null) { return; }
+
+		this.composite.destroy();
 	}
 
 	isEnabled(type) {
