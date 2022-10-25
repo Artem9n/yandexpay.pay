@@ -2,7 +2,7 @@
 
 return [
 	'rel' => [
-		'jquery3',
+		'yandexpaypay.vendor.jquery',
 		'yandexpaypay.admin.utils',
 	],
 	'js' => 'index.js',
