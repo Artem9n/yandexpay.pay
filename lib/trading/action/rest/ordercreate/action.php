@@ -90,8 +90,8 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe($this->stageDelivery())
 			->pipe(new Rest\Stage\OrderFinalizer())
 			->pipe(new Stage\DeliveryCalculate())
-			->pipe($this->stageDeliveryProperties())
 			->pipe(new Rest\OrderCreate\Stage\OrderPaySystem($this->request))
+			->pipe($this->stageDeliveryProperties())
 			->pipe(new Rest\OrderCreate\Stage\RelatedProperties())
 			->pipe(new Rest\OrderCreate\Stage\OrderCheck($this->request))
 			->pipe(new Rest\OrderCreate\Stage\OrderAdd($this->request));
