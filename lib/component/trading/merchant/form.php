@@ -139,11 +139,11 @@ class Form extends Pay\Component\Plain\Form
 
 		if ($token === null)
 		{
-			$token = md5(microtime() . 'salt' . time()); // todo mb base64 or JWT ?
+			$token = md5(microtime() . 'salt' . time());
 			Pay\Config::setOption('merchant_token', $token);
 		}
 
-		return JWT::encode(['test' => 'test'], $token, 'HS256');
+		return $token;
 	}
 
 	protected function getCallbackUrl() : string
