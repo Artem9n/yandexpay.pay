@@ -13,7 +13,7 @@
 			formWidth: 500,
 			formHeight: 350,
 
-			registrationUrl: 'https://console.pay.yandex.ru/web/registration/organization',
+			registrationUrl: 'https://console.pay.yandex.ru/web/registration',
 
 			formName: 'Form with secret',
 			confirmUrl: 'https://pay.yandex.ru/web/console-registration',
