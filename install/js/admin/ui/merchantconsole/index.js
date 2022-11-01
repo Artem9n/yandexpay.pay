@@ -13,7 +13,11 @@
 			formWidth: 500,
 			formHeight: 350,
 
-			registrationUrl: 'https://console.pay.yandex.ru/web/registration',
+			merchantUrl: null,
+			callbackUrl: null,
+			merchantToken: null,
+
+			registrationUrl: 'https://console.pay.yandex.ru/web/registration/organization',
 
 			formName: 'Form with secret',
 			confirmUrl: 'https://pay.yandex.ru/web/console-registration',
@@ -56,30 +60,17 @@
 		},
 
 		activate: function() {
-			this.requestForm()
-				.then(this.confirmWindow.bind(this));
+			this.confirmWindow();
 		},
 
-		requestForm: function() {
-			const form = new Ui.ModalForm(this.$el, {
-				url: this.options.formUrl,
-				width: this.options.formWidth,
-				height: this.options.formHeight,
-				saveTitle: this.options.formSaveTitle,
-				title: this.options.formTitle,
-			});
-
-			return form.activate();
-		},
-
-		confirmWindow: function(data) {
+		confirmWindow: function() {
 			const url = new URL(this.options.registrationUrl);
-			const formData = this.makeFormData(data);
+			const formData = this.makeFormData();
 			const gatewayData = this.makeGatewayData();
 			const payload = Object.assign({}, formData, gatewayData);
 
-			const form = this.createForm(url, '_self', 'POST', payload);
-			console.log(form);
+			const form = this.createForm(url, '_blank', 'POST', payload);
+
 			document.body.append(form);
 			form.submit();
 
@@ -168,12 +159,11 @@
 			};
 		},
 
-		makeFormData: function(data) {
+		makeFormData: function() {
 			return  {
-				merchant_name: data.data.SHOP_NAME,
-				merchant_url: data.data.SITE_DOMAIN,
-				callback_url: data.data.CALLBACK_URL,
-				merchant_auth_token: data.data.MERCHANT_TOKEN,
+				merchant_url: this.options.merchantUrl,
+				callback_url: this.options.callbackUrl,
+				merchant_auth_token: this.options.merchantToken,
 				cms_type: 'Bitrix',
 				onboard_supported: false,
 			};

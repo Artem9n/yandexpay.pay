@@ -28,24 +28,20 @@ $data = [
 	'NAME'        => Loc::getMessage('YANDEX_PAY_TITLE'),
 	'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_DESCRIPTION'),
 	'CODES'       => [
-		'YANDEX_PAY_TEST_MODE' => [
-			'NAME'          => Loc::getMessage('YANDEX_PAY_TEST_MODE_NAME'),
-			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_TEST_MODE_DESCRIPTION'),
-			'SORT'          => 100,
-			'INPUT'         => [
-				'TYPE' => 'Y/N'
+		'YANDEX_PAY_SETTING' => [
+			'NAME'          => ' ',
+			'SORT'          => 120,
+			'INPUT' => [
+				'TYPE' => PayUi\SaleInput\Registry::type(PayUi\SaleInput\Registry::TYPE_MERCHANT),
+				'SIZE' => 40
 			],
-			'DEFAULT'       => [
-				'PROVIDER_KEY'      => 'INPUT',
-				'PROVIDER_VALUE'    => 'N'
-			]
 		],
 		'YANDEX_PAY_MERCHANT_ID' => [
 			'NAME'          => Loc::getMessage('YANDEX_PAY_MERCHANT_ID_NAME'),
 			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_MERCHANT_ID_DESCRIPTION'),
 			'SORT'          => 150,
 			'INPUT' => [
-				'TYPE' => PayUi\SaleInput\Registry::type(PayUi\SaleInput\Registry::TYPE_MERCHANT),
+				'TYPE' => 'STRING',
 				'SIZE' => 40
 			],
 		],
@@ -111,10 +107,24 @@ $data = [
 				'VALUE' => Utils\Url::absolutizePath(BX_ROOT . '/tools/yandexpay.pay/sale_ps_yandexpay_result.php')
 			],
 		],
+		'YANDEX_PAY_TEST_MODE' => [
+			'NAME'          => Loc::getMessage('YANDEX_PAY_TEST_MODE_NAME'),
+			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_TEST_MODE_DESCRIPTION'),
+			'SORT'          => 353,
+			'GROUP'         => Loc::getMessage('YANDEX_PAY_ADNVANCED_SETTINGS_GROUP'),
+			'INPUT'         => [
+				'TYPE' => 'Y/N'
+			],
+			'DEFAULT'       => [
+				'PROVIDER_KEY'      => 'INPUT',
+				'PROVIDER_VALUE'    => 'N'
+			]
+		],
 		'YANDEX_PAY_LOG_LEVEL' => [
 			'NAME' => Loc::getMessage('YANDEX_PAY_LOG_LEVEL_NAME'),
 			'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_LOG_LEVEL_DESCRIPTION'),
 			'SORT' => 355,
+			'GROUP' => Loc::getMessage('YANDEX_PAY_ADNVANCED_SETTINGS_GROUP'),
 			'INPUT' => [
 				'TYPE' => 'ENUM',
 				'OPTIONS' => \YandexPay\Pay\Logger\Level::getEnum(),
