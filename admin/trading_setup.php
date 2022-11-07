@@ -5,6 +5,8 @@ use YandexPay\Pay;
 
 require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_admin_before.php';
 
+header('PageSpeed: off');
+
 $request = Main\Context::getCurrent()->getRequest();
 $assets = Main\Page\Asset::getInstance();
 $requestView = $request->get('view');
