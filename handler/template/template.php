@@ -59,6 +59,7 @@ $selector = '#' . $containerId . '-container';
 $factoryOptions += [
 	'preserve' => false,
 	'containerId' => $containerId,
+	'useDivider' => false,
 ];
 ?>
 
