@@ -22,10 +22,10 @@ class Guide
 		$dir = rtrim($dir, '/');
 
 		return [
-			'SELECTOR' => '.basket-checkout-block .fastorder, .basket-checkout-block.basket-checkout-block-btn',
+			'SELECTOR' => '.basket-checkout-block-btns-wrap, .basket-checkout-section-inner',
 			'POSITION' => 'afterend',
 			'PATH' => $dir . $path,
-			'WIDTH_BUTTON' => 'MAX'
+			'WIDTH_BUTTON' => 'AUTO'
 		];
 	}
 
