@@ -6,18 +6,12 @@ use YandexPay\Pay\Reference\Assert;
 class Registry
 {
 	public const ESHOP_BOOTSTRAP = 'EshopBootstrap';
-	public const ASPRO_MAX = 'AsproMax';
-	public const ASPRO_NEXT = 'AsproNext';
-	public const ASPRO_OPTIMUS = 'AsproOptimus';
-	public const ASPRO_MSHOP = 'AsproMshop';
+	public const ASPRO = 'Aspro';
 
 	public static function getTypes() : array
 	{
 		return [
-			static::ASPRO_MAX,
-			static::ASPRO_NEXT,
-			static::ASPRO_OPTIMUS,
-			static::ASPRO_MSHOP,
+			static::ASPRO,
 			static::ESHOP_BOOTSTRAP,
 		];
 	}
