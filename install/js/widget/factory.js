@@ -4,13 +4,25 @@ import Utils from './utils/template';
 import {EventProxy} from "./utils/eventproxy";
 import {Sdkloader} from "./sdkloader";
 import {Intersection} from "./intersection";
-import Template from "./utils/template";
 
 export default class Factory {
 
 	static defaults = {
 		solution: null,
-		template: '<div id="#ID#" class="bx-yapay-drawer"></div>',
+		template: '<div id="#ID#" class="bx-yapay-drawer-container ' +
+				'yapay-behavior--#MODE# ' +
+				'yapay-source--#SOURCE# ' +
+				'yapay-width--#WIDTH# ' +
+				'yapay-solution--#SOLUTION#">' +
+				'#DIVIDER#' +
+				'<div class="bx-yapay-drawer"></div>' +
+			'</div>',
+		divider: '<div class="bx-yapay-divider">' +
+			'<span class="bx-yapay-divider__corner"></span>' +
+			'<span class="bx-yapay-divider__text">#LABEL#</span>' +
+			'<span class="bx-yapay-divider__corner at--right"></span>' +
+			'</div>',
+		useDivider: false,
 		containerSelector: '.bx-yapay-drawer',
 		loaderSelector: '.bx-yapay-skeleton-loading',
 		preserve: {
@@ -120,10 +132,7 @@ export default class Factory {
 	}
 
 	insertLoader(widget) {
-		const width = this.getOption('buttonWidth') || 'AUTO';
-
 		widget.go('loader', {
-			width: width.toLowerCase(),
 			label: this.getOption('label'),
 		});
 
@@ -243,10 +252,16 @@ export default class Factory {
 	renderElement(anchor, position) {
 		const selector = this.getOption('containerSelector');
 		const width = this.getOption('buttonWidth') || 'AUTO';
+		const divider = this.getOption('useDivider')
+			? Utils.compile(this.getOption('divider'), {label: this.getOption('label')})
+			: '';
 		const html = Utils.compile(this.getOption('template'), {
-			label: this.getOption('label'),
+			divider: divider,
 			width: width.toLowerCase(),
 			id: this.getOption('containerId'),
+			mode: this.getOption('mode'),
+			source: 'button', //todo
+			solution: this.getOption('solution')?.toLowerCase(),
 		});
 		let elements = Utils.toElements(html);
 		let result = null;
