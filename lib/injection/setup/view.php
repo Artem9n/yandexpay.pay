@@ -81,14 +81,33 @@ class View extends Storage\View
 			foreach ($behavior->getFields() as $name => $field)
 			{
 				$fullName = sprintf('SETTINGS[%s]', mb_strtoupper($type) . '_' . $name);
+
+				$depend = [
+					'BEHAVIOR' => [
+						'RULE' => DependField::RULE_ANY,
+						'VALUE' => [ $type ],
+					],
+				];
+
+				if (isset($field['DEPEND']))
+				{
+					$dependField = [];
+
+					foreach ($field['DEPEND'] as $code => $dependVal)
+					{
+						$dependName = sprintf('[SETTINGS][%s_%s]', mb_strtoupper($type), $code);
+						$dependField[$dependName] = $dependVal;
+					}
+
+					$field['DEPEND'] = $dependField + $depend;
+				}
+				else
+				{
+					$field['DEPEND'] = $depend;
+				}
+
 				$field += [
 					'LIST_COLUMN_LABEL' => $field['TITLE'],
-					'DEPEND' => [
-						'BEHAVIOR' => [
-							'RULE' => DependField::RULE_ANY,
-							'VALUE' => [ $type ],
-						],
-					]
 				];
 
 				$result[$fullName] = $field;
