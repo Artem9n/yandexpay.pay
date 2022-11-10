@@ -9,6 +9,7 @@
 	.bx-yapay-drawer-container.yapay-behavior--basket .ya-pay-button,
 	.bx-yapay-drawer-container.yapay-behavior--basket .bx-yapay-skeleton-loading{
 		width: 100%;
+		min-width: 100px;
 	}
 }
 
