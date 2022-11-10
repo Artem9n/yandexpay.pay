@@ -19,6 +19,12 @@ export default class AbstractCart extends AbstractStep {
 			: new SiteProxy(this);
 		this.paymentData = this.getPaymentData();
 
+		let width = this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto;
+
+		this.widget.setOptions({
+			buttonWidth: width === 'CUSTOM' ? YaPay.ButtonWidth.Max : width
+		});
+
 		this.bootSolution();
 		this.setupPaymentCash();
 		this.delayBootstrap();
