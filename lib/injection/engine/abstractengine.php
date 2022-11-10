@@ -70,6 +70,10 @@ abstract class AbstractEngine extends Event\Base
 			'TRADING_ID' => $setup->getTradingId(),
 			'VARIANT_BUTTON' => $options->getVariant(),
 			'WIDTH_BUTTON' => $options->getWidth(),
+			'WIDTH_VALUE' => $options->getWidthValue(),
+			'HEIGHT' => $options->getHeight(),
+			'BORDER_RADIUS' => $options->getBorderRadius(),
+			'USE_DIVIDER' => $options->useDivider(),
 		];
 	}
 
