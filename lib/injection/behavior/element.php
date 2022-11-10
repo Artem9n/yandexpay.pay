@@ -16,19 +16,15 @@ class Element extends AbstractBehavior
 
 	public function getFields() : array
 	{
-		return parent::getFields() + [
-			'SELECTOR' => [
-				'TYPE' => 'string',
-				'TITLE' => self::getMessage('SELECTOR'),
-				'MANDATORY' => 'Y',
-			],
+		return [
 			'IBLOCK' => [
+				'GROUP' => static::getMessage('GROUP_BEHAVIOR'),
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
 				'TITLE' => self::getMessage('IBLOCK'),
 				'VALUES' => $this->getIblockEnum(),
 			],
-		];
+		] + parent::getFields();
 	}
 
 	public function getEngineReference() : string
