@@ -42,6 +42,9 @@ class TradingButton extends \CBitrixComponent
 		$arParams['WIDTH_BUTTON'] = !empty($arParams['WIDTH_BUTTON']) ? (string)$arParams['WIDTH_BUTTON'] : null;
 		$arParams['SELECTOR'] = !empty($arParams['SELECTOR']) ? (string)$arParams['SELECTOR'] : null;
 		$arParams['MODE'] = !empty($arParams['MODE']) ? (string)$arParams['MODE'] : null;
+		$arParams['BORDER_RADIUS'] = (int)$arParams['BORDER_RADIUS'] >= 0 ? $arParams['BORDER_RADIUS'] : 8;
+		$arParams['HEIGHT'] = !empty($arParams['HEIGHT']) ? $arParams['HEIGHT'] : 54;
+		$arParams['WIDTH_VALUE'] = !empty($arParams['WIDTH_VALUE']) ? $arParams['WIDTH_VALUE'] : 282;
 
 		return $arParams;
 	}
@@ -86,6 +89,10 @@ class TradingButton extends \CBitrixComponent
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
 			'buttonTheme'       => $this->arParams['VARIANT_BUTTON'],
 			'buttonWidth'       => $this->arParams['WIDTH_BUTTON'],
+			'buttonWidthValue'  => $this->arParams['WIDTH_VALUE'],
+			'buttonHeight'      => $this->arParams['HEIGHT'],
+			'buttonBorderRadius'=> $this->arParams['BORDER_RADIUS'],
+			'useDivider'        => $this->arParams['USE_DIVIDER'],
 			'gateway'           => $gateway->getGatewayId(),
 			'isRest'            => $gateway->isRest(),
 			'gatewayMerchantId' => $gateway->getMerchantId(),

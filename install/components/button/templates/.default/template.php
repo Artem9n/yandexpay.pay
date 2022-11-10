@@ -54,6 +54,10 @@ try
 		'solution' => true,
 		'mode' => true,
 		'buttonWidth' => true,
+		'buttonWidthValue' => true,
+		'buttonHeight' => true,
+		'buttonBorderRadius' => true,
+		'useDivider' => true,
 	]);
 	$factoryOptions += (array)($arParams['~FACTORY_OPTIONS'] ?? []);
 	$factoryOptions['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
