@@ -68,6 +68,12 @@
 	min-width: 100px;
 }
 
+/*widget width custom*/
+.bx-yapay-drawer-container.yapay-width--custom .bx-yapay-skeleton-loading,
+.bx-yapay-drawer-container.yapay-width--custom .bx-yapay-divider{
+	min-width: 100px;
+}
+
 /*divider*/
 .bx-yapay-divider {
 	display: inline-flex;

@@ -3,12 +3,6 @@
 	margin-bottom: 0;
 }
 
-.bx-yapay-drawer-container .ya-pay-button,
-.bx-yapay-drawer-container .bx-yapay-skeleton-loading{
-	height: 49px;
-	border-radius: 3px;
-}
-
 /*basket*/
 .bx-yapay-drawer-container.yapay-behavior--basket{
 	text-align: right;
@@ -35,10 +29,6 @@
 }
 
 /*element*/
-.bx-yapay-drawer-container.yapay-behavior--element .ya-pay-button,
-.bx-yapay-drawer-container.yapay-behavior--element .bx-yapay-skeleton-loading{
-	border-radius: 0;
-}
 
 
 /*order*/
