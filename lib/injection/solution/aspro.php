@@ -38,15 +38,23 @@ class Aspro extends Skeleton
 			'.buy_block .buttons',
 		];
 
+		$design = [
+			'HEIGHT_BUTTON' => 'CUSTOM',
+			'BORDER_RADIUS_BUTTON' => 'CUSTOM',
+			'HEIGHT_VALUE' => 49,
+			'BORDER_RADIUS_VALUE' => 3,
+			'USE_DIVIDER' => true,
+		];
+
 		return [
-			Behavior\Registry::ELEMENT => [
+			Behavior\Registry::ELEMENT => $design + [
 				'SELECTOR' => implode(', ', $selectors),
 				'POSITION' => 'afterend',
 				'IBLOCK' => $context['IBLOCK'],
-				'WIDTH_BUTTON' => 'MAX'
+				'WIDTH_BUTTON' => 'MAX',
 			],
-			Behavior\Registry::BASKET => Guide::getBitrixBasket($context, '/basket/'),
-			Behavior\Registry::ORDER => Guide::getBitrixOrder($context, '/order/'),
+			Behavior\Registry::BASKET => $design + Guide::getBitrixBasket($context, '/basket/'),
+			Behavior\Registry::ORDER => $design + Guide::getBitrixOrder($context, '/order/'),
 		];
 	}
 }
