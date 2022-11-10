@@ -14,6 +14,7 @@ export default class Factory {
 				'yapay-source--#SOURCE# ' +
 				'yapay-width--#WIDTH# ' +
 				'yapay-solution--#SOLUTION#">' +
+				'#STYLE#' +
 				'#DIVIDER#' +
 				'<div class="bx-yapay-drawer"></div>' +
 			'</div>',
@@ -22,6 +23,15 @@ export default class Factory {
 			'<span class="bx-yapay-divider__text">#LABEL#</span>' +
 			'<span class="bx-yapay-divider__corner at--right"></span>' +
 			'</div>',
+		style: '<style>' +
+			'##ID#.bx-yapay-drawer-container .ya-pay-button,' +
+			'##ID#.bx-yapay-drawer-container .bx-yapay-skeleton-loading' +
+			'{ border-radius: #RADIUS#px; height: #HEIGHT#px; }' +
+			'##ID#.bx-yapay-drawer-container.yapay-width--custom .ya-pay-button,' +
+			'##ID#.bx-yapay-drawer-container.yapay-width--custom .bx-yapay-skeleton-loading,' +
+			'##ID#.bx-yapay-drawer-container.yapay-width--custom .bx-yapay-divider' +
+			'{ width: #WIDTH#px; }' +
+			'</style>',
 		useDivider: false,
 		containerSelector: '.bx-yapay-drawer',
 		loaderSelector: '.bx-yapay-skeleton-loading',
@@ -65,7 +75,7 @@ export default class Factory {
 	}
 
 	checkElement(anchor) {
-		const selector = this.getOption('containerSelector');
+		const selector = this.containerSelector();
 		const contains = (
 			!!anchor.querySelector(selector)
 			|| this.containsSiblingElement(anchor, selector)
@@ -76,6 +86,10 @@ export default class Factory {
 		}
 
 		return anchor;
+	}
+
+	containerSelector() {
+		return '#' + this.getOption('containerId') + ' ' + this.getOption('containerSelector');
 	}
 
 	containsSiblingElement(anchor, selector) {
@@ -250,12 +264,22 @@ export default class Factory {
 	}
 
 	renderElement(anchor, position) {
-		const selector = this.getOption('containerSelector');
+		const selector = this.containerSelector();
 		const width = this.getOption('buttonWidth') || 'AUTO';
+
 		const divider = this.getOption('useDivider')
 			? Utils.compile(this.getOption('divider'), {label: this.getOption('label')})
 			: '';
+
+		const style = Utils.compile(this.getOption('style'), {
+			radius: this.getOption('buttonBorderRadius') ?? '8',
+			height: this.getOption('buttonHeight') || '54',
+			width: this.getOption('buttonWidthValue') || '282',
+			id: this.getOption('containerId'),
+		});
+
 		const html = Utils.compile(this.getOption('template'), {
+			style: style,
 			divider: divider,
 			width: width.toLowerCase(),
 			id: this.getOption('containerId'),
