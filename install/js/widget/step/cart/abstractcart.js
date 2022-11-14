@@ -18,6 +18,7 @@ export default class AbstractCart extends AbstractStep {
 			? new RestProxy(this)
 			: new SiteProxy(this);
 		this.paymentData = this.getPaymentData();
+		this.initialContent = this.element.innerHTML;
 
 		this.bootSolution();
 		this.setupPaymentCash();
@@ -29,6 +30,10 @@ export default class AbstractCart extends AbstractStep {
 	}
 
 	restore(node) {
+		if (this.initialContent != null) {
+			node.innerHTML = this.initialContent;
+		}
+
 		this.element = node;
 		this.restoreButton(node);
 	}
@@ -86,6 +91,7 @@ export default class AbstractCart extends AbstractStep {
 	}
 
 	mountButton(node, payment) {
+		this.initialContent = null;
 		this.paymentButton = payment.createButton({
 			type: YaPay.ButtonType.Checkout,
 			theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
@@ -120,8 +126,7 @@ export default class AbstractCart extends AbstractStep {
 	removeLoader() {
 		const loader = this.element.querySelector(this.getOption('loaderSelector'));
 
-		if (loader == null) { return; }
-
-		loader.remove();
+		loader?.remove();
+		this.initialContent = null;
 	}
 }
