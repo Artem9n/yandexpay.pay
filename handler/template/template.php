@@ -37,6 +37,7 @@ $widgetOptions = array_intersect_key($params, [
 	'notifyUrl' => true,
 	'restUrl' => true,
 	'successUrl' => true,
+	'failUrl' => true,
 	'isRest' => true,
 	'metadata' => true,
 ]);
