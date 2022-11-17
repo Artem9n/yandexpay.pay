@@ -3,7 +3,6 @@
 namespace YandexPay\Pay\Component\Trading\Merchant;
 
 use Bitrix\Main;
-use Firebase\JWT\JWT;
 use YandexPay\Pay;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity as TradingEntity;
@@ -26,13 +25,15 @@ class Form extends Pay\Component\Plain\Form
 					'DEFAULT_VALUE' => $this->getShopName(),
 				],
 			],
-			'SITE_DOMAIN' => [
+			'SITE_DOMAINS' => [
 				'TYPE' => 'string',
 				'MANDATORY' => 'Y',
-				'NAME' => self::getMessage('SITE_DOMAIN'),
+				'MULTIPLE' => 'Y',
+				'NAME' => self::getMessage('SITE_DOMAINS'),
 				'SETTINGS' => [
 					'SIZE' => 30,
-					'DEFAULT_VALUE' => $this->getDomain(),
+					'MIN_COUNT' => 3,
+					'DEFAULT_VALUE' => $this->getDomains(),
 				],
 			],
 			'CALLBACK_URL' => [
@@ -40,14 +41,7 @@ class Form extends Pay\Component\Plain\Form
 				'HIDDEN' => 'Y',
 				'SETTINGS' => [
 					'DEFAULT_VALUE' => $this->getCallbackUrl(),
-				],
-			],
-			'MERCHANT_TOKEN' => [
-				'TYPE' => 'string',
-				'HIDDEN' => 'Y',
-				'SETTINGS' => [
-					'DEFAULT_VALUE' => $this->getMerchantToken(),
-				],
+				]
 			]
 		];
 
@@ -113,37 +107,14 @@ class Form extends Pay\Component\Plain\Form
 		foreach ($environment->getSite()->getVariants() as $siteId)
 		{
 			$params = [
+				'protocol' => 'https',
 				'host' => Pay\Data\SiteDomain::getHost($siteId),
 			];
 
 			$result[] = Pay\Utils\Url::absolutizePath('', $params);
 		}
 
-		return array_unique($result);
-	}
-
-	protected function getDomain() : string
-	{
-		$environment = $this->getEnvironment();
-
-		$params = [
-			'host' => Pay\Data\SiteDomain::getHost($environment->getSite()->getDefault()),
-		];
-
-		return Pay\Utils\Url::absolutizePath('', $params);
-	}
-
-	protected function getMerchantToken() : string
-	{
-		$token = Pay\Config::getOption('merchant_token', null);
-
-		if ($token === null)
-		{
-			$token = md5(microtime() . 'salt' . time());
-			Pay\Config::setOption('merchant_token', $token);
-		}
-
-		return $token;
+		return $result;
 	}
 
 	protected function getCallbackUrl() : string
@@ -153,6 +124,7 @@ class Form extends Pay\Component\Plain\Form
 		$siteId = $environment->getSite()->getDefault();
 
 		$params = [
+			'protocol' => 'https',
 			'host' => Pay\Data\SiteDomain::getHost($siteId),
 		];
 
