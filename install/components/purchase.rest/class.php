@@ -18,6 +18,7 @@ class PurchaseRest extends \CBitrixComponent
 	private const HTTP_STATUS_403 = '403 Forbidden';
 	private const HTTP_STATUS_404 = '404 Not Found';
 	private const HTTP_STATUS_500 = '500 Internal server error';
+	private const HTTP_STATUS_200 = '200 OK';
 
 	/** @var Psr\Log\LoggerInterface $logger */
 	protected $logger;
@@ -72,6 +73,14 @@ class PurchaseRest extends \CBitrixComponent
 			]);
 
 			$this->logResponse($response, Psr\Log\LogLevel::ERROR);
+			$this->sendResponse($response);
+		}
+		catch (TradingAction\Rest\Exceptions\OnboardProcessed $exception)
+		{
+			$response = $this->makeExceptionResponse($exception, static::HTTP_STATUS_200, [
+				'status' => 'processing'
+			]);
+
 			$this->sendResponse($response);
 		}
 		catch (\Throwable $exception)
@@ -176,7 +185,7 @@ class PurchaseRest extends \CBitrixComponent
 	protected function makeExceptionResponse(\Throwable $exception, $status, array $overrides = []) : Main\Engine\Response\Json
 	{
 		$response = new Main\Engine\Response\Json($overrides + [
-			'status' => 'fail',
+			'status' => $overrides['status'] ?? 'fail',
 			'reasonCode' => (string)($exception->getCode() ?: 'UNKNOWN'),
 			'reason' => $exception->getMessage(),
 			'trace' => $exception->getTraceAsString(), // todo remove
