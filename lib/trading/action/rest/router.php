@@ -28,8 +28,10 @@ class Router
 			'v1/pickup-option-details' => PickupDetail\Action::class,
 			'v1/order/create' => OrderCreate\Action::class,
 			'v1/webhook' => OrderWebhook\Action::class,
+			'v1/onboard' => Onboard\Action::class,
 			'authorize' => Authorize\Action::class,
 			'button/data' => ButtonData\Action::class,
+			'onboard/ping' => OnboardPing\Action::class,
 		];
 	}
 }
