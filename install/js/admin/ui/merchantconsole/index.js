@@ -35,6 +35,7 @@
 			nameMerchantApiKey: 'YANDEX_PAY_REST_API_KEY',
 			checkboxElement: 'input[name*="DELETE"]',
 			selectGatewayElement: 'select[name*="PS_MODE"]',
+			inputApplyElement: 'input[name="apply"]',
 
 			payture: {
 				gateway: 'payture',
@@ -61,6 +62,42 @@
 
 		activate: function() {
 			this.confirmWindow();
+			this.pingId = setTimeout(this.ping.bind(this), 2000);
+		},
+
+		ping: function() {
+			fetch(this.options.callbackUrl + 'onboard/ping', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					merchantAuthToken: this.options.merchantToken,
+				})
+			})
+				.then(response => { return response.json() })
+				.then((result) => {
+					clearTimeout(this.pingId);
+
+					let res = false;
+
+					if (result.status === 'success') {
+						this.fillData(result.data);
+						res = true;
+					}
+					else if (result.status === 'processing') {
+						this.pingId = setTimeout(this.ping.bind(this), 2000);
+					}
+
+					return res;
+				})
+				.then((res) => {
+					if (res) {
+						let apply = document.querySelector(this.getElementSelector('inputApply'));
+						apply.click();
+					}
+				})
+				.catch(() => {
+					clearTimeout(this.pingId);
+				});
 		},
 
 		confirmWindow: function() {
@@ -165,9 +202,41 @@
 				callback_url: this.options.callbackUrl,
 				merchant_auth_token: this.options.merchantToken,
 				cms_type: 'Bitrix',
-				onboard_supported: false,
+				onboard_supported: true,
 			};
 		},
+
+		fillData: function(merchant) {
+			const fieldset = this.getElement('fieldset', this.$el, 'closest');
+
+			const values = {
+				merchantId: merchant.onboard.merchantId,
+				merchantApiKey : merchant.onboard.apiKey
+			};
+
+			for (const name in values) {
+				if (!values.hasOwnProperty(name)) { continue; }
+
+				const input = this.findInput(fieldset, name);
+				const checkbox = this.findCheckbox(input);
+
+				checkbox.prop('checked') && checkbox.trigger('click');
+				input.val(values[name]);
+			}
+		},
+
+		findInput: function(fieldset, name) {
+			const inputName = this.options['name' + name.substr(0, 1).toUpperCase() + name.substr(1)];
+
+			return fieldset.find(`input[name*="${inputName}"]`).filter('[type="text"]');
+		},
+
+		findCheckbox: function(input) {
+			const field = this.getElement('field', input, 'closest');
+
+			return this.getElement('checkbox', field);
+		},
+
 	}, {
 		dataName: 'UiConsoleField',
 		pluginName: 'YandexPay.Ui.ConsoleField'
