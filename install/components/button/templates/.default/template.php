@@ -17,7 +17,7 @@ use Bitrix\Main\UI\Extension;
 Loc::loadMessages(__FILE__);
 
 $this->setFrameMode(true); // not need dynamic area
-
+if (!$arResult['NEED_SHOW']) { return; }
 try
 {
 	// assets
