@@ -90,6 +90,24 @@ class Site
 		return $result;
 	}
 
+	public static function getDomain(string $siteId) : string
+	{
+		$result = '';
+
+		$query = Main\SiteTable::getList([
+			'filter' => [ '=LID' => $siteId ],
+			'limit' => 1,
+			'select' => [ 'LID', 'NAME', 'SERVER_NAME' ]
+		]);
+
+		if ($row = $query->fetch())
+		{
+			$result = $row['SERVER_NAME'];
+		}
+
+		return $result;
+	}
+
 	protected static function getEnum() : array
 	{
 		if (static::$enum === null)

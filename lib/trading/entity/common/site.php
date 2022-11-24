@@ -35,4 +35,9 @@ class Site extends Pay\Trading\Entity\Reference\Site
 	{
 		return Pay\Data\Site::getDir($siteId);
 	}
+
+	public function getDomain(string $siteId) : string
+	{
+		return Pay\Data\Site::getDomain($siteId);
+	}
 }
