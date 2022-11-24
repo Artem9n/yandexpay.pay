@@ -49,8 +49,7 @@ class RepositoryTable extends ORM\Data\DataManager
 		];
 	}
 
-
-	public static function onAfterUpdate(ORM\Event $event)
+	public static function onAfterUpdate(ORM\Event $event) : void
 	{
 		$fields = $event->getParameter('fields');
 
