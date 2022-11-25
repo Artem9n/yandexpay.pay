@@ -137,7 +137,7 @@ class Base extends AbstractAdapter
 			'SCHEDULE' => $point['WorkSchedule'] ?? $point['WorkShedule'],
 			'PHONE' => $point['Phone'],
 			'DESCRIPTION' => $point['TripDescription'],
-			'PROVIDER' => 'Boxberry',
+			'PROVIDER' => 'BOXBERRY',
 		];
 	}
 
