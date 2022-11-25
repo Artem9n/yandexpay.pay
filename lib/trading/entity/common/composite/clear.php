@@ -12,6 +12,7 @@ class Clear extends Reference\Agent\Base
 		$query = Main\Composite\Internals\Model\PageTable::getList([
 			'filter' => [
 				'HOST' => $domain,
+				'URI' => '%catalog%'
 			],
 			'select' => [ 'ID', 'URI']
 		]);
