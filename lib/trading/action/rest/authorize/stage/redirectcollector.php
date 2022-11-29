@@ -26,7 +26,25 @@ class RedirectCollector extends ResponseCollector
 			$orderId = urlencode($accountNumber);
 		}
 
-		$this->write(sprintf('/%s/?ORDER_ID=%s', $this->successUrl, $orderId));
+		$this->write($this->getRedirectUrl($orderId));
+	}
+
+	protected function getRedirectUrl(string $orderId) : string
+	{
+		if (mb_stripos($this->successUrl, '#ORDER_ID#') !== false)
+		{
+			$result = str_replace('#ORDER_ID#', $orderId, '/' . $this->successUrl);
+		}
+		else if (preg_match('/.php|.html/', $this->successUrl))
+		{
+			$result = sprintf('/%s?ORDER_ID=%s', $this->successUrl, $orderId);
+		}
+		else
+		{
+			$result = sprintf('/%s/?ORDER_ID=%s', $this->successUrl, $orderId);
+		}
+
+		return $result;
 	}
 }
 
