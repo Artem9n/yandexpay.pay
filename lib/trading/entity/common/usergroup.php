@@ -14,13 +14,13 @@ class UserGroup extends TradingEntity\Reference\UserGroup
 	{
 		if (static::$groups === null)
 		{
-			static::$groups = $this->loadGrous();
+			static::$groups = $this->loadGroups();
 		}
 
 		return static::$groups;
 	}
 
-	protected function loadGrous() : array
+	protected function loadGroups() : array
 	{
 		$result = [];
 
