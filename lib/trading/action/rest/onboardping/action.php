@@ -33,9 +33,10 @@ class Action extends Rest\OnBoard\Action
 			'apiKey' => $onboardApiKey,
 		]);
 
-		\COption::RemoveOption(Pay\Config::getModuleName(), 'onboard_merchant_id');
-		\COption::RemoveOption(Pay\Config::getModuleName(), 'onboard_api_key');
-		\COption::RemoveOption(Pay\Config::getModuleName(), 'merchant_token');
+		foreach (['onboard_merchant_id', 'onboard_api_key', 'merchant_token'] as $optionName)
+		{
+			\COption::RemoveOption(Pay\Config::getModuleName(), $optionName);
+		}
 
 		return $this->convertResponseToHttp($response);
 	}
