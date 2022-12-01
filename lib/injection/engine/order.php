@@ -20,7 +20,7 @@ class Order extends AbstractEngine
 	{
 		$url = static::getUrl();
 
-		if (static::isOrderId($url)) { return false; }
+		if ($url === null || static::isOrderId($url)) { return false; }
 
 		if ($url === $path) { return true; }
 
@@ -31,13 +31,6 @@ class Order extends AbstractEngine
 
 	protected static function isOrderId(string $url) : bool
 	{
-		$result = false;
-
-		if (mb_strpos($url, 'ORDER_ID') !== false)
-		{
-			$result = true;
-		}
-
-		return $result;
+		return mb_strpos($url, 'ORDER_ID') !== false;
 	}
 }

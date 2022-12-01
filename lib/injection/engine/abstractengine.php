@@ -73,7 +73,7 @@ abstract class AbstractEngine extends Event\Base
 		];
 	}
 
-	protected static function getUrl() : string
+	protected static function getUrl() : ?string
 	{
 		return Main\Context::getCurrent()->getRequest()->getRequestUri();
 	}
@@ -82,7 +82,7 @@ abstract class AbstractEngine extends Event\Base
 	{
 		$url = static::getUrl();
 
-		if ($url === $path) { return true; }
+		if ($url === null || $url === $path) { return true; }
 
 		$url = static::normalize($url);
 
