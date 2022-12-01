@@ -82,7 +82,9 @@ abstract class AbstractEngine extends Event\Base
 	{
 		$url = static::getUrl();
 
-		if ($url === null || $url === $path) { return true; }
+		if ($url === null) { return false; }
+
+		if ($url === $path) { return true; }
 
 		$url = static::normalize($url);
 
