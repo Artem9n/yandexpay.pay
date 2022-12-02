@@ -63,16 +63,15 @@ abstract class AbstractEngine extends Event\Base
 
 		Assert::typeOf($options, Injection\Behavior\BehaviorInterface::class, 'options');
 
+		$display = $options->getDisplay();
+
 		return $data + [
 			'MODE' => $options->getMode(),
 			'SELECTOR' => $options->getSelector(),
 			'POSITION' => $options->getPosition(),
 			'TRADING_ID' => $setup->getTradingId(),
-			'VARIANT_BUTTON' => $options->getVariant(),
-			'WIDTH_BUTTON' => $options->getWidth(),
-			'WIDTH_VALUE' => $options->getWidthValue(),
-			'HEIGHT' => $options->getHeight(),
-			'BORDER_RADIUS' => $options->getBorderRadius(),
+			'DISPLAY_TYPE' => $display->getType(),
+			'DISPLAY_PARAMETERS' => $display->getWidgetParameters(),
 			'USE_DIVIDER' => $options->useDivider(),
 		];
 	}
