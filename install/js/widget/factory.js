@@ -4,34 +4,29 @@ import Utils from './utils/template';
 import {EventProxy} from "./utils/eventproxy";
 import {Sdkloader} from "./sdkloader";
 import {Intersection} from "./intersection";
+import Display from "./ui/display/factory";
 
 export default class Factory {
 
 	static defaults = {
 		solution: null,
-		template: '<div id="#ID#" class="bx-yapay-drawer-container ' +
+		template:
+			'<div id="#ID#" ' +
+				'class="bx-yapay-drawer-container ' +
 				'yapay-behavior--#MODE# ' +
-				'yapay-source--#SOURCE# ' +
+				'yapay-display--#DISPLAY# ' +
 				'yapay-width--#WIDTH# ' +
 				'yapay-solution--#SOLUTION#">' +
 				'#STYLE#' +
 				'#DIVIDER#' +
 				'<div class="bx-yapay-drawer"></div>' +
 			'</div>',
-		divider: '<div class="bx-yapay-divider">' +
-			'<span class="bx-yapay-divider__corner"></span>' +
-			'<span class="bx-yapay-divider__text">#LABEL#</span>' +
-			'<span class="bx-yapay-divider__corner at--right"></span>' +
+		divider:
+			'<div class="bx-yapay-divider"> ' +
+				'<span class="bx-yapay-divider__corner"></span> ' +
+				'<span class="bx-yapay-divider__text">#LABEL#</span> ' +
+				'<span class="bx-yapay-divider__corner at--right"></span> ' +
 			'</div>',
-		style: '<style>' +
-			'##ID#.bx-yapay-drawer-container .ya-pay-button,' +
-			'##ID#.bx-yapay-drawer-container .bx-yapay-skeleton-loading' +
-			'{ border-radius: #RADIUS#px; height: #HEIGHT#px; }' +
-			'##ID#.bx-yapay-drawer-container.yapay-width--custom .ya-pay-button,' +
-			'##ID#.bx-yapay-drawer-container.yapay-width--custom .bx-yapay-skeleton-loading,' +
-			'##ID#.bx-yapay-drawer-container.yapay-width--custom .bx-yapay-divider' +
-			'{ width: #WIDTH#px; }' +
-			'</style>',
 		useDivider: false,
 		containerSelector: '.bx-yapay-drawer',
 		loaderSelector: '.bx-yapay-skeleton-loading',
@@ -265,28 +260,19 @@ export default class Factory {
 
 	renderElement(anchor, position) {
 		const selector = this.containerSelector();
-		const width = this.getOption('buttonWidth') || 'AUTO';
-
-		const divider = this.getOption('useDivider')
-			? Utils.compile(this.getOption('divider'), {label: this.getOption('label')})
-			: '';
-
-		const style = Utils.compile(this.getOption('style'), {
-			radius: this.getOption('buttonBorderRadius') ?? '8',
-			height: this.getOption('buttonHeight') || '54',
-			width: this.getOption('buttonWidthValue') || '282',
-			id: this.getOption('containerId'),
-		});
+		const divider = this.getDivider();
+		const display = this.getDisplay();
 
 		const html = Utils.compile(this.getOption('template'), {
-			style: style,
+			style: display.style(),
 			divider: divider,
-			width: width.toLowerCase(),
+			width: display.width().toLowerCase(),
 			id: this.getOption('containerId'),
 			mode: this.getOption('mode'),
-			source: 'button', //todo
+			display: this.getOption('displayType')?.toLowerCase(),
 			solution: this.getOption('solution')?.toLowerCase(),
 		});
+
 		let elements = Utils.toElements(html);
 		let result = null;
 
@@ -315,6 +301,18 @@ export default class Factory {
 		if (solution == null) { return; }
 
 		solution.bootFactory(this);
+	}
+
+	getDisplay() {
+		const type = this.getOption('displayType');
+		const options = this.getOption('displayParameters');
+		return Display.make(type, this, options);
+	}
+
+	getDivider() {
+		return this.getOption('useDivider')
+			? Utils.compile(this.getOption('divider'), {label: this.getOption('label')})
+			: '';
 	}
 
 	bootLocal() {
