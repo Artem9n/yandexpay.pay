@@ -39,10 +39,11 @@ class Aspro extends Skeleton
 		];
 
 		$design = [
-			'HEIGHT_BUTTON' => 'CUSTOM',
-			'BORDER_RADIUS_BUTTON' => 'CUSTOM',
-			'HEIGHT_VALUE' => 49,
-			'BORDER_RADIUS_VALUE' => 3,
+			'DISPLAY' => Behavior\Display\Registry::BUTTON,
+			'HEIGHT_TYPE_BUTTON' => 'OWN',
+			'HEIGHT_VALUE_BUTTON' => 49,
+			'BORDER_RADIUS_TYPE_BUTTON' => 'OWN',
+			'BORDER_RADIUS_VALUE_BUTTON' => 3,
 			'USE_DIVIDER' => true,
 		];
 
