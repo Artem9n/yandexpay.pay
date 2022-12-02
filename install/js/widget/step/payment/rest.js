@@ -19,48 +19,51 @@ export default class RestProxy extends Proxy {
 		}
 	}
 
+	onPaymentSuccess(event) {
+		this.order.element.remove();
+
+		this.authorize(event)
+			.then((result) => {
+				if (result.status === 'success') {
+					setTimeout(function() {
+						window.location.href = result.data.redirect;
+					}, 1000);
+				}
+				else {
+					this.order.showError('authorize', result.reasonCode, result.reason);
+				}
+			})
+	}
+
+	onPaymentAbort(event) {
+
+	}
+
+	onPaymentError(event) {
+		setTimeout(() => {
+			window.location.href = this.getOption('failUrl');
+		}, 1000);
+	}
+
 	createPayment(node, paymentData) {
-		// Создать платеж.
-		YaPay.createPayment(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
-			.then((payment) => {
+
+		YaPay.createSession(paymentData, {
+			onSuccess: this.onPaymentSuccess.bind(this),
+			onAbort: this.onPaymentAbort.bind(this),
+			onError: this.onPaymentError.bind(this),
+			agent: { name: 'CMS-Bitrix', version: '1.0' }
+		})
+			.then( (paymentSession) => {
 
 				this.order.removeLoader();
-				// Смонтировать кнопку в DOM.
-				payment.mountButton(node, {
+
+				paymentSession.mountButton(node, {
 					type: YaPay.ButtonType.Pay,
 					theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
 					width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
 				});
-
-				// Подписаться на событие process.
-				payment.on(YaPay.CheckoutEventType.Success, (event) => {
-
-					node.remove();
-
-					this.authorize(event)
-						.then((result) => {
-							if (result.status === 'success') {
-								setTimeout(function() {
-									window.location.href = result.data.redirect;
-								}, 1000);
-							}
-							else {
-								this.order.showError('authorize', result.reasonCode, result.reason);
-							}
-						})
-
-					payment.complete(YaPay.CompleteReason.Success);
-				});
-
-				payment.on(YaPay.CheckoutEventType.Abort, (event) => {
-					// ...
-				});
-
-				payment.on(YaPay.CheckoutEventType.Error, (event) => {
-					this.order.showError('yapayPayment', 'error', event);
-				});
 			})
-			.catch((err) => {
+			.catch( (err) => {
 				this.order.showError('yapayPayment','payment not created', err);
 			});
 	}

@@ -21,6 +21,7 @@ export default class AbstractCart extends AbstractStep {
 
 		this.paymentData = this.getPaymentData();
 		this.display = this.getDisplay();
+		this.initialContent = this.element.innerHTML;
 
 		this.bootSolution();
 		this.setupPaymentCash();
@@ -32,6 +33,10 @@ export default class AbstractCart extends AbstractStep {
 	}
 
 	restore(node) {
+		if (this.initialContent != null) {
+			node.innerHTML = this.initialContent;
+		}
+
 		this.element = node;
 		this.proxy.restoreButton(node);
 	}
@@ -111,8 +116,7 @@ export default class AbstractCart extends AbstractStep {
 	removeLoader() {
 		const loader = this.element.querySelector(this.getOption('loaderSelector'));
 
-		if (loader == null) { return; }
-
-		loader.remove();
+		loader?.remove();
+		this.initialContent = null;
 	}
 }
