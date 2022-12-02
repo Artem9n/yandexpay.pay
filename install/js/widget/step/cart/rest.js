@@ -90,14 +90,8 @@ export default class RestProxy extends Proxy {
 	}
 
 	mountButton(node, payment) {
-
 		this.payment = payment;
-
-		payment.mountButton(this.cart.element, {
-			type: YaPay.ButtonType.Checkout,
-			theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
-			width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
-		});
+		this.cart.display.mount(this.cart.element, payment, YaPay.ButtonType.Checkout);
 	}
 
 	restoreButton(node) {
@@ -105,11 +99,7 @@ export default class RestProxy extends Proxy {
 			return;
 		}
 
-		this.payment.mountButton(node, {
-			type: YaPay.ButtonType.Checkout,
-			theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
-			width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
-		});
+		this.cart.display.mount(node, this.payment, YaPay.ButtonType.Checkout);
 	}
 
 	combineOrderWithData(data) {
@@ -142,7 +132,7 @@ export default class RestProxy extends Proxy {
 		this.reflow();
 	}
 
-	setupPaymentCash(){
+	setupPaymentCash() {
 
 	}
 

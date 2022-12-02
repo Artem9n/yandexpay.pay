@@ -106,7 +106,7 @@ export default class SiteProxy extends Proxy {
 				this._mounted = true;
 
 				this.cart.removeLoader();
-				this.cart.mountButton(node, payment);
+				this.mountButton(node, payment);
 
 				payment.on(YaPay.PaymentEventType.Process, (event) => {
 
@@ -185,6 +185,23 @@ export default class SiteProxy extends Proxy {
 				this._mounted = null;
 				this.cart.showError('yapayPayment','payment not created', err);
 			});
+	}
+
+	mountButton(node, payment) {
+		const theme = this.cart.display.getOption('VARIANT_BUTTON') || YaPay.ButtonTheme.Black;
+		const width = this.cart.display.getOption('WIDTH_BUTTON') || YaPay.ButtonWidth.Auto;
+
+		this.paymentButton = payment.createButton({
+			type: YaPay.ButtonType.Checkout,
+			theme: theme,
+			width: width,
+		});
+
+		this.paymentButton.mount(this.cart.element);
+
+		this.paymentButton.on(YaPay.ButtonEventType.Click, () => {
+			payment.checkout();
+		});
 	}
 
 	getPickupDetail(pickupId) {
@@ -332,12 +349,11 @@ export default class SiteProxy extends Proxy {
 	}
 
 	restoreButton(node) {
-		if (this.cart.paymentButton == null) {
+		if (this.paymentButton == null) {
 			return;
 		}
 
-		//this.removeLoader();
-		this.cart.paymentButton.mount(node);
+		this.paymentButton.mount(node);
 	}
 
 	setupPaymentCash(){
