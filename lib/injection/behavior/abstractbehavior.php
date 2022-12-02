@@ -7,32 +7,21 @@ use YandexPay\Pay\Utils;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Injection\Engine;
 use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Injection\Behavior\Display;
 
 abstract class AbstractBehavior implements BehaviorInterface
 {
 	use Concerns\HasMessage;
 
 	protected $values;
-	protected $insertPositions = [
-		'beforebegin' => true,
-		'afterbegin' => true,
-		'beforeend' => true,
-		'afterend' => true,
+	protected $display;
+
+	protected $insertTypes = [
+		'beforebegin',
+		'afterbegin',
+		'beforeend',
+		'afterend',
 	];
-	protected $variantButton = [
-		'black' => true,
-		'white' => true,
-		'white_outlined' => true,
-	];
-	protected $widthButton = [
-		'auto' => true,
-		'max' => true,
-		'custom' => true,
-	];
-	protected $variantCustom = 'CUSTOM';
-	protected $height = '54';
-	protected $borderRadius = '8';
-	protected $width = '282';
 
 	abstract public function getEngineReference();
 
@@ -60,132 +49,74 @@ abstract class AbstractBehavior implements BehaviorInterface
 					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_FALSE,
 				],
 			],
-			'VARIANT_BUTTON' => [
+			'DISPLAY' => [
+				'TITLE' => self::getMessage('DISPLAY'),
 				'GROUP' => self::getMessage('GROUP_DECOR'),
-				'TITLE' => self::getMessage('VARIANT_BUTTON'),
 				'TYPE' => 'enumeration',
-				'MANDATORY' => 'Y',
-				'VALUES' => $this->getVariantButtonEnum(),
-			],
-			'WIDTH_BUTTON' => [
-				'GROUP' => self::getMessage('GROUP_DECOR'),
-				'TITLE' => self::getMessage('WIDTH_BUTTON'),
-				'TYPE' => 'enumeration',
-				'MANDATORY' => 'Y',
-				'VALUES' => $this->getWidthButtonEnum(),
-			],
-			'WIDTH_VALUE' => [
-				'GROUP' => self::getMessage('GROUP_DECOR'),
-				'TITLE' => self::getMessage('WIDTH_VALUE'),
-				'TYPE' => 'range',
-				'DEPEND' => [
-					'WIDTH_BUTTON' => [
-						'RULE' => Utils\Userfield\DependField::RULE_ANY,
-						'VALUE' => $this->variantCustom,
-					],
-				],
+				'VALUES' => $this->getDisplayList(),
 				'SETTINGS' => [
-					'DEFAULT_VALUE' => $this->width,
-					'MIN' => '100',
-					'MAX' => '600',
-				]
-			],
-			'HEIGHT_BUTTON' => [
-				'GROUP' => self::getMessage('GROUP_DECOR'),
-				'TITLE' => self::getMessage('HEIGHT_BUTTON'),
-				'TYPE' => 'enumeration',
-				'VALUES' => [
-					[
-						'ID' => $this->variantCustom,
-						'VALUE' => self::getMessage('BUTTON_CUSTOM'),
-					]
-				],
-				'SETTINGS' => [
-					'ALLOW_NO_VALUE' => 'Y',
-					'CAPTION_NO_VALUE' => self::getMessage('HEIGHT_BUTTON_DEFAULT'),
+					'DEFAULT_VALUE' => Display\Registry::BUTTON,
 				],
 			],
-			'HEIGHT_VALUE' => [
-				'GROUP' => self::getMessage('GROUP_DECOR'),
-				'TITLE' => self::getMessage('HEIGHT_VALUE'),
-				'TYPE' => 'range',
-				'DEPEND' => [
-					'HEIGHT_BUTTON' => [
-						'RULE' => Utils\Userfield\DependField::RULE_ANY,
-						'VALUE' => $this->variantCustom,
-					],
-				],
-				'SETTINGS' => [
-					'DEFAULT_VALUE' => $this->height,
-					'MIN' => '40',
-					'MAX' => '60',
-				]
-			],
-			'BORDER_RADIUS_BUTTON' => [
-				'GROUP' => self::getMessage('GROUP_DECOR'),
-				'TITLE' => self::getMessage('BORDER_RADIUS_BUTTON'),
-				'TYPE' => 'enumeration',
-				'VALUES' => [
-					[
-						'ID' => $this->variantCustom,
-						'VALUE' => self::getMessage('BUTTON_CUSTOM'),
-					]
-				],
-				'SETTINGS' => [
-					'ALLOW_NO_VALUE' => 'Y',
-					'CAPTION_NO_VALUE' => self::getMessage('BORDER_RADIUS_BUTTON_DEFAULT'),
-				],
-			],
-			'BORDER_RADIUS_VALUE' => [
-				'GROUP' => self::getMessage('GROUP_DECOR'),
-				'TITLE' => self::getMessage('BORDER_RADIUS_VALUE'),
-				'TYPE' => 'range',
-				'DEPEND' => [
-					'BORDER_RADIUS_BUTTON' => [
-						'RULE' => Utils\Userfield\DependField::RULE_ANY,
-						'VALUE' => $this->variantCustom,
-					],
-				],
-				'SETTINGS' => [
-					'DEFAULT_VALUE' => $this->borderRadius,
-					'MAX' => '30',
-				]
-			],
-		];
+		] + $this->getDisplayFields();
 	}
 
-	public function getVariantButtonEnum() : array
+	protected function getDisplayFields() : array
 	{
 		$result = [];
 
-		foreach ($this->variantButton as $code => $enable)
+		foreach (Display\Registry::getTypes() as $type)
 		{
-			if (!$enable) { continue; }
+			$display = Display\Registry::create($type);
+			$prefixName = mb_strtoupper($type);
 
-			$code = mb_strtoupper($code);
+			foreach ($display->getFields() as $name => $field)
+			{
+				$fieldName = sprintf('%s_%s', $name, $prefixName);
 
-			$result[] = [
-				'ID' => str_replace('_', '-', $code),
-				'VALUE' => self::getMessage('BUTTON_' . $code)
-			];
+				$depend = [
+					'DISPLAY' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => [ $type ],
+					],
+				];
+
+				$field['GROUP'] = self::getMessage('GROUP_DECOR');
+
+				if (isset($field['DEPEND']))
+				{
+					$dependField = [];
+
+					foreach ($field['DEPEND'] as $code => $dependVal)
+					{
+						$dependName = sprintf('%s_%s', $code, $prefixName);
+						$dependField[$dependName] = $dependVal;
+					}
+
+					$field['DEPEND'] = $dependField + $depend;
+				}
+				else
+				{
+					$field['DEPEND'] = $depend;
+				}
+
+				$result[$fieldName] = $field;
+			}
 		}
 
 		return $result;
 	}
 
-	public function getWidthButtonEnum() : array
+	protected function getDisplayList() : array
 	{
 		$result = [];
 
-		foreach ($this->widthButton as $code => $enable)
+		foreach (Display\Registry::getTypes() as $type)
 		{
-			if (!$enable) { continue; }
-
-			$code = mb_strtoupper($code);
-
+			$display = Display\Registry::create($type);
 			$result[] = [
-				'ID' => $code,
-				'VALUE' => self::getMessage('BUTTON_' . $code)
+				'ID' => $type,
+				'VALUE' => $display->getTitle(),
 			];
 		}
 
@@ -196,13 +127,11 @@ abstract class AbstractBehavior implements BehaviorInterface
 	{
 		$result = [];
 
-		foreach ($this->insertPositions as $code => $enable)
+		foreach ($this->insertTypes as $value)
 		{
-			if (!$enable) { continue; }
-
 			$result[] = [
-				'ID' => $code,
-				'VALUE' => self::getMessage('POSITION_' . mb_strtoupper($code))
+				'ID' => $value,
+				'VALUE' => self::getMessage('POSITION_' . mb_strtoupper($value))
 			];
 		}
 
@@ -228,11 +157,6 @@ abstract class AbstractBehavior implements BehaviorInterface
 		return $result;
 	}
 
-	public function getInjectionId() : int
-	{
-		return (int)$this->requireValue('INJECTION_ID');
-	}
-
 	public function getSiteId() : string
 	{
 		return (string)$this->requireValue('SITE_ID');
@@ -248,76 +172,29 @@ abstract class AbstractBehavior implements BehaviorInterface
 		return $this->requireValue('POSITION');
 	}
 
-	public function getVariant() : ?string
-	{
-		return $this->getValue('VARIANT_BUTTON');
-	}
-
-	public function getWidth() : ?string
-	{
-		return $this->getValue('WIDTH_BUTTON');
-	}
-
-	protected function isCustomWidth() : bool
-	{
-		$value = $this->getValue('WIDTH_BUTTON');
-
-		return $value === 'CUSTOM';
-	}
-
-	public function getWidthValue() : ?string
-	{
-		$value = $this->getValue('WIDTH_VALUE');
-
-		if ((int)$value > 0 && $this->isCustomWidth())
-		{
-			return $value;
-		}
-
-		return null;
-	}
-
-	protected function isCustomHeight() : bool
-	{
-		$value = $this->getValue('HEIGHT_BUTTON');
-
-		return $value === 'CUSTOM';
-	}
-
-	public function getHeight() : ?string
-	{
-		$value = $this->getValue('HEIGHT_VALUE');
-
-		if ((int)$value > 0 && $this->isCustomHeight())
-		{
-			return $value;
-		}
-
-		return null;
-	}
-
-	protected function isCustomBorderRadius() : bool
-	{
-		$value = $this->getValue('BORDER_RADIUS_BUTTON');
-
-		return $value === 'CUSTOM';
-	}
-
-	public function getBorderRadius() : ?string
-	{
-		$value = $this->getValue('BORDER_RADIUS_VALUE');
-
-		if ((int)$value >= 0 && $this->isCustomBorderRadius())
-		{
-			return $value;
-		}
-
-		return null;
-	}
-
 	public function useDivider() : bool
 	{
 		return (bool)$this->getValue('USE_DIVIDER');
+	}
+
+	public function getDisplay() : Display\IDisplay
+	{
+		if ($this->display === null)
+		{
+			$this->display = $this->createDisplay();
+		}
+
+		return $this->display;
+	}
+
+	protected function createDisplay() : Display\IDisplay
+	{
+		$type = $this->getValue('DISPLAY') ?? Display\Registry::BUTTON;
+
+		$display = Display\Registry::create($type);
+		$display->setValues($this->values);
+
+		return $display;
 	}
 
 	protected function eventSettings() : array
