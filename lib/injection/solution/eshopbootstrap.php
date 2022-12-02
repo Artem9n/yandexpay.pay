@@ -36,6 +36,7 @@ class EshopBootstrap extends Skeleton
 				'POSITION' => 'afterend',
 				'IBLOCK' => $context['IBLOCK'],
 				'DISPLAY' => Behavior\Display\Registry::BUTTON,
+				'WIDTH_BUTTON' => 'MAX',
 			],
 			Behavior\Registry::BASKET => Guide::getBitrixBasket($context),
 			Behavior\Registry::ORDER => Guide::getBitrixOrder($context),
