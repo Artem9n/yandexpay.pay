@@ -81,9 +81,6 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		$gateway = $this->wakeUpGateway($payment);
 		$isRest = $gateway->isRest();
 		$environment = Registry::getEnvironment();
-		$curPage = $APPLICATION->GetCurPage(false);
-		$successUrl = $this->getParamValue($payment, 'SUCCESS_URL') ?: null;
-		$failUrl = $this->getParamValue($payment, 'FAIL_URL') ?: null;
 
 		return [
 			'requestSign'           => static::REQUEST_SIGN,
@@ -100,8 +97,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'currency'              => $payment->getField('CURRENCY'),
 			'notifyUrl'             => $this->getParamValue($payment, 'NOTIFY_URL'),
 			'restUrl'               => $environment->getRoute()->getPublicPath(),
-			'successUrl'            => $successUrl ?? $curPage,
-			'failUrl'               => $failUrl ?? $curPage,
+			'successUrl'            => $APPLICATION->GetCurPage(false),
 			'isRest'                => $isRest,
 			'metadata'              => $payment->getOrder()->getHash(),
 		];

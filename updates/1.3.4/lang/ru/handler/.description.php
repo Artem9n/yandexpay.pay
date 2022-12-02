@@ -24,10 +24,6 @@ $MESS['YANDEX_PAY_VARIANT_BUTTON_WHITE'] = 'Белая';
 $MESS['YANDEX_PAY_VARIANT_BUTTON_COUNTER'] = 'Белая с контуром';
 $MESS['YANDEX_PAY_VARIANT_BUTTON_BLACK'] = 'Черная';
 $MESS['YANDEX_PAY_NOTIFY_URL'] = 'Адрес для уведомлений';
-$MESS['YANDEX_PAY_SUCCESS_URL'] = 'Адрес при успешной оплате';
-$MESS['YANDEX_PAY_FAIL_URL'] = 'Адрес при ошибке оплаты';
-$MESS['YANDEX_PAY_SUCCESS_URL_DESCRIPTION'] = 'Укажите относительный путь, на которую попадёт пользователь после успешной оплаты (/bitrix/tools/sale_ps_success.php). По умолчанию, поле не заполнено, клиент вернется на страницу, с которой был выполнен переход на оплату.';
-$MESS['YANDEX_PAY_FAIL_URL_DESCRIPTION'] = 'Укажите относительный путь, на которую попадёт пользователь после не успешной оплаты (/bitrix/tools/sale_ps_fail.php). По умолчанию, поле не заполнено, клиент вернется на страницу, с которой был выполнен переход на оплату.';
 
 $MESS['YANDEX_PAY_LOG_LEVEL_NAME'] = 'Содержание журнала событий';
 $MESS['YANDEX_PAY_LOG_LEVEL_DESCRIPTION'] = 'Выберите вариант «Информация» — тогда в журнале событий будут отображаться ошибки и любые действия с заказами.';
