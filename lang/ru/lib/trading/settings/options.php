@@ -42,4 +42,8 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_INJECTION'] = 'Кнопка Yandex Pay в ша
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ORDER'] = 'Настройки оформления заказа';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_YANDEX_PAY'] = 'Настройки Yandex Pay';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_URL_SUCCESS'] = 'Редирект на страницу после оформления заказа';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_URL_SUCCESS_HELP'] = 'Укажите относительный путь, на которую попадёт пользователь после успешной оплаты. 
+</br></br>Есть возможность установить свой GET параметр для индентификатора Ид заказа. 
+</br></br>/order/?orderId=<strong>#ORDER_ID#</strong>
+</br></br>#ORDER_ID# - установится Ид оформленного заказа';
 
