@@ -4,26 +4,26 @@
 }
 
 /*basket*/
-.bx-yapay-drawer-container.yapay-behavior--basket{
+.yapay-behavior--basket{
 	text-align: right;
 }
 
-.flexbox.flexbox--row .bx-yapay-drawer-container.yapay-behavior--basket .ya-pay-button,
-.flexbox.flexbox--row .bx-yapay-drawer-container.yapay-behavior--basket .bx-yapay-skeleton-loading,
-.flexbox.flexbox--row .bx-yapay-drawer-container.yapay-behavior--basket .bx-yapay-divider{
-	width: 100%;
+.flexbox.flexbox--row .yapay-behavior--basket .ya-pay-button,
+.flexbox.flexbox--row .yapay-behavior--basket .bx-yapay-skeleton-loading,
+.flexbox.flexbox--row .yapay-behavior--basket .bx-yapay-divider{
+	width: 100% !important;
 	min-width: 100px;
 }
 
-.flexbox.flexbox--row .bx-yapay-drawer-container.yapay-behavior--basket{
+.flexbox.flexbox--row .yapay-behavior--basket{
 	text-align: unset;
 }
 
 @media screen and (max-width: 767px), projection and (max-width: 767px), tv and (max-width: 767px), handheld and (max-width: 767px) {
-	.bx-yapay-drawer-container.yapay-behavior--basket .ya-pay-button,
-	.bx-yapay-drawer-container.yapay-behavior--basket .bx-yapay-skeleton-loading,
-	.bx-yapay-drawer-container.yapay-behavior--basket .bx-yapay-divider{
-		width: 100%;
+	.yapay-behavior--basket .ya-pay-button,
+	.yapay-behavior--basket .bx-yapay-skeleton-loading,
+	.yapay-behavior--basket .bx-yapay-divider{
+		width: 100% !important;
 		min-width: 100px;
 	}
 }
@@ -32,12 +32,12 @@
 
 
 /*order*/
-.bx-yapay-drawer-container.yapay-behavior--order{
+.yapay-behavior--order{
 	margin: 23px -29px -23px;
 }
 
 @media screen and (max-width: 767px), projection and (max-width: 767px), tv and (max-width: 767px), handheld and (max-width: 767px) {
-	.bx-yapay-drawer-container.yapay-behavior--order{
+	.yapay-behavior--order{
 		margin: 10px 0 0;
 	}
 }
