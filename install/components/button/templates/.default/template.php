@@ -53,10 +53,8 @@ try
 	$factoryOptions = array_intersect_key($arResult['PARAMS'], [
 		'solution' => true,
 		'mode' => true,
-		'buttonWidth' => true,
-		'buttonWidthValue' => true,
-		'buttonHeight' => true,
-		'buttonBorderRadius' => true,
+		'displayType' => true,
+		'displayParameters' => true,
 		'useDivider' => true,
 	]);
 	$factoryOptions += (array)($arParams['~FACTORY_OPTIONS'] ?? []);
