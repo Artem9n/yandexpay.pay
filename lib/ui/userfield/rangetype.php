@@ -23,11 +23,13 @@ class RangeType extends StringType
 			'class' => 'js-plugin',
 		]);
 
+		$value = (string)$htmlControl['VALUE'] !== '' ? $htmlControl['VALUE'] : $userField['SETTINGS']['DEFAULT_VALUE'] ?? '';
+
 		return sprintf(
 			'<div class="b-range-container"><input %s value="%s" /><span>%s px</span></div>',
 			Helper\Attributes::stringify($attributes),
-			$htmlControl['VALUE'],
-			$htmlControl['VALUE']
+			$value,
+			$value
 		);
 	}
 }
