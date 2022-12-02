@@ -264,12 +264,12 @@ export default class Factory {
 		const display = this.getDisplay();
 
 		const html = Utils.compile(this.getOption('template'), {
-			style: display.style(),
 			divider: divider,
-			width: display.width().toLowerCase(),
+			style: display != null ? display.style() : '',
+			width: display != null ? display.width().toLowerCase() : 'auto',
 			id: this.getOption('containerId'),
-			mode: this.getOption('mode'),
-			display: this.getOption('displayType')?.toLowerCase(),
+			mode: this.getOption('mode') || 'payment',
+			display: this.getOption('displayType')?.toLowerCase() || 'button',
 			solution: this.getOption('solution')?.toLowerCase(),
 		});
 
@@ -306,6 +306,9 @@ export default class Factory {
 	getDisplay() {
 		const type = this.getOption('displayType');
 		const options = this.getOption('displayParameters');
+
+		if (type == null) { return null; }
+
 		return Display.make(type, this, options);
 	}
 

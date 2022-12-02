@@ -188,6 +188,8 @@ export default class SiteProxy extends Proxy {
 	}
 
 	mountButton(node, payment) {
+		this.cart.initialContent = null;
+
 		const theme = this.cart.display.getOption('VARIANT_BUTTON') || YaPay.ButtonTheme.Black;
 		const width = this.cart.display.getOption('WIDTH_BUTTON') || YaPay.ButtonWidth.Auto;
 
