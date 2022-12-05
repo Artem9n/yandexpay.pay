@@ -75,7 +75,7 @@ abstract class AbstractEngine extends Event\Base
 
 	protected static function getUrl() : ?string
 	{
-		return Main\Context::getCurrent()->getRequest()->getRequestUri();
+		return urldecode(Main\Context::getCurrent()->getRequest()->getRequestUri());
 	}
 
 	protected static function testUrl(string $path) : bool

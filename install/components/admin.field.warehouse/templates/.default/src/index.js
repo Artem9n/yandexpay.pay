@@ -75,7 +75,8 @@ export class Warehouse extends BX.YandexPay.Plugin.Base {
 		this._map.container.fitToViewport();
 	}
 
-	onClarifyClick = () => {
+	onClarifyClick = (e) => {
+		e.preventDefault();
 		this.toggleDetails();
 	}
 

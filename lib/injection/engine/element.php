@@ -202,7 +202,7 @@ class Element extends AbstractEngine
 				$sefFolder,
 				[ 'target' => $templatePage ],
 				$variables,
-				$request->getRequestedPage()
+				urldecode($request->getRequestedPage())
 			);
 		}
 
