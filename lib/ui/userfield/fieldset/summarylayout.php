@@ -327,7 +327,7 @@ class SummaryLayout extends AbstractLayout
 			$control = UserField\Helper\Attributes::delayPluginInitialization($control, $namespace);
 
 			$result[$fieldKey] = [
-				'TITLE' => $field['NAME'] ?? $field['EDIT_FORM_LABEL'] ?? $field['LIST_COLUMN_LABEL'] ?? $field['LIST_FILTER_LABEL'],
+				'TITLE' => $field['NAME'] ?? $field['TITLE'] ?? $field['EDIT_FORM_LABEL'] ?? $field['LIST_COLUMN_LABEL'] ?? $field['LIST_FILTER_LABEL'],
 				'CONTROL' => $control,
 				'ROW_CLASS' => $row['ROW_CLASS'],
 				'VALIGN' => $row['VALIGN'],
