@@ -124,7 +124,7 @@ class Pickup extends Base
 					'SCHEDULE' => '',
 					'PHONE' => $pickup['PHONE'] ?? '',
 					'DESCRIPTION' => implode(', ', $pickup['workTime']),
-					'PROVIDER' => Factory::RUSSIAN_POST,
+					'PROVIDER' => 'RUSSIAN_POST',
 					'ZIP' => $pickup['address']['index'],
 				];
 			}
