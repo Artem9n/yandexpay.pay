@@ -1,0 +1,43 @@
+.bx-yapay-drawer-container{
+	margin-top: 10px;
+	margin-bottom: 0;
+}
+
+/*basket*/
+.yapay-behavior--basket{
+	text-align: right;
+}
+
+.flexbox.flexbox--row .yapay-behavior--basket .ya-pay-button,
+.flexbox.flexbox--row .yapay-behavior--basket .bx-yapay-skeleton-loading,
+.flexbox.flexbox--row .yapay-behavior--basket .bx-yapay-divider{
+	width: 100% !important;
+	min-width: 100px;
+}
+
+.flexbox.flexbox--row .yapay-behavior--basket{
+	text-align: unset;
+}
+
+@media screen and (max-width: 767px), projection and (max-width: 767px), tv and (max-width: 767px), handheld and (max-width: 767px) {
+	.yapay-behavior--basket .ya-pay-button,
+	.yapay-behavior--basket .bx-yapay-skeleton-loading,
+	.yapay-behavior--basket .bx-yapay-divider{
+		width: 100% !important;
+		min-width: 100px;
+	}
+}
+
+/*element*/
+
+
+/*order*/
+.yapay-behavior--order{
+	margin: 23px -29px -23px;
+}
+
+@media screen and (max-width: 767px), projection and (max-width: 767px), tv and (max-width: 767px), handheld and (max-width: 767px) {
+	.yapay-behavior--order{
+		margin: 10px 0 0;
+	}
+}

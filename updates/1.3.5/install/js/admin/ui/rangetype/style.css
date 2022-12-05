@@ -1,0 +1,9 @@
+.b-range-container{
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.b-range-container > span{
+	padding: 0 5px;
+}

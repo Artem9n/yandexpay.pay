@@ -1,0 +1,124 @@
+.bx-yapay-drawer-container{
+	height: auto;
+	margin-bottom: 20px;
+	display: block !important;
+}
+
+.bx-yapay-drawer.alert {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 0;
+    border-radius: 1px;
+    font-size: 14px;
+}
+
+.bx-yapay-drawer .alert.alert-danger {
+    border-color: #ebccd1;
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+.bx-yapay-drawer.alert.alert-success {
+    border-color: #d6e9c6;
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+/*loader*/
+.bx-yapay-skeleton-loading {
+	display: inline-block;
+	vertical-align: top;
+	box-sizing: border-box;
+	height: 54px;
+	min-height: 40px;
+	min-width: 282px;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	position: relative;
+	background: #dcdcdd;
+	user-select: none;
+	overflow: hidden;
+}
+
+.bx-yapay-skeleton-loading:before {
+	content: '';
+	display: block;
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background:  linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+	animation: bx-yapay-skeleton-loading 1.2s linear infinite;
+}
+
+@keyframes bx-yapay-skeleton-loading {
+	0% {
+		transform: translateX(-100%);
+	}
+
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+/*widget width max*/
+.yapay-width--max .bx-yapay-skeleton-loading,
+.yapay-width--max .bx-yapay-divider{
+	width: 100%;
+	min-width: 100px;
+}
+
+/*divider*/
+.bx-yapay-divider {
+	display: inline-flex;
+	align-items: center;
+	min-width: 282px;
+	box-sizing: border-box;
+	margin-bottom: 15px;
+	color: #9397ad;
+	font-size: 16px;
+	line-height: initial;
+	text-align: center;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.bx-yapay-divider__corner {
+	flex: auto 1 1;
+	height: 1px;
+	position: relative;
+	background: #d0d4e0;
+}
+
+.bx-yapay-divider__corner:after {
+	content: '';
+	width: 5px;
+	height: 5px;
+	border-radius: 100%;
+	position: absolute;
+	left: 0;
+	top: -2px;
+	background: #d0d4e0;
+}
+
+.bx-yapay-divider__corner.at--right:after {
+	left: auto;
+	right: 0;
+}
+
+.bx-yapay-divider__text {
+	flex: auto 0 1;
+	padding: 0 10px;
+}
+
+/*divider for widget type*/
+.yapay-display--widget .bx-yapay-divider {
+	margin-bottom: 0;
+	padding-left: 30px;
+	padding-right: 30px;
+}
+
+.yapay-display--widget .bx-yapay-skeleton-loading {
+	margin-top: 15px;
+}
