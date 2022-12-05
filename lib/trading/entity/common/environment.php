@@ -25,4 +25,14 @@ abstract class Environment extends EntityReference\Environment
 	{
 		return new Store($this);
 	}
+
+	protected function createUserGroup() : EntityReference\UserGroup
+	{
+		return new UserGroup($this);
+	}
+
+	protected function createCompositeCache() : EntityReference\CompositeCache
+	{
+		return new CompositeCache($this);
+	}
 }

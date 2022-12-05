@@ -106,6 +106,7 @@ class TradingButton extends \CBitrixComponent
 			'selector'          => $this->arParams['SELECTOR'],
 			'position'          => $this->arParams['POSITION'],
 			'solution'          => $options->getSolution(),
+			'userGroup'         => $options->getUserGroup(),
 			'currencyCode'      => Currency\CurrencyManager::getBaseCurrency(),
 		];
 	}

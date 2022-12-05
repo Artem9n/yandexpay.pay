@@ -18,6 +18,7 @@ class Model extends EO_Repository
 
 		$environment->getRoute()->installPublic($siteId);
 		$environment->getPlatform()->install();
+		$this->clearComposite();
 	}
 
 	public function wakeupOptions() : Settings\Options
@@ -33,6 +34,15 @@ class Model extends EO_Repository
 		$this->isOptionsReady = true;
 
 		return $options;
+	}
+
+	protected function clearComposite() : void
+	{
+		$this->fillSiteId();
+		$siteId = $this->getSiteId();
+		$environment = $this->getEnvironment();
+		$domain = $environment->getSite()->getDomain($siteId);
+		$environment->getCompositeCache()->clearCache($domain);
 	}
 
 	public function getOptions() : Settings\Options
@@ -65,6 +75,7 @@ class Model extends EO_Repository
 
 	public function activateAction() : void
 	{
+		$this->clearComposite();
 		$this->setActive(true);
 		$this->fillInjection()->activate();
 		$this->save();
@@ -72,6 +83,7 @@ class Model extends EO_Repository
 
 	public function deactivateAction() : void
 	{
+		$this->clearComposite();
 		$this->setActive(false);
 		$this->fillInjection()->deactivate();
 		$this->save();
@@ -85,6 +97,7 @@ class Model extends EO_Repository
 
 	public function deleteAction() : void
 	{
+		$this->clearComposite();
 		$this->fillInjection()->delete();
 		$this->delete();
 	}
@@ -96,6 +109,7 @@ class Model extends EO_Repository
 		$update = array_intersect_key($values, $map);
 		$delete = array_diff_key($map, $values);
 
+		$this->checkChangeUserGroup($map, $update);
 		$this->applySettingsAdd($add);
 		$this->applySettingsUpdate($map, $update);
 		$this->applySettingsDelete($delete);
@@ -117,6 +131,22 @@ class Model extends EO_Repository
 		foreach ($values as $name => $value)
 		{
 			$models[$name]->setValue($value);
+		}
+	}
+
+	protected function checkChangeUserGroup(array $models, array $updates) : void
+	{
+		/** @var Settings\Model|null $userGroupModel */
+		$userGroupModel = $models['USER_GROUPS'] ?? null;
+
+		if ($userGroupModel === null) { return; }
+
+		$beforeValue = (int)$userGroupModel->getValue();
+		$afterValue = (int)$updates['USER_GROUPS'];
+
+		if ($beforeValue !== $afterValue)
+		{
+			$this->clearComposite();
 		}
 	}
 

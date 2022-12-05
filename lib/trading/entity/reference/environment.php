@@ -7,6 +7,8 @@ abstract class Environment
 {
 	protected $site;
 	protected $orderRegisty;
+	protected $userGroup;
+	protected $compositeCache;
 	protected $userRegistry;
 	protected $location;
 	protected $delivery;
@@ -248,5 +250,35 @@ abstract class Environment
 	protected function createStore() : Store
 	{
 		throw new Main\NotImplementedException('store is missing');
+	}
+
+	public function getUserGroup() : UserGroup
+	{
+		if ($this->userGroup === null)
+		{
+			$this->userGroup = $this->createUserGroup();
+		}
+
+		return $this->userGroup;
+	}
+
+	protected function createUserGroup() : UserGroup
+	{
+		throw new Main\NotImplementedException('createUserGroup is missing');
+	}
+
+	public function getCompositeCache() : CompositeCache
+	{
+		if ($this->compositeCache === null)
+		{
+			$this->compositeCache = $this->createCompositeCache();
+		}
+
+		return $this->compositeCache;
+	}
+
+	protected function createCompositeCache() : CompositeCache
+	{
+		throw new Main\NotImplementedException('createCompositeCache is missing');
 	}
 }

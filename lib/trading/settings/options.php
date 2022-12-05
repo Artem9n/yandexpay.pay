@@ -75,6 +75,11 @@ class Options extends Reference\Skeleton
 		return $this->getValue('SOLUTION') ?: null;
 	}
 
+	public function getUserGroup() : int
+	{
+		return (int)$this->getValue('USER_GROUPS');
+	}
+
 	public function useBuyerName() : bool
 	{
 		$result = false;
@@ -153,6 +158,7 @@ class Options extends Reference\Skeleton
 			+ $this->getAddressFields($environment, $siteId)
 			+ $this->getCommentFields($environment, $siteId)
 			+ $this->getLoggerFields($environment, $siteId)
+			+ $this->getUserGroupsFileds($environment, $siteId)
 			+ $this->getSuccessUrlFields($environment, $siteId)
 			+ $this->getSolutionFields($environment, $siteId)
 			+ $this->getEditSolutionFields($environment, $siteId)
@@ -378,6 +384,21 @@ class Options extends Reference\Skeleton
 					'DEFAULT_VALUE' => $solution !== null ? $solution->getOrderPath($context) : '/personal/order/make/',
 				],
 			],
+		];
+	}
+
+	protected function getUserGroupsFileds(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return[
+			'USER_GROUPS' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('USER_GROUPS'),
+				'SORT' => 4010,
+				'VALUES' => $environment->getUserGroup()->getGroupList(),
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => $environment->getUserGroup()->getDefaultGroup(),
+				]
+			]
 		];
 	}
 

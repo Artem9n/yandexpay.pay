@@ -40,4 +40,9 @@ abstract class Site
 	{
 		throw new Main\NotImplementedException('getDefault is missing');
 	}
+
+	public function getDomain(string $siteId) : string
+	{
+		throw new Main\NotImplementedException('getDomain is missing');
+	}
 }

@@ -31,6 +31,8 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_LOG_LEVEL_NAME'] = 'Содержание журнал
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_LOG_LEVEL_HELP'] = 'Выберите вариант «Информация» — тогда в журнале событий будут отображаться ошибки и любые действия с заказами.';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_LOG_LEVEL_NO_VALUE'] = 'Отключить';
 
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_USER_GROUPS'] = 'Отображать для групп пользователей';
+
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_CASH'] = 'Оплата при получении';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_CASH_NO_VALUE'] = '---Отключена---';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_CARD'] = 'Оплата картой';
