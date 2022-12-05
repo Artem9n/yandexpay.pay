@@ -1,22 +1,24 @@
 import AbstractStep from './abstractstep';
+import Utils from "../utils/template";
 
 export default class Loader extends AbstractStep {
 
 	static defaults = {
-		template: '<div class="bx-yapay-skeleton-loading width--#WIDTH#"></div>'
+		template: '<div class="bx-yapay-skeleton-loading"></div>'
 	}
 
 	render(node, data = {}) {
 		const html = this.compile(data);
+		const element = Utils.toElement(html);
 
-		node.innerHTML = html;
-		this.restoreHtml = html;
+		node.insertAdjacentElement('beforeend', element);
+		this.restoreElement = element;
 	}
 
 	restore(node) {
-		if (this.restoreHtml == null) { return; }
+		if (this.restoreElement == null) { return; }
 
-		node.innerHTML = this.restoreHtml;
+		node.insertAdjacentElement('beforeend', this.restoreElement);
 	}
 
 }

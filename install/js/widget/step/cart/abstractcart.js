@@ -3,6 +3,7 @@ import AbstractStep from '../abstractstep';
 import { ready } from "../../utils/ready";
 import RestProxy from "./rest";
 import SiteProxy from "./site";
+import Display from "../../ui/display/factory";
 
 export default class AbstractCart extends AbstractStep {
 
@@ -17,7 +18,10 @@ export default class AbstractCart extends AbstractStep {
 		this.proxy = this.getOption('isRest')
 			? new RestProxy(this)
 			: new SiteProxy(this);
+
 		this.paymentData = this.getPaymentData();
+		this.display = this.getDisplay();
+		this.initialContent = this.element.innerHTML;
 
 		this.bootSolution();
 		this.setupPaymentCash();
@@ -29,8 +33,12 @@ export default class AbstractCart extends AbstractStep {
 	}
 
 	restore(node) {
+		if (this.initialContent != null) {
+			node.innerHTML = this.initialContent;
+		}
+
 		this.element = node;
-		this.restoreButton(node);
+		this.proxy.restoreButton(node);
 	}
 
 	bootstrap() {
@@ -85,22 +93,10 @@ export default class AbstractCart extends AbstractStep {
 		this.proxy.createPayment(node, paymentData);
 	}
 
-	mountButton(node, payment) {
-		this.paymentButton = payment.createButton({
-			type: YaPay.ButtonType.Checkout,
-			theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
-			width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
-		});
-
-		this.paymentButton.mount(this.element);
-
-		this.paymentButton.on(YaPay.ButtonEventType.Click, () => {
-			payment.checkout();
-		});
-	}
-
-	restoreButton(node) {
-		this.proxy.restoreButton(node);
+	getDisplay() {
+		const type = this.getOption('displayType');
+		const options = this.getOption('displayParameters');
+		return Display.make(type, this, options);
 	}
 
 	amountSum(amountA, amountB) {
@@ -120,8 +116,7 @@ export default class AbstractCart extends AbstractStep {
 	removeLoader() {
 		const loader = this.element.querySelector(this.getOption('loaderSelector'));
 
-		if (loader == null) { return; }
-
-		loader.remove();
+		loader?.remove();
+		this.initialContent = null;
 	}
 }

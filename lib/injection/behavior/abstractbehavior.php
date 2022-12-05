@@ -2,29 +2,25 @@
 namespace YandexPay\Pay\Injection\Behavior;
 
 use Bitrix\Main;
+use YandexPay\Pay\Ui;
+use YandexPay\Pay\Utils;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Injection\Engine;
 use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Injection\Behavior\Display;
 
 abstract class AbstractBehavior implements BehaviorInterface
 {
 	use Concerns\HasMessage;
 
 	protected $values;
-	protected $insertPositions = [
-		'beforebegin' => true,
-		'afterbegin' => true,
-		'beforeend' => true,
-		'afterend' => true,
-	];
-	protected $variantButton = [
-		'black' => true,
-		'white' => true,
-		'white_outlined' => true
-	];
-	protected $widthButton = [
-		'auto' => true,
-		'max' => true,
+	protected $display;
+
+	protected $insertTypes = [
+		'beforebegin',
+		'afterbegin',
+		'beforeend',
+		'afterend',
 	];
 
 	abstract public function getEngineReference();
@@ -32,59 +28,95 @@ abstract class AbstractBehavior implements BehaviorInterface
 	public function getFields() : array
 	{
 		return [
-			'VARIANT_BUTTON' => [
-				'TITLE' => self::getMessage('VARIANT_BUTTON'),
-				'TYPE' => 'enumeration',
+			'SELECTOR' => [
+				'GROUP' => self::getMessage('GROUP_POSITION'),
+				'TYPE' => 'string',
+				'TITLE' => self::getMessage('SELECTOR'),
 				'MANDATORY' => 'Y',
-				'VALUES' => $this->getVariantButtonEnum(),
-			],
-			'WIDTH_BUTTON' => [
-				'TITLE' => self::getMessage('WIDTH_BUTTON'),
-				'TYPE' => 'enumeration',
-				'MANDATORY' => 'Y',
-				'VALUES' => $this->getWidthButtonEnum(),
 			],
 			'POSITION' => [
+				'GROUP' => self::getMessage('GROUP_POSITION'),
 				'TITLE' => self::getMessage('POSITION'),
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
 				'VALUES' => $this->getPositionsEnum(),
 			],
-		];
+			'USE_DIVIDER' => [
+				'TYPE' => 'boolean',
+				'GROUP' => self::getMessage('GROUP_DECOR'),
+				'NAME' => self::getMessage('USE_DIVIDER'),
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_FALSE,
+				],
+			],
+			'DISPLAY' => [
+				'TITLE' => self::getMessage('DISPLAY'),
+				'GROUP' => self::getMessage('GROUP_DECOR'),
+				'TYPE' => 'enumeration',
+				'VALUES' => $this->getDisplayList(),
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => Display\Registry::BUTTON,
+				],
+			],
+		] + $this->getDisplayFields();
 	}
 
-	public function getVariantButtonEnum() : array
+	protected function getDisplayFields() : array
 	{
 		$result = [];
 
-		foreach ($this->variantButton as $code => $enable)
+		foreach (Display\Registry::getTypes() as $type)
 		{
-			if (!$enable) { continue; }
+			$display = Display\Registry::create($type);
+			$prefixName = mb_strtoupper($type);
 
-			$code = mb_strtoupper($code);
+			foreach ($display->getFields() as $name => $field)
+			{
+				$fieldName = sprintf('%s_%s', $name, $prefixName);
 
-			$result[] = [
-				'ID' => str_replace('_', '-', $code),
-				'VALUE' => self::getMessage('BUTTON_' . $code)
-			];
+				$depend = [
+					'DISPLAY' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => [ $type ],
+					],
+				];
+
+				$field['GROUP'] = self::getMessage('GROUP_DECOR');
+
+				if (isset($field['DEPEND']))
+				{
+					$dependField = [];
+
+					foreach ($field['DEPEND'] as $code => $dependVal)
+					{
+						$dependName = sprintf('%s_%s', $code, $prefixName);
+						$dependField[$dependName] = $dependVal;
+					}
+
+					$field['DEPEND'] = $dependField + $depend;
+				}
+				else
+				{
+					$field['DEPEND'] = $depend;
+				}
+
+				$result[$fieldName] = $field;
+			}
 		}
 
 		return $result;
 	}
 
-	public function getWidthButtonEnum() : array
+	protected function getDisplayList() : array
 	{
 		$result = [];
 
-		foreach ($this->widthButton as $code => $enable)
+		foreach (Display\Registry::getTypes() as $type)
 		{
-			if (!$enable) { continue; }
-
-			$code = mb_strtoupper($code);
-
+			$display = Display\Registry::create($type);
 			$result[] = [
-				'ID' => $code,
-				'VALUE' => self::getMessage('BUTTON_' . $code)
+				'ID' => $type,
+				'VALUE' => $display->getTitle(),
 			];
 		}
 
@@ -95,13 +127,11 @@ abstract class AbstractBehavior implements BehaviorInterface
 	{
 		$result = [];
 
-		foreach ($this->insertPositions as $code => $enable)
+		foreach ($this->insertTypes as $value)
 		{
-			if (!$enable) { continue; }
-
 			$result[] = [
-				'ID' => $code,
-				'VALUE' => self::getMessage('POSITION_' . mb_strtoupper($code))
+				'ID' => $value,
+				'VALUE' => self::getMessage('POSITION_' . mb_strtoupper($value))
 			];
 		}
 
@@ -127,11 +157,6 @@ abstract class AbstractBehavior implements BehaviorInterface
 		return $result;
 	}
 
-	public function getInjectionId() : int
-	{
-		return (int)$this->requireValue('INJECTION_ID');
-	}
-
 	public function getSiteId() : string
 	{
 		return (string)$this->requireValue('SITE_ID');
@@ -147,14 +172,29 @@ abstract class AbstractBehavior implements BehaviorInterface
 		return $this->requireValue('POSITION');
 	}
 
-	public function getVariant() : ?string
+	public function useDivider() : bool
 	{
-		return $this->getValue('VARIANT_BUTTON');
+		return (bool)$this->getValue('USE_DIVIDER');
 	}
 
-	public function getWidth() : ?string
+	public function getDisplay() : Display\IDisplay
 	{
-		return $this->getValue('WIDTH_BUTTON');
+		if ($this->display === null)
+		{
+			$this->display = $this->createDisplay();
+		}
+
+		return $this->display;
+	}
+
+	protected function createDisplay() : Display\IDisplay
+	{
+		$type = $this->getValue('DISPLAY') ?? Display\Registry::BUTTON;
+
+		$display = Display\Registry::create($type);
+		$display->setValues($this->values);
+
+		return $display;
 	}
 
 	protected function eventSettings() : array

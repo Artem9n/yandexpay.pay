@@ -19,4 +19,12 @@ export default class Proxy {
 	getPaymentData() {
 
 	}
+
+	restoreButton(node) {
+
+	}
+
+	mountButton(node, payment) {
+
+	}
 }

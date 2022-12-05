@@ -1,9 +1,18 @@
 import Proxy from "./proxy";
+import {EventProxy} from "../../utils/eventproxy";
 
 export default class RestProxy extends Proxy {
 
 	bootstrap() {
-		this.reflow();
+		this.getButtonData()
+			.then((result) => {
+				if (result.status === 'fail') { throw new Error(result.reason); }
+				this.combineOrderWithData(result.data);
+				this.createPayment(this.cart.element, this.cart.paymentData);
+			})
+			.catch((error) => {
+				this.cart.removeLoader();
+			});
 	}
 
 	getButtonData() {
@@ -28,44 +37,51 @@ export default class RestProxy extends Proxy {
 		}
 	}
 
+	onPaymentSuccess(event) {
+		this.authorize(event)
+			.then((result) => {
+				if (result.status === 'success') {
+					setTimeout(function() {
+						window.location.href = result.data.redirect;
+					}, 1000);
+				}
+				else {
+					this.cart.showError('authorize', result.reasonCode, result.reason);
+				}
+			});
+
+		EventProxy.make().fire('bxYapayPaymentSuccess', event);
+	}
+
+	onPaymentAbort(event) {
+		EventProxy.make().fire('bxYapayPaymentAbort', event);
+	}
+
+	onPaymentError(event) {
+		EventProxy.make().fire('bxYapayPaymentError', event);
+		this.cart.showError('yapayPayment','payment not created', event.reason);
+	}
+
 	createPayment(node, paymentData) {
 		if (this._mounted != null) { return; }
 
 		this._mounted = false;
 
-		YaPay.createCheckout(paymentData, { agent: { name: "CMS-Bitrix", version: "1.0" } })
-			.then((payment) => {
+		YaPay.createSession(paymentData, {
+			onSuccess: this.onPaymentSuccess.bind(this),
+			onAbort: this.onPaymentAbort.bind(this),
+			onError: this.onPaymentError.bind(this),
+			agent: { name: "CMS-Bitrix", version: "1.0" }
+		})
+			.then((paymentSession) => {
 				this._mounted = true;
-
 				this.cart.removeLoader();
-				this.mountButton(node, payment);
-
-				payment.on(YaPay.CheckoutEventType.Success, (event) => {
-
-					this.authorize(event)
-						.then((result) => {
-							if (result.status === 'success') {
-								setTimeout(function() {
-									window.location.href = result.data.redirect;
-								}, 1000);
-							}
-							else {
-								this.cart.showError('authorize', result.reasonCode, result.reason);
-							}
-						});
-
-					payment.complete(YaPay.CompleteReason.Success);
-					console.log("Process", event);
-				});
-
-				payment.on(YaPay.CheckoutEventType.Error, (event) => {
-					console.log("Process", event);
-				});
+				this.mountButton(paymentSession);
 			})
 			.catch((err) => {
 				this._mounted = null;
 				node.remove();
-				this.cart.showError('yapayPayment','payment not created', err);
+				this.cart.showError('yapayPayment', 'payment not created', err);
 			});
 	}
 
@@ -89,15 +105,12 @@ export default class RestProxy extends Proxy {
 		}
 	}
 
-	mountButton(node, payment) {
-
+	mountButton(payment) {
+		this.cart.initialContent = null;
 		this.payment = payment;
+		this.cart.display.mount(this.cart.element, payment, YaPay.ButtonType.Checkout);
 
-		payment.mountButton(this.cart.element, {
-			type: YaPay.ButtonType.Checkout,
-			theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
-			width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
-		});
+		EventProxy.make().fire('bxYapayMountButton');
 	}
 
 	restoreButton(node) {
@@ -105,11 +118,8 @@ export default class RestProxy extends Proxy {
 			return;
 		}
 
-		this.payment.mountButton(node, {
-			type: YaPay.ButtonType.Checkout,
-			theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
-			width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
-		});
+		this.cart.display.mount(node, this.payment, YaPay.ButtonType.Checkout);
+		EventProxy.make().fire('bxYapayRestoreButton');
 	}
 
 	combineOrderWithData(data) {
@@ -134,29 +144,37 @@ export default class RestProxy extends Proxy {
 
 		if (productId !== newProductId) { // todo in items
 			this.cart.widget.setOptions({productId: newProductId});
-			this.reflow();
+			this.update();
 		}
 	}
 
 	changeBasket() {
-		this.reflow();
+		this.update();
 	}
 
-	setupPaymentCash(){
+	setupPaymentCash() {
 
 	}
 
-	reflow() {
-		this.getButtonData()
-			.then((result) => {
-				if (result.status === 'fail') { throw new Error(result.reason); }
+	update() {
+		this.payment.update(async () => {
+			const result = await this.getButtonData()
+				.then(result => result)
+				.catch((error) => {
+					this.cart.showError('getButtonData','get not button data', error);
+				});
 
-				this.combineOrderWithData(result.data);
-				this.createPayment(this.cart.element, this.cart.paymentData);
-				this.payment?.update(this.cart.paymentData);
-			})
-			.catch((error) => {
-				this.cart.removeLoader();
-			});
+			if (result.status === 'fail') { throw new Error(result.reason); }
+
+			return {
+				cart: {
+					items: result.data.items
+				},
+				total: {
+					amount: result.data.total.amount,
+				},
+				metadata: result.data.metadata,
+			}
+		});
 	}
 }

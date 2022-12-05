@@ -4,13 +4,30 @@ import Utils from './utils/template';
 import {EventProxy} from "./utils/eventproxy";
 import {Sdkloader} from "./sdkloader";
 import {Intersection} from "./intersection";
-import Template from "./utils/template";
+import Display from "./ui/display/factory";
 
 export default class Factory {
 
 	static defaults = {
 		solution: null,
-		template: '<div id="#ID#" class="bx-yapay-drawer"></div>',
+		template:
+			'<div id="#ID#" ' +
+				'class="bx-yapay-drawer-container ' +
+				'yapay-behavior--#MODE# ' +
+				'yapay-display--#DISPLAY# ' +
+				'yapay-width--#WIDTH# ' +
+				'yapay-solution--#SOLUTION#">' +
+				'#STYLE#' +
+				'#DIVIDER#' +
+				'<div class="bx-yapay-drawer"></div>' +
+			'</div>',
+		divider:
+			'<div class="bx-yapay-divider"> ' +
+				'<span class="bx-yapay-divider__corner"></span> ' +
+				'<span class="bx-yapay-divider__text">#LABEL#</span> ' +
+				'<span class="bx-yapay-divider__corner at--right"></span> ' +
+			'</div>',
+		useDivider: false,
 		containerSelector: '.bx-yapay-drawer',
 		loaderSelector: '.bx-yapay-skeleton-loading',
 		preserve: {
@@ -53,7 +70,7 @@ export default class Factory {
 	}
 
 	checkElement(anchor) {
-		const selector = this.getOption('containerSelector');
+		const selector = this.containerSelector();
 		const contains = (
 			!!anchor.querySelector(selector)
 			|| this.containsSiblingElement(anchor, selector)
@@ -64,6 +81,10 @@ export default class Factory {
 		}
 
 		return anchor;
+	}
+
+	containerSelector() {
+		return '#' + this.getOption('containerId') + ' ' + this.getOption('containerSelector');
 	}
 
 	containsSiblingElement(anchor, selector) {
@@ -120,10 +141,7 @@ export default class Factory {
 	}
 
 	insertLoader(widget) {
-		const width = this.getOption('buttonWidth') || 'AUTO';
-
 		widget.go('loader', {
-			width: width.toLowerCase(),
 			label: this.getOption('label'),
 		});
 
@@ -241,13 +259,20 @@ export default class Factory {
 	}
 
 	renderElement(anchor, position) {
-		const selector = this.getOption('containerSelector');
-		const width = this.getOption('buttonWidth') || 'AUTO';
+		const selector = this.containerSelector();
+		const divider = this.getDivider();
+		const display = this.getDisplay();
+
 		const html = Utils.compile(this.getOption('template'), {
-			label: this.getOption('label'),
-			width: width.toLowerCase(),
+			divider: divider,
+			style: display != null ? display.style() : '',
+			width: display != null ? display.width().toLowerCase() : 'auto',
 			id: this.getOption('containerId'),
+			mode: this.getOption('mode') || 'payment',
+			display: this.getOption('displayType')?.toLowerCase() || 'button',
+			solution: this.getOption('solution')?.toLowerCase(),
 		});
+
 		let elements = Utils.toElements(html);
 		let result = null;
 
@@ -276,6 +301,21 @@ export default class Factory {
 		if (solution == null) { return; }
 
 		solution.bootFactory(this);
+	}
+
+	getDisplay() {
+		const type = this.getOption('displayType');
+		const options = this.getOption('displayParameters');
+
+		if (type == null) { return null; }
+
+		return Display.make(type, this, options);
+	}
+
+	getDivider() {
+		return this.getOption('useDivider')
+			? Utils.compile(this.getOption('divider'), {label: this.getOption('label')})
+			: '';
 	}
 
 	bootLocal() {

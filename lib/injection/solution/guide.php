@@ -1,6 +1,8 @@
 <?php
 namespace YandexPay\Pay\Injection\Solution;
 
+use YandexPay\Pay\Injection\Behavior;
+
 class Guide
 {
 	public static function getBitrixOrder(array $context = [], string $path = '/personal/order/make/') : array
@@ -12,7 +14,8 @@ class Guide
 			'SELECTOR' => '.bx-soa-cart-total',
 			'POSITION' => 'beforeend',
 			'PATH' => $dir . $path,
-			'WIDTH_BUTTON' => 'MAX'
+			'DISPLAY' => Behavior\Display\Registry::BUTTON,
+			'WIDTH_BUTTON' => 'MAX',
 		];
 	}
 
@@ -22,10 +25,11 @@ class Guide
 		$dir = rtrim($dir, '/');
 
 		return [
-			'SELECTOR' => '.basket-checkout-block .fastorder, .basket-checkout-block.basket-checkout-block-btn',
+			'SELECTOR' => '.basket-checkout-block-btns-wrap, .basket-checkout-section-inner',
 			'POSITION' => 'afterend',
 			'PATH' => $dir . $path,
-			'WIDTH_BUTTON' => 'MAX'
+			'DISPLAY' => Behavior\Display\Registry::BUTTON,
+			'WIDTH_BUTTON' => 'AUTO',
 		];
 	}
 

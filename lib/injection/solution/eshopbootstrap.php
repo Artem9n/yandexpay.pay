@@ -32,9 +32,11 @@ class EshopBootstrap extends Skeleton
 	{
 		return [
 			Behavior\Registry::ELEMENT => [
-				'SELECTOR' => '.product-item-detail-slider-container',
-				'POSITION' => 'beforeend',
+				'SELECTOR' => '.col-md-6.col-sm-12 .row, .col-md-5.col-lg-6 .row',
+				'POSITION' => 'afterend',
 				'IBLOCK' => $context['IBLOCK'],
+				'DISPLAY' => Behavior\Display\Registry::BUTTON,
+				'WIDTH_BUTTON' => 'MAX',
 			],
 			Behavior\Registry::BASKET => Guide::getBitrixBasket($context),
 			Behavior\Registry::ORDER => Guide::getBitrixOrder($context),

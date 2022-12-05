@@ -38,8 +38,6 @@ class TradingButton extends \CBitrixComponent
 		$arParams['PRODUCT_ID'] = !empty($arParams['PRODUCT_ID']) ? (int)$arParams['PRODUCT_ID'] : null;
 		$arParams['TRADING_ID'] = !empty($arParams['TRADING_ID']) ? (int)$arParams['TRADING_ID'] : null;
 		$arParams['POSITION'] = !empty($arParams['POSITION']) ? (string)$arParams['POSITION'] : null;
-		$arParams['VARIANT_BUTTON'] = !empty($arParams['VARIANT_BUTTON']) ? (string)$arParams['VARIANT_BUTTON'] : null;
-		$arParams['WIDTH_BUTTON'] = !empty($arParams['WIDTH_BUTTON']) ? (string)$arParams['WIDTH_BUTTON'] : null;
 		$arParams['SELECTOR'] = !empty($arParams['SELECTOR']) ? (string)$arParams['SELECTOR'] : null;
 		$arParams['MODE'] = !empty($arParams['MODE']) ? (string)$arParams['MODE'] : null;
 
@@ -67,15 +65,14 @@ class TradingButton extends \CBitrixComponent
 	{
 		$setup = $this->getSetup();
 
-		$setup->wakeupOptions();
-
-		$options = $setup->getOptions();
+		$options = $setup->wakeupOptions();
 
 		$paySystemId = $options->getPaymentCard();
 
 		$handler = $this->getHandler($paySystemId);
 
 		$params = $this->getHandlerParams($handler, $paySystemId, $setup->getPersonTypeId());
+		[$displayType, $displayParameters] = $this->makeDisplay();
 
 		$gateway = $handler->getGateway();
 		$gateway->setParameters($params);
@@ -84,8 +81,6 @@ class TradingButton extends \CBitrixComponent
 			'env'               => $params['YANDEX_PAY_TEST_MODE'] === 'Y' ? 'SANDBOX' : 'PRODUCTION',
 			'merchantId'        => $params['YANDEX_PAY_MERCHANT_ID'],
 			'merchantName'      => $params['YANDEX_PAY_MERCHANT_NAME'],
-			'buttonTheme'       => $this->arParams['VARIANT_BUTTON'],
-			'buttonWidth'       => $this->arParams['WIDTH_BUTTON'],
 			'gateway'           => $gateway->getGatewayId(),
 			'isRest'            => $gateway->isRest(),
 			'gatewayMerchantId' => $gateway->getMerchantId(),
@@ -108,6 +103,33 @@ class TradingButton extends \CBitrixComponent
 			'solution'          => $options->getSolution(),
 			'userGroup'         => $options->getUserGroup(),
 			'currencyCode'      => Currency\CurrencyManager::getBaseCurrency(),
+			'useDivider'        => $this->arParams['USE_DIVIDER'],
+			'displayType'       => $displayType,
+			'displayParameters' => $displayParameters,
+		];
+	}
+
+	protected function makeDisplay() : array
+	{
+		if (empty($this->arParams['DISPLAY_TYPE']))
+		{
+			return $this->makeCompatibleDisplay();
+		}
+
+		return [
+			(string)$this->arParams['DISPLAY_TYPE'],
+			is_array($this->arParams['DISPLAY_PARAMETERS']) ? $this->arParams['DISPLAY_PARAMETERS'] : null,
+		];
+	}
+
+	protected function makeCompatibleDisplay() : array
+	{
+		return [
+			Injection\Behavior\Display\Registry::BUTTON,
+			array_filter([
+				'VARIANT_BUTTON' => $this->arParams['VARIANT_BUTTON'] ?? null,
+				'WIDTH_BUTTON' => $this->arParams['WIDTH_BUTTON'] ?? null,
+			]),
 		];
 	}
 

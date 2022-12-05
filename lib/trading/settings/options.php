@@ -378,6 +378,7 @@ class Options extends Reference\Skeleton
 			'URL_SUCCESS' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('URL_SUCCESS'),
+				'HELP' => self::getMessage('URL_SUCCESS_HELP'),
 				'GROUP' => self::getMessage('YANDEX_PAY'),
 				'SORT' => 4000,
 				'SETTINGS' => [

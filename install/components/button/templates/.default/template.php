@@ -53,7 +53,9 @@ try
 	$factoryOptions = array_intersect_key($arResult['PARAMS'], [
 		'solution' => true,
 		'mode' => true,
-		'buttonWidth' => true,
+		'displayType' => true,
+		'displayParameters' => true,
+		'useDivider' => true,
 	]);
 	$factoryOptions += (array)($arParams['~FACTORY_OPTIONS'] ?? []);
 	$factoryOptions['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');

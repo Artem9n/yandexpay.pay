@@ -15,18 +15,14 @@ class Basket extends AbstractBehavior
 
 	public function getFields() : array
 	{
-		return parent::getFields() + [
-			'SELECTOR' => [
-				'TYPE' => 'string',
-				'TITLE' => self::getMessage('SELECTOR'),
-				'MANDATORY' => 'Y',
-			],
+		return [
 			'PATH' => [
+				'GROUP' => self::getMessage('GROUP_BEHAVIOR'),
 				'TYPE' => 'string',
 				'TITLE' => self::getMessage('PATH'),
 				'MANDATORY' => 'Y',
 			],
-		];
+		] + parent::getFields();
 	}
 
 	public function getEngineReference() : string

@@ -98,6 +98,24 @@ $data = [
 				'PROVIDER_KEY'      => 'INPUT'
 			]
 		],
+		'YANDEX_PAY_SUCCESS_URL' => [
+			'NAME' => Loc::getMessage('YANDEX_PAY_SUCCESS_URL'),
+			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_SUCCESS_URL_DESCRIPTION'),
+			'SORT' => 310,
+			'INPUT' => [
+				'TYPE' => 'STRING',
+				'SIZE' => 40,
+			],
+		],
+		'YANDEX_PAY_FAIL_URL' => [
+			'NAME' => Loc::getMessage('YANDEX_PAY_FAIL_URL'),
+			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_FAIL_URL_DESCRIPTION'),
+			'SORT' => 320,
+			'INPUT' => [
+				'TYPE' => 'STRING',
+				'SIZE' => 40,
+			],
+		],
 		'YANDEX_PAY_NOTIFY_URL' => [
 			'NAME' => Loc::getMessage('YANDEX_PAY_NOTIFY_URL'),
 			'SORT' => 350,
