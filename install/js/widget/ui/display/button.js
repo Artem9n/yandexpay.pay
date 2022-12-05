@@ -22,12 +22,12 @@ export default class Button extends Display {
 
 	mount(node, payment, type) {
 		const theme = this.getOption('VARIANT_BUTTON') || YaPay.ButtonTheme.Black;
-		const width = this.getOption('WIDTH_BUTTON') || YaPay.ButtonWidth.Auto;
+		const width = this.getOption('WIDTH_BUTTON') || YaPay.ButtonWidth.Max;
 
 		payment.mountButton(node, {
 			type: type,
 			theme: theme,
-			width: width !== 'OWN' ? width : YaPay.ButtonWidth.Auto
+			width: width !== 'OWN' ? width : YaPay.ButtonWidth.Max
 		});
 	}
 
@@ -69,7 +69,7 @@ export default class Button extends Display {
 	collectWidth() {
 		let result = '';
 
-		const widthVariant = this.width();
+		const widthVariant = this.getOption('WIDTH_BUTTON');
 
 		if (widthVariant !== 'OWN') {
 			return result;
@@ -84,6 +84,12 @@ export default class Button extends Display {
 	}
 
 	width() {
-		return this.getOption('WIDTH_BUTTON') || 'AUTO';
+		let width = this.getOption('WIDTH_BUTTON') || 'MAX';
+
+		if (width === 'OWN'){
+			width = 'MAX';
+		}
+
+		return width;
 	}
 }
