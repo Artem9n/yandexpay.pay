@@ -9,6 +9,9 @@ use YandexPay\Pay\Injection;
 
 if (Main\ModuleManager::isModuleInstalled('yandexpay.pay'))
 {
+	$updater->CopyFiles("install/js", "js/yandexpaypay");
+	$updater->CopyFiles("install/components", "components/yandexpay.pay");
+
 	AddEventHandler('main', 'OnModuleUpdate', static function($readyModules)
 	{
 		if (!Main\Loader::includeModule('yandexpay.pay')) { return; }
