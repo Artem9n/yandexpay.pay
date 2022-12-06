@@ -91,8 +91,10 @@
 				})
 				.then((res) => {
 					if (res) {
-						let apply = document.querySelector(this.getElementSelector('inputApply'));
-						apply.click();
+						setTimeout(() => {
+							let apply = document.querySelector(this.getElementSelector('inputApply'));
+							apply.click();
+						}, 1000);
 					}
 				})
 				.catch(() => {
@@ -220,7 +222,9 @@
 				const input = this.findInput(fieldset, name);
 				const checkbox = this.findCheckbox(input);
 
-				checkbox.prop('checked') && checkbox.trigger('click');
+				checkbox.prop('checked', false);
+				checkbox.trigger('click');
+
 				input.val(values[name]);
 			}
 		},

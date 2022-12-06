@@ -34,7 +34,7 @@ class Action extends Rest\Reference\EffectiveAction
 	{
 		$response = $this->makeResponse();
 
-		Pay\Config::setOption('onboard_merchant_id', $this->request->getMerchantAuthToken());
+		Pay\Config::setOption('onboard_merchant_id', $this->request->getMerchantId());
 		Pay\Config::setOption('onboard_api_key', $this->request->getApiKey());
 
 		return $this->convertResponseToHttp($response);
