@@ -115,12 +115,12 @@ if (Main\ModuleManager::isModuleInstalled('yandexpay.pay'))
 
 						$settings[mb_strtoupper($valueDefault['BEHAVIOR']) . '_DISPLAY'] = Injection\Behavior\Display\Registry::BUTTON;
 
-						if ($valueDefault['BEHAVIOR'] === 'basket')
+						if (
+							($valueDefault['BEHAVIOR'] === 'basket')
+							&& $settings['BASKET_SELECTOR'] === $oldSelectorsBasket
+						)
 						{
-							if ($settings['BASKET_SELECTOR'] !== $oldSelectorsBasket) { continue; }
-
-							$injectObject->setSettings($valueDefault['SETTINGS']);
-							continue;
+								$settings = $valueDefault['SETTINGS'];
 						}
 
 						$injectObject->setSettings($settings);
