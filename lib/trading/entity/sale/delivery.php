@@ -244,7 +244,7 @@ class Delivery extends EntityReference\Delivery
 					&& $this->hasDeliveryLocationRestriction($serviceId)
 				)
 				{
-					//continue;
+					continue;
 				}
 
 				$result[] = $serviceId;
