@@ -81,7 +81,8 @@ class Action extends Rest\Reference\EffectiveAction
 				$this->request->getUserId(),
 				$this->request->getFUserId(),
 				$this->request->getCurrencyCode(),
-				$this->request->getCoupons()
+				$this->request->getCoupons(),
+				$this->request->getCartId()
 			))
 			->pipe(new Rest\Stage\OrderInitialize())
 			->pipe(new Rest\OrderCreate\Stage\OrderStatus())

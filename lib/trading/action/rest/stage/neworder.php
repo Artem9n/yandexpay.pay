@@ -12,13 +12,21 @@ class NewOrder
 	protected $fUserId;
 	protected $currency;
 	protected $coupons;
+	protected $externalId;
 
-	public function __construct(int $userId = null, int $fUserId = null, string $currency = null, array $coupons = null)
+	public function __construct(
+		int $userId = null,
+		int $fUserId = null,
+		string $currency = null,
+		array $coupons = null,
+		string $externalId = null
+	)
 	{
 		$this->userId = $userId;
 		$this->fUserId = $fUserId;
 		$this->currency = $currency;
 		$this->coupons = $coupons;
+		$this->externalId = $externalId;
 	}
 
 	public function __invoke(State\OrderCalculation $state)
@@ -64,7 +72,7 @@ class NewOrder
 	protected function fillTradingPlatform(State\OrderCalculation $state) : void
 	{
 		$platform = $state->environment->getPlatform();
-		$state->order->fillTradingSetup($platform);
+		$state->order->fillTradingSetup($platform, $this->externalId);
 	}
 }
 

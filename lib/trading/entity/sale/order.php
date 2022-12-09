@@ -398,11 +398,18 @@ class Order extends EntityReference\Order
 		}
 	}
 
-	public function fillTradingSetup(EntityReference\Platform $platform) : void
+	public function fillTradingSetup(EntityReference\Platform $platform, string $externalId = null) : void
 	{
 		$salePlatform = $platform->getSalePlatform();
 		$bindingCollection = $this->internalOrder->getTradeBindingCollection();
-		$bindingCollection->createItem($salePlatform);
+
+		/** @var \Bitrix\Sale\TradeBindingEntity $binding */
+		$binding = $bindingCollection->createItem($salePlatform);
+
+		if ($externalId !== null)
+		{
+			$binding->setField('XML_ID', $externalId);
+		}
 	}
 
 	public function getBasket() : Sale\BasketBase

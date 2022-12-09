@@ -278,7 +278,7 @@ abstract class Order
 		$this->calculatable = null;
 	}
 
-	public function fillTradingSetup(Platform $platform) : void
+	public function fillTradingSetup(Platform $platform, string $externalId = null) : void
 	{
 		throw new Main\NotImplementedException('fillTradingSetup is missing');
 	}
