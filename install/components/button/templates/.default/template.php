@@ -18,6 +18,9 @@ Loc::loadMessages(__FILE__);
 
 $this->setFrameMode(true); // not need dynamic area
 if (!$arResult['NEED_SHOW']) { return; }
+
+$output = '';
+
 try
 {
 	// assets
@@ -25,7 +28,7 @@ try
 	if ($APPLICATION->GetPageProperty('yandexpay_extension_widget') !== 'Y')
 	{
 		$APPLICATION->SetPageProperty('yandexpay_extension_widget', 'Y');
-		echo Extension::getHtml('yandexpaypay.widget');
+		$output .= Extension::getHtml('yandexpaypay.widget');
 	}
 
 	if (
@@ -36,7 +39,7 @@ try
 		$APPLICATION->SetPageProperty('yandexpay_extension_' . $arResult['PARAMS']['solution'], 'Y');
 
 		$solution = Solution\Registry::getInstance($arResult['PARAMS']['solution']);
-		echo $solution->getExtension();
+		$output .= $solution->getExtension();
 	}
 
 	// widget index
@@ -61,8 +64,11 @@ try
 	$factoryOptions['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
 	$factoryOptions['containerId'] = $containerId;
 	$order = $arResult['PARAMS']['order'];
-	$selector = $arResult['PARAMS']['selector'];
+	$selector = htmlspecialcharsback($arResult['PARAMS']['selector']);
 	$position = $arResult['PARAMS']['position'];
+	$factoryOptions += [
+		'preserve' => false, //todo only fast view
+	];
 
 	if (empty($selector))
 	{
@@ -72,37 +78,44 @@ try
 			'preserve' => false,
 		];
 
-		?>
-		<div id="<?= $containerId . '-container' ?>" class="yandex-pay"></div>
-		<?php
+		$output .= <<<CONTENT
+			<div id="{$containerId}-container" class="yandex-pay"></div>
+CONTENT;
 	}
-	?>
-	<script>
-		(function() {
-			<?php
-			echo file_get_contents(__DIR__ . '/init.min.js');
-			?>
-			function run() {
-				const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
-				const selector = '<?= htmlspecialcharsback($selector) ?>';
-				const position = '<?= $position?>';
 
-				factory.inject(selector, position)
-					.then((widget) => {
-						widget.setOptions(<?= Json::encode($widgetOptions) ?>);
-						widget.cart();
-					})
-					.catch((error) => {
-						console.warn(error);
-					});
-			}
-		})();
-	</script>
-	<?php
+	$initScript = file_get_contents(__DIR__ . '/init.js');
+	$widgetOptionsJson = Json::encode($widgetOptions);
+	$factoryOptionsJson = Json::encode($factoryOptions);
+
+	$output .= <<<CONTENT
+		<script>
+			(function() {
+				
+				{$initScript}
+				function run() {
+				debugger;
+					const factory = new BX.YandexPay.Factory({$factoryOptionsJson});
+					const selector = '{$selector}';
+					const position = '{$position}';
+	
+					factory.inject(selector, position)
+						.then((widget) => {
+							widget.setOptions({$widgetOptionsJson});
+							widget.cart();
+						})
+						.catch((error) => {
+							console.warn(error);
+						});
+				}
+			})();
+		</script>
+CONTENT;
 }
 catch (Main\SystemException $exception)
 {
 	if (!isset($USER) || !$USER->IsAdmin()) { return; }
 
-	ShowError($exception->getMessage());
+	$output = $exception->getMessage(); // todo format
 }
+
+$arResult['OUTPUT'] = $output;

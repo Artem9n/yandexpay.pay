@@ -13,7 +13,6 @@ abstract class AbstractEngine extends Event\Base
 	const RENDER_RETURN = 'return';
 
 	protected static $handlerDisallowYaPay = false;
-	protected static $setup;
 
 	protected static function loadModule(string $name) : void
 	{
@@ -43,9 +42,9 @@ abstract class AbstractEngine extends Event\Base
 	{
 		global $APPLICATION;
 
-		$contents = '';
+		if (SITE_ID !== $data['SITE_ID']) { return ''; }
 
-		if (SITE_ID !== $data['SITE_ID']) { return $contents; }
+		$contents = '';
 
 		if (static::$handlerDisallowYaPay) { return $contents; }
 
@@ -58,21 +57,12 @@ abstract class AbstractEngine extends Event\Base
 
 		if ($mode === self::RENDER_ASSETS)
 		{
-			ob_start();
-			$APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
-			$contents = ob_get_clean();
-
+			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
 			Main\Page\Asset::getInstance()->addString($contents, false, Main\Page\AssetLocation::AFTER_JS);
 		}
-		else if ($mode === self::RENDER_OUTPUT)
+		else if ($mode === self::RENDER_RETURN)
 		{
-			$APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
-
-		}
-		else
-		{
-			$APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
-			$contents = ob_get_contents();
+			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
 		}
 
 		return $contents;

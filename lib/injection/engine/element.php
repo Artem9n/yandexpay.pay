@@ -27,12 +27,12 @@ class Element extends AbstractEngine
 		try
 		{
 			$template = static::iblockTemplate($settings['IBLOCK']);
-			$variables = static::parseTemplate($template, [], $settings);
+			$variables = static::parseTemplate($template);
 			$elementFilter = static::elementFilter($settings['IBLOCK'], $variables);
 			$elementId = static::searchElement($elementFilter);
 			$offerId = static::resolveOffer($settings['IBLOCK'], $elementId, [
 				'PRODUCT_URL' => \CComponentEngine::makePathFromTemplate($template, $variables),
-			], $settings);
+			]);
 
 			$result = $offerId ?? $elementId;
 		}
@@ -126,13 +126,13 @@ class Element extends AbstractEngine
 		return (int)$row['ID'];
 	}
 
-	protected static function resolveOffer(int $productIblockId, int $productId, array $defined = [], array $settings = []) : ?int
+	protected static function resolveOffer(int $productIblockId, int $productId, array $defined = []) : ?int
 	{
 		try
 		{
 			$offerIblock = static::offerIblock($productIblockId);
 			$offerTemplate = static::iblockTemplate($offerIblock, static::defaultOfferTemplate());
-			$offerVariables = static::parseTemplate($offerTemplate, $defined, $settings);
+			$offerVariables = static::parseTemplate($offerTemplate, $defined);
 			$offerFilter = static::elementFilter($offerIblock, $offerVariables);
 
 			if (!static::isSku($productId)) { return null; }
@@ -161,31 +161,36 @@ class Element extends AbstractEngine
 		return (int)$catalogIblockData['IBLOCK_ID'];
 	}
 
-	protected static function parseTemplate(string $template, array $defined = [], array $settings = []) : ?array
+	protected static function parseTemplate(string $template, array $defined = []) : ?array
 	{
 		$template = static::compileUrlTemplate($template, $defined);
 		[$templatePage, $templateQuery] = explode('?', $template, 2);
 
-		$pageVariables = static::parsePageTemplate((string)$templatePage, $settings);
+		$pageVariables = static::parsePageTemplate((string)$templatePage);
 		$queryVariables = static::parseQueryTemplate((string)$templateQuery);
 
 		return $pageVariables + $queryVariables;
 	}
 
-	protected static function parsePageTemplate(string $templatePage, array $settings = []) : array
+	protected static function parsePageTemplate(string $templatePage) : array
 	{
 		$engine = new \CComponentEngine();
 
 		if (Main\Loader::includeModule('iblock'))
 		{
 			$engine->addGreedyPart('#SECTION_CODE_PATH#');
-			$engine->setResolveCallback(['CIBlockFindTools', 'resolveComponentEngine']);
+
+			if (!static::getRequest()->isAjaxRequest())
+			{
+				$engine->setResolveCallback(['CIBlockFindTools', 'resolveComponentEngine']);
+			}
 		}
 
 		$sefFolder = '/';
 		$templatePage = mb_substr($templatePage, mb_strlen($sefFolder));
 		$greedyPart = (string)Config::getOption('injection_engine_element_greedy', '');
-		$url = static::getRequestUrl($settings);
+		$request = static::getRequest();
+		$url = static::getRequest()->getRequestedPage();
 
 		if (mb_substr($url, -1, 1) === "/") { $url .= 'index.php'; }
 
@@ -193,7 +198,7 @@ class Element extends AbstractEngine
 			$sefFolder,
 			[ 'target' => $templatePage ],
 			$variables,
-			urldecode($url)
+			$url
 		);
 
 		if (!$matched && $greedyPart !== '')
@@ -214,11 +219,6 @@ class Element extends AbstractEngine
 		}
 
 		return $variables;
-	}
-
-	protected static function getRequestUrl(array $settings = []) : string
-	{
-		return static::getRequest()->getRequestedPage();
 	}
 
 	protected static function parseQueryTemplate(string $templateQuery) : array

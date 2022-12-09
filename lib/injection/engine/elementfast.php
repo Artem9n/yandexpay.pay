@@ -1,34 +1,47 @@
 <?php
 namespace YandexPay\Pay\Injection\Engine;
 
-use Bitrix\Main;
 use YandexPay\Pay\Injection;
-use YandexPay\Pay\Reference\Assert;
-use YandexPay\Pay\Trading\Entity as TradingEntity;
 
 class ElementFast extends Element
 {
 	public static function onEndBufferContent(int $injectionId, array $settings, string &$content) : void
 	{
-		if (!static::testRequest() || !static::testQuery($settings)) { return; }
+		if (!static::testRequest()) { return; }
+
+		if (!static::testQuery($settings['QUERY_PARAM'])) { return; }
 
 		$elementId = static::findProduct($settings);
 
 		if ($elementId === null) { return; }
 
-		$content = static::render($injectionId, ['PRODUCT_ID' => $elementId], static::RENDER_RETURN);
-
-		//$content .= static::render($injectionId, ['PRODUCT_ID' => $elementId], static::RENDER_RETURN);
+		$content .= static::render($injectionId, ['PRODUCT_ID' => $elementId, 'SITE_ID' => $settings['SITE_ID']]);
 	}
 
-	protected static function testQuery(array $context = []) : bool
+	protected static function testQuery(string $param) : bool
 	{
-		return static::getRequestUrl($context) !== '';
+		$result = false;
+
+		[$code, $value] = explode('=', $param);
+
+		$isHave = static::getRequest()->getQuery($code);
+
+		if ($isHave !== null && $isHave === $value)
+		{
+			$result = true;
+		}
+
+		return $result;
 	}
 
-	protected static function getRequestUrl(array $settings = []) : string
+	protected static function testRequest() : bool
 	{
-		$queryParams = $settings['QUERY'] ?? '';
-		return static::getRequest()->getQuery($queryParams) ?? '';
+		$request = static::getRequest();
+
+		return (
+			!$request->isAdminSection()
+			&& $request->isAjaxRequest()
+			&& mb_strpos($request->getRequestedPage(), '/bitrix/') !== 0
+		);
 	}
 }

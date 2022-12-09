@@ -3,7 +3,6 @@ namespace YandexPay\Pay\Injection\Behavior;
 
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Injection\Engine;
-use YandexPay\Pay\Trading\Entity\Registry as EntityRegistry;
 
 class ElementFast extends Element
 {
@@ -12,10 +11,11 @@ class ElementFast extends Element
 	public function getFields() : array
 	{
 		return parent::getFields() + [
-			'QUERY' => [
+			'QUERY_PARAM' => [
 				'TYPE' => 'string',
-				'TITLE' => self::getMessage('QUERY'),
-				'MANDATORY' => 'Y',
+				'TITLE' => self::getMessage('QUERY_PARAM'),
+				'GROUP' => self::getMessage('VIEW'),
+				'MANDATORY' => 'Y'
 			],
 		];
 	}
@@ -27,19 +27,20 @@ class ElementFast extends Element
 
 	public function getMode() : string
 	{
-		return Registry::ELEMENT_FAST;
+		return Registry::ELEMENT;
 	}
 
 	protected function getQueryParam() : string
 	{
-		return $this->getValue('QUERY');
+		return $this->requireValue('QUERY_PARAM');
 	}
 
 	protected function eventSettings() : array
 	{
 		return [
 			'IBLOCK' => $this->getIblock(),
-			'QUERY' => $this->getQueryParam(),
+			'QUERY_PARAM' => $this->getQueryParam(),
+			'SITE_ID' => $this->getSiteId(),
 		];
 	}
 
