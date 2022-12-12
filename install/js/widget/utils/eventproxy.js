@@ -32,19 +32,19 @@ export class EventProxy {
 	}
 
 	onBxEvent(name, callback) {
-		if (typeof BX === 'undefined') { return; }
+		if (typeof BX === 'undefined' || BX.addCustomEvent == null) { return; }
 
 		BX.addCustomEvent(name, callback);
 	}
 
 	offBxEvent(name, callback) {
-		if (typeof BX === 'undefined') { return; }
+		if (typeof BX === 'undefined' || BX.removeCustomEvent == null) { return; }
 
 		BX.removeCustomEvent(name, callback);
 	}
 
 	fireBxEvent(name, data) {
-		if (typeof BX === 'undefined') { return; }
+		if (typeof BX === 'undefined' || BX.onCustomEvent == null) { return; }
 
 		BX.onCustomEvent(name, [data]);
 	}
