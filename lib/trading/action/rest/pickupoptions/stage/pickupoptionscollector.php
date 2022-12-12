@@ -11,6 +11,8 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 {
 	/** @var array|null */
 	protected $bounds;
+	/** @var array<int, int[]]>*/
+	protected $locationRestricted = [];
 
 	public function __construct(Reference\EffectiveResponse $response, string $key = '', array $bounds = null)
 	{
@@ -31,6 +33,8 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 
 			foreach ($allStores as $locationId => $stores)
 			{
+				if (!$this->isRestricted($state, $locationId, $deliveryId)) { continue; }
+
 				foreach ($stores as $store)
 				{
 					$result[] = $this->collectPickupOption($deliveryId, $store, $locationId);
@@ -39,6 +43,39 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 		}
 
 		$this->write($result);
+	}
+
+	protected function isRestricted(State\OrderCalculation $state, int $locationId, int $deliveryId) : bool
+	{
+		$deliveries = $this->locationRestrictedDeliveries($state, $locationId);
+		$deliveries = array_flip($deliveries);
+
+		return isset($deliveries[$deliveryId]);
+	}
+
+	protected function locationRestrictedDeliveries(State\OrderCalculation $state, int $locationId) : array
+	{
+		if (!isset($this->locationRestricted[$locationId]))
+		{
+			$this->locationRestricted[$locationId] = $this->calculateLocationRestricted($state, $locationId);
+		}
+
+		return $this->locationRestricted[$locationId];
+	}
+
+	protected function calculateLocationRestricted(State\OrderCalculation $state, int $locationId) : array
+	{
+		$previousLocation = $state->order->getLocation();
+
+		$state->order->clearCalculatable();
+		$state->order->setLocation($locationId);
+
+		$deliveries = $this->restrictedDeliveries($state);
+
+		$state->order->clearCalculatable();
+		$state->order->setLocation($previousLocation);
+
+		return $deliveries;
 	}
 
 	protected function collectPickupOption(int $deliveryId, array $store, int $locationId = null) : array
