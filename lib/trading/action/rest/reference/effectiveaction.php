@@ -62,13 +62,43 @@ abstract class EffectiveAction extends HttpAction
 
 		if ($cookieRegion !== '' && $regionId !== '')
 		{
-			global $arRegion;
-
-			//todo include module for solution
-
-			$regions = \CMaxRegionality::getRegions();
-			$arRegion = $regions[$regionId];
+			$this->setRegionCookie($cookieRegion, $regionId);
+			$this->setRegionAsproMax($regionId);
+			$this->setRegionAsproNext($regionId);
 		}
+	}
+
+	protected function setRegionCookie(string $name, string $value) : void
+	{
+		$_COOKIE[$name] = $value;
+	}
+
+	protected function setRegionAsproMax(string $regionId) : void
+	{
+		global $arRegion;
+
+		if (!Main\Loader::includeModule('aspro.max')) { return; }
+		if (!class_exists(\CMaxRegionality::class)) { return; }
+
+		$regions = \CMaxRegionality::getRegions();
+
+		if (!isset($regions[$regionId])) { return; }
+
+		$arRegion = $regions[$regionId];
+	}
+
+	protected function setRegionAsproNext(string $regionId) : void
+	{
+		global $arRegion;
+
+		if (!Main\Loader::includeModule('aspro.next')) { return; }
+		if (!class_exists(\CNextRegionality::class)) { return; }
+
+		$regions = \CNextRegionality::getRegions();
+
+		if (!isset($regions[$regionId])) { return; }
+
+		$arRegion = $regions[$regionId];
 	}
 
 	protected function bootHttpHost() : void
