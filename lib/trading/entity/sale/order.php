@@ -400,16 +400,41 @@ class Order extends EntityReference\Order
 
 	public function fillTradingSetup(EntityReference\Platform $platform, string $externalId = null) : void
 	{
-		$salePlatform = $platform->getSalePlatform();
-		$bindingCollection = $this->internalOrder->getTradeBindingCollection();
-
-		/** @var \Bitrix\Sale\TradeBindingEntity $binding */
-		$binding = $bindingCollection->createItem($salePlatform);
+		$binding = $this->searchTradingBinding($platform) ?? $this->createTradingBinding($platform);
 
 		if ($externalId !== null)
 		{
 			$binding->setField('XML_ID', $externalId);
 		}
+	}
+
+	protected function searchTradingBinding(EntityReference\Platform $platform) : ?Sale\TradeBindingEntity
+	{
+		$platformId = (int)$platform->getId();
+		$bindingCollection = $this->internalOrder->getTradeBindingCollection();
+		$result = null;
+
+		/** @var Sale\TradeBindingEntity $binding */
+		foreach ($bindingCollection as $binding)
+		{
+			$bindingPlatformId = (int)$binding->getField('TRADING_PLATFORM_ID');
+
+			if ($platformId === $bindingPlatformId)
+			{
+				$result = $binding;
+				break;
+			}
+		}
+
+		return $result;
+	}
+
+	protected function createTradingBinding(EntityReference\Platform $platform) : Sale\TradeBindingEntity
+	{
+		$salePlatform = $platform->getSalePlatform();
+		$bindingCollection = $this->internalOrder->getTradeBindingCollection();
+
+		return $bindingCollection->createItem($salePlatform);
 	}
 
 	public function getBasket() : Sale\BasketBase
@@ -1072,6 +1097,11 @@ class Order extends EntityReference\Order
 				$payment->setField('SUM', $newPaymentSum);
 			}
 		}
+	}
+
+	public function isSaved() : bool
+	{
+		return $this->getId() !== null;
 	}
 
 	public function getId()

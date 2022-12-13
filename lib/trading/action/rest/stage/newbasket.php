@@ -19,9 +19,18 @@ class NewBasket
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		[$exists, $new] = $this->splitBasketAlreadyExists();
+		[$exists, $new] = $state->order->isSaved()
+			? $this->splitOrderAlreadyExists()
+			: $this->splitBasketAlreadyExists();
 
-		if (!empty($exists))
+		if ($state->order->isSaved())
+		{
+			[$notFound, $needDelete] = $this->syncBasketExistProducts($state, $exists);
+
+			$this->deleteBasketProducts($state, $needDelete);
+			$this->addBasketNewProducts($state, $notFound);
+		}
+		else if (!empty($exists))
 		{
 			$state->order->initUserBasket();
 
@@ -36,6 +45,53 @@ class NewBasket
 		}
 
 		$this->addBasketNewProducts($state, $new);
+	}
+
+	protected function splitOrderAlreadyExists(State\OrderCalculation $state)
+	{
+		$basketMap = array_flip($state->order->getOrderableItems());
+		$exists = [];
+		$new = [];
+
+		foreach ($this->items as $index => $product)
+		{
+			$basketId = (int)$product->getBasketId();
+
+			if ($basketId > 0 && isset($basketMap[$basketId]))
+			{
+				$exists[$index] = $product;
+				unset($basketMap[$basketId]);
+			}
+			else if ($this->searchBasketProduct($state, $product, array_keys($basketMap)) !== null)
+			{
+				$exists[$index] = $product;
+				unset($basketMap[$basketId]);
+			}
+			else
+			{
+				$new[$index] = $product;
+			}
+		}
+
+		return [$exists, $new];
+	}
+
+	protected function searchBasketProduct(State\OrderCalculation $state, Cart\Item $item, array $basketCodes) : ?string
+	{
+		$result = null;
+
+		foreach ($basketCodes as $basketCode)
+		{
+			$basketData = $state->order->getBasketItemData($basketCode)->getData();
+
+			if ((string)$basketData['PRODUCT_ID'] === (string)$item->getProductId())
+			{
+				$result = $basketCode;
+				break;
+			}
+		}
+
+		return $result;
 	}
 
 	protected function splitBasketAlreadyExists() : array

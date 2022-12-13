@@ -1,9 +1,9 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
-use Bitrix\Sale;
 use YandexPay\Pay\Trading\Action\Rest\State;
 use YandexPay\Pay\Exceptions;
+use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 
 class NewOrder
 {
@@ -31,21 +31,38 @@ class NewOrder
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		$this->makeOrder($state);
+		$state->order = $this->searchOrder($state) ?? $this->makeOrder($state);
+
 		$this->fillPersonType($state);
 		$this->fillCoupons($state);
 		$this->fillTradingPlatform($state);
 	}
 
-	protected function makeOrder(State\OrderCalculation $state) : void
+	protected function searchOrder(State\OrderCalculation $state) : ?EntityReference\Order
 	{
-		$state->order = $state->environment->getOrderRegistry()->createOrder(
+		if ($this->externalId === null) { return null; }
+
+		$id = $state->environment->getOrderRegistry()->searchOrder(
+			$state->environment->getPlatform(),
+			$this->externalId
+		);
+
+		if ($id === null) { return null; }
+
+		return $state->environment->getOrderRegistry()->loadOrder($id);
+	}
+
+	protected function makeOrder(State\OrderCalculation $state) : EntityReference\Order
+	{
+		$order = $state->environment->getOrderRegistry()->createOrder(
 			$state->setup->getSiteId(),
 			$state->userId ?? $this->userId, // todo only userId
 			$this->currency
 		);
 
-		$state->order->setFUserId($state->fUserId ?? $this->fUserId);
+		$order->setFUserId($state->fUserId ?? $this->fUserId);
+
+		return $order;
 	}
 
 	protected function fillPersonType(State\OrderCalculation $state) : void

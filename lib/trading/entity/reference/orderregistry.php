@@ -17,4 +17,14 @@ abstract class OrderRegistry
 	{
 		throw new Main\NotImplementedException('createOrder is missing');
 	}
+
+	public function loadOrder(int $orderId) : Order
+	{
+		throw new Main\NotImplementedException('loadOrder is missing');
+	}
+
+	public function searchOrder(Platform $platform, string $externalId) : ?int
+	{
+		throw new Main\NotImplementedException('searchOrder is missing');
+	}
 }
