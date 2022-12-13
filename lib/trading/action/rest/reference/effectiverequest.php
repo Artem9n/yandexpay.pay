@@ -38,6 +38,13 @@ class EffectiveRequest extends Dto
 		return (string)$httpHost;
 	}
 
+	public function getRegionId() : string
+	{
+		[$userId, $fUserId, $setupId, $httpHost, $regionId] = $this->getMetadata();
+
+		return (string)$regionId;
+	}
+
 	public function getMerchantId() : string
 	{
 		return $this->requireField('merchantId');

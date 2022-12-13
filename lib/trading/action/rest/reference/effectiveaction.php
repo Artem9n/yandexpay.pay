@@ -24,7 +24,8 @@ abstract class EffectiveAction extends HttpAction
 		$this->bootJwt();
 		$this->bootJson();
 		$this->request = $this->convertHttpToRequest(Request::class);
-		$this->bootHttpHost($this->request->getHttpHost());
+		$this->bootHttpHost();
+		$this->bootRegion();
 	}
 
 	protected function bootJwt() : void
@@ -54,9 +55,26 @@ abstract class EffectiveAction extends HttpAction
 		$this->passTrading($setup);
 	}
 
-	protected function bootHttpHost(string $httpHost) : void
+	protected function bootRegion() : void
+	{
+		$cookieRegion = (string)Config::getOption('region_cookie', '');
+		$regionId = $this->request->getRegionId();
+
+		if ($cookieRegion !== '' && $regionId !== '')
+		{
+			global $arRegion;
+
+			//todo include module for solution
+
+			$regions = \CMaxRegionality::getRegions();
+			$arRegion = $regions[$regionId];
+		}
+	}
+
+	protected function bootHttpHost() : void
 	{
 		$isSetHttpHost = (string)Config::getOption('set_http_host', 'N');
+		$httpHost = $this->request->getHttpHost();
 
 		if ($isSetHttpHost === 'Y' && $httpHost !== '')
 		{
