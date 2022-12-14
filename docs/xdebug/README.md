@@ -1,15 +1,15 @@
 # Xdebug
 
-Проблема: Яндекс отправляет запросы к нам со своего сервера, нужен get-параметр для старта отладки. 
+РџСЂРѕР±Р»РµРјР°: РЇРЅРґРµРєСЃ РѕС‚РїСЂР°РІР»СЏРµС‚ Р·Р°РїСЂРѕСЃС‹ Рє РЅР°Рј СЃРѕ СЃРІРѕРµРіРѕ СЃРµСЂРІРµСЂР°, РЅСѓР¶РµРЅ get-РїР°СЂР°РјРµС‚СЂ РґР»СЏ СЃС‚Р°СЂС‚Р° РѕС‚Р»Р°РґРєРё. 
 
-Решение: `xdebug.start_with_request=yes`
+Р РµС€РµРЅРёРµ: `xdebug.start_with_request=yes`
 
-## Настройка PhpStorm
+## РќР°СЃС‚СЂРѕР№РєР° PhpStorm
 
-[Следуйте документации](https://git.t-dir.com/support/techdir.stuff/-/tree/master/manuals/debug/xdebug#%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B9%D0%BA%D0%B0), за исключением:
-1. Настройте порт для отладки File -> Settings (скриншот ниже). И отметьте Can accept external connections;
-2. В php.ini `xdebug.start_with_request=yes`
-3. При настройке Debug Configurations в PhpStorm нужно замапить файлы публичной части (index.php и bitrix/urlrewrite.php).
+[РЎР»РµРґСѓР№С‚Рµ РґРѕРєСѓРјРµРЅС‚Р°С†РёРё](https://git.t-dir.com/support/techdir.stuff/-/tree/master/manuals/debug/xdebug#%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B9%D0%BA%D0%B0), Р·Р° РёСЃРєР»СЋС‡РµРЅРёРµРј:
+1. РќР°СЃС‚СЂРѕР№С‚Рµ РїРѕСЂС‚ РґР»СЏ РѕС‚Р»Р°РґРєРё File -> Settings (СЃРєСЂРёРЅС€РѕС‚ РЅРёР¶Рµ). Р РѕС‚РјРµС‚СЊС‚Рµ Can accept external connections;
+2. Р’ php.ini `xdebug.start_with_request=yes`
+3. РџСЂРё РЅР°СЃС‚СЂРѕР№РєРµ Debug Configurations РІ PhpStorm РЅСѓР¶РЅРѕ Р·Р°РјР°РїРёС‚СЊ С„Р°Р№Р»С‹ РїСѓР±Р»РёС‡РЅРѕР№ С‡Р°СЃС‚Рё (index.php Рё bitrix/urlrewrite.php).
 
 php.ini
 ```
@@ -18,8 +18,8 @@ xdebug.client_port=9XXX;
 xdebug.start_with_request=yes
 ```
 
-## Старт отладки
+## РЎС‚Р°СЂС‚ РѕС‚Р»Р°РґРєРё
 
 ![xdebug start](xdebug-start.png)
 
-Для начала отладки нажмите на Play и «жука с вайфаем». При запросе появится окно «External connections», скачайте публичный файл в проект и выберите настроенный Deployment.
+Р”Р»СЏ РЅР°С‡Р°Р»Р° РѕС‚Р»Р°РґРєРё РЅР°Р¶РјРёС‚Рµ РЅР° Play Рё В«Р¶СѓРєР° СЃ РІР°Р№С„Р°РµРјВ». РџСЂРё Р·Р°РїСЂРѕСЃРµ РїРѕСЏРІРёС‚СЃСЏ РѕРєРЅРѕ В«External connectionsВ», СЃРєР°С‡Р°Р№С‚Рµ РїСѓР±Р»РёС‡РЅС‹Р№ С„Р°Р№Р» РІ РїСЂРѕРµРєС‚ Рё РІС‹Р±РµСЂРёС‚Рµ РЅР°СЃС‚СЂРѕРµРЅРЅС‹Р№ Deployment.
