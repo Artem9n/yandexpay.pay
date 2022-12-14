@@ -7,7 +7,7 @@
 ## Настройка PhpStorm
 
 [Следуйте документации](https://git.t-dir.com/support/techdir.stuff/-/tree/master/manuals/debug/xdebug#%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B9%D0%BA%D0%B0), за исключением:
-1. Настройте порт для отладки File -> Settings (скриншот ниже). И отметьте Can accept external connections;
+1. При настройке порта File -> Settings отметьте Can accept external connections;
 2. В php.ini `xdebug.start_with_request=yes`
 3. При настройке Debug Configurations в PhpStorm нужно замапить файлы публичной части (index.php и bitrix/urlrewrite.php).
 
