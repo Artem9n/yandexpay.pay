@@ -179,20 +179,13 @@ class Element extends AbstractEngine
 		if (Main\Loader::includeModule('iblock'))
 		{
 			$engine->addGreedyPart('#SECTION_CODE_PATH#');
-
-			if (!static::getRequest()->isAjaxRequest())
-			{
-				$engine->setResolveCallback(['CIBlockFindTools', 'resolveComponentEngine']);
-			}
+			$engine->setResolveCallback(['CIBlockFindTools', 'resolveComponentEngine']);
 		}
 
 		$sefFolder = '/';
 		$templatePage = mb_substr($templatePage, mb_strlen($sefFolder));
 		$greedyPart = (string)Config::getOption('injection_engine_element_greedy', '');
-		$request = static::getRequest();
 		$url = static::getRequest()->getRequestedPage();
-
-		if (mb_substr($url, -1, 1) === "/") { $url .= 'index.php'; }
 
 		$matched = $engine->guessComponentPath(
 			$sefFolder,

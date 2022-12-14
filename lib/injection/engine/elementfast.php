@@ -2,36 +2,56 @@
 namespace YandexPay\Pay\Injection\Engine;
 
 use YandexPay\Pay\Injection;
+use YandexPay\Pay\Utils;
 
 class ElementFast extends Element
 {
-	public static function onEndBufferContent(int $injectionId, array $settings, string &$content) : void
+	protected static $elementId;
+	public static function OnProlog(int $injectionId, array $settings) : void
 	{
-		if (!static::testRequest()) { return; }
+		if (!static::testRequest() || !static::testQuery($settings)) { return; }
 
-		if (!static::testQuery($settings['QUERY_PARAM'])) { return; }
-
-		$elementId = static::findProduct($settings);
-
-		if ($elementId === null) { return; }
-
-		$content .= static::render($injectionId, ['PRODUCT_ID' => $elementId, 'SITE_ID' => $settings['SITE_ID']]);
+		static::$elementId = static::findProduct($settings);
 	}
 
-	protected static function testQuery(string $param) : bool
+	public static function onEndBufferContent(int $injectionId, array $settings, string &$content) : void
 	{
-		$result = false;
+		if (static::$elementId === null) { return; }
 
-		[$code, $value] = explode('=', $param);
+		$content .= static::render($injectionId, ['PRODUCT_ID' => static::$elementId, 'SITE_ID' => $settings['SITE_ID']], self::RENDER_RETURN);
+	}
 
-		$isHave = static::getRequest()->getQuery($code);
+	protected static function testQuery(array $settings = []) : bool
+	{
+		$checkParamsString = $settings['QUERY_CHECK_PARAMS'];
 
-		if ($isHave !== null && $isHave === $value)
+		if (empty($checkParamsString)) { return false; }
+
+		$checkParams = explode('&', $checkParamsString);
+
+		foreach ($checkParams as $param)
 		{
-			$result = true;
+			[$name, $value] = explode('=', $param);
+
+			if ($value === '' || static::getUrlParamValue($name) !== $value)
+			{
+				return false;
+			}
 		}
 
-		return $result;
+		return true;
+	}
+
+	protected static function findProduct(array $settings) : ?int
+	{
+		$idParam = $settings['QUERY_ELEMENT_ID_PARAM'];
+
+		if (empty($idParam))
+		{
+			return parent::findProduct($settings);
+		}
+
+		return self::getUrlParamValue($idParam);
 	}
 
 	protected static function testRequest() : bool
@@ -41,7 +61,36 @@ class ElementFast extends Element
 		return (
 			!$request->isAdminSection()
 			&& $request->isAjaxRequest()
-			&& mb_strpos($request->getRequestedPage(), '/bitrix/') !== 0
 		);
+	}
+
+	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
+	{
+		$params = [
+			'FACTORY_OPTIONS' => [
+				'preserve' => false
+			]
+		];
+		return $params + parent::getComponentParameters($setup, $data);
+	}
+
+	protected static function getUrlParamValue(string $param)
+	{
+		if (empty($param)) { return null; }
+
+		$keys = Utils\BracketChain::splitKey($param);
+		$paramName = array_shift($keys);
+
+		$value = static::getRequest()->getQuery($paramName);
+
+		if (is_array($value) && !empty($keys))
+		{
+			foreach ($keys as $key)
+			{
+				$value = $value[$key] ?? null;
+			}
+		}
+
+		return $value;
 	}
 }

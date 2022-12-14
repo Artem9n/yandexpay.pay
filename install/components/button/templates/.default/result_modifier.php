@@ -27,3 +27,5 @@ else
 	$userGroups = Main\UserTable::getUserGroupIds((int)$USER->GetID());
 	$arResult['NEED_SHOW'] = in_array($userGroupId, $userGroups);
 }
+
+include __DIR__ . '/modifier/assets.php';

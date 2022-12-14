@@ -11,12 +11,17 @@ class ElementFast extends Element
 	public function getFields() : array
 	{
 		return parent::getFields() + [
-			'QUERY_PARAM' => [
-				'TYPE' => 'string',
-				'TITLE' => self::getMessage('QUERY_PARAM'),
-				'GROUP' => self::getMessage('VIEW'),
-				'MANDATORY' => 'Y'
-			],
+				'QUERY_CHECK_PARAMS' => [
+					'TYPE' => 'string',
+					'TITLE' => self::getMessage('FIELD_QUERY_CHECK_PARAMS'),
+					'GROUP' => self::getMessage('GROUP_AJAX_PARAMS'),
+					'MANDATORY' => 'Y',
+				],
+				'QUERY_ELEMENT_ID_PARAM' => [
+					'TYPE' => 'string',
+					'TITLE' => self::getMessage('FIELD_QUERY_ELEMENT_ID_PARAM'),
+					'GROUP' => self::getMessage('GROUP_AJAX_PARAMS'),
+				],
 		];
 	}
 
@@ -39,14 +44,16 @@ class ElementFast extends Element
 	{
 		return [
 			'IBLOCK' => $this->getIblock(),
-			'QUERY_PARAM' => $this->getQueryParam(),
 			'SITE_ID' => $this->getSiteId(),
+			'QUERY_CHECK_PARAMS' => $this->getValue('QUERY_CHECK_PARAMS'),
+			'QUERY_ELEMENT_ID_PARAM' => $this->getValue('QUERY_ELEMENT_ID_PARAM')
 		];
 	}
 
 	protected function events() : array
 	{
 		return [
+			['main', 'onProlog'],
 			['main', 'onEndBufferContent'],
 		];
 	}

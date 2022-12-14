@@ -9,10 +9,9 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
  */
 
 use Bitrix\Main;
-use YandexPay\Pay\Injection\Solution;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Web\Json;
-use Bitrix\Main\UI\Extension;
+
 
 Loc::loadMessages(__FILE__);
 
@@ -23,24 +22,7 @@ $output = '';
 
 try
 {
-	// assets
-
-	if ($APPLICATION->GetPageProperty('yandexpay_extension_widget') !== 'Y')
-	{
-		$APPLICATION->SetPageProperty('yandexpay_extension_widget', 'Y');
-		$output .= Extension::getHtml('yandexpaypay.widget');
-	}
-
-	if (
-		!empty($arResult['PARAMS']['solution'])
-		&& $APPLICATION->GetPageProperty('yandexpay_extension_' . $arResult['PARAMS']['solution']) !== 'Y'
-	)
-	{
-		$APPLICATION->SetPageProperty('yandexpay_extension_' . $arResult['PARAMS']['solution'], 'Y');
-
-		$solution = Solution\Registry::getInstance($arResult['PARAMS']['solution']);
-		$output .= $solution->getExtension();
-	}
+	$output .= $arResult['ASSETS_HTML'];
 
 	// widget index
 
@@ -66,9 +48,6 @@ try
 	$order = $arResult['PARAMS']['order'];
 	$selector = htmlspecialcharsback($arResult['PARAMS']['selector']);
 	$position = $arResult['PARAMS']['position'];
-	$factoryOptions += [
-		'preserve' => false, //todo only fast view
-	];
 
 	if (empty($selector))
 	{
@@ -82,6 +61,12 @@ try
 			<div id="{$containerId}-container" class="yandex-pay"></div>
 CONTENT;
 	}
+	else
+	{
+		$factoryOptions += [
+			'preserve' => true,
+		];
+	}
 
 	$initScript = file_get_contents(__DIR__ . '/init.js');
 	$widgetOptionsJson = Json::encode($widgetOptions);
@@ -93,7 +78,6 @@ CONTENT;
 				
 				{$initScript}
 				function run() {
-				debugger;
 					const factory = new BX.YandexPay.Factory({$factoryOptionsJson});
 					const selector = '{$selector}';
 					const position = '{$position}';

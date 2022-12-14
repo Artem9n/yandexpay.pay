@@ -9,7 +9,6 @@ use YandexPay\Pay\Injection;
 abstract class AbstractEngine extends Event\Base
 {
 	const RENDER_ASSETS = 'assets';
-	const RENDER_OUTPUT = 'output';
 	const RENDER_RETURN = 'return';
 
 	protected static $handlerDisallowYaPay = false;
@@ -28,7 +27,7 @@ abstract class AbstractEngine extends Event\Base
 
 		return (
 			!$request->isAdminSection()
-			//&& !$request->isAjaxRequest()
+			&& !$request->isAjaxRequest()
 			&& mb_strpos($request->getRequestedPage(), '/bitrix/') !== 0
 		);
 	}
