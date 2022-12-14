@@ -20,7 +20,7 @@ class NewBasket
 	public function __invoke(State\OrderCalculation $state)
 	{
 		[$exists, $new] = $state->order->isSaved()
-			? $this->splitOrderAlreadyExists()
+			? $this->splitOrderAlreadyExists($state)
 			: $this->splitBasketAlreadyExists();
 
 		if ($state->order->isSaved())

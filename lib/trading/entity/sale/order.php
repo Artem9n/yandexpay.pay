@@ -1101,7 +1101,7 @@ class Order extends EntityReference\Order
 
 	public function isSaved() : bool
 	{
-		return $this->getId() !== null;
+		return $this->getId() > 0;
 	}
 
 	public function getId()
