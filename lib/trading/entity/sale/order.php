@@ -33,6 +33,16 @@ class Order extends EntityReference\Order
 	public function finalize() : Main\Result
 	{
 		$this->internalOrder->setMathActionOnly(false);
+
+		if ($this->internalOrder->getId() > 0)
+		{
+			$discount = $this->internalOrder->getDiscount();
+			\Bitrix\Sale\DiscountCouponsManager::clearApply(true);
+			\Bitrix\Sale\DiscountCouponsManager::useSavedCouponsForApply(true);
+			$discount->setOrderRefresh(true);
+			$discount->setApplyResult([]);
+		}
+
 		$result = $this->refreshBasket();
 
 		if ($result->isSuccess())
@@ -222,6 +232,22 @@ class Order extends EntityReference\Order
 			if (!$basketItem->canBuy()) { continue; }
 
 			$result[] = $basketItem->getBasketCode();
+		}
+
+		return $result;
+	}
+
+	public function getOrderableItemsIdToCodeMap() : array
+	{
+		$basket = $this->getBasket();
+		$result = [];
+
+		/** @var Sale\BasketItem $basketItem */
+		foreach ($basket as $basketItem)
+		{
+			if (!$basketItem->canBuy()) { continue; }
+
+			$result[$basketItem->getProductId()] = $basketItem->getBasketCode();
 		}
 
 		return $result;
@@ -520,6 +546,8 @@ class Order extends EntityReference\Order
 		/** @var Sale\Shipment $shipment */
 		foreach ($this->internalOrder->getShipmentCollection() as $shipment)
 		{
+			if ($shipment->isSystem()) { continue; }
+
 			if ((int)$shipment->getDeliveryId() === $deliveryId)
 			{
 				$result = $shipment;
@@ -821,6 +849,35 @@ class Order extends EntityReference\Order
 		return new Main\Result();
 	}
 
+	public function syncShipments(int $deliveryId, float $price = null, array $data = null) : Main\Result
+	{
+		$shipmentIsset = false;
+
+		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
+		$shipmentCollection = $this->internalOrder->getShipmentCollection();
+
+		/** @var \Bitrix\Sale\Shipment $shipment */
+		foreach ($shipmentCollection as $shipment)
+		{
+			if ($shipment->isSystem()) { continue; }
+
+			if ((int)$shipment->getDeliveryId() === $deliveryId)
+			{
+				$shipmentIsset = true;
+
+				$this->fillShipmentPrice($shipment, $price);
+				$this->fillShipmentBasket($shipment);
+			}
+		}
+
+		if (!$shipmentIsset)
+		{
+			$this->createShipment($deliveryId, $price, $data);
+		}
+
+		return new Main\Result();
+	}
+
 	protected function clearOrderShipment(Sale\ShipmentCollection $shipmentCollection) : void
 	{
 		/** @var Sale\Shipment $shipment */
@@ -1097,6 +1154,31 @@ class Order extends EntityReference\Order
 				$payment->setField('SUM', $newPaymentSum);
 			}
 		}
+	}
+
+	public function syncPayments(int $paySystemId) : Main\Result
+	{
+		$paymentIsset = false;
+
+		/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
+		$paymentCollection = $this->internalOrder->getPaymentCollection();
+
+		/** @var \Bitrix\Sale\Payment $payment */
+		foreach ($paymentCollection as $payment)
+		{
+			if ((int)$payment->getPaymentSystemId() === $paySystemId)
+			{
+				$paymentIsset = true;
+				$this->fillPaymentPrice($payment);
+			}
+		}
+
+		if (!$paymentIsset)
+		{
+			$this->createPayment($paySystemId);
+		}
+
+		return new Main\Result();
 	}
 
 	public function isSaved() : bool

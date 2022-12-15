@@ -135,18 +135,21 @@ class NewBasket
 
 	protected function syncBasketExistProducts(State\OrderCalculation $state, array $products) : array
 	{
-		$productCodes = array_map(static function(Cart\Item $item) { return $item->getBasketId(); }, $products);
-		$existsCodes = $state->order->getOrderableItems();
-		$existsMap = array_flip($existsCodes);
+		$productIds = array_map(static function(Cart\Item $item) { return $item->getProductId(); }, $products);
+		$existsIdToCodeMap = $state->order->getOrderableItemsIdToCodeMap();
+		$existsIds = array_keys($existsIdToCodeMap);
+		$existsMap = array_flip($existsIds);
+
 		$notFound = [];
-		$needDelete = array_diff($existsCodes, $productCodes);
+		$needDelete = array_diff($existsIds, $productIds);
 
 		/** @var Cart\Item $product */
 		foreach ($products as $index => $product)
 		{
-			$basketCode = $product->getBasketId();
+			$productId = $product->getProductId();
+			$basketCode = $existsIdToCodeMap[$productId];
 
-			if (!isset($existsMap[$basketCode]))
+			if (!isset($existsMap[$productId]) || empty($basketCode))
 			{
 				$notFound[$index] = $product;
 				continue;

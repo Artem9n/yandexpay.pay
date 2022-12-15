@@ -28,6 +28,9 @@ class OrderRegistry extends EntityReference\OrderRegistry
 			'select' => [
 				'ORDER_ID'
 			],
+			'order' => [
+				'ID' => 'DESC'
+			]
 		]);
 
 		if ($row = $query->fetch())

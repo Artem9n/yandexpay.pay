@@ -49,7 +49,11 @@ class NewOrder
 
 		if ($id === null) { return null; }
 
-		return $state->environment->getOrderRegistry()->loadOrder($id);
+		/** @var \Bitrix\Sale\Order $order */
+		$loadedOrder = $state->environment->getOrderRegistry()->loadOrder($id);
+		$loadedInternalOrder = $loadedOrder->getOrder();
+
+		return !$loadedInternalOrder->isPaid() ? $loadedOrder : null;
 	}
 
 	protected function makeOrder(State\OrderCalculation $state) : EntityReference\Order
