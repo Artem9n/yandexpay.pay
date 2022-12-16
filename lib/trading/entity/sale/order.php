@@ -835,35 +835,20 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setPersonTypeId($personType);
 	}
 
-	public function setShipments(int $deliveryId, float $price = null, array $data = null) : Main\Result
+	public function setShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
 	{
-		$shipmentIsset = false;
-
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
+		$shipment = $this->getDeliveryShipment($deliveryId);
 
-		/** @var \Bitrix\Sale\Shipment $shipment */
-		foreach ($shipmentCollection as $shipment)
-		{
-			if ($shipment->isSystem()) { continue; }
-
-			if ((int)$shipment->getDeliveryId() === $deliveryId)
-			{
-				$shipmentIsset = true;
-
-				$this->fillShipmentPrice($shipment, $price);
-				$this->fillShipmentBasket($shipment);
-			}
-		}
-
-		if (!$shipmentIsset)
+		if ($shipment === null)
 		{
 			$this->clearOrderShipment($shipmentCollection);
 			$shipment = $this->buildOrderShipment($shipmentCollection, $deliveryId, $data);
-
-			$this->fillShipmentPrice($shipment, $price);
-			$this->fillShipmentBasket($shipment);
 		}
+
+		$this->fillShipmentPrice($shipment, $price);
+		$this->fillShipmentBasket($shipment);
 
 		return new Main\Result();
 	}

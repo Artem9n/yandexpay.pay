@@ -31,6 +31,6 @@ class OrderDelivery
 			$price = $delivery->getAmount();
 		}
 
-		$state->order->setShipments($deliveryId, $price);
+		$state->order->setShipment($deliveryId, $price);
 	}
 }
