@@ -1077,6 +1077,24 @@ class Order extends EntityReference\Order
 		return [$paymentId, $paySystemId];
 	}
 
+	protected function getIssetPayment(int $paySystemId) : ?Sale\Payment
+	{
+		$paymentCollection = $this->internalOrder->getPaymentCollection();
+
+		/** @var Sale\Payment $payment */
+		foreach ($paymentCollection as $payment)
+		{
+			if ($payment->isInner()) { continue; }
+
+			if ((int)$payment->getPaymentSystemId() === $paySystemId)
+			{
+				return $payment;
+			}
+		}
+
+		return null;
+	}
+
 	/*protected function syncOrderPrice()
 	{
 		$currentPrice = $this->internalOrder->getPrice();
@@ -1121,28 +1139,18 @@ class Order extends EntityReference\Order
 		}
 	}
 
-	public function setPayments(int $paySystemId, $price = null, array $data = null) : Main\Result
+	public function setPayment(int $paySystemId, $price = null, array $data = null) : Main\Result
 	{
-		$paymentIsset = false;
-
 		/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
 		$paymentCollection = $this->internalOrder->getPaymentCollection();
+		$payment = $this->getIssetPayment($paySystemId);
 
-		/** @var \Bitrix\Sale\Payment $payment */
-		foreach ($paymentCollection as $payment)
-		{
-			if ((int)$payment->getPaymentSystemId() === $paySystemId)
-			{
-				$paymentIsset = true;
-				$this->fillPaymentPrice($payment);
-			}
-		}
-
-		if (!$paymentIsset)
+		if ($payment === null)
 		{
 			$payment = $this->buildOrderPayment($paymentCollection, $paySystemId, $data);
-			$this->fillPaymentPrice($payment, $price);
 		}
+
+		$this->fillPaymentPrice($payment, $price);
 
 		return new Main\Result();
 	}
