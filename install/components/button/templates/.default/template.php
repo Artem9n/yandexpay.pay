@@ -75,7 +75,6 @@ CONTENT;
 	$output .= <<<CONTENT
 		<script>
 			(function() {
-				
 				{$initScript}
 				function run() {
 					const factory = new BX.YandexPay.Factory({$factoryOptionsJson});

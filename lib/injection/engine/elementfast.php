@@ -7,6 +7,7 @@ use YandexPay\Pay\Utils;
 class ElementFast extends Element
 {
 	protected static $elementId;
+
 	public static function OnProlog(int $injectionId, array $settings) : void
 	{
 		if (!static::testRequest() || !static::testQuery($settings)) { return; }

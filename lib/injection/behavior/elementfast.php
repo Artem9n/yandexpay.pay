@@ -11,33 +11,23 @@ class ElementFast extends Element
 	public function getFields() : array
 	{
 		return parent::getFields() + [
-				'QUERY_CHECK_PARAMS' => [
-					'TYPE' => 'string',
-					'TITLE' => self::getMessage('FIELD_QUERY_CHECK_PARAMS'),
-					'GROUP' => self::getMessage('GROUP_AJAX_PARAMS'),
-					'MANDATORY' => 'Y',
-				],
-				'QUERY_ELEMENT_ID_PARAM' => [
-					'TYPE' => 'string',
-					'TITLE' => self::getMessage('FIELD_QUERY_ELEMENT_ID_PARAM'),
-					'GROUP' => self::getMessage('GROUP_AJAX_PARAMS'),
-				],
+			'QUERY_CHECK_PARAMS' => [
+				'TYPE' => 'string',
+				'TITLE' => self::getMessage('FIELD_QUERY_CHECK_PARAMS'),
+				'GROUP' => self::getMessage('GROUP_AJAX_PARAMS'),
+				'MANDATORY' => 'Y',
+			],
+			'QUERY_ELEMENT_ID_PARAM' => [
+				'TYPE' => 'string',
+				'TITLE' => self::getMessage('FIELD_QUERY_ELEMENT_ID_PARAM'),
+				'GROUP' => self::getMessage('GROUP_AJAX_PARAMS'),
+			],
 		];
 	}
 
 	public function getEngineReference() : string
 	{
 		return Engine\ElementFast::class;
-	}
-
-	public function getMode() : string
-	{
-		return Registry::ELEMENT;
-	}
-
-	protected function getQueryParam() : string
-	{
-		return $this->requireValue('QUERY_PARAM');
 	}
 
 	protected function eventSettings() : array

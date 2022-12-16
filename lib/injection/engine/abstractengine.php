@@ -8,8 +8,8 @@ use YandexPay\Pay\Injection;
 
 abstract class AbstractEngine extends Event\Base
 {
-	const RENDER_ASSETS = 'assets';
-	const RENDER_RETURN = 'return';
+	protected const RENDER_ASSETS = 'assets';
+	protected const RENDER_RETURN = 'return';
 
 	protected static $handlerDisallowYaPay = false;
 
@@ -42,12 +42,11 @@ abstract class AbstractEngine extends Event\Base
 		global $APPLICATION;
 
 		if (SITE_ID !== $data['SITE_ID']) { return ''; }
-
-		$contents = '';
-
-		if (static::$handlerDisallowYaPay) { return $contents; }
+		if (static::$handlerDisallowYaPay) { return ''; }
 
 		static::$handlerDisallowYaPay = true;
+
+		$contents = '';
 
 		$setup = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
 		$setup->fill();

@@ -185,13 +185,13 @@ class Element extends AbstractEngine
 		$sefFolder = '/';
 		$templatePage = mb_substr($templatePage, mb_strlen($sefFolder));
 		$greedyPart = (string)Config::getOption('injection_engine_element_greedy', '');
-		$url = static::getRequest()->getRequestedPage();
+		$request = static::getRequest();
 
 		$matched = $engine->guessComponentPath(
 			$sefFolder,
 			[ 'target' => $templatePage ],
 			$variables,
-			$url
+			$request->getRequestedPage()
 		);
 
 		if (!$matched && $greedyPart !== '')
@@ -202,7 +202,7 @@ class Element extends AbstractEngine
 				$sefFolder,
 				[ 'target' => $templatePage ],
 				$variables,
-				urldecode($url)
+				urldecode($request->getRequestedPage())
 			);
 		}
 

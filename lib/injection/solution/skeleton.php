@@ -22,6 +22,7 @@ abstract class Skeleton
 		return Main\UI\Extension::getAssets('yandexpaypay.solution.' . $type);
 	}
 
+	/** @deprecated */
 	public function getExtension() : ?string
 	{
 		$type = mb_strtolower($this->getType());
