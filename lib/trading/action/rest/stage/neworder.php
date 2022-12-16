@@ -42,18 +42,30 @@ class NewOrder
 	{
 		if ($this->externalId === null) { return null; }
 
-		$id = $state->environment->getOrderRegistry()->searchOrder(
-			$state->environment->getPlatform(),
-			$this->externalId
-		);
+		$originalExternalId = $this->externalId;
+		$counter = 0;
 
-		if ($id === null) { return null; }
+		do
+		{
+			$id = $state->environment->getOrderRegistry()->searchOrder(
+				$state->environment->getPlatform(),
+				$this->externalId
+			);
 
-		/** @var \Bitrix\Sale\Order $order */
-		$loadedOrder = $state->environment->getOrderRegistry()->loadOrder($id);
-		$loadedInternalOrder = $loadedOrder->getOrder();
+			if ($id === null) { return null; }
 
-		return !$loadedInternalOrder->isPaid() ? $loadedOrder : null;
+			/** @var \Bitrix\Sale\Order $saleOrder */
+			$order = $state->environment->getOrderRegistry()->loadOrder($id);
+			$saleOrder = $order->getOrder();
+
+			if (!$saleOrder->isPaid())
+			{
+				return $order;
+			}
+
+			$this->externalId = $originalExternalId . '_' . (++$counter);
+		}
+		while (true);
 	}
 
 	protected function makeOrder(State\OrderCalculation $state) : EntityReference\Order
