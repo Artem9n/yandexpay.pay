@@ -986,16 +986,6 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->getShipmentCollection()->calculateDelivery();
 	}
 
-	public function createPayment($paySystemId, $price = null, array $data = null) : Main\Result
-	{
-		$paymentCollection = $this->internalOrder->getPaymentCollection();
-
-		$payment = $this->buildOrderPayment($paymentCollection, $paySystemId, $data);
-		$this->fillPaymentPrice($payment, $price);
-
-		return new Main\Result();
-	}
-
 	protected function buildOrderPayment(Sale\PaymentCollection $paymentCollection, $paySystemId, array $data = null) : Sale\Payment
 	{
 		$payment = $paymentCollection->createItem();
@@ -1146,7 +1136,7 @@ class Order extends EntityReference\Order
 		}
 	}
 
-	public function syncPayments(int $paySystemId) : Main\Result
+	public function setPayments(int $paySystemId, $price = null, array $data = null) : Main\Result
 	{
 		$paymentIsset = false;
 
@@ -1165,7 +1155,8 @@ class Order extends EntityReference\Order
 
 		if (!$paymentIsset)
 		{
-			$this->createPayment($paySystemId);
+			$payment = $this->buildOrderPayment($paymentCollection, $paySystemId, $data);
+			$this->fillPaymentPrice($payment, $price);
 		}
 
 		return new Main\Result();
