@@ -835,21 +835,7 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setPersonTypeId($personType);
 	}
 
-	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
-	{
-		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
-		$shipmentCollection = $this->internalOrder->getShipmentCollection();
-
-		$this->clearOrderShipment($shipmentCollection);
-		$shipment = $this->buildOrderShipment($shipmentCollection, $deliveryId, $data);
-
-		$this->fillShipmentPrice($shipment, $price);
-		$this->fillShipmentBasket($shipment);
-
-		return new Main\Result();
-	}
-
-	public function syncShipments(int $deliveryId, float $price = null, array $data = null) : Main\Result
+	public function setShipments(int $deliveryId, float $price = null, array $data = null) : Main\Result
 	{
 		$shipmentIsset = false;
 
@@ -872,7 +858,11 @@ class Order extends EntityReference\Order
 
 		if (!$shipmentIsset)
 		{
-			$this->createShipment($deliveryId, $price, $data);
+			$this->clearOrderShipment($shipmentCollection);
+			$shipment = $this->buildOrderShipment($shipmentCollection, $deliveryId, $data);
+
+			$this->fillShipmentPrice($shipment, $price);
+			$this->fillShipmentBasket($shipment);
 		}
 
 		return new Main\Result();

@@ -48,6 +48,6 @@ class OrderYandexDelivery
 			'COMMENTS' => $comment,
 		]);
 
-		$state->order->syncShipments($deliveryId, $price, $data);
+		$state->order->setShipments($deliveryId, $price, $data);
 	}
 }
