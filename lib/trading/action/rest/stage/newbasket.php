@@ -62,10 +62,10 @@ class NewBasket
 				$exists[$index] = $product;
 				unset($basketMap[$basketId]);
 			}
-			else if ($this->searchBasketProduct($state, $product, array_keys($basketMap)) !== null)
+			else if (($searchBasketCode = $this->searchBasketProduct($state, $product, array_keys($basketMap))) !== null)
 			{
 				$exists[$index] = $product;
-				unset($basketMap[$basketId]);
+				unset($basketMap[$searchBasketCode]);
 			}
 			else
 			{
@@ -78,20 +78,17 @@ class NewBasket
 
 	protected function searchBasketProduct(State\OrderCalculation $state, Cart\Item $item, array $basketCodes) : ?string
 	{
-		$result = null;
-
 		foreach ($basketCodes as $basketCode)
 		{
 			$basketData = $state->order->getBasketItemData($basketCode)->getData();
 
 			if ((string)$basketData['PRODUCT_ID'] === (string)$item->getProductId())
 			{
-				$result = $basketCode;
-				break;
+				return (string)$basketCode;
 			}
 		}
 
-		return $result;
+		return null;
 	}
 
 	protected function splitBasketAlreadyExists() : array
