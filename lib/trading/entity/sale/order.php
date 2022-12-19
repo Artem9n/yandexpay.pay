@@ -237,22 +237,6 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	public function getOrderableItemsIdToCodeMap() : array
-	{
-		$basket = $this->getBasket();
-		$result = [];
-
-		/** @var Sale\BasketItem $basketItem */
-		foreach ($basket as $basketItem)
-		{
-			if (!$basketItem->canBuy()) { continue; }
-
-			$result[$basketItem->getProductId()] = $basketItem->getBasketCode();
-		}
-
-		return $result;
-	}
-
 	public function setBasketItemQuantity($basketCode, $quantity) : Main\Result
 	{
 		$result = new Main\Result();

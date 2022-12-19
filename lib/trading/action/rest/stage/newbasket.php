@@ -19,13 +19,13 @@ class NewBasket
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		[$exists, $new] = $state->order->isSaved()
+		[$exists, $existsMap, $new] = $state->order->isSaved()
 			? $this->splitOrderAlreadyExists($state)
 			: $this->splitBasketAlreadyExists();
 
 		if ($state->order->isSaved())
 		{
-			[$notFound, $needDelete] = $this->syncBasketExistProducts($state, $exists);
+			[$notFound, $needDelete] = $this->syncBasketExistProducts($state, $exists, $existsMap);
 
 			$this->deleteBasketProducts($state, $needDelete);
 			$this->addBasketNewProducts($state, $notFound);
@@ -34,7 +34,7 @@ class NewBasket
 		{
 			$state->order->initUserBasket();
 
-			[$notFound, $needDelete] = $this->syncBasketExistProducts($state, $exists);
+			[$notFound, $needDelete] = $this->syncBasketExistProducts($state, $exists, $existsMap);
 
 			$this->deleteBasketProducts($state, $needDelete);
 			$this->addBasketNewProducts($state, $notFound);
@@ -51,6 +51,7 @@ class NewBasket
 	{
 		$basketMap = array_flip($state->order->getOrderableItems());
 		$exists = [];
+		$existsMap = [];
 		$new = [];
 
 		foreach ($this->items as $index => $product)
@@ -60,11 +61,13 @@ class NewBasket
 			if ($basketId > 0 && isset($basketMap[$basketId]))
 			{
 				$exists[$index] = $product;
+				$existsMap[$index] = $basketId;
 				unset($basketMap[$basketId]);
 			}
 			else if (($searchBasketCode = $this->searchBasketProduct($state, $product, array_keys($basketMap))) !== null)
 			{
 				$exists[$index] = $product;
+				$existsMap[$index] = $searchBasketCode;
 				unset($basketMap[$searchBasketCode]);
 			}
 			else
@@ -73,7 +76,7 @@ class NewBasket
 			}
 		}
 
-		return [$exists, $new];
+		return [$exists, $existsMap, $new];
 	}
 
 	protected function searchBasketProduct(State\OrderCalculation $state, Cart\Item $item, array $basketCodes) : ?string
@@ -94,6 +97,7 @@ class NewBasket
 	protected function splitBasketAlreadyExists() : array
 	{
 		$exists = [];
+		$existsMap = [];
 		$new = [];
 
 		foreach ($this->items as $index => $product)
@@ -101,6 +105,7 @@ class NewBasket
 			if ((int)$product->getBasketId() > 0)
 			{
 				$exists[$index] = $product;
+				$existsMap[$index] = $product->getBasketId();
 			}
 			else
 			{
@@ -108,7 +113,7 @@ class NewBasket
 			}
 		}
 
-		return [$exists, $new];
+		return [$exists, $existsMap, $new];
 	}
 
 	protected function addBasketNewProducts(State\OrderCalculation $state, array $products) : void
@@ -130,23 +135,19 @@ class NewBasket
 		}
 	}
 
-	protected function syncBasketExistProducts(State\OrderCalculation $state, array $products) : array
+	protected function syncBasketExistProducts(State\OrderCalculation $state, array $products, array $existsMap) : array
 	{
-		$productIds = array_map(static function(Cart\Item $item) { return $item->getProductId(); }, $products);
-		$existsIdToCodeMap = $state->order->getOrderableItemsIdToCodeMap();
-		$existsIds = array_keys($existsIdToCodeMap);
-		$existsMap = array_flip($existsIds);
+		$existsCodes = $state->order->getOrderableItems();
 
 		$notFound = [];
-		$needDelete = array_diff($existsIds, $productIds);
+		$needDelete = array_diff($existsMap, $existsCodes);
 
 		/** @var Cart\Item $product */
 		foreach ($products as $index => $product)
 		{
-			$productId = $product->getProductId();
-			$basketCode = $existsIdToCodeMap[$productId];
+			$basketCode = $existsMap[$index] ?? null;
 
-			if (!isset($existsMap[$productId]) || empty($basketCode))
+			if (empty($basketCode))
 			{
 				$notFound[$index] = $product;
 				continue;
