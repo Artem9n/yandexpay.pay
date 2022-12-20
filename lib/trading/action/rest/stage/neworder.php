@@ -1,7 +1,7 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
-use Bitrix\Sale;
+use Bitrix\Main;
 use YandexPay\Pay\Trading\Action\Rest\State;
 use YandexPay\Pay\Exceptions;
 
@@ -23,6 +23,8 @@ class NewOrder
 
 	public function __invoke(State\OrderCalculation $state)
 	{
+		$this->normalizeAsproRegion($state);
+
 		$this->makeOrder($state);
 		$this->fillPersonType($state);
 		$this->fillCoupons($state);
@@ -65,6 +67,27 @@ class NewOrder
 	{
 		$platform = $state->environment->getPlatform();
 		$state->order->fillTradingSetup($platform);
+	}
+
+	protected function normalizeAsproRegion(State\OrderCalculation $state) : void
+	{
+		global $arRegion;
+
+		if (empty($arRegion['LIST_PRICES']) || !is_array($arRegion['LIST_PRICES'])) { return; }
+		if (!Main\Loader::includeModule('catalog')) { return; }
+
+		$userId = (int)($state->userId ?? $this->userId);
+		$userGroups = Main\UserTable::getUserGroupIds($userId);
+		$permissions = \CCatalogGroup::GetGroupsPerms($userGroups);
+		$buyPermissions = array_flip($permissions['buy']);
+
+		foreach ($arRegion['LIST_PRICES'] as &$priceType)
+		{
+			if (!isset($priceType['ID'])) { continue; }
+
+			$priceType['CAN_BUY'] = isset($buyPermissions[$priceType['ID']]) ? 'Y' : 'N';
+		}
+		unset($priceType);
 	}
 }
 
