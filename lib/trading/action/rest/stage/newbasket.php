@@ -140,7 +140,7 @@ class NewBasket
 		$existsCodes = $state->order->getOrderableItems();
 
 		$notFound = [];
-		$needDelete = array_diff($existsMap, $existsCodes);
+		$needDelete = array_diff($existsCodes, $existsMap);
 
 		/** @var Cart\Item $product */
 		foreach ($products as $index => $product)
