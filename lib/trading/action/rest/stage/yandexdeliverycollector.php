@@ -80,6 +80,7 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 				'address' => $this->warehouseAddress($warehouse),
 				'schedule' => $this->scheduleCollector($schedule),
 			]);
+			$this->pushMethod();
 		}
 		catch (Main\SystemException $exception)
 		{
@@ -221,5 +222,14 @@ class YandexDeliveryCollector extends Rest\Stage\ResponseCollector
 		}
 
 		return $result;
+	}
+
+	protected function pushMethod() : void
+	{
+		$key = 'shipping.availableMethods';
+		$configured = $this->response->getField($key) ?? [];
+		$configured[] = 'YANDEX_DELIVERY';
+
+		$this->write($configured, $key);
 	}
 }

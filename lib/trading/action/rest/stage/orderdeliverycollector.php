@@ -14,10 +14,49 @@ class OrderDeliveryCollector extends ResponseCollector
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		$result = [];
-
 		$deliveries = $this->restrictedDeliveries($state);
-		$deliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::DELIVERY_TYPE);
+		$pickupDeliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::PICKUP_TYPE);
+		$courierDeliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::DELIVERY_TYPE);
+
+		$this->pickupOptions($state, $pickupDeliveries);
+		$this->courierOptions($state, $courierDeliveries);
+	}
+
+	protected function pickupOptions(State\OrderCalculation $state, array $deliveries) : void
+	{
+		$logMessages = [];
+		$hasPickup = false;
+
+		foreach ($deliveries as $deliveryId)
+		{
+			$deliveryService = $state->environment->getDelivery()->getDeliveryService($deliveryId);
+			$deliveryName = $deliveryService->getNameWithParent();
+
+			if (!$state->environment->getDelivery()->isCompatible($deliveryId, $state->order))
+			{
+				$logMessages[] = self::getMessage('DELIVERY_NOT_COMPATIBLE', [
+					'#ID#' => $deliveryId,
+					'#NAME#' => $deliveryName,
+				]);
+
+				continue;
+			}
+
+			$hasPickup = true;
+			break;
+		}
+
+		if ($hasPickup)
+		{
+			$this->pushMethod('PICKUP');
+		}
+
+		$this->writeLogger($state, $logMessages);
+	}
+
+	protected function courierOptions(State\OrderCalculation $state, array $deliveries) : void
+	{
+		$result = [];
 		$logMessages = [];
 
 		$yandexDelivery = $state->environment->getDelivery()->getYandexDeliveryService();
@@ -56,6 +95,11 @@ class OrderDeliveryCollector extends ResponseCollector
 			}
 
 			$result[] = $this->collectDeliveryOption($calculationResult);
+		}
+
+		if (!empty($result))
+		{
+			$this->pushMethod('COURIER');
 		}
 
 		$this->writeLogger($state, $logMessages);
@@ -137,6 +181,18 @@ class OrderDeliveryCollector extends ResponseCollector
 			'fromDate' => $calculationResult->getDateFrom()->format('Y-m-d'),
 			'toDate' => $toDate !== null ? $toDate->format('Y-m-d') : null,
 		];
+	}
+
+	protected function pushMethod(string $type) : void
+	{
+		$key = 'shipping.availableMethods';
+		$configured = $this->response->getField($key) ?? [];
+
+		if (in_array($type, $configured, true)) { return; }
+
+		$configured[] = $type;
+
+		$this->write($configured, $key);
 	}
 }
 
