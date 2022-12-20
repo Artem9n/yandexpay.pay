@@ -34,15 +34,6 @@ class Order extends EntityReference\Order
 	{
 		$this->internalOrder->setMathActionOnly(false);
 
-		if ($this->internalOrder->getId() > 0)
-		{
-			$discount = $this->internalOrder->getDiscount();
-			\Bitrix\Sale\DiscountCouponsManager::clearApply(true);
-			\Bitrix\Sale\DiscountCouponsManager::useSavedCouponsForApply(true);
-			$discount->setOrderRefresh(true);
-			$discount->setApplyResult([]);
-		}
-
 		$result = $this->refreshBasket();
 
 		if ($result->isSuccess())
