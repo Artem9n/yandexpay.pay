@@ -1,7 +1,6 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\PickupOptions\Stage;
 
-use Bitrix\Sale;
 use YandexPay\Pay\Trading\Action\Rest\Reference;
 use YandexPay\Pay\Trading\Action\Rest\Stage;
 use YandexPay\Pay\Trading\Action\Rest\State;
@@ -11,8 +10,6 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 {
 	/** @var array|null */
 	protected $bounds;
-	/** @var array<int, int[]]>*/
-	protected $locationRestricted = [];
 
 	public function __construct(Reference\EffectiveResponse $response, string $key = '', array $bounds = null)
 	{
@@ -22,10 +19,17 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		$result = [];
-
 		$deliveries = $this->restrictedDeliveries($state);
 		$deliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::PICKUP_TYPE);
+		$locationStores = $this->locationStores($state, $deliveries);
+		$pickupOptions = $this->collectPickupOptions($state, $locationStores);
+
+		$this->write($pickupOptions);
+	}
+
+	protected function locationStores(State\OrderCalculation $state, array $deliveries) : array
+	{
+		$locationStores = [];
 
 		foreach ($deliveries as $deliveryId)
 		{
@@ -33,49 +37,44 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 
 			foreach ($allStores as $locationId => $stores)
 			{
-				if (!$this->isRestricted($state, $locationId, $deliveryId)) { continue; }
+				if (!isset($locationStores[$locationId]))
+				{
+					$locationStores[$locationId] = [];
+				}
 
-				foreach ($stores as $store)
+				$locationStores[$locationId][$deliveryId] = $stores;
+			}
+		}
+
+		return $locationStores;
+	}
+
+	protected function collectPickupOptions(State\OrderCalculation $state, array $locationStores) : array
+	{
+		$result = [];
+
+		foreach ($locationStores as $locationId => $locationDeliveries)
+		{
+			$state->order->clearCalculatable();
+			$state->order->setLocation($locationId);
+
+			$locationDeliveries = array_intersect_key(
+				$locationDeliveries,
+				array_flip($this->restrictedDeliveries($state))
+			);
+
+			foreach ($locationDeliveries as $deliveryId => $deliveryStores)
+			{
+				if (!$state->environment->getDelivery()->isCompatible($deliveryId, $state->order)) { continue; }
+
+				foreach ($deliveryStores as $store)
 				{
 					$result[] = $this->collectPickupOption($deliveryId, $store, $locationId);
 				}
 			}
 		}
 
-		$this->write($result);
-	}
-
-	protected function isRestricted(State\OrderCalculation $state, int $locationId, int $deliveryId) : bool
-	{
-		$deliveries = $this->locationRestrictedDeliveries($state, $locationId);
-		$deliveries = array_flip($deliveries);
-
-		return isset($deliveries[$deliveryId]);
-	}
-
-	protected function locationRestrictedDeliveries(State\OrderCalculation $state, int $locationId) : array
-	{
-		if (!isset($this->locationRestricted[$locationId]))
-		{
-			$this->locationRestricted[$locationId] = $this->calculateLocationRestricted($state, $locationId);
-		}
-
-		return $this->locationRestricted[$locationId];
-	}
-
-	protected function calculateLocationRestricted(State\OrderCalculation $state, int $locationId) : array
-	{
-		$previousLocation = $state->order->getLocation();
-
-		$state->order->clearCalculatable();
-		$state->order->setLocation($locationId);
-
-		$deliveries = $this->restrictedDeliveries($state);
-
-		$state->order->clearCalculatable();
-		$state->order->setLocation($previousLocation);
-
-		return $deliveries;
+		return $result;
 	}
 
 	protected function collectPickupOption(int $deliveryId, array $store, int $locationId = null) : array
