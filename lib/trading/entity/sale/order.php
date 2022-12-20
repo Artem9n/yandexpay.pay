@@ -8,6 +8,7 @@ use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Catalog;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 
 class Order extends EntityReference\Order
 {
@@ -34,7 +35,20 @@ class Order extends EntityReference\Order
 
 	public function finalize() : Main\Result
 	{
-		return $this->unfreeze();
+		$this->internalOrder->setMathActionOnly(false);
+		$result = $this->refreshBasket();
+
+		if ($result->isSuccess())
+		{
+			$unfreezeResult = $this->unfreeze();
+
+			if (!$unfreezeResult->isSuccess())
+			{
+				$result->addErrors($unfreezeResult->getErrors());
+			}
+		}
+
+		return $result;
 	}
 
 	public function freeze() : void
@@ -43,7 +57,7 @@ class Order extends EntityReference\Order
 		$this->internalOrder->setMathActionOnly(true);
 	}
 
-	public function unfreeze()
+	public function unfreeze() : Main\Result
 	{
 		$result = new Main\Result();
 
@@ -52,6 +66,7 @@ class Order extends EntityReference\Order
 		if ($this->isStartField)
 		{
 			$hasMeaningfulFields = $this->internalOrder->isNew() || $this->internalOrder->hasMeaningfulField();
+
 			$finalActionResult = $this->internalOrder->doFinalAction($hasMeaningfulFields);
 
 			if (!$finalActionResult->isSuccess())
@@ -74,7 +89,7 @@ class Order extends EntityReference\Order
 			$basketClassName = $registry->getBasketClassName();
 			$basket = $basketClassName::loadItemsForFUser($fuserId, $this->internalOrder->getSiteId());
 
-			$result = $this->internalOrder->setBasket($basket);
+			$result = $this->internalOrder->setBasket($basket->getOrderableItems());
 
 			if ($basket->count() === 0)
 			{
@@ -104,7 +119,7 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setBasket($basket);
 	}
 
-	public function refreshBasket()
+	protected function refreshBasket() : Sale\Result
 	{
 		return $this->getBasket()->refresh();
 	}
@@ -208,7 +223,6 @@ class Order extends EntityReference\Order
 		foreach ($basket as $basketItem)
 		{
 			if (!$basketItem->canBuy()) { continue; }
-			if ($basketItem->getFinalPrice() <= 0) { continue; }
 
 			$result[] = $basketItem->getBasketCode();
 		}
@@ -385,6 +399,13 @@ class Order extends EntityReference\Order
 				$shipmentItem->setQuantity($basketItem->getQuantity());
 			}
 		}
+	}
+
+	public function fillTradingSetup(EntityReference\Platform $platform) : void
+	{
+		$salePlatform = $platform->getSalePlatform();
+		$bindingCollection = $this->internalOrder->getTradeBindingCollection();
+		$bindingCollection->createItem($salePlatform);
 	}
 
 	public function getBasket() : Sale\BasketBase
@@ -757,7 +778,7 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setPersonTypeId($personType);
 	}
 
-	public function createShipment(int $deliveryId, float $price = null, array $store = null, array $data = null) : Main\Result
+	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
@@ -849,14 +870,14 @@ class Order extends EntityReference\Order
 		return null;
 	}
 
-	public function fillPropertiesDelivery(array $address) : void
+	public function fillPropertiesDelivery(array $address, string $type = Delivery::DELIVERY_TYPE) : void
 	{
 		$deliveryService = $this->getDeliveryService();
 
 		try
 		{
-			$this->delivery = Delivery\Factory::make($deliveryService, Delivery::DELIVERY_TYPE);
-			$this->delivery->markSelectedDelivery($this->internalOrder, $address);
+			$delivery = Delivery\Factory::make($deliveryService, $type);
+			$delivery->markSelectedDelivery($this->internalOrder, $address);
 		}
 		catch (Main\ArgumentException $exception)
 		{
@@ -952,12 +973,9 @@ class Order extends EntityReference\Order
 		$payment->setField('SUM', $price);
 	}
 
-	public function add($externalId) : Main\Result
+	public function add(string $externalId) : Main\Result
 	{
 		$result = new Main\Result();
-
-		/*$this->syncOrderPrice();*/
-		//$this->syncOrderPaymentSum();
 
 		$orderResult = $this->internalOrder->save();
 

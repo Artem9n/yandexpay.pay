@@ -1,39 +1,81 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
-use Bitrix\Sale;
+use Bitrix\Main;
+use YandexPay\Pay\Logger;
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Rest\State;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 
 class OrderDeliveryCollector extends ResponseCollector
 {
+	use Concerns\HasMessage;
+
 	public function __invoke(State\OrderCalculation $state)
 	{
 		$result = [];
 
 		$deliveries = $this->restrictedDeliveries($state);
 		$deliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::DELIVERY_TYPE);
+		$logMessages = [];
+
+		$yandexDelivery = $state->environment->getDelivery()->getYandexDeliveryService();
+		$yandexDeliveryId = $yandexDelivery !== null ? (int)$yandexDelivery->getId() : 0;
 
 		foreach ($deliveries as $deliveryId)
 		{
-			if (!$state->environment->getDelivery()->isCompatible($deliveryId, $state->order)) { continue; }
+			$deliveryService = $state->environment->getDelivery()->getDeliveryService($deliveryId);
+			$deliveryName = $deliveryService->getNameWithParent();
+
+			if (!$state->environment->getDelivery()->isCompatible($deliveryId, $state->order))
+			{
+				$logMessages[] = self::getMessage('DELIVERY_NOT_COMPATIBLE', [
+					'#ID#' => $deliveryId,
+					'#NAME#' => $deliveryName,
+				]);
+
+				continue;
+			}
+
+			if ($yandexDeliveryId > 0 && (int)$deliveryId === $yandexDeliveryId) { continue; }
 
 			$calculationResult = $state->environment->getDelivery()->calculate($deliveryId, $state->order);
 
-			if (!$calculationResult->isSuccess()) { continue; }
+			if (!$calculationResult->isSuccess())
+			{
+				$message = implode(', ', $calculationResult->getErrorMessages());
+
+				$logMessages[] = self::getMessage('DELIVERY_NOT_CALCULATE', [
+					'#ID#' => $deliveryId,
+					'#NAME#' => $deliveryName,
+					'#ERROR_MESSAGES#' => Main\Text\Encoding::convertEncodingToCurrent($message),
+				]);
+
+				continue;
+			}
 
 			$result[] = $this->collectDeliveryOption($calculationResult);
 		}
 
+		$this->writeLogger($state, $logMessages);
 		$this->write($result);
 	}
 
-	protected function restrictedDeliveries(State\OrderCalculation $state, int $mode = Sale\Delivery\Restrictions\Manager::MODE_CLIENT) : array
+	protected function writeLogger(State\OrderCalculation $state, array $messages) : void
+	{
+		if (empty($messages)) { return; }
+
+		$state->logger->warning(implode(PHP_EOL, $messages), [
+			'AUDIT' => Logger\Audit::DELIVERY_COLLECTOR,
+		]);
+	}
+
+	protected function restrictedDeliveries(State\OrderCalculation $state) : array
 	{
 		$result = [];
 		$deliveryService = $state->environment->getDelivery();
-		$compatibleIds = $deliveryService->getRestricted($state->order, $mode);
+		$compatibleIds = $deliveryService->getRestricted($state->order);
 
 		if (empty($compatibleIds)) { return $result; }
 

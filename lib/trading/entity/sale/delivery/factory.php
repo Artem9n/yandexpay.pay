@@ -31,6 +31,8 @@ class Factory
 
 			if ($adapter->isMatch($service) && $adapter->getServiceType() === $deliveryType)
 			{
+				if (!$adapter->load()) { continue; }
+
 				$result = $adapter;
 				break;
 			}

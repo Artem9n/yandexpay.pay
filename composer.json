@@ -6,6 +6,7 @@
 		}
 	],
 	"require": {
-		"firebase/php-jwt": "dev-main"
+		"firebase/php-jwt": "dev-main",
+		"ext-json": "*"
 	}
 }

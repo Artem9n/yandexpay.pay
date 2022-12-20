@@ -1,0 +1,91 @@
+.bx-yapay-warehouse-layout {
+	display: flex;
+	height: 600px;
+}
+
+.bx-yapay-warehouse-layout__map {
+	flex: auto 1 1;
+	position: relative;
+	background: #f3f3f3;
+	box-shadow: 0 0 10px 0 #00000014;
+}
+
+.bx-yapay-warehouse-layout__panel {
+	width: 30%;
+	min-width: 300px;
+	box-sizing: border-box;
+	background: #fff;
+	box-shadow: -4px 0 10px 0 #00000014;
+	z-index: 100;
+	display: flex;
+	flex-direction: column;
+}
+
+.bx-yapay-warehouse-header {
+	padding: 20px;
+	flex: auto 1 1;
+}
+
+.bx-yapay-warehouse-suggest {
+	margin-bottom: 15px;
+}
+
+.bx-yapay-warehouse-clarify {
+	text-decoration-style: dashed !important;
+}
+
+.bx-yapay-warehouse-details {
+	height: 100%;
+	overflow: auto;
+	padding: 0 20px;
+	flex: auto 1 1;
+
+	background:
+		/* Shadow covers */
+		linear-gradient(white 30%, rgba(255,255,255,0)),
+		linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
+
+			/* Shadows */
+		radial-gradient(50% 0, farthest-side, rgba(0,0,0,.2), rgba(0,0,0,0)),
+		radial-gradient(50% 100%,farthest-side, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
+	background:
+		/* Shadow covers */
+		linear-gradient(white 30%, rgba(255,255,255,0)),
+		linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
+
+			/* Shadows */
+		radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.2), rgba(0,0,0,0)),
+		radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
+	background-repeat: no-repeat;
+	background-color: white;
+	background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+
+	/* Opera doesn't support this in the shorthand */
+	background-attachment: local, local, scroll, scroll;
+}
+
+.bx-yapay-warehouse-details.readonly {
+	opacity: 0.6;
+}
+
+.bx-yapay-warehouse-detail {
+	margin-bottom: 20px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.bx-yapay-warehouse-detail__label {
+	width: 70px;
+	align-items: center;
+	text-align: end !important;
+	margin-right: 10px;
+}
+
+.bx-yapay-warehouse-error {
+	display: none;
+	background: #ffcece;
+	padding: 10px 15px;
+	margin-bottom: 15px;
+}
