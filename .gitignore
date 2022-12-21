@@ -36,4 +36,5 @@ core.*
 .cache
 /utils/*
 .last_version/*
-public
+public/*
+!public/update_create.php
