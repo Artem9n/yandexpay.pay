@@ -97,7 +97,7 @@ class Pickup extends Base
 			'SCHEDULE' => $schedule,
 			'PHONE' => $pickup['PHONE'] ?? '',
 			'DESCRIPTION' => $pickup['ADDRESS_DESCR'],
-			'PROVIDER' => Factory::DPD_PICKUP,
+			//'PROVIDER' => 'DPD',
 		];
 
 		return $result;
