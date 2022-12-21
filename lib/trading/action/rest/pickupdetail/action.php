@@ -41,6 +41,7 @@ class Action extends Rest\Reference\EffectiveAction
 			))
 			->pipe(new Rest\Stage\OrderInitialize())
 			->pipe(new Rest\Stage\NewBasket($this->request->getItems()))
+			->pipe(new Rest\Stage\OrderPaySystem())
 			->pipe(new Rest\Stage\OrderFinalizer());
 	}
 
