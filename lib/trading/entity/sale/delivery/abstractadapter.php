@@ -10,7 +10,10 @@ abstract class AbstractAdapter
 
 	abstract public function isMatch(Sale\Delivery\Services\Base $service) : bool;
 
-	abstract public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void;
+	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	{
+
+	}
 
 	abstract public function load() : bool;
 
@@ -32,6 +35,16 @@ abstract class AbstractAdapter
 	}
 
 	public function prepareCalculatePickup(int $deliveryId, string $storeId, string $locationId, string $zip = null) : void
+	{
+
+	}
+
+	public function markSelectedDelivery(Sale\OrderBase $order, array $address) : void
+	{
+
+	}
+
+	public function onAfterOrderSave(Sale\OrderBase $order) : void
 	{
 
 	}

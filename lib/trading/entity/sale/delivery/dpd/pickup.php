@@ -1,40 +1,41 @@
 <?php
-
+/** @noinspection PhpUnused */
+/** @noinspection PhpUndefinedNamespaceInspection */
+/** @noinspection PhpUndefinedClassInspection */
 namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Dpd;
 
-use Bitrix\Main;
 use Bitrix\Sale;
 use Ipolh\DPD\DB\Terminal;
+use Ipolh\DPD\Delivery\DPD;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
-use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
-use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 
-/** @property Sale\Delivery\Services\AutomaticProfile $service */
-class Pickup extends AbstractAdapter
+class Pickup extends Base
 {
-	protected $title;
+	protected $code = 'ipolh_dpd:PICKUP';
 
-	public function isMatch(Sale\Delivery\Services\Base $service) : bool
+	public function getServiceType() : string
 	{
-		if (!($service instanceof Sale\Delivery\Services\AutomaticProfile)) { return false; }
-
-		$code = $service->getCode();
-
-		$this->title = $service->getNameWithParent();
-
-		return $code === 'ipolh_dpd:PICKUP';
+		return EntitySale\Delivery::PICKUP_TYPE;
 	}
 
-
-	public function load() : bool
+	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
 	{
-		return Main\Loader::includeModule('ipol.dpd');
+		if ($propAddress = $order->getPropertyCollection()->getAddress())
+		{
+			$value = sprintf('%s (%s)', $address, $storeId);
+
+			$propAddress->setValue($value);
+		}
+
+		/** @var Sale\Order $order */
+		$this->calculateAndFillSessionValues($order);
+
+		$profile = DPD::getDeliveryProfile($this->code);
+		$_REQUEST['IPOLH_DPD_TERMINAL'][$profile] = $storeId;
 	}
 
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		if (!Main\Loader::includeModule('ipol.dpd')) { return []; }
-
 		$stores = $this->loadStores($bounds);
 
 		if (empty($stores)) { return []; }
@@ -42,6 +43,7 @@ class Pickup extends AbstractAdapter
 		return $stores;
 	}
 
+	/** @noinspection SpellCheckingInspection */
 	protected function loadStores(array $bounds = null) : array
 	{
 		$result = [];
@@ -54,43 +56,42 @@ class Pickup extends AbstractAdapter
 				'>=LONGITUDE' => $bounds['sw']['longitude'],
 			],
 			'select' => [
-				'ID', 'LOCATION_ID', 'NAME', 'ADDRESS_FULL', 'LATITUDE', 'LONGITUDE', 'ADDRESS_DESCR'
+				'ID', 'CODE', 'LOCATION_ID', 'NAME', 'ADDRESS_FULL', 'LATITUDE', 'LONGITUDE', 'ADDRESS_DESCR'
 			]
 		]);
 
 		while ($pickup = $query->fetch())
 		{
-			$schedule = implode(', ', array_filter($pickup['SCHEDULE_PAYMENTS']));
-
-			$result[$pickup['LOCATION_ID']][] = [
-				'ID' => $pickup['ID'],
-				'ADDRESS' => $pickup['ADDRESS_FULL'],
-				'TITLE' => sprintf('(%s) %s', $this->title, $pickup['NAME']),
-				'GPS_N' => $pickup['LATITUDE'],
-				'GPS_S' => $pickup['LONGITUDE'],
-				'SCHEDULE' => $schedule,
-				'PHONE' => $pickup['PHONE'] ?? '',
-				'DESCRIPTION' => $pickup['ADDRESS_DESCR'],
-				'PROVIDER' => Factory::DPD_PICKUP,
-			];
+			$result[$pickup['LOCATION_ID']][] = $this->makePickupInfo($pickup);
 		}
 
 		return $result;
 	}
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function getDetailPickup(string $storeId) : array
 	{
-		$propAddress = $order->getPropertyCollection()->getAddress();
+		$pickup = Terminal\Table::getByCode($storeId);
 
-		if ($propAddress === null) { return; }
-
-		$value = sprintf('%s (%s)', $address, $storeId);
-
-		$propAddress->setValue($value);
+		return $this->makePickupInfo($pickup);
 	}
 
-	public function getServiceType() : string
+	/** @noinspection SpellCheckingInspection */
+	private function makePickupInfo($pickup) : array
 	{
-		return EntitySale\Delivery::PICKUP_TYPE;
+		$schedule = implode(', ', array_filter($pickup['SCHEDULE_PAYMENTS']));
+
+		$result = [
+			'ID' => $pickup['CODE'],
+			'ADDRESS' => $pickup['ADDRESS_FULL'],
+			'TITLE' => sprintf('(%s) %s', $this->title, $pickup['NAME']),
+			'GPS_N' => $pickup['LATITUDE'],
+			'GPS_S' => $pickup['LONGITUDE'],
+			'SCHEDULE' => $schedule,
+			'PHONE' => $pickup['PHONE'] ?? '',
+			'DESCRIPTION' => $pickup['ADDRESS_DESCR'],
+			//'PROVIDER' => 'DPD',
+		];
+
+		return $result;
 	}
 }
