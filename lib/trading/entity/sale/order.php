@@ -856,16 +856,9 @@ class Order extends EntityReference\Order
 
 	protected function getDeliveryService() : ?Sale\Delivery\Services\Base
 	{
-		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
-		$shipmentCollection = $this->internalOrder->getShipmentCollection();
+		$shipment = $this->getNotSystemShipment();
 
-		/** @var \Bitrix\Sale\Shipment $shipment */
-		foreach ($shipmentCollection as $shipment)
-		{
-			if ($shipment->isSystem()) { continue; }
-
-			return $shipment->getDelivery();
-		}
+		if ($shipment !== null) { $shipment->getDelivery(); }
 
 		return null;
 	}
@@ -876,8 +869,11 @@ class Order extends EntityReference\Order
 
 		try
 		{
-			$delivery = Delivery\Factory::make($deliveryService, $type);
-			$delivery->markSelectedDelivery($this->internalOrder, $address);
+			if ($deliveryService !== null)
+			{
+				$this->delivery = Delivery\Factory::make($deliveryService, $type);
+				$this->delivery->markSelectedDelivery($this->internalOrder, $address);
+			}
 		}
 		catch (Main\ArgumentException $exception)
 		{
@@ -891,8 +887,11 @@ class Order extends EntityReference\Order
 
 		try
 		{
-			$this->delivery = Delivery\Factory::make($deliveryService, Delivery::PICKUP_TYPE);
-			$this->delivery->markSelected($this->internalOrder, $storeId, $address);
+			if ($deliveryService !== null)
+			{
+				$this->delivery = Delivery\Factory::make($deliveryService, Delivery::PICKUP_TYPE);
+				$this->delivery->markSelected($this->internalOrder, $storeId, $address);
+			}
 		}
 		catch (Main\ArgumentException $exception)
 		{

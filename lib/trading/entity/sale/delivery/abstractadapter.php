@@ -10,7 +10,10 @@ abstract class AbstractAdapter
 
 	abstract public function isMatch(Sale\Delivery\Services\Base $service) : bool;
 
-	abstract public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void;
+	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	{
+
+	}
 
 	abstract public function load() : bool;
 
