@@ -8,7 +8,6 @@ use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
 use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Catalog;
-use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 
 class Order extends EntityReference\Order
 {
@@ -19,7 +18,7 @@ class Order extends EntityReference\Order
 	protected $isStartField;
 
 	/** @var Delivery\AbstractAdapter */
-	protected $delivery = null;
+	protected $delivery;
 
 	public function __construct(Environment $environment, Sale\OrderBase $internalOrder)
 	{

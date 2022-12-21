@@ -1,5 +1,6 @@
 <?php
-
+/** @noinspection PhpUndefinedNamespaceInspection */
+/** @noinspection PhpUndefinedClassInspection */
 namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Dpd;
 
 use Bitrix\Main;
@@ -53,6 +54,7 @@ abstract class Base extends AbstractAdapter
 
 	public function onAfterOrderSave(Sale\OrderBase $order) : void
 	{
+		/** @noinspection PhpUndefinedConstantInspection */
 		$key = Main\Config\Option::get(IPOLH_DPD_MODULE, 'ORDER_ID', 'ID');
 		$orderId = $order->getField($key);
 		$entity  = \Ipolh\DPD\DB\Order\Table::findByOrder($orderId, true);
@@ -70,7 +72,6 @@ abstract class Base extends AbstractAdapter
 
 		$entity->save();
 
-		unset($_SESSION['IPOLH_DPD_ORDER']);
-		unset($_SESSION['IPOLH_DPD_TARIFF']);
+		unset($_SESSION['IPOLH_DPD_ORDER'], $_SESSION['IPOLH_DPD_TARIFF']);
 	}
 }

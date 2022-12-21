@@ -1,11 +1,12 @@
 <?php
-
+/** @noinspection PhpUnused */
+/** @noinspection PhpUndefinedNamespaceInspection */
+/** @noinspection PhpUndefinedClassInspection */
 namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Dpd;
 
-use Bitrix\Main;
 use Bitrix\Sale;
 use Ipolh\DPD\DB\Terminal;
-use \Ipolh\DPD\Delivery\DPD;
+use Ipolh\DPD\Delivery\DPD;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
 class Pickup extends Base
@@ -42,6 +43,7 @@ class Pickup extends Base
 		return $stores;
 	}
 
+	/** @noinspection SpellCheckingInspection */
 	protected function loadStores(array $bounds = null) : array
 	{
 		$result = [];
@@ -73,6 +75,7 @@ class Pickup extends Base
 		return $this->makePickupInfo($pickup);
 	}
 
+	/** @noinspection SpellCheckingInspection */
 	private function makePickupInfo($pickup) : array
 	{
 		$schedule = implode(', ', array_filter($pickup['SCHEDULE_PAYMENTS']));
