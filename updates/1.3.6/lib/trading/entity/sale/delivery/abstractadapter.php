@@ -34,6 +34,11 @@ abstract class AbstractAdapter
 		return [];
 	}
 
+	public function prepareCalculation(Sale\OrderBase $orderBase) : void
+	{
+
+	}
+
 	public function prepareCalculatePickup(int $deliveryId, string $storeId, string $locationId, string $zip = null) : void
 	{
 
