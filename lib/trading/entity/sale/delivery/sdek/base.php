@@ -76,9 +76,11 @@ class Base extends AbstractAdapter
 
 		$list = \CDeliverySDEK::getListFile();
 
-		$weight = !empty(\CDeliverySDEK::$orderWeight) ? false : \Ipolh\SDEK\option::get('weightD');
+		$weight = !empty(\CDeliverySDEK::$orderWeight) ? false : \COption::GetOptionString(\CDeliverySDEK::$MODULE_ID, 'weightD', 1000);
 
-		$pickupList = \CDeliverySDEK::weightPVZ($weight, $list[$this->code]);
+		$pickupList = method_exists(\CDeliverySDEK::class, 'weightPVZ')
+			? \CDeliverySDEK::weightPVZ($weight, $list[$this->code])
+			: \CDeliverySDEK::wegihtPVZ($weight, $list[$this->code]);
 
 		if (empty($pickupList) || $bounds === null) { return $result; }
 
@@ -135,7 +137,7 @@ class Base extends AbstractAdapter
 		}
 
 		$value = sprintf('%s #S%s', $address, $storeId);
-		$sdekAddressCode = \Ipolh\SDEK\option::get('pvzPicker');
+		$sdekAddressCode = \COption::GetOptionString(\CDeliverySDEK::$MODULE_ID, 'pvzPicker', '');
 		$propertyCollection = $order->getPropertyCollection();
 		$propAddress = null;
 
