@@ -24,7 +24,8 @@ abstract class EffectiveAction extends HttpAction
 		$this->bootJwt();
 		$this->bootJson();
 		$this->request = $this->convertHttpToRequest(Request::class);
-		$this->bootHttpHost($this->request->getHttpHost());
+		$this->bootHttpHost();
+		$this->bootRegion();
 	}
 
 	protected function bootJwt() : void
@@ -54,9 +55,56 @@ abstract class EffectiveAction extends HttpAction
 		$this->passTrading($setup);
 	}
 
-	protected function bootHttpHost(string $httpHost) : void
+	protected function bootRegion() : void
+	{
+		$cookieRegion = (string)Config::getOption('region_cookie', '');
+		$regionId = $this->request->getRegionId();
+
+		if ($cookieRegion !== '' && $regionId !== '')
+		{
+			$this->setRegionCookie($cookieRegion, $regionId);
+			$this->setRegionAsproMax($regionId);
+			$this->setRegionAsproNext($regionId);
+		}
+	}
+
+	protected function setRegionCookie(string $name, string $value) : void
+	{
+		$_COOKIE[$name] = $value;
+	}
+
+	protected function setRegionAsproMax(string $regionId) : void
+	{
+		global $arRegion;
+
+		if (!Main\Loader::includeModule('aspro.max')) { return; }
+		if (!class_exists(\CMaxRegionality::class)) { return; }
+
+		$regions = \CMaxRegionality::getRegions();
+
+		if (!isset($regions[$regionId])) { return; }
+
+		$arRegion = $regions[$regionId];
+	}
+
+	protected function setRegionAsproNext(string $regionId) : void
+	{
+		global $arRegion;
+
+		if (!Main\Loader::includeModule('aspro.next')) { return; }
+		if (!class_exists(\CNextRegionality::class)) { return; }
+
+		$regions = \CNextRegionality::getRegions();
+
+		if (!isset($regions[$regionId])) { return; }
+
+		$arRegion = $regions[$regionId];
+	}
+
+	protected function bootHttpHost() : void
 	{
 		$isSetHttpHost = (string)Config::getOption('set_http_host', 'N');
+		$httpHost = $this->request->getHttpHost();
 
 		if ($isSetHttpHost === 'Y' && $httpHost !== '')
 		{

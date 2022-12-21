@@ -26,11 +26,10 @@ class MetaCollector extends ResponseCollector
 		];
 
 		$isSetHttpHost = (string)Config::getOption('set_http_host', 'N');
+		$regionCookie = (string)Config::getOption('region_cookie', '');
 
-		if ($isSetHttpHost === 'Y')
-		{
-			$userData[] = $_SERVER['HTTP_HOST'];
-		}
+		$userData[] = $isSetHttpHost === 'Y' ? $_SERVER['HTTP_HOST'] : '';
+		$userData[] = $regionCookie !== '' ? $_COOKIE[$regionCookie] : '';
 
 		$this->write(implode(':', $userData));
 	}
