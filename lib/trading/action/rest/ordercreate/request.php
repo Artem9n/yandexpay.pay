@@ -53,6 +53,11 @@ class Request extends Rest\Reference\EffectiveRequest
 		return $this->requireField('orderAmount');
 	}
 
+	public function getCartId() : string
+	{
+		return $this->requireField('cart.cartId');
+	}
+
 	/**
 	 * @noinspection PhpIncompatibleReturnTypeInspection
 	 */

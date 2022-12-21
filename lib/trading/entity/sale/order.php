@@ -33,6 +33,7 @@ class Order extends EntityReference\Order
 	public function finalize() : Main\Result
 	{
 		$this->internalOrder->setMathActionOnly(false);
+
 		$result = $this->refreshBasket();
 
 		if ($result->isSuccess())
@@ -398,11 +399,43 @@ class Order extends EntityReference\Order
 		}
 	}
 
-	public function fillTradingSetup(EntityReference\Platform $platform) : void
+	public function fillTradingSetup(EntityReference\Platform $platform, string $externalId = null) : void
+	{
+		$binding = $this->searchTradingBinding($platform) ?? $this->createTradingBinding($platform);
+
+		if ($externalId !== null)
+		{
+			$binding->setField('XML_ID', $externalId);
+		}
+	}
+
+	protected function searchTradingBinding(EntityReference\Platform $platform) : ?Sale\TradeBindingEntity
+	{
+		$platformId = (int)$platform->getId();
+		$bindingCollection = $this->internalOrder->getTradeBindingCollection();
+		$result = null;
+
+		/** @var Sale\TradeBindingEntity $binding */
+		foreach ($bindingCollection as $binding)
+		{
+			$bindingPlatformId = (int)$binding->getField('TRADING_PLATFORM_ID');
+
+			if ($platformId === $bindingPlatformId)
+			{
+				$result = $binding;
+				break;
+			}
+		}
+
+		return $result;
+	}
+
+	protected function createTradingBinding(EntityReference\Platform $platform) : Sale\TradeBindingEntity
 	{
 		$salePlatform = $platform->getSalePlatform();
 		$bindingCollection = $this->internalOrder->getTradeBindingCollection();
-		$bindingCollection->createItem($salePlatform);
+
+		return $bindingCollection->createItem($salePlatform);
 	}
 
 	public function getBasket() : Sale\BasketBase
@@ -488,6 +521,8 @@ class Order extends EntityReference\Order
 		/** @var Sale\Shipment $shipment */
 		foreach ($this->internalOrder->getShipmentCollection() as $shipment)
 		{
+			if ($shipment->isSystem()) { continue; }
+
 			if ((int)$shipment->getDeliveryId() === $deliveryId)
 			{
 				$result = $shipment;
@@ -775,13 +810,17 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setPersonTypeId($personType);
 	}
 
-	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
+	public function setShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
+		$shipment = $this->getDeliveryShipment($deliveryId);
 
-		$this->clearOrderShipment($shipmentCollection);
-		$shipment = $this->buildOrderShipment($shipmentCollection, $deliveryId, $data);
+		if ($shipment === null)
+		{
+			$this->clearOrderShipment($shipmentCollection);
+			$shipment = $this->buildOrderShipment($shipmentCollection, $deliveryId, $data);
+		}
 
 		$this->fillShipmentPrice($shipment, $price);
 		$this->fillShipmentBasket($shipment);
@@ -907,16 +946,6 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->getShipmentCollection()->calculateDelivery();
 	}
 
-	public function createPayment($paySystemId, $price = null, array $data = null) : Main\Result
-	{
-		$paymentCollection = $this->internalOrder->getPaymentCollection();
-
-		$payment = $this->buildOrderPayment($paymentCollection, $paySystemId, $data);
-		$this->fillPaymentPrice($payment, $price);
-
-		return new Main\Result();
-	}
-
 	protected function buildOrderPayment(Sale\PaymentCollection $paymentCollection, $paySystemId, array $data = null) : Sale\Payment
 	{
 		$payment = $paymentCollection->createItem();
@@ -1023,6 +1052,24 @@ class Order extends EntityReference\Order
 		return [$paymentId, $paySystemId];
 	}
 
+	protected function getIssetPayment(int $paySystemId) : ?Sale\Payment
+	{
+		$paymentCollection = $this->internalOrder->getPaymentCollection();
+
+		/** @var Sale\Payment $payment */
+		foreach ($paymentCollection as $payment)
+		{
+			if ($payment->isInner()) { continue; }
+
+			if ((int)$payment->getPaymentSystemId() === $paySystemId)
+			{
+				return $payment;
+			}
+		}
+
+		return null;
+	}
+
 	/*protected function syncOrderPrice()
 	{
 		$currentPrice = $this->internalOrder->getPrice();
@@ -1065,6 +1112,27 @@ class Order extends EntityReference\Order
 				$payment->setField('SUM', $newPaymentSum);
 			}
 		}
+	}
+
+	public function setPayment(int $paySystemId, $price = null, array $data = null) : Main\Result
+	{
+		/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
+		$paymentCollection = $this->internalOrder->getPaymentCollection();
+		$payment = $this->getIssetPayment($paySystemId);
+
+		if ($payment === null)
+		{
+			$payment = $this->buildOrderPayment($paymentCollection, $paySystemId, $data);
+		}
+
+		$this->fillPaymentPrice($payment, $price);
+
+		return new Main\Result();
+	}
+
+	public function isSaved() : bool
+	{
+		return $this->getId() > 0;
 	}
 
 	public function getId()
