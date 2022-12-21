@@ -74,7 +74,15 @@ class Base extends AbstractAdapter
 	{
 		$result = [];
 
-		$list = \CDeliverySDEK::getListFile();
+		if (class_exists(\Ipolh\SDEK\Bitrix\Controller\pvzController::class))
+		{
+			$pvzController = new \Ipolh\SDEK\Bitrix\Controller\pvzController(true);
+			$list = $pvzController->getList();
+		}
+		else
+		{
+			$list = \CDeliverySDEK::getListFile();
+		}
 
 		$weight = !empty(\CDeliverySDEK::$orderWeight) ? false : \COption::GetOptionString(\CDeliverySDEK::$MODULE_ID, 'weightD', 1000);
 
@@ -84,8 +92,10 @@ class Base extends AbstractAdapter
 
 		if (empty($pickupList) || $bounds === null) { return $result; }
 
-		foreach ($pickupList as $cityName => $pickups)
+		foreach ($pickupList as $cityId => $pickups)
 		{
+			$cityName = $list['CITY'][$cityId] ?? $cityId;
+
 			foreach ($pickups as $pickupKey => $pickup)
 			{
 				if (
