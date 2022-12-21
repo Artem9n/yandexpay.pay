@@ -4,7 +4,6 @@ namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Dpd;
 
 use Bitrix\Sale;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
-use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 
 class Courier extends Base
 {

@@ -7,7 +7,6 @@ use Bitrix\Sale;
 use Ipolh\DPD\DB\Terminal;
 use \Ipolh\DPD\Delivery\DPD;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
-use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 
 class Pickup extends Base
 {
