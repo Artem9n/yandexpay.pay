@@ -21,7 +21,7 @@ class Factory
 	public const RUSSIAN_POST = 'russianPost:pickup';
 	public const RUSSIAN_COURIER = 'russianPost:courier';
 
-	public static function make(Sale\Delivery\Services\Base $service, string $deliveryType) : AbstractAdapter
+	public static function make(Sale\Delivery\Services\Base $service, string $deliveryType = null) : AbstractAdapter
 	{
 		$result = null;
 
@@ -29,8 +29,9 @@ class Factory
 		{
 			$adapter = static::getInstance($type);
 
-			if ($adapter->isMatch($service) && $adapter->getServiceType() === $deliveryType)
+			if ($adapter->isMatch($service))
 			{
+				if ($deliveryType !== null && $adapter->getServiceType() !== $deliveryType) { continue; }
 				if (!$adapter->load()) { continue; }
 
 				$result = $adapter;

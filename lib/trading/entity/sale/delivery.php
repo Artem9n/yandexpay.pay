@@ -326,6 +326,8 @@ class Delivery extends EntityReference\Delivery
 				$deliveryService->getExtraServices()->setOperationCurrency($currency);
 			}
 
+			$this->prepareCalculation($calculatableOrder, $deliveryService);
+
 			$calculationResult = $shipment->calculateDelivery();
 
 			if ($calculationResult->isSuccess())
@@ -351,6 +353,19 @@ class Delivery extends EntityReference\Delivery
 		}
 
 		return $result;
+	}
+
+	protected function prepareCalculation(Sale\OrderBase $order, Sale\Delivery\Services\Base $deliveryService) : void
+	{
+		try
+		{
+			$delivery = Delivery\Factory::make($deliveryService);
+			$delivery->prepareCalculation($order);
+		}
+		catch (Main\ArgumentException $exception)
+		{
+			//	nothing
+		}
 	}
 
 	public function configureShipment(Order $order, $deliveryId)

@@ -29,6 +29,19 @@ abstract class Base extends AbstractAdapter
 		return Main\Loader::includeModule('ipol.dpd');
 	}
 
+	public function prepareCalculation(Sale\OrderBase $orderBase) : void
+	{
+		$paymentCollection = $orderBase->getPaymentCollection();
+
+		/** @var Sale\Payment $payment */
+		foreach ($paymentCollection as $payment)
+		{
+			if ($payment->isInner()) { continue; }
+
+			$_REQUEST['PAY_SYSTEM_ID'] = $payment->getPaymentSystemId();
+		}
+	}
+
 	protected function calculateAndFillSessionValues(Sale\Order $order) : void
 	{
 		$shipments = $order->getShipmentCollection();
