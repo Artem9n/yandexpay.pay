@@ -23,6 +23,11 @@ abstract class Base extends AbstractAdapter
 		return $code === $this->code;
 	}
 
+	public function load() : bool
+	{
+		return Main\Loader::includeModule('ipol.dpd');
+	}
+
 	protected function calculateAndFillSessionValues(Sale\Order $order) : void
 	{
 		$shipments = $order->getShipmentCollection();

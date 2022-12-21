@@ -34,12 +34,6 @@ class Pickup extends Base
 		$_REQUEST['IPOLH_DPD_TERMINAL'][$profile] = $storeId;
 	}
 
-
-	public function load() : bool
-	{
-		return Main\Loader::includeModule('ipol.dpd');
-	}
-
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		if (!Main\Loader::includeModule('ipol.dpd')) { return []; }
