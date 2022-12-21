@@ -47,7 +47,7 @@ class NewBasket
 		$this->addBasketNewProducts($state, $new);
 	}
 
-	protected function splitOrderAlreadyExists(State\OrderCalculation $state)
+	protected function splitOrderAlreadyExists(State\OrderCalculation $state) : array
 	{
 		$basketMap = array_flip($state->order->getOrderableItems());
 		$exists = [];
@@ -85,7 +85,7 @@ class NewBasket
 		{
 			$basketData = $state->order->getBasketItemData($basketCode)->getData();
 
-			if ((string)$basketData['PRODUCT_ID'] === (string)$item->getProductId())
+			if ((string)$basketData['PRODUCT_ID'] === $item->getProductId())
 			{
 				return (string)$basketCode;
 			}
@@ -138,7 +138,6 @@ class NewBasket
 	protected function syncBasketExistProducts(State\OrderCalculation $state, array $products, array $existsMap) : array
 	{
 		$existsCodes = $state->order->getOrderableItems();
-
 		$notFound = [];
 		$needDelete = array_diff($existsCodes, $existsMap);
 
@@ -178,7 +177,7 @@ class NewBasket
 		$fewData = $environmentProduct->getBasketData([$productId]);
 		$itemData = $fewData[$productId] ?? null;
 
-		Assert::notNull($itemData, '$enviromentProduct->getBasketData()');
+		Assert::notNull($itemData, '$environmentProduct->getBasketData()');
 
 		if (isset($itemData['ERROR']))
 		{

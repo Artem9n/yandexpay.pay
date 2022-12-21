@@ -36,3 +36,4 @@ core.*
 .cache
 /utils/*
 .last_version/*
+public

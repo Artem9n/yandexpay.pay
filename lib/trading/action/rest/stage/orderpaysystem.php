@@ -16,7 +16,7 @@ class OrderPaySystem
 
 		if ((int)$paySystemId > 0)
 		{
-			$state->order->setPayment($paySystemId);
+			$state->order->createPayment($paySystemId);
 		}
 	}
 }

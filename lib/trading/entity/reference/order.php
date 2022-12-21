@@ -191,6 +191,11 @@ abstract class Order
 		throw new Main\NotImplementedException('getId is missing');
 	}
 
+	public function isSaved() : bool
+	{
+		throw new Main\NotImplementedException('isSaved is missing');
+	}
+
 	/**
 	 * @return mixed
 	 */

@@ -41,6 +41,6 @@ class OrderPickup
 			$deliveryId = $state->environment->getDelivery()->getEmptyDeliveryId();
 		}
 
-		$state->order->setShipment($deliveryId, $price);
+		$state->order->createShipment($deliveryId, $price);
 	}
 }

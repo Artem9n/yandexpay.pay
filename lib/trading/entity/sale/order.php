@@ -33,7 +33,6 @@ class Order extends EntityReference\Order
 	public function finalize() : Main\Result
 	{
 		$this->internalOrder->setMathActionOnly(false);
-
 		$result = $this->refreshBasket();
 
 		if ($result->isSuccess())
@@ -810,7 +809,7 @@ class Order extends EntityReference\Order
 		return $this->internalOrder->setPersonTypeId($personType);
 	}
 
-	public function setShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
+	public function createShipment(int $deliveryId, float $price = null, array $data = null) : Main\Result
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $this->internalOrder->getShipmentCollection();
@@ -1114,7 +1113,7 @@ class Order extends EntityReference\Order
 		}
 	}
 
-	public function setPayment(int $paySystemId, $price = null, array $data = null) : Main\Result
+	public function createPayment(int $paySystemId, $price = null, array $data = null) : Main\Result
 	{
 		/** @var \Bitrix\Sale\PaymentCollection $paymentCollection */
 		$paymentCollection = $this->internalOrder->getPaymentCollection();
