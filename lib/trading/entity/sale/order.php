@@ -287,6 +287,14 @@ class Order extends EntityReference\Order
 		return $this->setLocationPropertyValue($locationCode);
 	}
 
+	public function getLocation() : ?int
+	{
+		$propertyCollection = $this->internalOrder->getPropertyCollection();
+		$locationProperty = $propertyCollection->getDeliveryLocation();
+
+		return $locationProperty !==  null ? $locationProperty->getValue() : null;
+	}
+
 	public function setLocationByCode($locationCode) : Main\Result
 	{
 		return $this->setLocationPropertyValue($locationCode);

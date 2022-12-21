@@ -8,7 +8,7 @@ class OptionsCollector extends ResponseCollector
 	public function __invoke(State\OrderCalculation $state)
 	{
 		$this->availablePaymentMethods($state);
-		$this->availableShippingMethods($state);
+		$this->availableShippingMethods();
 		$this->enableCoupons($state);
 		$this->enableComment($state);
 		$this->requiredFields($state);
@@ -26,16 +26,14 @@ class OptionsCollector extends ResponseCollector
 		$this->write(array_values($result), 'availablePaymentMethods');
 	}
 
-	protected function availableShippingMethods(State\OrderCalculation $state) : void
+	protected function availableShippingMethods() : void
 	{
-		$result = ['COURIER', 'PICKUP'];
+		$methods = $this->response->getField('shipping.availableMethods');
 
-		if ($this->response->getField('shipping.yandexDelivery') !== null)
+		if (!is_array($methods))
 		{
-			$result[] = 'YANDEX_DELIVERY';
+			$this->write([], 'shipping.availableMethods');
 		}
-
-		$this->write($result, 'shipping.availableMethods');// todo get type shipping courier and pickup
 	}
 
 	protected function enableCoupons(State\OrderCalculation $state) : void

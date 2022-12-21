@@ -110,6 +110,10 @@ class Action extends Rest\Reference\EffectiveAction
 		{
 			$result->pipe(new Rest\Stage\OrderDeliveryCollector($response, 'shipping.availableCourierOptions'));
 		}
+		else
+		{
+			$result->pipe(new Rest\Stage\DeliveryMethodsCollector($response, 'shipping.availableMethods'));
+		}
 
 		return $result;
 	}
