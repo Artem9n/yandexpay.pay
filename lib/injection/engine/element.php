@@ -82,6 +82,7 @@ class Element extends AbstractEngine
 			'ELEMENT_CODE' => true,
 			'ID' => true,
 			'CODE' => true,
+			'EXTERNAL_ID' => true,
 		];
 
 		if (count(array_intersect_key($variables, $required)) === 0)
@@ -96,6 +97,7 @@ class Element extends AbstractEngine
 			'ID' => '=ID',
 			'SECTION_CODE' => '=SECTION_CODE',
 			'SECTION_ID' => '=SECTION_ID',
+			'EXTERNAL_ID' => '=XML_ID',
 		];
 		$filter = [
 			'IBLOCK_ID' => $iblockId,
