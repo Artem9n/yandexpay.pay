@@ -35,8 +35,6 @@ class Pickup extends Base
 
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		if (!Main\Loader::includeModule('ipol.dpd')) { return []; }
-
 		$stores = $this->loadStores($bounds);
 
 		if (empty($stores)) { return []; }
@@ -70,8 +68,6 @@ class Pickup extends Base
 
 	public function getDetailPickup(string $storeId) : array
 	{
-		if (!Main\Loader::includeModule('ipol.dpd')) { return []; }
-
 		$pickup = Terminal\Table::getByCode($storeId);
 
 		return $this->makePickupInfo($pickup);
