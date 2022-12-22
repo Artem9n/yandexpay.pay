@@ -857,7 +857,7 @@ class Order extends EntityReference\Order
 	{
 		$shipment = $this->getNotSystemShipment();
 
-		if ($shipment !== null) { $shipment->getDelivery(); }
+		if ($shipment !== null) { return $shipment->getDelivery(); }
 
 		return null;
 	}

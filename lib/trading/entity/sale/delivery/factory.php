@@ -20,6 +20,8 @@ class Factory
 	public const DPD_COURIER = 'dpd:courier';
 	public const RUSSIAN_POST = 'russianPost:pickup';
 	public const RUSSIAN_COURIER = 'russianPost:courier';
+	public const EDOST_PICKUP = 'edost:pickup';
+	public const EDOST_COURIER = 'edost:courier';
 
 	public static function make(Sale\Delivery\Services\Base $service, string $deliveryType = null) : AbstractAdapter
 	{
@@ -65,6 +67,8 @@ class Factory
 			static::BOXBERRY_PVZ,
 			static::RUSSIAN_POST,
 			static::RUSSIAN_COURIER,
+			static::EDOST_PICKUP,
+			static::EDOST_COURIER,
 		];
 	}
 
