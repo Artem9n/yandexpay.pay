@@ -81,7 +81,7 @@ class Base extends AbstractAdapter
 		}
 		else
 		{
-			$list = \CDeliverySDEK::getListFile();
+			$list = \CDeliverySDEK::getListFile(true);
 		}
 
 		$weight = !empty(\CDeliverySDEK::$orderWeight) ? false : \COption::GetOptionString(\CDeliverySDEK::$MODULE_ID, 'weightD', 1000);
@@ -95,6 +95,8 @@ class Base extends AbstractAdapter
 		foreach ($pickupList as $cityId => $pickups)
 		{
 			$cityName = $list['CITY'][$cityId] ?? $cityId;
+			/** @var string $cityNameDecoded */
+			$cityNameDecoded = \Ipolh\SDEK\Bitrix\Tools::encodeFromUTF8($cityName);
 
 			foreach ($pickups as $pickupKey => $pickup)
 			{
@@ -105,7 +107,7 @@ class Base extends AbstractAdapter
 					&& $pickup['cX'] >= $bounds['sw']['longitude']
 				)
 				{
-					$result[$cityName][] = [
+					$result[$cityNameDecoded][] = \Ipolh\SDEK\Bitrix\Tools::encodeFromUTF8([
 						'ID' => $pickupKey,
 						'ADDRESS' => $cityName . ', ' . $pickup['Address'],
 						'TITLE' => $this->title,
@@ -115,7 +117,7 @@ class Base extends AbstractAdapter
 						'PHONE' => $pickup['Phone'],
 						'PROVIDER' => 'CDEK',
 						'DESCRIPTION' => $pickup['AddressComment'],
-					];
+					]);
 				}
 			}
 		}
