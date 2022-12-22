@@ -31,10 +31,18 @@ abstract class Base extends AbstractAdapter
 
 	protected function getCode(string $code) : string
 	{
-		$vendor = array_shift(explode(':', $code));
+		$codeModify = 'edost:PICKUP';
+		if ($code === 'edost:75')
+		{
+			$codeModify = 'edost:COURIER';
+		}
+
+		return $codeModify;
+
+		/*$vendor = array_shift(explode(':', $code));
 		$type = $this->typeMap[$this->getServiceType()];
 
-		return implode(':', [$vendor, $type]);
+		return implode(':', [$vendor, $type]);*/
 	}
 
 	public function load() : bool
@@ -74,30 +82,10 @@ abstract class Base extends AbstractAdapter
 				'CHECKED' => 'Y'
 			]
 		];
-		// заполняет $_SESSION['IPOLH_DPD_ORDER'] и $_SESSION['IPOLH_DPD_TARIFF']
-		//DPD::OnSaleDeliveryHiddenHTML($arResult, [], []);
 	}
 
 	public function onAfterOrderSave(Sale\OrderBase $order) : void
 	{
-		/** @noinspection PhpUndefinedConstantInspection */
-		/*$key = Main\Config\Option::get(IPOLH_DPD_MODULE, 'ORDER_ID', 'ID');
-		$orderId = $order->getField($key);
-		$entity  = \Ipolh\DPD\DB\Order\Table::findByOrder($orderId, true);
 
-		$profile = DPD::getDeliveryProfile($this->code);
-
-
-		if ($entity->id) {
-			return;
-		}
-
-		$entity->serviceCode          = $_REQUEST['IPOLH_DPD_TARIFF'][$profile];
-		$entity->serviceVariant       = $profile;
-		$entity->receiverTerminalCode = $_REQUEST['IPOLH_DPD_TERMINAL'][$profile] ?: null;
-
-		$entity->save();
-
-		unset($_SESSION['IPOLH_DPD_ORDER'], $_SESSION['IPOLH_DPD_TARIFF']);*/
 	}
 }

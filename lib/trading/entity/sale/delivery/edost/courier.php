@@ -21,7 +21,6 @@ class Courier extends Base
 
 	public function markSelectedDelivery(Sale\OrderBase $order, array $address) : void
 	{
-		/** @var Sale\Order $order */
-		$this->calculateAndFillSessionValues($order);
+		
 	}
 }
