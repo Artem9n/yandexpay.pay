@@ -2,7 +2,7 @@
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) { die(); }
 
 use YandexPay\Pay\Injection\Solution;
-use Bitrix\Main;
+use YandexPay\Pay\Utils;
 use Bitrix\Main\UI\Extension;
 
 /** @var CMain $APPLICATION */
@@ -45,10 +45,15 @@ foreach ($partials as $assetsType => $assets)
 			}
 			else
 			{
-				$url = Main\Page\Asset::getInstance()->getFullAssetPath($path);
-				[$fullPath, $query] = explode('?', $url);
+				$absolutePath = Utils\Page\Asset::getAssetAbsolutePath($path);
 
-				$absolutePath = Main\IO\Path::convertSiteRelativeToAbsolute($fullPath);
+				if ($absolutePath === null)
+				{
+					if (!isset($external[$type])) { $external[$type] = []; }
+
+					$external[$type][] = $path;
+					continue;
+				}
 
 				$content = file_get_contents($absolutePath);
 

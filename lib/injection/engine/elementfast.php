@@ -13,6 +13,7 @@ class ElementFast extends Element
 		if (!static::testRequest() || !static::testQuery($settings)) { return; }
 
 		static::$elementId = static::findProduct($settings);
+		Element::disable();
 	}
 
 	public static function onEndBufferContent(int $injectionId, array $settings, string &$content) : void
@@ -52,7 +53,9 @@ class ElementFast extends Element
 			return parent::findProduct($settings);
 		}
 
-		return self::getUrlParamValue($idParam);
+		$parameter = self::getUrlParamValue($idParam);
+
+		return is_numeric($parameter) ? (int)$parameter : null;
 	}
 
 	protected static function testRequest() : bool
@@ -77,21 +80,8 @@ class ElementFast extends Element
 
 	protected static function getUrlParamValue(string $param)
 	{
-		if (empty($param)) { return null; }
+		$queryValues = static::getRequest()->getQueryList()->getValues();
 
-		$keys = Utils\BracketChain::splitKey($param);
-		$paramName = array_shift($keys);
-
-		$value = static::getRequest()->getQuery($paramName);
-
-		if (is_array($value) && !empty($keys))
-		{
-			foreach ($keys as $key)
-			{
-				$value = $value[$key] ?? null;
-			}
-		}
-
-		return $value;
+		return Utils\BracketChain::get($queryValues, $param);
 	}
 }

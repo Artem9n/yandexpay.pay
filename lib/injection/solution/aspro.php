@@ -47,12 +47,17 @@ class Aspro extends Skeleton
 			'USE_DIVIDER' => true,
 		];
 
+		$elementSettings = [
+			'SELECTOR' => implode(', ', $selectors),
+			'POSITION' => 'afterend',
+			'IBLOCK' => $context['IBLOCK'],
+			'WIDTH_BUTTON' => 'MAX',
+		];
+
 		return [
-			Behavior\Registry::ELEMENT => $design + [
-				'SELECTOR' => implode(', ', $selectors),
-				'POSITION' => 'afterend',
-				'IBLOCK' => $context['IBLOCK'],
-				'WIDTH_BUTTON' => 'MAX',
+			Behavior\Registry::ELEMENT => $design + $elementSettings,
+			Behavior\Registry::ELEMENT_FAST => $design + $elementSettings + [
+				'QUERY_CHECK_PARAMS' => 'FAST_VIEW=Y'
 			],
 			Behavior\Registry::BASKET => $design + Guide::getBitrixBasket($context, '/basket/'),
 			Behavior\Registry::ORDER => $design + Guide::getBitrixOrder($context, '/order/'),

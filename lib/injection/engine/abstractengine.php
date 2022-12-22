@@ -27,7 +27,6 @@ abstract class AbstractEngine extends Event\Base
 
 		return (
 			!$request->isAdminSection()
-			&& !$request->isAjaxRequest()
 			&& mb_strpos($request->getRequestedPage(), '/bitrix/') !== 0
 		);
 	}

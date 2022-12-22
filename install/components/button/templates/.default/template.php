@@ -98,7 +98,11 @@ catch (Main\SystemException $exception)
 {
 	if (!isset($USER) || !$USER->IsAdmin()) { return; }
 
-	$output = $exception->getMessage(); // todo format
+	$message = str_replace("\n", "<br />", $exception->getMessage());
+
+	$output .= <<<CONTENT
+		<p style="color:red">$message</p>
+CONTENT;
 }
 
 $arResult['OUTPUT'] = $output;
