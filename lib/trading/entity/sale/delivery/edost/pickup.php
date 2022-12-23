@@ -30,7 +30,7 @@ class Pickup extends Base
 
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		$stores = $this->loadStores($bounds);
+		$stores = $this->loadStores($order, $bounds);
 
 		if (empty($stores)) { return []; }
 
@@ -38,12 +38,15 @@ class Pickup extends Base
 	}
 
 	/** @noinspection SpellCheckingInspection */
-	protected function loadStores(array $bounds = null) : array
+	protected function loadStores(Sale\OrderBase $order, array $bounds = null) : array
 	{
 		$result = [];
 
 		if (class_exists('edost_class') && class_exists('CDeliveryEDOST'))
 		{
+			$config = new Config();
+			$configData = $config->getConfig();
+
 			$edost_order = [
 				'location' => [
 					'id' => 2440,
@@ -59,60 +62,13 @@ class Pickup extends Base
 					]
 				],
 				'zip' => '',
-				'weight' => 0.1,
-				'price' => 2.85,
+				'weight' => $order->getBasket()->getWeight() / 1000,
+				'price' => $order->getBasket()->getPrice(),
 				'size1' => 0.0,
 				'size2' => 0.0,
 				'size3' => 0.0,
 				'sizesum' => 0.0,
-				'config' => [
-					'id' => '9481',
-					'ps' => 'Z9aJ9UTavqNzH8AtmhfzezozjqycvctB',
-					'host' => '',
-					'hide_error' => 'N',
-					'show_zero_tariff' => 'Y',
-					'map' => 'Y',
-					'cod_status' => '',
-					'send_zip' => 'Y',
-					'hide_payment' => 'Y',
-					'sort_ascending' => 'N',
-					'template' => 'N3',
-					'template_format' => 'off',
-					'template_block' => 'off',
-					'template_block_type' => 'none',
-					'template_cod' => 'off',
-					'template_autoselect_office' => 'N',
-					'autoselect' => 'N',
-					'admin' => 'Y',
-					'template_map_inside' => 'N',
-					'control' => 'N',
-					'control_auto' => 'Y',
-					'control_status_arrived' => '',
-					'control_status_completed' => 'F',
-					'control_status_completed_cod' => 'F',
-					'browser' => 'ie',
-					'register_status' => '',
-					'sale_discount' => 'N',
-					'sale_discount_cod' => 'off',
-					'edost_discount' => 'Y',
-					'template_ico' => 'C',
-					'template_script' => 'Y',
-					'package' => '1',
-					'postmap' => 'Y',
-					'office_near' => 'N',
-					'office_unsupported' => 'N',
-					'office_unsupported_fix' => '',
-					'office_unsupported_percent' => '',
-					'office_tel' => 'Y',
-					'register_status_ignore' => '',
-					'control_status_mode' => 'F',
-					'control_status_update_ignore' => '',
-					'register_no_paid_ignore' => 'N',
-					'control_status_completed_cod_paid' => 'N',
-					'param' => [
-						'zero_tariff' => '104',
-						'module_id' => '103'
-					],
+				'config' => $configData['all'] + [
 					'PAY_SYSTEM_ID' => '76',
 					'COMPACT' => 'off',
 					'PRIORITY' => 'P'
@@ -171,6 +127,13 @@ class Pickup extends Base
 		}
 
 		return $result;
+	}
+
+	protected function getLocation(Sale\OrderBase $order) : array
+	{
+		$location = [];
+
+		return $location;
 	}
 
 	public function getDetailPickup(string $storeId) : array
