@@ -42,7 +42,7 @@ class Pickup extends Base
 	{
 		$result = [];
 
-		if (class_exists('edost_class'))
+		if (class_exists('edost_class') && class_exists('CDeliveryEDOST'))
 		{
 			$edost_order = [
 				'location' => [
@@ -140,7 +140,19 @@ class Pickup extends Base
 					]
 				]
 			];
-			$office_get = [30, 23, 5];
+			//$office_get = [30, 23, 5];
+
+			$ar = array();
+			$ar[] = 'country=0';
+			$ar[] = 'region=38';
+			$ar[] = 'city='.urlencode('Иркутск');
+			$ar[] = 'weight='.urlencode(0.1);
+			$ar[] = 'insurance='.urlencode(2.85);
+			$ar[] = 'size='.urlencode(implode('|', [0, 0, 0]));
+			$r = \edost_class::RequestData('', 9481, 'Z9aJ9UTavqNzH8AtmhfzezozjqycvctB', implode('&', $ar), 'delivery');
+
+			//$tariff = \CDeliveryEDOST::GetEdostTariff($r['data'][71]['']);
+			$office_get = [$r['data'][71]['company_id']];
 
 			$data = \edost_class::GetOffice($edost_order, $office_get);
 
