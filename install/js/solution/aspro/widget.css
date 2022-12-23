@@ -28,6 +28,19 @@
 	}
 }
 
+/*basketFly*/
+.header-cart.fly .bx-yapay-drawer-container {
+	float: right;
+	margin-top: 0;
+	width: 257px;
+}
+@media screen and (max-width: 991px), projection and (max-width: 991px), tv and (max-width: 991px), handheld and (max-width: 991px) {
+	.header-cart.fly .bx-yapay-drawer-container {
+		width: 197px;
+	}
+}
+
+
 /*element*/
 
 

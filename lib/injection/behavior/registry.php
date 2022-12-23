@@ -8,6 +8,7 @@ class Registry
 	public const ELEMENT = 'element';
 	public const ELEMENT_FAST = 'elementFast';
 	public const BASKET = 'basket';
+	public const BASKET_FLY = 'basketFly';
 	public const ORDER = 'order';
 
 	public static function getTypes() : array
@@ -16,6 +17,7 @@ class Registry
 			static::ELEMENT,
 			static::ELEMENT_FAST,
 			static::BASKET,
+			static::BASKET_FLY,
 			static::ORDER,
 		];
 	}
