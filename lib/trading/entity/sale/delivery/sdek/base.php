@@ -74,14 +74,16 @@ class Base extends AbstractAdapter
 	{
 		$result = [];
 
-		if (class_exists(\Ipolh\SDEK\Bitrix\Controller\pvzController::class))
+		if (CheckVersion(Main\ModuleManager::getVersion('ipol.sdek'), '3.11.7'))
 		{
 			$pvzController = new \Ipolh\SDEK\Bitrix\Controller\pvzController(true);
 			$list = $pvzController->getList();
+			$needDecode = true;
 		}
 		else
 		{
-			$list = \CDeliverySDEK::getListFile(true);
+			$list = \CDeliverySDEK::getListFile();
+			$needDecode = false;
 		}
 
 		$weight = !empty(\CDeliverySDEK::$orderWeight) ? false : \COption::GetOptionString(\CDeliverySDEK::$MODULE_ID, 'weightD', 1000);
@@ -95,8 +97,6 @@ class Base extends AbstractAdapter
 		foreach ($pickupList as $cityId => $pickups)
 		{
 			$cityName = $list['CITY'][$cityId] ?? $cityId;
-			/** @var string $cityNameDecoded */
-			$cityNameDecoded = \Ipolh\SDEK\Bitrix\Tools::encodeFromUTF8($cityName);
 
 			foreach ($pickups as $pickupKey => $pickup)
 			{
@@ -107,7 +107,7 @@ class Base extends AbstractAdapter
 					&& $pickup['cX'] >= $bounds['sw']['longitude']
 				)
 				{
-					$result[$cityNameDecoded][] = \Ipolh\SDEK\Bitrix\Tools::encodeFromUTF8([
+					$store = [
 						'ID' => $pickupKey,
 						'ADDRESS' => $cityName . ', ' . $pickup['Address'],
 						'TITLE' => $this->title,
@@ -117,7 +117,22 @@ class Base extends AbstractAdapter
 						'PHONE' => $pickup['Phone'],
 						'PROVIDER' => 'CDEK',
 						'DESCRIPTION' => $pickup['AddressComment'],
-					]);
+					];
+
+					if ($needDecode)
+					{
+						/** @var string $cityName */
+						$cityNameDecoded = \Ipolh\SDEK\Bitrix\Tools::encodeFromUTF8($cityName);
+						$store = \Ipolh\SDEK\Bitrix\Tools::encodeFromUTF8($store);
+					}
+					else
+					{
+						$cityNameDecoded = $cityName;
+					}
+
+					if (!isset($result[$cityNameDecoded])) { $result[$cityNameDecoded] = []; }
+
+					$result[$cityNameDecoded][] = $store;
 				}
 			}
 		}
