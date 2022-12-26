@@ -29,7 +29,7 @@ class Model extends EO_Repository
 
 		$values = $this->fillSettings()->getValues();
 		/** @noinspection AdditionOperationOnArraysInspection */
-		$values += $this->getOptionDefaults();
+		$values += $this->getOptionDefaults($values);
 		$options->setValues($values);
 		$this->isOptionsReady = true;
 
@@ -56,11 +56,18 @@ class Model extends EO_Repository
 		return $this->options;
 	}
 
-	protected function getOptionDefaults() : array
+	protected function getOptionDefaults(array $values = []) : array
 	{
-		return [
+		$result = [
 			'PERSON_TYPE_ID' => $this->getPersonTypeId()
 		];
+
+		if (!empty($values['PAYSYSTEM_CARD']))
+		{
+			$result['PAYSYSTEM_SPLIT'] = $values['PAYSYSTEM_CARD'];
+		}
+
+		return $result;
 	}
 
 	public function getEnvironment() : Entity\Reference\Environment
