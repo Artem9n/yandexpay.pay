@@ -204,7 +204,11 @@ export default class Factory {
 
 				if (partSanitized === '' || !this.isCssSelector(partSanitized)) { continue; }
 
-				const collection = document.querySelectorAll(partSanitized);
+				const [partSelector, matchMedia] = this.testSelectorMedia(partSanitized);
+
+				if (!matchMedia) { continue; }
+
+				const collection = document.querySelectorAll(partSelector);
 
 				for (const element of collection) {
 					result.push(element);
@@ -256,6 +260,17 @@ export default class Factory {
 
 	isCssSelector(selector) {
 		return /^[.#]/.test(selector);
+	}
+
+	testSelectorMedia(selector) {
+		const partials = /^(.*):media(\(.*\))$/.exec(selector);
+
+		if (partials == null) { return [ selector, true ]; }
+
+		return [
+			partials[1],
+			window.matchMedia(partials[2]).matches,
+		];
 	}
 
 	renderElement(anchor, position) {
