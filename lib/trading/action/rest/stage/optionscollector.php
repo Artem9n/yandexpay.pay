@@ -19,9 +19,8 @@ class OptionsCollector extends ResponseCollector
 		$result = array_flip(array_filter([
 			'CARD' => $state->options->getPaymentCard(),
 			'CASH_ON_DELIVERY' => $state->options->getPaymentCash(),
+			'SPLIT' => $state->options->getPaymentSplit(),
 		]));
-
-		$result[] = 'SPLIT';
 
 		$this->write(array_values($result), 'availablePaymentMethods');
 	}

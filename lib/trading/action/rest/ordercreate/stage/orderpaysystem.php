@@ -22,9 +22,13 @@ class OrderPaySystem
 	{
 		$paymentType = $this->request->getPaymentType();
 
-		if ($paymentType === 'CARD' || $paymentType === 'SPLIT')
+		if ($paymentType === 'CARD')
 		{
 			$paySystemId = $state->options->getPaymentCard();
+		}
+		elseif ($paymentType === 'SPLIT')
+		{
+			$paySystemId = $state->options->getPaymentSplit();
 		}
 		else
 		{
