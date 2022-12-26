@@ -104,7 +104,8 @@ class Action extends Rest\Reference\EffectiveAction
 
 		if ($type === 'PICKUP')
 		{
-			$result->pipe(new Rest\OrderCreate\Stage\OrderPickup($this->request));
+			$result->pipe(new Rest\Stage\OrderLocation($this->request->getAddress()))
+			       ->pipe(new Rest\OrderCreate\Stage\OrderPickup($this->request));
 		}
 		elseif ($type === 'YANDEX_DELIVERY')
 		{

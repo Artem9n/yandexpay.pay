@@ -45,72 +45,8 @@ class Pickup extends Base
 		if (class_exists('edost_class') && class_exists('CDeliveryEDOST'))
 		{
 			$config = new Config();
-			$configData = $config->getConfig();
 
-			$edost_order = [
-				'location' => [
-					'id' => 2440,
-					'country' => 0,
-					'region' => 38,
-					'city' => 'Иркутск',
-					'country_name' => 'Россия',
-					'region_name' => 'Иркутская область',
-					'bitrix' => [
-						'country' => 1,
-						'region' => 69,
-						'city' => 'Иркутск'
-					]
-				],
-				'zip' => '',
-				'weight' => $order->getBasket()->getWeight() / 1000,
-				'price' => $order->getBasket()->getPrice(),
-				'size1' => 0.0,
-				'size2' => 0.0,
-				'size3' => 0.0,
-				'sizesum' => 0.0,
-				'config' => $configData['all'] + [
-					'PAY_SYSTEM_ID' => '76',
-					'COMPACT' => 'off',
-					'PRIORITY' => 'P'
-				],
-				'original' => [
-					'PRICE' => 2.85,
-					'WEIGHT' => 100.0,
-					'LOCATION_FROM' => '0000073738',
-					'SITE_ID' => 's1',
-					'PERSON_TYPE_ID' => 1,
-					'CURRENCY' => 'RUB',
-					'LOCATION_TO' => '0000876108',
-					'LOCATION_ZIP' => '00000',
-					'ITEMS' => [
-						[
-							'PRICE' => 2.85,
-							'CURRENCY' => 'RUB',
-							'WEIGHT' => 100.0,
-							'QUANTITY' => 1.0,
-							'DELAY' => 'N',
-							'CAN_BUY' => 'Y',
-							'DIMENSIONS' => 'xx',
-							'NAME' => 'Футболка Мужская огонь'
-						]
-					]
-				]
-			];
-			//$office_get = [30, 23, 5];
-
-			$ar = array();
-			$ar[] = 'country=0';
-			$ar[] = 'region=38';
-			$ar[] = 'city='.urlencode('Иркутск');
-			$ar[] = 'weight='.urlencode(0.1);
-			$ar[] = 'insurance='.urlencode(2.85);
-			$ar[] = 'size='.urlencode(implode('|', [0, 0, 0]));
-			$r = \edost_class::RequestData('', 9481, 'Z9aJ9UTavqNzH8AtmhfzezozjqycvctB', implode('&', $ar), 'delivery');
-
-			//$tariff = \CDeliveryEDOST::GetEdostTariff($r['data'][71]['']);
-			$office_get = [$r['data'][71]['company_id']];
-
-			$data = \edost_class::GetOffice($edost_order, $office_get);
+			$data = $this->getOffice($config, $order);
 
 			foreach ($data['data'][30] as $pickup)
 			{
@@ -127,6 +63,114 @@ class Pickup extends Base
 		}
 
 		return $result;
+	}
+
+	protected function getCompanies(Config $config, Sale\OrderBase $order) : array
+	{
+		$office = [];
+
+		$parameters = [
+			'country' => 0,
+			'region' => 38,
+			'city' => urlencode('Иркутск'),
+			'weight' => urlencode($order->getBasket()->getWeight() / 1000),
+			'insurance' => urlencode($order->getBasket()->getPrice()),
+			'size' => urlencode(implode('|', $this->getDimensions($order))),
+		];
+
+		$data = \edost_class::RequestData(
+			'',
+			$config->getId(),
+			$config->getKey(),
+			implode('&', array_map(function($key, $value) { return $key . '=' . $value; }, array_keys($parameters), $parameters)),
+			'delivery'
+		);
+
+		if (!empty($data['data']))
+		{
+			foreach ($data['data'] as $item)
+			{
+				$office[] = $item['company_id'];
+			}
+
+			$office = array_unique($office);
+		}
+
+		return $office;
+	}
+
+	protected function getOffice(Config $config, Sale\OrderBase $order) : array
+	{
+		$companies = $this->getCompanies($config, $order);
+		$dimensions = $this->getDimensions($order);
+
+		$edostOrderData = [
+			'location' => \CDeliveryEDOST::GetEdostLocation(2440),
+			'zip' => '',
+			'weight' => $order->getBasket()->getWeight() / 1000,
+			'price' => $order->getBasket()->getPrice(),
+			'sizesum' => array_sum($dimensions),
+			'size1' => array_shift($dimensions),
+			'size2' => array_shift($dimensions),
+			'size3' => array_shift($dimensions),
+			'config' => $config->getConfig() + [
+					'PAY_SYSTEM_ID' => '76',
+					'COMPACT' => 'off',
+					'PRIORITY' => 'P',
+				],
+			'original' => [
+				'PRICE' => 2.85,
+				'WEIGHT' => 100.0,
+				'LOCATION_FROM' => '0000073738',
+				'SITE_ID' => 's1',
+				'PERSON_TYPE_ID' => 1,
+				'CURRENCY' => 'RUB',
+				'LOCATION_TO' => '0000876108',
+				'LOCATION_ZIP' => '00000',
+				'ITEMS' => [
+					[
+						'PRICE' => 2.85,
+						'CURRENCY' => 'RUB',
+						'WEIGHT' => 100.0,
+						'QUANTITY' => 1.0,
+						'DELAY' => 'N',
+						'CAN_BUY' => 'Y',
+						'DIMENSIONS' => 'xx',
+						'NAME' => 'Футболка Мужская огонь',
+					],
+				],
+			],
+		];
+
+		return \edost_class::GetOffice($edostOrderData, $companies);
+	}
+
+	protected function getDimensions(Sale\OrderBase $order) : array
+	{
+		static $dimensionsResult;
+
+		if ($dimensionsResult === null)
+		{
+			$width = $height = $length = 0;
+
+			/** @var \Bitrix\Sale\BasketItem $item */
+			foreach ($order->getBasket() as $item)
+			{
+				$dimensions = $item->getField('DIMENSIONS');
+				if (!empty($dimensions))
+				{
+					$dimensions = unserialize($dimensions);
+
+					$width += $dimensions['WIDTH'];
+					$height += $dimensions['HEIGHT'];
+					$length += $dimensions['LENGTH'];
+				}
+			}
+
+			$dimensionsResult = [$height, $width, $length];
+		}
+
+		return $dimensionsResult;
 	}
 
 	protected function getLocation(Sale\OrderBase $order) : array
