@@ -1,11 +1,14 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\OrderCreate\Stage;
 
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Rest\OrderCreate\Request;
 use YandexPay\Pay\Trading\Action\Rest\State;
 
 class OrderPaySystem
 {
+    use Concerns\HasMessage;
+
 	protected $request;
 
 	public function __construct(Request $request)
@@ -21,23 +24,24 @@ class OrderPaySystem
 	protected function fillPaySystem(State\OrderCalculation $state) : void
 	{
 		$paymentType = $this->request->getPaymentType();
+        $data = null;
+        $paySystemId = $state->options->getPaymentCard();
 
-		if ($paymentType === 'CARD')
+		if ($paymentType === 'SPLIT')
 		{
-			$paySystemId = $state->options->getPaymentCard();
+            $data = [
+                'PAY_SYSTEM_NAME' => self::getMessage('SPLIT_NAME'),
+                'COMMENTS' => self::getMessage('SPLIT_COMMENTS'),
+            ];
 		}
-		elseif ($paymentType === 'SPLIT')
-		{
-			$paySystemId = $state->options->getPaymentSplit();
-		}
-		else
+		else if ($paymentType === 'CASH_ON_DELIVERY')
 		{
 			$paySystemId = $state->options->getPaymentCash();
 		}
 
 		if ((int)$paySystemId > 0)
 		{
-			$state->order->createPayment($paySystemId);
+			$state->order->createPayment($paySystemId, null, $data);
 		}
 	}
 }
