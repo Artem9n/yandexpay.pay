@@ -43,10 +43,11 @@ class Delivery
 
 	/**
 	 * @param Order $order
+	 * @param bool $skipLocation
 	 *
 	 * @return int[]
 	 */
-	public function getRestricted(Order $order) : array
+	public function getRestricted(Order $order, bool $skipLocation = false) : array
 	{
 		throw new NotImplementedException('getRestricted is missing');
 	}

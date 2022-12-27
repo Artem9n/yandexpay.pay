@@ -198,7 +198,7 @@ class Delivery extends EntityReference\Delivery
 		return $result;
 	}
 
-	public function getRestricted(EntityReference\Order $order) : array
+	public function getRestricted(EntityReference\Order $order, bool $skipLocation = false) : array
 	{
 		$result = [];
 		$calculatableOrder = $this->getOrderCalculatable($order);
@@ -240,7 +240,8 @@ class Delivery extends EntityReference\Delivery
 				}
 
 				if (
-					!$this->isOrderLocationFilled($calculatableOrder)
+					!$skipLocation
+					&& !$this->isOrderLocationFilled($calculatableOrder)
 					&& $this->hasDeliveryLocationRestriction($serviceId)
 				)
 				{

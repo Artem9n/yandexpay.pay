@@ -19,7 +19,7 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		$deliveries = $this->restrictedDeliveries($state);
+		$deliveries = $this->restrictedDeliveries($state, true);
 		$deliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::PICKUP_TYPE);
 		$locationStores = $this->locationStores($state, $deliveries);
 		$pickupOptions = $this->collectPickupOptions($state, $locationStores);

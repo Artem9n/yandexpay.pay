@@ -115,11 +115,11 @@ class OrderDeliveryCollector extends ResponseCollector
 		]);
 	}
 
-	protected function restrictedDeliveries(State\OrderCalculation $state) : array
+	protected function restrictedDeliveries(State\OrderCalculation $state, bool $skipLocation = false) : array
 	{
 		$result = [];
 		$deliveryService = $state->environment->getDelivery();
-		$compatibleIds = $deliveryService->getRestricted($state->order);
+		$compatibleIds = $deliveryService->getRestricted($state->order, $skipLocation);
 
 		if (empty($compatibleIds)) { return $result; }
 
