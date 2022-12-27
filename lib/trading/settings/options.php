@@ -50,13 +50,6 @@ class Options extends Reference\Skeleton
 		return $result > 0 ? $result : null;
 	}
 
-	public function getPaymentSplit() : ?int
-	{
-		$result = (int)$this->getValue('PAYSYSTEM_SPLIT');
-
-		return $result > 0 ? $result : null;
-	}
-
 	public function useBuyerPhone() : bool
 	{
 		return $this->getProperty('PHONE') !== null;
@@ -221,17 +214,6 @@ class Options extends Reference\Skeleton
 				'VALUES' => $environment->getPaySystem()->getEnum($siteId, [
 					'=ACTION_FILE' => 'yandexpay',
 				]),
-			],
-			'PAYSYSTEM_SPLIT' => [
-				'TYPE' => 'enumeration',
-				'NAME' => self::getMessage('SPLIT'),
-				'SORT' => 2010,
-				'VALUES' => $environment->getPaySystem()->getEnum($siteId, [
-					'=ACTION_FILE' => 'yandexpay',
-				]),
-				'SETTINGS' => [
-					'CAPTION_NO_VALUE' => self::getMessage('SPLIT_NO_VALUE'),
-				],
 			],
 		];
 	}
