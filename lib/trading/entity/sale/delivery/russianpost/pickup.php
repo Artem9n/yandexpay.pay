@@ -226,28 +226,42 @@ class Pickup extends Base
 		$propAddress->setValue($address);
 	}
 
-	/** @noinspection PhpIncompatibleReturnTypeInspection */
 	protected function zipProperty(Sale\OrderBase $order) : ?Sale\PropertyValue
 	{
 		$propertyCollection = $order->getPropertyCollection();
 		$addressCode = (string)\Russianpost\Post\Optionpost::get('zip', true, $order->getSiteId());
-		$codeProperties = $addressCode !== ''
-			? $propertyCollection->getItemsByOrderPropertyCode($addressCode)
-			: null;
+		$codeProperty = null;
 
-		return !empty($codeProperties) ? reset($codeProperties) : $propertyCollection->getDeliveryLocationZip();
+		if ($addressCode !== '')
+		{
+			/** @var \Bitrix\Sale\PropertyValue $property */
+			foreach ($propertyCollection as $property)
+			{
+				if ($property->getField('CODE') !== $addressCode) { continue; }
+				$codeProperty = $property;
+			}
+		}
+
+		return $codeProperty ?? $propertyCollection->getDeliveryLocationZip();
 	}
 
-	/** @noinspection PhpIncompatibleReturnTypeInspection */
 	protected function addressProperty(Sale\OrderBase $order) : ?Sale\PropertyValue
 	{
 		$propertyCollection = $order->getPropertyCollection();
 		$addressCode = (string)\Russianpost\Post\Optionpost::get('address', true, $order->getSiteId());
-		$codeProperties = $addressCode !== ''
-			? $propertyCollection->getItemsByOrderPropertyCode($addressCode)
-			: null;
+		$codeProperty = null;
 
-		return !empty($codeProperties) ? reset($codeProperties) : $propertyCollection->getAddress();
+		if ($addressCode !== '')
+		{
+			/** @var \Bitrix\Sale\PropertyValue $property */
+			foreach ($propertyCollection as $property)
+			{
+				if ($property->getField('CODE') !== $addressCode) { continue; }
+				$codeProperty = $property;
+			}
+		}
+
+		return $codeProperty ?? $propertyCollection->getAddress();
 	}
 
 	public function getServiceType() : string
