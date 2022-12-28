@@ -19,6 +19,10 @@ export default class Display {
 
 	}
 
+	unmount(node, payment) {
+
+	}
+
 	getOption(name) {
 		return this.options[name];
 	}

@@ -24,6 +24,10 @@ export default class Widget extends Display {
 		});
 	}
 
+	unmount(node, payment) {
+		payment.unmountWidget(node);
+	}
+
 	collectBorder() {
 		let result = '';
 

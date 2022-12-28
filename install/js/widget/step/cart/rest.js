@@ -172,7 +172,7 @@ export default class RestProxy extends Proxy {
 
 			if (result.status === 'fail') {
 				this._mounted = null;
-				this.payment.unmountButton(this.cart.element);
+				this.cart.display.unmount(this.cart.element, this.payment);
 				throw new Error(result.reason);
 			}
 
