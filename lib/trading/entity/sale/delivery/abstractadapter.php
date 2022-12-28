@@ -53,4 +53,54 @@ abstract class AbstractAdapter
 	{
 
 	}
+
+	protected function zipProperty(Sale\OrderBase $order) : ?Sale\PropertyValue
+	{
+		$propertyCollection = $order->getPropertyCollection();
+		$zipCode = $this->getZipCode($order);
+		$codeProperty = null;
+
+		if ($zipCode !== '')
+		{
+			/** @var \Bitrix\Sale\PropertyValue $property */
+			foreach ($propertyCollection as $property)
+			{
+				if ($property->getField('CODE') !== $zipCode) { continue; }
+				$codeProperty = $property;
+				break;
+			}
+		}
+
+		return $codeProperty ?? $propertyCollection->getDeliveryLocationZip();
+	}
+
+	protected function addressProperty(Sale\OrderBase $order) : ?Sale\PropertyValue
+	{
+		$propertyCollection = $order->getPropertyCollection();
+		$addressCode = $this->getAddressCode($order);
+		$codeProperty = null;
+
+		if ($addressCode !== '')
+		{
+			/** @var \Bitrix\Sale\PropertyValue $property */
+			foreach ($propertyCollection as $property)
+			{
+				if ($property->getField('CODE') !== $addressCode) { continue; }
+				$codeProperty = $property;
+				break;
+			}
+		}
+
+		return $codeProperty ?? $propertyCollection->getAddress();
+	}
+
+	protected function getAddressCode(Sale\OrderBase $order) : string
+	{
+		return '';
+	}
+
+	protected function getZipCode(Sale\OrderBase $order) : string
+	{
+		return '';
+	}
 }

@@ -154,7 +154,7 @@ class Base extends AbstractAdapter
 
 		if (!empty($zip))
 		{
-			$propZip = $order->getPropertyCollection()->getDeliveryLocationZip();
+			$propZip = $this->zipProperty($order);
 
 			if ($propZip !== null)
 			{
@@ -162,11 +162,21 @@ class Base extends AbstractAdapter
 			}
 		}
 
-		$propAddress = $order->getPropertyCollection()->getAddress();
+		$propAddress = $this->addressProperty($order);
 
 		if ($propAddress === null) { return; }
 
 		$propAddress->setValue(sprintf('Boxberry: %s #%s', $address, $storeId));
+	}
+
+	protected function getZipCode(Sale\OrderBase $order) : string
+	{
+		return Main\Config\Option::get(\CBoxberry::$moduleId, 'BB_ZIP');
+	}
+
+	protected function getAddressCode(Sale\OrderBase $order) : string
+	{
+		return Main\Config\Option::get(\CBoxberry::$moduleId, 'BB_ADDRESS');
 	}
 
 	public function getServiceType() : string

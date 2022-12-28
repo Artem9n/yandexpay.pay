@@ -149,29 +149,16 @@ class Base extends AbstractAdapter
 		}
 
 		$value = sprintf('%s #S%s', $address, $storeId);
-		$sdekAddressCode = \COption::GetOptionString(\CDeliverySDEK::$MODULE_ID, 'pvzPicker', '');
-		$propertyCollection = $order->getPropertyCollection();
-		$propAddress = null;
+		$propAddress = $this->addressProperty($order);
 
-		if ($sdekAddressCode)
-		{
-			foreach ($propertyCollection as $property)
-			{
-				if ($property->getField('CODE') !== $sdekAddressCode) { continue; }
-
-				$propAddress = $property;
-				break;
-			}
-		}
-
-		if ($propAddress === null)
-		{
-			$propAddress = $propertyCollection->getAddress();
-
-			if ($propAddress === null) { return; }
-		}
+		if ($propAddress === null) { return; }
 
 		$propAddress->setValue($value);
+	}
+
+	protected function getAddressCode(Sale\OrderBase $order) : string
+	{
+		return (string)\Ipolh\SDEK\option::get('pvzPicker');
 	}
 
 	public function getDetailPickup(string $storeId) : array
