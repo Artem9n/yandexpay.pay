@@ -439,6 +439,29 @@ class Order extends EntityReference\Order
 		return $bindingCollection->createItem($salePlatform);
 	}
 
+	public function setUserId(int $userId) : Main\Result
+	{
+		$result = new Main\Result();
+
+		if ($userId <= 0)
+		{
+			$result->addError(new Main\Error('cant set empty userId'));
+			return $result;
+		}
+
+		$basket = $this->internalOrder->getBasket();
+
+		$this->internalOrder->setFieldNoDemand('USER_ID', $userId);
+
+		if ($basket && $this->internalOrder->isNew())
+		{
+			$fUserId = Sale\Fuser::getIdByUserId($userId);
+			$basket->setFUserId($fUserId);
+		}
+
+		return $result;
+	}
+
 	public function getBasket() : Sale\BasketBase
 	{
 		$order = $this->internalOrder;

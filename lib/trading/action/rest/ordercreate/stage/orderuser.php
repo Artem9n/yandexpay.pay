@@ -17,18 +17,22 @@ class OrderUser
 
 	public function __invoke(State\OrderCalculation $state)
 	{
+		if (!$this->needRegister()) { return; }
+
 		$state->userId = $this->createUser($state);
+		$state->order->setUserId($state->userId);
+	}
+
+	/** @noinspection PhpCastIsUnnecessaryInspection */
+	protected function needRegister() : bool
+	{
+		$userId = $this->request->getUserId();
+
+		return ($userId === 0 || $userId === (int)\CSaleUser::GetAnonymousUserID());
 	}
 
 	protected function createUser(State\OrderCalculation $state) : int
 	{
-		$userId = (int)$this->request->getUserId();
-
-		if ($userId > 0 && $userId !== (int)\CSaleUser::GetAnonymousUserID())
-		{
-			return $userId;
-		}
-
 		$userData = $this->request->getUser();
 
 		$user = $state->environment->getUserRegistry()->getUser([

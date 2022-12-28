@@ -76,7 +76,6 @@ class Action extends Rest\Reference\EffectiveAction
 	protected function calculationPipeline() : Rest\Pipeline
 	{
 		return (new Rest\Pipeline())
-			->pipe(new Rest\OrderCreate\Stage\OrderUser($this->request))
 			->pipe(new Rest\Stage\NewOrder(
 				$this->request->getUserId(),
 				$this->request->getFUserId(),
@@ -95,6 +94,7 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe($this->stageDeliveryProperties())
 			->pipe(new Rest\OrderCreate\Stage\RelatedProperties())
 			->pipe(new Rest\OrderCreate\Stage\OrderCheck($this->request))
+			->pipe(new Rest\OrderCreate\Stage\OrderUser($this->request))
 			->pipe(new Rest\OrderCreate\Stage\OrderAdd($this->request));
 	}
 
