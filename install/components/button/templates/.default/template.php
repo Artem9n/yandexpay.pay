@@ -20,13 +20,15 @@ $this->setFrameMode(true); // not need dynamic area
 if (!$arResult['NEED_SHOW']) { return; }
 try
 {
-	// assets
+	// assets widget
 
 	if ($APPLICATION->GetPageProperty('yandexpay_extension_widget') !== 'Y')
 	{
 		$APPLICATION->SetPageProperty('yandexpay_extension_widget', 'Y');
 		echo Extension::getHtml('yandexpaypay.widget');
 	}
+
+	// assets solution
 
 	if (
 		!empty($arResult['PARAMS']['solution'])
@@ -39,41 +41,30 @@ try
 		echo $solution->getExtension();
 	}
 
-	// widget index
+	// assets expert js
 
-	$widgetIndex = (int)$APPLICATION->GetPageProperty('yandexpay_widget_index');
-	$containerId = 'yandexpay' . ($widgetIndex > 0 ? '-' . $widgetIndex : '');
-
-	$APPLICATION->SetPageProperty('yandexpay_widget_index', ++$widgetIndex);
-
-	// draw
-
-	$widgetOptions = array_diff_key($arResult['PARAMS'], [ 'order' => true , 'selector' => true, 'position' => true]);
-	$widgetOptions += (array)($arParams['~WIDGET_OPTIONS'] ?? []);
-	$factoryOptions = array_intersect_key($arResult['PARAMS'], [
-		'solution' => true,
-		'mode' => true,
-		'displayType' => true,
-		'displayParameters' => true,
-		'useDivider' => true,
-	]);
-	$factoryOptions += (array)($arParams['~FACTORY_OPTIONS'] ?? []);
-	$factoryOptions['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
-	$factoryOptions['containerId'] = $containerId;
-	$order = $arResult['PARAMS']['order'];
-	$selector = $arResult['PARAMS']['selector'];
-	$position = $arResult['PARAMS']['position'];
-
-	if (empty($selector))
+	if ($arResult['JS_CONTENT'] !== null)
 	{
-		$selector = '#' . $containerId . '-container';
-		$position = 'afterbegin';
-		$factoryOptions += [
+		Main\Page\Asset::getInstance()->addString(sprintf('<script>%s</script>', $arResult['JS_CONTENT']));
+	}
+
+	// assets expert css
+
+	if ($arResult['CSS_CONTENT'] !== null)
+	{
+		Main\Page\Asset::getInstance()->addString(sprintf('<style>%s</style>', $arResult['CSS_CONTENT']));
+	}
+
+	if (empty($arResult['SELECTOR']))
+	{
+		$arResult['SELECTOR'] = '#' . $arResult['CONTAINER_ID'] . '-container';
+		$arResult['POSITION'] = 'afterbegin';
+		$arResult['FACTORY_OPTIONS'] += [
 			'preserve' => false,
 		];
 
 		?>
-		<div id="<?= $containerId . '-container' ?>" class="yandex-pay"></div>
+		<div id="<?= $arResult['CONTAINER_ID'] . '-container' ?>" class="yandex-pay"></div>
 		<?php
 	}
 	?>
@@ -83,13 +74,13 @@ try
 			echo file_get_contents(__DIR__ . '/init.min.js');
 			?>
 			function run() {
-				const factory = new BX.YandexPay.Factory(<?= Json::encode($factoryOptions) ?>);
-				const selector = '<?= htmlspecialcharsback($selector) ?>';
-				const position = '<?= $position?>';
+				const factory = new BX.YandexPay.Factory(<?= Json::encode($arResult['FACTORY_OPTIONS']) ?>);
+				const selector = '<?= htmlspecialcharsback($arResult['SELECTOR']) ?>';
+				const position = '<?= $arResult['POSITION']?>';
 
 				factory.inject(selector, position)
 					.then((widget) => {
-						widget.setOptions(<?= Json::encode($widgetOptions) ?>);
+						widget.setOptions(<?= Json::encode($arResult['WIDGET_OPTIONS']) ?>);
 						widget.cart();
 					})
 					.catch((error) => {

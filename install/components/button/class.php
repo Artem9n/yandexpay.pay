@@ -106,6 +106,8 @@ class TradingButton extends \CBitrixComponent
 			'useDivider'        => $this->arParams['USE_DIVIDER'],
 			'displayType'       => $displayType,
 			'displayParameters' => $displayParameters,
+			'jsContent'         => $this->arParams['JS_CONTENT'],
+			'cssContent'        => $this->arParams['CSS_CONTENT'],
 		];
 	}
 
