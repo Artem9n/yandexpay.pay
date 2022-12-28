@@ -27,6 +27,13 @@ abstract class AbstractBehavior implements BehaviorInterface
 
 	public function getFields() : array
 	{
+		return $this->getTestFields()
+			+ $this->getDisplayFields()
+			+ $this->getExpertFields();
+	}
+
+	protected function getTestFields() : array
+	{
 		return [
 			'SELECTOR' => [
 				'GROUP' => self::getMessage('GROUP_POSITION'),
@@ -58,7 +65,7 @@ abstract class AbstractBehavior implements BehaviorInterface
 					'DEFAULT_VALUE' => Display\Registry::BUTTON,
 				],
 			],
-		] + $this->getDisplayFields();
+		];
 	}
 
 	protected function getDisplayFields() : array
@@ -105,6 +112,62 @@ abstract class AbstractBehavior implements BehaviorInterface
 		}
 
 		return $result;
+	}
+
+	protected function getExpertFields() : array
+	{
+		return [
+			'CSS' => [
+				'TITLE' => self::getMessage('CSS'),
+				'GROUP' => self::getMessage('EXPERT_FIELDS'),
+				'HELP' => self::getMessage('EXPERT_CSS_HELP'),
+				'TYPE' => 'boolean',
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_FALSE,
+				],
+			],
+			'CSS_CONTENT' => [
+				'TITLE' => self::getMessage('CSS_CONTENT'),
+				'GROUP' => self::getMessage('EXPERT_FIELDS'),
+				'HELP' => self::getMessage('EXPERT_CSS_CONTENT_HELP'),
+				'TYPE' => 'string',
+				'SETTINGS' => [
+					'ROWS' => 5,
+					'SIZE' => 20,
+				],
+				'DEPEND' => [
+					'CSS' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Ui\UserField\BooleanType::VALUE_TRUE,
+					],
+				],
+			],
+			'JS' => [
+				'TITLE' => self::getMessage('JS'),
+				'GROUP' => self::getMessage('EXPERT_FIELDS'),
+				'HELP' => self::getMessage('EXPERT_JS_HELP'),
+				'TYPE' => 'boolean',
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_FALSE,
+				],
+			],
+			'JS_CONTENT' => [
+				'TITLE' => self::getMessage('JS_CONTENT'),
+				'GROUP' => self::getMessage('EXPERT_FIELDS'),
+				'HELP' => self::getMessage('EXPERT_JS_CONTENT_HELP'),
+				'TYPE' => 'string',
+				'SETTINGS' => [
+					'ROWS' => 5,
+					'SIZE' => 20,
+				],
+				'DEPEND' => [
+					'JS' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Ui\UserField\BooleanType::VALUE_TRUE,
+					],
+				],
+			]
+		];
 	}
 
 	protected function getDisplayList() : array
@@ -165,6 +228,20 @@ abstract class AbstractBehavior implements BehaviorInterface
 	public function getSelector() : string
 	{
 		return htmlspecialcharsback($this->requireValue('SELECTOR'));
+	}
+
+	public function getJsContent() : ?string
+	{
+		$value = trim((string)$this->getValue('JS_CONTENT'));
+
+		return $value !== '' ? $value : null;
+	}
+
+	public function getCssContent() : ?string
+	{
+		$value = trim((string)$this->getValue('CSS_CONTENT'));
+
+		return $value !== '' ? $value : null;
 	}
 
 	public function getPosition() : string
