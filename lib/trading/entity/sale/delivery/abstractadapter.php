@@ -58,7 +58,7 @@ abstract class AbstractAdapter
 	{
 		$propertyCollection = $order->getPropertyCollection();
 		$zipCode = $this->getZipCode($order);
-		$codeProperty = null;
+		$itemProperty = null;
 
 		if ($zipCode !== '')
 		{
@@ -66,19 +66,19 @@ abstract class AbstractAdapter
 			foreach ($propertyCollection as $property)
 			{
 				if ($property->getField('CODE') !== $zipCode) { continue; }
-				$codeProperty = $property;
+				$itemProperty = $property;
 				break;
 			}
 		}
 
-		return $codeProperty ?? $propertyCollection->getDeliveryLocationZip();
+		return $itemProperty ?? $propertyCollection->getDeliveryLocationZip();
 	}
 
 	protected function addressProperty(Sale\OrderBase $order) : ?Sale\PropertyValue
 	{
 		$propertyCollection = $order->getPropertyCollection();
 		$addressCode = $this->getAddressCode($order);
-		$codeProperty = null;
+		$itemProperty = null;
 
 		if ($addressCode !== '')
 		{
@@ -86,12 +86,12 @@ abstract class AbstractAdapter
 			foreach ($propertyCollection as $property)
 			{
 				if ($property->getField('CODE') !== $addressCode) { continue; }
-				$codeProperty = $property;
+				$itemProperty = $property;
 				break;
 			}
 		}
 
-		return $codeProperty ?? $propertyCollection->getAddress();
+		return $itemProperty ?? $propertyCollection->getAddress();
 	}
 
 	protected function getAddressCode(Sale\OrderBase $order) : string

@@ -5,6 +5,7 @@
 namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Dpd;
 
 use Bitrix\Sale;
+use Bitrix\Main;
 use Ipolh\DPD\DB\Terminal;
 use Ipolh\DPD\Delivery\DPD;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
@@ -20,10 +21,11 @@ class Pickup extends Base
 
 	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
 	{
-		if ($propAddress = $order->getPropertyCollection()->getAddress())
-		{
-			$value = sprintf('%s (%s)', $address, $storeId);
+		$value = sprintf('%s (%s)', $address, $storeId);
+		$propAddress = $this->addressProperty($order);
 
+		if ($propAddress !== null)
+		{
 			$propAddress->setValue($value);
 		}
 
@@ -32,6 +34,11 @@ class Pickup extends Base
 
 		$profile = DPD::getDeliveryProfile($this->code);
 		$_REQUEST['IPOLH_DPD_TERMINAL'][$profile] = $storeId;
+	}
+
+	protected function getAddressCode(Sale\OrderBase $order) : string
+	{
+		return (string)Main\Config\Option::get('ipol.dpd', sprintf('RECEIVER_PVZ_FIELD_%s', $order->getPersonTypeId()));
 	}
 
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
