@@ -73,6 +73,8 @@ abstract class AbstractEngine extends Event\Base
 			'DISPLAY_TYPE' => $display->getType(),
 			'DISPLAY_PARAMETERS' => $display->getWidgetParameters(),
 			'USE_DIVIDER' => $options->useDivider(),
+			'JS_CONTENT' => $options->getJsContent(),
+			'CSS_CONTENT' => $options->getCssContent(),
 		];
 	}
 
