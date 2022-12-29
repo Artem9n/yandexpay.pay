@@ -30,6 +30,7 @@ class Order extends EntityReference\Order
 		Sale\DiscountCouponsManager::init(Sale\DiscountCouponsManager::MODE_EXTERNAL);
 
 		$this->freeze();
+		$this->clearPropertyDefaults();
 	}
 
 	public function finalize() : Main\Result
@@ -280,6 +281,16 @@ class Order extends EntityReference\Order
 	public function getBasketPrice() : float
 	{
 		return $this->getBasket()->getPrice();
+	}
+
+	protected function clearPropertyDefaults() : void
+	{
+		$propertyCollection = $this->internalOrder->getPropertyCollection();
+		$location = $propertyCollection->getDeliveryLocation();
+		$zip = $propertyCollection->getDeliveryLocationZip();
+
+		if ($location !== null) { $location->setValue(null); }
+		if ($zip !== null) { $zip->setValue(null); }
 	}
 
 	public function setLocation($locationId) : Main\Result
