@@ -72,31 +72,29 @@ class Store extends AbstractAdapter
 
 	protected function combineStores(array $stores, int $locationId) : array
 	{
-		if ($locationId <= 0) { return $stores; }
-
 		return [$locationId => $stores];
 	}
 
-	public function getLocationId(int $deliveryId) : ?string
+	public function getLocationId(int $deliveryId) : int
 	{
 		$locationRestrict = $this->getLocationByRestrict($deliveryId);
 		$locationSettings = $this->getLocationBySettingSale();
 		$locationCode = $locationRestrict ?? $locationSettings;
 
-		return \CSaleLocation::getLocationIDbyCODE($locationCode);
+		return (int)\CSaleLocation::getLocationIDbyCODE($locationCode);
 	}
 
 	public function getLocationByRestrict(int $deliveryId) : ?string
 	{
 		$result = Sale\Delivery\DeliveryLocationTable::getList([
 			'filter' => [
-				'=DELIVERY_ID' => $deliveryId
+				'=DELIVERY_ID' => $deliveryId,
 			]
 		])->fetchCollection();
 
 		$result = $result->getLocationCodeList();
 
-		if (empty($result)) { return  null; }
+		if (empty($result)) { return null; }
 
 		return end($result);
 	}
