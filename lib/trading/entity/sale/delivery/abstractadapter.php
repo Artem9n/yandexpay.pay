@@ -54,7 +54,7 @@ abstract class AbstractAdapter
 
 	}
 
-	protected function zipProperty(Sale\OrderBase $order) : ?Sale\PropertyValue
+	protected function zipProperty(Sale\OrderBase $order) : ?Sale\PropertyValueBase
 	{
 		$propertyCollection = $order->getPropertyCollection();
 		$zipCode = $this->getZipCode($order);
@@ -62,7 +62,7 @@ abstract class AbstractAdapter
 
 		if ($zipCode !== '')
 		{
-			/** @var \Bitrix\Sale\PropertyValue $property */
+			/** @var Sale\PropertyValueBase $property */
 			foreach ($propertyCollection as $property)
 			{
 				if ($property->getField('CODE') !== $zipCode) { continue; }
@@ -74,7 +74,7 @@ abstract class AbstractAdapter
 		return $itemProperty ?? $propertyCollection->getDeliveryLocationZip();
 	}
 
-	protected function addressProperty(Sale\OrderBase $order) : ?Sale\PropertyValue
+	protected function addressProperty(Sale\OrderBase $order) : ?Sale\PropertyValueBase
 	{
 		$propertyCollection = $order->getPropertyCollection();
 		$addressCode = $this->getAddressCode($order);
@@ -82,7 +82,7 @@ abstract class AbstractAdapter
 
 		if ($addressCode !== '')
 		{
-			/** @var \Bitrix\Sale\PropertyValue $property */
+			/** @var Sale\PropertyValueBase $property */
 			foreach ($propertyCollection as $property)
 			{
 				if ($property->getField('CODE') !== $addressCode) { continue; }
