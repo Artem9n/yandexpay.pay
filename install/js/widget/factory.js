@@ -141,10 +141,7 @@ export default class Factory {
 	}
 
 	insertLoader(widget) {
-		widget.go('loader', {
-			label: this.getOption('label'),
-		});
-
+		widget.bootLoader();
 		return widget;
 	}
 
