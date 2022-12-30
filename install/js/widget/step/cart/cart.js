@@ -1,35 +1,29 @@
-import Template from '../../utils/template';
 import AbstractStep from '../abstractstep';
 import { ready } from "../../utils/ready";
+import Display from "../../ui/display/factory";
 import RestProxy from "./rest";
 import SiteProxy from "./site";
-import Display from "../../ui/display/factory";
 
-export default class AbstractCart extends AbstractStep {
+export default class Cart extends AbstractStep {
 
-	static defaults = {
-		loaderSelector: '.bx-yapay-skeleton-loading',
-	}
+	isBootstrap = false;
+	element;
+	display;
+	initialContent;
 
 	render(node, data) {
-		this.isBootstrap = false;
 		this.element = node;
-		this.paymentButton = null;
-		this.proxy = this.getOption('isRest')
-			? new RestProxy(this)
-			: new SiteProxy(this);
-
-		this.paymentData = this.getPaymentData();
 		this.display = this.getDisplay();
 		this.initialContent = this.element.innerHTML;
 
+		this.bootProxy();
 		this.bootSolution();
 		this.setupPaymentCash();
 		this.delayBootstrap();
 	}
 
-	compile(data) {
-		return Template.compile(this.options.template, data);
+	bootProxy() : RestProxy|SiteProxy{
+		this.proxy = this.isRest() ? new RestProxy(this) : new SiteProxy(this);
 	}
 
 	restore(node) {
@@ -81,42 +75,13 @@ export default class AbstractCart extends AbstractStep {
 		}
 	}
 
-	setupPaymentCash(){
+	setupPaymentCash() {
 		this.proxy?.setupPaymentCash();
-	}
-
-	getPaymentData() {
-		return this.proxy.getPaymentData();
-	}
-
-	createPayment(node, paymentData) {
-		this.proxy.createPayment(node, paymentData);
 	}
 
 	getDisplay() {
 		const type = this.getOption('displayType');
 		const options = this.getOption('displayParameters');
 		return Display.make(type, this, options);
-	}
-
-	amountSum(amountA, amountB) {
-		return (Number(amountA) + Number(amountB)).toFixed(2);
-	}
-
-	showError(type, message, err = null) {
-		let notify = type + ' - ' + message;
-
-		if (err) {
-			notify += ' ' + err;
-		}
-
-		alert(notify);
-	}
-
-	removeLoader() {
-		const loader = this.element.querySelector(this.getOption('loaderSelector'));
-
-		loader?.remove();
-		this.initialContent = null;
 	}
 }

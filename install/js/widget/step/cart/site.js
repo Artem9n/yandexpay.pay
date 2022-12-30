@@ -75,7 +75,7 @@ export default class SiteProxy extends Proxy {
 		let data = {
 			address: address,
 			yapayAction: 'deliveryOptions',
-			items: this.cart.paymentData.order.items,
+			items: this.paymentData.order.items,
 			setupId: this.getOption('setupId'),
 			paySystemId: this.getOption('paySystemId'),
 		};
@@ -88,7 +88,7 @@ export default class SiteProxy extends Proxy {
 		let data = {
 			bounds: bounds,
 			yapayAction: 'pickupOptions',
-			items: this.cart.paymentData.order.items,
+			items: this.paymentData.order.items,
 			setupId: this.getOption('setupId'),
 			paySystemId: this.getOption('paySystemId'),
 		};
@@ -105,7 +105,7 @@ export default class SiteProxy extends Proxy {
 			.then((payment) => {
 				this._mounted = true;
 
-				this.cart.removeLoader();
+				this.widget.removeLoader();
 				this.mountButton(node, payment);
 
 				payment.on(YaPay.PaymentEventType.Process, (event) => {
@@ -117,10 +117,10 @@ export default class SiteProxy extends Proxy {
 						if(!this.isPaymentTypeCash(event)) {
 							this.notify(result, event).then(result => {
 								if (result.success === true) {
-									this.cart.widget.go(result.state, result);
+									this.widget.go(result.state, result);
 									payment.complete(YaPay.CompleteReason.Success);
 								} else {
-									this.cart.widget.go('error', result);
+									this.widget.go('error', result);
 									payment.complete(YaPay.CompleteReason.Error);
 								}
 							});
@@ -210,7 +210,7 @@ export default class SiteProxy extends Proxy {
 		let data = {
 			pickupId: pickupId,
 			yapayAction: 'pickupDetail',
-			items: this.cart.paymentData.order.items,
+			items: this.paymentData.order.items,
 			setupId: this.getOption('setupId'),
 			paySystemId: this.getOption('paySystemId'),
 		};
@@ -238,7 +238,7 @@ export default class SiteProxy extends Proxy {
 
 		let orderData = {
 			setupId: this.getOption('setupId'),
-			items: this.cart.paymentData.order.items,
+			items: this.paymentData.order.items,
 			payment: event.paymentMethodInfo,
 			contact: event.shippingContact,
 			yapayAction: 'orderAccept',
@@ -273,7 +273,7 @@ export default class SiteProxy extends Proxy {
 		let productId = this.getOption('productId');
 
 		if (productId !== newProductId) { // todo in items
-			this.cart.widget.setOptions({productId: newProductId});
+			this.widget.setOptions({productId: newProductId});
 			this.reflow();
 		}
 	}
@@ -288,16 +288,16 @@ export default class SiteProxy extends Proxy {
 				if (result.error) { throw new Error(result.error.message); }
 
 				this.combineOrderWithProducts(result);
-				this.createPayment(this.cart.element, this.cart.paymentData);
+				this.createPayment(this.cart.element, this.paymentData);
 			})
 			.catch((error) => {
-				this.cart.removeLoader();
+				this.widget.removeLoader();
 				// todo this.showError();
 			});
 	}
 
 	combineOrderWithPickupShipping(pickupOption) {
-		const { order } = this.cart.paymentData;
+		const { order } = this.paymentData;
 
 		return {
 			...order,
@@ -311,13 +311,13 @@ export default class SiteProxy extends Proxy {
 			],
 			total: {
 				...order.total,
-				amount: this.cart.amountSum(order.total.amount, pickupOption.amount),
+				amount: this.amountSum(order.total.amount, pickupOption.amount),
 			},
 		};
 	}
 
 	combineOrderWithDirectShipping(shippingOption) {
-		const { order } = this.cart.paymentData;
+		const { order } = this.paymentData;
 
 		return {
 			...order,
@@ -331,13 +331,13 @@ export default class SiteProxy extends Proxy {
 			],
 			total: {
 				...order.total,
-				amount: this.cart.amountSum(order.total.amount, shippingOption.amount),
+				amount: this.amountSum(order.total.amount, shippingOption.amount),
 			},
 		};
 	}
 
 	combineOrderWithProducts(products) {
-		const { order } = this.cart.paymentData;
+		const { order } = this.paymentData;
 
 		let exampleOrder = {
 			...order,
@@ -347,7 +347,7 @@ export default class SiteProxy extends Proxy {
 			},
 		};
 
-		Object.assign(this.cart.paymentData.order, exampleOrder);
+		Object.assign(this.paymentData.order, exampleOrder);
 	}
 
 	restoreButton(node) {
@@ -362,8 +362,12 @@ export default class SiteProxy extends Proxy {
 		// Указываем возможность оплаты заказа при получении
 		if (this.getOption('paymentCash') == null) { return; }
 
-		this.cart.paymentData.paymentMethods.push({
+		this.paymentData.paymentMethods.push({
 			type: YaPay.PaymentMethodType.Cash,
 		});
+	}
+
+	amountSum(amountA, amountB) {
+		return (Number(amountA) + Number(amountB)).toFixed(2);
 	}
 }

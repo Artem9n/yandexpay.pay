@@ -8,10 +8,10 @@ export default class RestProxy extends Proxy {
 			.then((result) => {
 				if (result.status === 'fail') { throw new Error(result.reason); }
 				this.combineOrderWithData(result.data);
-				this.createPayment(this.cart.element, this.cart.paymentData);
+				this.createPayment(this.cart.element, this.paymentData);
 			})
 			.catch((error) => {
-				this.cart.removeLoader();
+				this.widget.removeLoader();
 			});
 	}
 
@@ -75,7 +75,7 @@ export default class RestProxy extends Proxy {
 		})
 			.then((paymentSession) => {
 				this._mounted = true;
-				this.cart.removeLoader();
+				this.widget.removeLoader();
 				this.mountButton(paymentSession);
 			})
 			.catch((err) => {
@@ -123,7 +123,7 @@ export default class RestProxy extends Proxy {
 	}
 
 	combineOrderWithData(data) {
-		const { cart } = this.cart.paymentData;
+		const { cart } = this.paymentData;
 
 		let exampleData = {
 			cart: {
@@ -136,14 +136,14 @@ export default class RestProxy extends Proxy {
 			metadata: data.metadata
 		};
 
-		Object.assign(this.cart.paymentData, exampleData);
+		Object.assign(this.paymentData, exampleData);
 	}
 
 	changeOffer(newProductId) {
 		let productId = this.getOption('productId');
 
 		if (productId !== newProductId) { // todo in items
-			this.cart.widget.setOptions({productId: newProductId});
+			this.widget.setOptions({productId: newProductId});
 			this.update();
 		}
 	}
