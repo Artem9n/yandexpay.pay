@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Injection\Behavior\Display;
 
+use YandexPay\Pay\Ui;
 use YandexPay\Pay\Utils;
 use YandexPay\Pay\Reference\Concerns;
 
@@ -11,9 +12,15 @@ class Widget implements IDisplay
 	protected $values = [];
 
 	protected $widgetTypes = [
+		'Mini',
 		'Compact',
 		'BnplOffer',
 		'BnplRequired',
+	];
+
+	protected $widgetTheme = [
+		'DARK',
+		'LIGHT',
 	];
 
 	public function getType() : string
@@ -58,10 +65,34 @@ class Widget implements IDisplay
 	{
 		return [
 			'TYPE' => [
-				'TITLE' => self::getMessage('WIDGET_TYPE'),
+				'TITLE' => self::getMessage('TYPE'),
 				'TYPE' => 'enumeration',
 				'MANDATORY' => 'Y',
 				'VALUES' => $this->getWidgetTypes(),
+			],
+			'THEME' => [
+				'TITLE' => self::getMessage('THEME'),
+				'TYPE' => 'enumeration',
+				'VALUES' => $this->getWidgetTheme(),
+				'DEPEND' => [
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => 'Mini',
+					],
+				],
+			],
+			'SPLIT_SELECT' => [
+				'TITLE' => self::getMessage('SPLIT_SELECT'),
+				'TYPE' => 'boolean',
+				'DEPEND' => [
+					'TYPE' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => 'BnplOffer',
+					],
+				],
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_FALSE,
+				],
 			],
 			'WIDTH_TYPE' => [
 				'TITLE' => self::getMessage('WIDTH_TYPE'),
@@ -91,6 +122,11 @@ class Widget implements IDisplay
 					'MIN' => '250',
 					'MAX' => '500',
 				]
+			],
+			'BUTTON_THEME' => [
+				'TITLE' => self::getMessage('BUTTON_THEME'),
+				'TYPE' => 'enumeration',
+				'VALUES' => $this->getButtonTheme(),
 			],
 			'BORDER_RADIUS_TYPE' => [
 				'TITLE' => self::getMessage('BORDER_RADIUS_TYPE'),
@@ -133,10 +169,32 @@ class Widget implements IDisplay
 
 			$result[] = [
 				'ID' => $value,
-				'VALUE' => self::getMessage('TYPE_' . $messageCode)
+				'VALUE' => self::getMessage('TYPE_' . $messageCode),
 			];
 		}
 
 		return $result;
+	}
+
+	protected function getWidgetTheme() : array
+	{
+		$result = [];
+
+		foreach ($this->widgetTheme as $value)
+		{
+			$messageCode = mb_strtoupper($value);
+
+			$result[] = [
+				'ID' => $value,
+				'VALUE' => self::getMessage('THEME_' . $messageCode),
+			];
+		}
+
+		return $result;
+	}
+
+	protected function getButtonTheme() : array
+	{
+		return (new Button())->getVariantTypes();
 	}
 }
