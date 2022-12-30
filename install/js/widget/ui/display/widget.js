@@ -21,6 +21,10 @@ export default class Widget extends Display {
 	mount(node, payment, type) {
 		payment.mountWidget(node, {
 			widgetType: this.getOption('TYPE_WIDGET') || YaPay.WidgetType.Compact,
+			widgetTheme: this.getOption('THEME_WIDGET') || YaPay.WidgetTheme.Dark,
+			buttonTheme: this.getOption('BUTTON_THEME_WIDGET') || YaPay.ButtonTheme.Black,
+			borderRadius: this.getOption('BORDER_RADIUS_VALUE_WIDGET') || '8',
+			bnplSelected: this.getOption('SPLIT_SELECT_WIDGET') || false,
 		});
 	}
 
