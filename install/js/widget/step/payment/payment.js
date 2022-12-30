@@ -1,6 +1,6 @@
 import AbstractStep from '../abstractstep';
-import RestProxy from "../payment/rest";
-import SiteProxy from "../payment/site";
+import RestProxy from "./rest";
+import SiteProxy from "./site";
 
 export default class Payment extends AbstractStep {
 	render(node, data) {
