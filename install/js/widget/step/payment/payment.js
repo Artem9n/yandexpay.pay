@@ -11,7 +11,7 @@ export default class Payment extends AbstractStep {
 		this.createPayment(node, paymentData);
 	}
 
-	bootProxy() : RestProxy|SiteProxy {
+	bootProxy() : Rest|Site {
 		this.proxy = this.isRest() ? new Rest(this) : new Site(this);
 	}
 
