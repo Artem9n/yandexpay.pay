@@ -26,11 +26,11 @@ export default class Proxy {
 
 	}
 
-	restoreButton(node) {
+	restore(node) {
 
 	}
 
-	mountButton(node, payment) {
+	mount(node, payment) {
 
 	}
 }

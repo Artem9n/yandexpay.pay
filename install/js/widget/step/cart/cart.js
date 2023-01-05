@@ -1,8 +1,8 @@
 import AbstractStep from '../abstractstep';
 import { ready } from "../../utils/ready";
 import Display from "../../ui/display/factory";
-import RestProxy from "./rest";
-import SiteProxy from "./site";
+import Rest from "./rest";
+import Site from "./site";
 
 export default class Cart extends AbstractStep {
 
@@ -18,12 +18,11 @@ export default class Cart extends AbstractStep {
 
 		this.bootProxy();
 		this.bootSolution();
-		this.setupPaymentCash();
 		this.delayBootstrap();
 	}
 
 	bootProxy() : RestProxy|SiteProxy{
-		this.proxy = this.isRest() ? new RestProxy(this) : new SiteProxy(this);
+		this.proxy = this.isRest() ? new Rest(this) : new Site(this);
 	}
 
 	restore(node) {
@@ -32,7 +31,7 @@ export default class Cart extends AbstractStep {
 		}
 
 		this.element = node;
-		this.proxy.restoreButton(node);
+		this.proxy.restore(node);
 	}
 
 	bootstrap() {
@@ -73,10 +72,6 @@ export default class Cart extends AbstractStep {
 		} else {
 			this.widget.setOptions({productId: newProductId});
 		}
-	}
-
-	setupPaymentCash() {
-		this.proxy?.setupPaymentCash();
 	}
 
 	getDisplay() {

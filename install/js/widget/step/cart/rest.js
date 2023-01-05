@@ -1,7 +1,7 @@
 import Proxy from "./proxy";
 import {EventProxy} from "../../utils/eventproxy";
 
-export default class RestProxy extends Proxy {
+export default class Rest extends Proxy {
 
 	bootstrap() {
 		this.getButtonData()
@@ -76,7 +76,7 @@ export default class RestProxy extends Proxy {
 			.then((paymentSession) => {
 				this._mounted = true;
 				this.widget.removeLoader();
-				this.mountButton(paymentSession);
+				this.mount(paymentSession);
 			})
 			.catch((err) => {
 				this._mounted = null;
@@ -105,7 +105,7 @@ export default class RestProxy extends Proxy {
 		}
 	}
 
-	mountButton(payment) {
+	mount(payment) {
 		this.cart.initialContent = null;
 		this.payment = payment;
 		this.cart.display.mount(this.cart.element, payment, YaPay.ButtonType.Checkout);
@@ -113,7 +113,7 @@ export default class RestProxy extends Proxy {
 		EventProxy.make().fire('bxYapayMountButton');
 	}
 
-	restoreButton(node) {
+	restore(node) {
 		if (this.payment == null) {
 			return;
 		}
@@ -150,10 +150,6 @@ export default class RestProxy extends Proxy {
 
 	changeBasket() {
 		this.update();
-	}
-
-	setupPaymentCash() {
-
 	}
 
 	update() {

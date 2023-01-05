@@ -1,6 +1,6 @@
 import Proxy from "./proxy";
 
-export default class RestProxy extends Proxy {
+export default class Rest extends Proxy {
 
 	getPaymentData(data) {
 		return {

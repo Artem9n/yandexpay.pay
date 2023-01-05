@@ -1,13 +1,13 @@
 import Proxy from "./proxy";
 
-export default class SiteProxy extends Proxy {
+export default class Site extends Proxy {
 
 	bootstrap() {
 		this.reflow();
 	}
 
 	getPaymentData() {
-		return {
+		let paymentData = {
 			env: this.getOption('env'),
 			version: 2,
 			countryCode: YaPay.CountryCode.Ru,
@@ -56,6 +56,14 @@ export default class SiteProxy extends Proxy {
 				},
 			}
 		}
+
+		if (this.getOption('paymentCash') != null) {
+			paymentData.paymentMethods.push({
+				type: YaPay.PaymentMethodType.Cash,
+			});
+		}
+
+		return paymentData;
 	}
 
 	getProducts(){
@@ -350,21 +358,12 @@ export default class SiteProxy extends Proxy {
 		Object.assign(this.paymentData.order, exampleOrder);
 	}
 
-	restoreButton(node) {
+	restore(node) {
 		if (this.paymentButton == null) {
 			return;
 		}
 
 		this.paymentButton.mount(node);
-	}
-
-	setupPaymentCash(){
-		// Указываем возможность оплаты заказа при получении
-		if (this.getOption('paymentCash') == null) { return; }
-
-		this.paymentData.paymentMethods.push({
-			type: YaPay.PaymentMethodType.Cash,
-		});
 	}
 
 	amountSum(amountA, amountB) {

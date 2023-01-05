@@ -1,6 +1,6 @@
 import Proxy from "./proxy";
 
-export default class SiteProxy extends Proxy {
+export default class Site extends Proxy {
 
 	getPaymentData(data) {
 		return {
