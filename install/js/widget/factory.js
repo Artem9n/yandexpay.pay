@@ -51,8 +51,13 @@ export default class Factory {
 	}
 
 	inject(selector, position) {
+		let selectorSanitized;
+
 		return Promise.resolve()
-			.then(() => this.waitElement(selector))
+			.then(() => {
+				selectorSanitized = this.filterMedia(selector);
+			})
+			.then(() => this.waitElement(selectorSanitized))
 			.then((anchor) => this.checkElement(anchor))
 			.then((anchor) => this.renderElement(anchor, position))
 			.then((element) => this.install(element))
@@ -61,12 +66,34 @@ export default class Factory {
 				const intersection = new Intersection(widget.el);
 				
 				if (this.getOption('preserve')) {
-					this.preserve(selector, position, widget, intersection);
+					this.preserve(selectorSanitized, position, widget, intersection);
 				}
 
 				return intersection.wait().then(() => widget);
 			})
 			.then((widget) => Sdkloader.getInstance().load().then(() => widget));
+	}
+
+	filterMedia(selector: string) : string {
+		const resultParts = [];
+
+		for (const part of selector.split(',')) {
+			const partSanitized = part.trim();
+
+			if (partSanitized === '') { continue; }
+
+			const [partSelector, matchMedia] = this.testSelectorMedia(partSanitized);
+
+			if (!matchMedia) { continue; }
+
+			resultParts.push(partSelector);
+		}
+
+		if (resultParts.length === 0) {
+			throw new Error('widget not matched any media of ' + selector);
+		}
+
+		return resultParts.join(',');
 	}
 
 	checkElement(anchor) {
@@ -204,11 +231,7 @@ export default class Factory {
 
 				if (partSanitized === '' || !this.isCssSelector(partSanitized)) { continue; }
 
-				const [partSelector, matchMedia] = this.testSelectorMedia(partSanitized);
-
-				if (!matchMedia) { continue; }
-
-				const collection = document.querySelectorAll(partSelector);
+				const collection = document.querySelectorAll(partSanitized);
 
 				for (const element of collection) {
 					result.push(element);
