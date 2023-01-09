@@ -18,6 +18,7 @@ use YandexPay\Pay\Trading\Entity\Registry;
 use YandexPay\Pay\Ui\Admin\PaySystemEditPage;
 use YandexPay\Pay\Utils\Url;
 use YandexPay\Pay\Trading\Action\Api;
+use YandexPay\Pay\Trading\Setup as TradingSetup;
 
 Loader::includeModule('yandexpay.pay');
 
@@ -103,8 +104,37 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'successUrl'            => $successUrl ?? $curPage,
 			'failUrl'               => $failUrl ?? $curPage,
 			'isRest'                => $isRest,
-			'metadata'              => $payment->getOrder()->getHash(),
+			'metadata'              => $this->makeMetadata($payment),
 		];
+	}
+
+	protected function makeMetadata(Payment $payment) : string
+	{
+		$userId = $payment->getOrder()->getUserId();
+		$setupId = $this->loadSetupId($payment);
+
+		return implode(':', [$userId, $userId, $setupId]);
+	}
+
+	protected function loadSetupId(Payment $payment) : ?int
+	{
+		$result = null;
+
+		$query = TradingSetup\RepositoryTable::getList([
+			'filter' => [
+				'=SITE_ID' => $payment->getOrder()->getSiteId(),
+				'=PERSON_TYPE_ID' => $payment->getPersonTypeId(),
+				'ACTIVE' => true,
+			],
+			'limit' => 1,
+		]);
+
+		if ($setup = $query->fetchObject())
+		{
+			$result = $setup->getId();
+		}
+
+		return $result;
 	}
 
 	protected function getOrderData(Payment $payment): array
