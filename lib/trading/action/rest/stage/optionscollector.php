@@ -16,14 +16,13 @@ class OptionsCollector extends ResponseCollector
 
 	protected function availablePaymentMethods(State\OrderCalculation $state) : void
 	{
-		$result = array_flip(array_filter([
+		$result = array_filter([
 			'CARD' => $state->options->getPaymentCard(),
 			'CASH_ON_DELIVERY' => $state->options->getPaymentCash(),
-		]));
+			'SPLIT' => $state->options->getPaymentSplit(),
+		]);
 
-		$result[] = 'SPLIT';
-
-		$this->write(array_values($result), 'availablePaymentMethods');
+		$this->write(array_keys($result), 'availablePaymentMethods');
 	}
 
 	protected function availableShippingMethods() : void

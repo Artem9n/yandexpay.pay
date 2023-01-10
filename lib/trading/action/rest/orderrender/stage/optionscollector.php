@@ -13,7 +13,14 @@ class OptionsCollector extends ResponseCollector
 	{
 		$this->write($state->order->getCurrency(), 'currencyCode');
 
-		$this->write(['CARD', 'CASH_ON_DELIVERY', 'SPLIT'], 'availablePaymentMethods');
+		$availablePaymentMethods = ['CARD'];
+
+		if ($state->options->getPaymentSplit() !== null)
+		{
+			$availablePaymentMethods[] = 'SPLIT';
+		}
+
+		$this->write($availablePaymentMethods, 'availablePaymentMethods');
 		$this->write(false, 'enableCoupons');
 		$this->write(false, 'enableCommentField');
 

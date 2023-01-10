@@ -230,6 +230,9 @@ class Options extends Reference\Skeleton
 				'VALUES' => $environment->getPaySystem()->getEnum($siteId, [
 					'=ACTION_FILE' => 'yandexpay',
 				]),
+				'SETTINGS' => [
+					'CAPTION_NO_VALUE' => self::getMessage('PAYSYSTEM_NO_VALUE'),
+				],
 			],
 		];
 	}
