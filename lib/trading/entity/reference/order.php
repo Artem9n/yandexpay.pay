@@ -210,6 +210,11 @@ abstract class Order
 		throw new Main\NotImplementedException('getOrderableItems is missing');
 	}
 
+	public function setUserId(int $userId) : Main\Result
+	{
+		throw new Main\NotImplementedException('setUserId is missing');
+	}
+
 	public function getBasketItemData($basketCode) : Main\Result
 	{
 		throw new Main\NotImplementedException('getBasketItemsData is missing');
