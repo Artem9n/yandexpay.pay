@@ -61,6 +61,7 @@ abstract class AbstractBehavior implements BehaviorInterface
 				'GROUP' => self::getMessage('GROUP_DECOR'),
 				'TYPE' => 'enumeration',
 				'VALUES' => $this->getDisplayList(),
+				'HELP' => self::getMessage('HELP_DISPLAY'),
 				'SETTINGS' => [
 					'DEFAULT_VALUE' => Display\Registry::BUTTON,
 				],

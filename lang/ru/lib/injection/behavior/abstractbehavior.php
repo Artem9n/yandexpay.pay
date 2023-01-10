@@ -11,6 +11,8 @@ $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_POSITION_BEFOREEND'] = 'в
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_POSITION_AFTEREND'] = 'после';
 
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_DISPLAY'] = 'ќтображение';
+$MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_HELP_DISPLAY'] = '¬нешний вид виджета/кнопки Yandex Pay может мен€тьс€ в зависимости от текущего браузера, результата скоринга, 
+<br>авторизации на ya.ru, наличи€ аватара или прив€занной банковской карты.';
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_USE_DIVIDER'] = '»спользовать разделитель';
 
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_EXPERT_FIELDS'] = 'Ёкспертные настройки';
