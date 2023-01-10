@@ -67,19 +67,8 @@ export default class AbstractStep {
 			.then(response => {return response.json()})
 	}
 
-	getTemplate(key) {
-		let optionKey = key + 'Template';
-		let option = this.options[optionKey];
-		let optionFirstSymbol = option.substr(0, 1);
-		let result;
-
-		if (optionFirstSymbol === '.' || optionFirstSymbol === '#') {
-			result = this.getNode(option).innerHTML;
-		} else {
-			result = option;
-		}
-
-		return result;
+	isRest() : boolean {
+		return this.getOption('isRest');
 	}
 
 	getElement(key, context, method) {

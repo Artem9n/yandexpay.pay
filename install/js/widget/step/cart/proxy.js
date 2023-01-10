@@ -1,7 +1,13 @@
 export default class Proxy {
 
+	paymentData;
+	cart;
+	widget;
+
 	constructor(cart) {
 		this.cart = cart;
+		this.widget = cart.widget;
+		this.paymentData = this.getPaymentData();
 	}
 
 	getOption(name) {
@@ -20,11 +26,11 @@ export default class Proxy {
 
 	}
 
-	restoreButton(node) {
+	restore(node) {
 
 	}
 
-	mountButton(node, payment) {
+	mount(node, payment) {
 
 	}
 }

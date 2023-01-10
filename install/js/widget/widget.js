@@ -1,4 +1,5 @@
 import StepFactory from './step/factory';
+import Loader from './step/loader';
 import SolutionRegistry from "./solutionregistry";
 
 export default class Widget {
@@ -7,6 +8,7 @@ export default class Widget {
 
 	defaults;
 	options;
+	loader;
 	el;
 	step;
 
@@ -49,6 +51,16 @@ export default class Widget {
 	go(type, data) {
 		this.step = this.makeStep(type);
 		this.step.render(this.el, data);
+	}
+
+	bootLoader() {
+		this.loader = new Loader(this);
+		this.loader.render(this.el);
+	}
+
+	removeLoader() {
+		if (this.loader == null) { return; }
+		this.loader.remove(this.el);
 	}
 
 	/**

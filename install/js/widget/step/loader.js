@@ -4,7 +4,8 @@ import Utils from "../utils/template";
 export default class Loader extends AbstractStep {
 
 	static defaults = {
-		template: '<div class="bx-yapay-skeleton-loading"></div>'
+		template: '<div class="bx-yapay-skeleton-loading"></div>',
+		loaderSelector: '.bx-yapay-skeleton-loading',
 	}
 
 	render(node, data = {}) {
@@ -19,6 +20,11 @@ export default class Loader extends AbstractStep {
 		if (this.restoreElement == null) { return; }
 
 		node.insertAdjacentElement('beforeend', this.restoreElement);
+	}
+
+	remove(node) {
+		const loader = node.querySelector(this.getOption('loaderSelector'));
+		loader?.remove();
 	}
 
 }

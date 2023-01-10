@@ -1,9 +1,9 @@
 import Proxy from "./proxy";
 
-export default class RestProxy extends Proxy {
+export default class Rest extends Proxy {
 
 	getPaymentData(data) {
-		return   {
+		return {
 			env: this.getOption('env'),
 			version: 3,
 			currencyCode: YaPay.CurrencyCode.Rub,
@@ -20,7 +20,7 @@ export default class RestProxy extends Proxy {
 	}
 
 	onPaymentSuccess(event) {
-		this.order.element.remove();
+		this.payment.element.remove();
 
 		this.authorize(event)
 			.then((result) => {
@@ -30,7 +30,7 @@ export default class RestProxy extends Proxy {
 					}, 1000);
 				}
 				else {
-					this.order.showError('authorize', result.reasonCode, result.reason);
+					this.payment.showError('authorize', result.reasonCode, result.reason);
 				}
 			})
 	}
@@ -55,7 +55,7 @@ export default class RestProxy extends Proxy {
 		})
 			.then( (paymentSession) => {
 
-				this.order.removeLoader();
+				this.widget.removeLoader();
 
 				paymentSession.mountButton(node, {
 					type: YaPay.ButtonType.Pay,
@@ -64,7 +64,7 @@ export default class RestProxy extends Proxy {
 				});
 			})
 			.catch( (err) => {
-				this.order.showError('yapayPayment','payment not created', err);
+				this.payment.showError('yapayPayment','payment not created', err);
 			});
 	}
 
@@ -75,6 +75,6 @@ export default class RestProxy extends Proxy {
 			successUrl: this.getOption('successUrl'),
 		};
 
-		return this.order.query(this.getOption('restUrl') + 'authorize', data);
+		return this.payment.query(this.getOption('restUrl') + 'authorize', data);
 	}
 }

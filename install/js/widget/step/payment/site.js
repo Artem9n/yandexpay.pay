@@ -1,6 +1,6 @@
 import Proxy from "./proxy";
 
-export default class SiteProxy extends Proxy {
+export default class Site extends Proxy {
 
 	getPaymentData(data) {
 		return {
@@ -48,7 +48,7 @@ export default class SiteProxy extends Proxy {
 					width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
 				});
 
-				this.order.removeLoader();
+				this.widget.removeLoader();
 				button.mount(node);
 
 				button.on(YaPay.ButtonEventType.Click, function onPaymentButtonClick() {
@@ -91,9 +91,9 @@ export default class SiteProxy extends Proxy {
 			.then(response => response.json())
 			.then(result => {
 				if (result.success === true) {
-					this.order.widget.go(result.state, result);
+					this.widget.go(result.state, result);
 				} else {
-					this.order.widget.go('error', result);
+					this.widget.go('error', result);
 				}
 			})
 			.catch(error => console.log(error) );

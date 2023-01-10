@@ -1,11 +1,15 @@
 export default class Proxy {
 
-	constructor(order) {
-		this.order = order;
+	payment;
+	widget;
+
+	constructor(payment) {
+		this.payment = payment;
+		this.widget = payment.widget;
 	}
 
 	getOption(name) {
-		return this.order.getOption(name);
+		return this.payment.getOption(name);
 	}
 
 	createPayment(node, paymentData) {

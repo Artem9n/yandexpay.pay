@@ -1,17 +1,17 @@
 import Proxy from "./proxy";
 import {EventProxy} from "../../utils/eventproxy";
 
-export default class RestProxy extends Proxy {
+export default class Rest extends Proxy {
 
 	bootstrap() {
 		this.getButtonData()
 			.then((result) => {
 				if (result.status === 'fail') { throw new Error(result.reason); }
 				this.combineOrderWithData(result.data);
-				this.createPayment(this.cart.element, this.cart.paymentData);
+				this.createPayment(this.cart.element, this.paymentData);
 			})
 			.catch((error) => {
-				this.cart.removeLoader();
+				this.widget.removeLoader();
 			});
 	}
 
@@ -75,8 +75,8 @@ export default class RestProxy extends Proxy {
 		})
 			.then((paymentSession) => {
 				this._mounted = true;
-				this.cart.removeLoader();
-				this.mountButton(paymentSession);
+				this.widget.removeLoader();
+				this.mount(paymentSession);
 			})
 			.catch((err) => {
 				this._mounted = null;
@@ -105,7 +105,7 @@ export default class RestProxy extends Proxy {
 		}
 	}
 
-	mountButton(payment) {
+	mount(payment) {
 		this.cart.initialContent = null;
 		this.payment = payment;
 		this.cart.display.mount(this.cart.element, payment, YaPay.ButtonType.Checkout);
@@ -113,7 +113,7 @@ export default class RestProxy extends Proxy {
 		EventProxy.make().fire('bxYapayMountButton');
 	}
 
-	restoreButton(node) {
+	restore(node) {
 		if (this.payment == null) {
 			return;
 		}
@@ -123,7 +123,7 @@ export default class RestProxy extends Proxy {
 	}
 
 	combineOrderWithData(data) {
-		const { cart } = this.cart.paymentData;
+		const { cart } = this.paymentData;
 
 		let exampleData = {
 			cart: {
@@ -136,14 +136,14 @@ export default class RestProxy extends Proxy {
 			metadata: data.metadata
 		};
 
-		Object.assign(this.cart.paymentData, exampleData);
+		Object.assign(this.paymentData, exampleData);
 	}
 
 	changeOffer(newProductId) {
 		let productId = this.getOption('productId');
 
 		if (productId !== newProductId) { // todo in items
-			this.cart.widget.setOptions({productId: newProductId});
+			this.widget.setOptions({productId: newProductId});
 
 			if (this._mounted == null) {
 				this.bootstrap();
@@ -156,10 +156,6 @@ export default class RestProxy extends Proxy {
 
 	changeBasket() {
 		this.update();
-	}
-
-	setupPaymentCash() {
-
 	}
 
 	update() {
