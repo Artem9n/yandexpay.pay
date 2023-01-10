@@ -34,9 +34,11 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_LOG_LEVEL_NO_VALUE'] = 'Отключить';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_USER_GROUPS'] = 'Отображать для групп пользователей';
 
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_CASH'] = 'Оплата при получении';
-$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_CASH_NO_VALUE'] = '---Отключена---';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_PAYSYSTEM_NO_VALUE'] = '---Отключена---';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_CARD'] = 'Оплата картой';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_SPLIT'] = 'Оплата сплитом';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_HELP_SPLIT'] = 'Если у вас подключен сплит, вы можете создать отдельную платежную систему выбрав обработчик <strong>Yandex Pay (yandexpay)</strong>, 
+но в качестве заголовка указать <strong>Yandex Pay (сплит)</strong>, либо оставить по умолчанию.';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_PAYSYSTEM'] = 'Платежная система';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_SOLUTION'] = 'Типовое решение';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_EDIT_SOLUTION'] = 'Собственная настройка';

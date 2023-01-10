@@ -210,7 +210,7 @@ class Options extends Reference\Skeleton
 					'!=ACTION_FILE' => 'yandexpay',
 				]),
 				'SETTINGS' => [
-					'CAPTION_NO_VALUE' => self::getMessage('CASH_NO_VALUE'),
+					'CAPTION_NO_VALUE' => self::getMessage('PAYSYSTEM_NO_VALUE'),
 				],
 			],
 			'PAYSYSTEM_CARD' => [
@@ -224,8 +224,8 @@ class Options extends Reference\Skeleton
 			],
 			'PAYSYSTEM_SPLIT' => [
 				'TYPE' => 'enumeration',
-				'MANDATORY' => 'Y',
 				'NAME' => self::getMessage('SPLIT'),
+				'HELP' => self::getMessage('HELP_SPLIT'),
 				'SORT' => 2015,
 				'VALUES' => $environment->getPaySystem()->getEnum($siteId, [
 					'=ACTION_FILE' => 'yandexpay',
@@ -494,6 +494,25 @@ class Options extends Reference\Skeleton
 
 	protected function getInjectionFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
+		$availableSummary = [
+			'IBLOCK',
+			'PATH',
+			'DISPLAY'
+		];
+
+		$summary = [ '#BEHAVIOR#' ];
+
+		foreach (Injection\Behavior\Registry::getTypes() as $type)
+		{
+			$type = mb_strtoupper($type);
+
+			foreach ($availableSummary as $value)
+			{
+				$summaryValue = sprintf('(#SETTINGS.%s_%s#)', $type, $value);
+				$summary[] = $summaryValue;
+			}
+		}
+
 		return [
 			'INJECTION' => [
 				'TYPE' => 'reference',
@@ -505,7 +524,7 @@ class Options extends Reference\Skeleton
 					'DEFAULT_VALUE' => $this->makeInjectionDefaults($environment, $siteId),
 					'DATA_CLASS' => Injection\Setup\RepositoryTable::class,
 					'REFERENCE' => [ 'ID' => 'TRADING_ID' ],
-					'SUMMARY' => '#BEHAVIOR# (#SETTINGS.ELEMENT_IBLOCK#) (#SETTINGS.ORDER_PATH#) (#SETTINGS.BASKET_PATH#)',
+					'SUMMARY' => implode(' ', $summary),
 					'LAYOUT' => 'summary',
 					'MODAL_WIDTH' => 600,
 					'MODAL_HEIGHT' => 450,
