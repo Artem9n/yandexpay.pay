@@ -2,6 +2,15 @@
 
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_POSITION'] = 'Позиция добавляемой кнопки относительно селектора';
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_SELECTOR'] = 'Селектор, куда привязывать кнопку "Yandex Pay"';
+$MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_HELP_SELECTOR'] = 'Укажите css селектор (селекторы через ", "), куда будет привязана кнопка Yandex Pay.
+<br><br>Есть возможность настроить привязку для <strong>десктопа</strong> и <strong>мобильной</strong> версиях отображения, разные опции.<br><br>
+Создайте два шаблона, например "Карточка товара", укажите селекторы для разных версии отображения.<br><br>
+Пример "Карточки товара" мобильной версии: .ваш селектор<strong>:media(max-width: 700px)</strong><br>
+Оформление/Отображение/Кнопка
+<br><br>
+Пример "Карточки товара" десктопной версии: .ваш селектор<strong>:media(min-width: 700px)</strong><br>
+Оформление/Отображение/Виджет';
+
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_GROUP_POSITION'] = 'Позиционирование';
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_GROUP_DECOR'] = 'Оформление';
 
