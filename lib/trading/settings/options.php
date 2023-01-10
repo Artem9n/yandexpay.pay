@@ -52,9 +52,9 @@ class Options extends Reference\Skeleton
 
 	public function getPaymentSplit() : ?int
 	{
-		$result = (int)$this->getValue('PAYSYSTEM_SPLIT');
+		$result = $this->getValue('PAYSYSTEM_SPLIT');
 
-		return $result > 0 ? $result : null;
+		return $result > 0 ? (int)$result : null;
 	}
 
 	public function useBuyerPhone() : bool
@@ -200,6 +200,13 @@ class Options extends Reference\Skeleton
 
 	protected function getPaymentFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
+		$yandexpaySystem = $environment->getPaySystem()->getEnum($siteId, [
+			'=ACTION_FILE' => 'yandexpay',
+		]);
+
+		$yandexpaySystemSplit = $yandexpaySystem;
+		array_unshift($yandexpaySystemSplit, ['ID' => 0, 'VALUE' => self::getMessage('PAYSYSTEM_NO_VALUE')]);
+
 		return [
 			'PAYSYSTEM_CASH' => [
 				'TYPE' => 'enumeration',
@@ -218,20 +225,16 @@ class Options extends Reference\Skeleton
 				'MANDATORY' => 'Y',
 				'NAME' => self::getMessage('CARD'),
 				'SORT' => 2010,
-				'VALUES' => $environment->getPaySystem()->getEnum($siteId, [
-					'=ACTION_FILE' => 'yandexpay',
-				]),
+				'VALUES' => $yandexpaySystem,
 			],
 			'PAYSYSTEM_SPLIT' => [
 				'TYPE' => 'enumeration',
 				'NAME' => self::getMessage('SPLIT'),
 				'HELP' => self::getMessage('HELP_SPLIT'),
 				'SORT' => 2015,
-				'VALUES' => $environment->getPaySystem()->getEnum($siteId, [
-					'=ACTION_FILE' => 'yandexpay',
-				]),
+				'VALUES' => $yandexpaySystemSplit,
 				'SETTINGS' => [
-					'CAPTION_NO_VALUE' => self::getMessage('PAYSYSTEM_NO_VALUE'),
+					'DEFAULT_VALUE' => end($yandexpaySystemSplit)
 				],
 			],
 		];
