@@ -40,10 +40,6 @@ abstract class AbstractEngine extends Event\Base
 
 		if (SITE_ID !== $data['SITE_ID']) { return; }
 
-		if (static::$handlerDisallowYaPay) { return; }
-
-		static::$handlerDisallowYaPay = true;
-
 		$setup = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
 		$setup->fill();
 
@@ -73,6 +69,8 @@ abstract class AbstractEngine extends Event\Base
 			'DISPLAY_TYPE' => $display->getType(),
 			'DISPLAY_PARAMETERS' => $display->getWidgetParameters(),
 			'USE_DIVIDER' => $options->useDivider(),
+			'JS_CONTENT' => $options->getJsContent(),
+			'CSS_CONTENT' => $options->getCssContent(),
 		];
 	}
 

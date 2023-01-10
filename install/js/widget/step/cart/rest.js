@@ -144,7 +144,13 @@ export default class RestProxy extends Proxy {
 
 		if (productId !== newProductId) { // todo in items
 			this.cart.widget.setOptions({productId: newProductId});
-			this.update();
+
+			if (this._mounted == null) {
+				this.bootstrap();
+			}
+			else {
+				this.update();
+			}
 		}
 	}
 
@@ -164,7 +170,11 @@ export default class RestProxy extends Proxy {
 					this.cart.showError('getButtonData','get not button data', error);
 				});
 
-			if (result.status === 'fail') { throw new Error(result.reason); }
+			if (result.status === 'fail') {
+				this._mounted = null;
+				this.cart.display.unmount(this.cart.element, this.payment);
+				throw new Error(result.reason);
+			}
 
 			return {
 				cart: {

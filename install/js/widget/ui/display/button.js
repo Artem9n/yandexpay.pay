@@ -31,6 +31,10 @@ export default class Button extends Display {
 		});
 	}
 
+	unmount(node, payment) {
+		payment.unmountButton(node);
+	}
+
 	collectHeight() {
 
 		let result = '';

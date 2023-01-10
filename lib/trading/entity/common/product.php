@@ -25,9 +25,9 @@ class Product extends EntityReference\Product
 
 	public function searchOffers(int $productId, int $iblockId = 0, array $filter = []) : array
 	{
-		$filter += ['CATALOG_AVAILABLE' => 'Y', 'ACTIVE' => 'Y'];
+		$filter += ['ACTIVE' => 'Y'];
 
-		$offers = \CCatalogSku::getOffersList($productId, $iblockId, $filter, [ 'ID' ], [], [], [ 'SORT' => 'ASC', 'AVAILABLE' => 'DESC']);
+		$offers = \CCatalogSku::getOffersList($productId, $iblockId, $filter, [ 'ID' ], [], [], [ 'AVAILABLE' => 'DESC', 'SORT' => 'ASC' ]);
 
 		if (empty($offers[$productId])) { return []; }
 

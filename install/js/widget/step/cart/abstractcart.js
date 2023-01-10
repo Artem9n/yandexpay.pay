@@ -4,6 +4,7 @@ import { ready } from "../../utils/ready";
 import RestProxy from "./rest";
 import SiteProxy from "./site";
 import Display from "../../ui/display/factory";
+import {EventProxy} from "../../utils/eventproxy";
 
 export default class AbstractCart extends AbstractStep {
 
@@ -24,6 +25,7 @@ export default class AbstractCart extends AbstractStep {
 		this.initialContent = this.element.innerHTML;
 
 		this.bootSolution();
+		this.bootLocal();
 		this.setupPaymentCash();
 		this.delayBootstrap();
 	}
@@ -52,6 +54,12 @@ export default class AbstractCart extends AbstractStep {
 		if (solution == null) { return; }
 
 		solution.bootCart(this);
+	}
+
+	bootLocal() {
+		EventProxy.make().fire('bxYapayCartInit', {
+			cart: this,
+		});
 	}
 
 	delayChangeBasket() {
