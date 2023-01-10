@@ -234,7 +234,7 @@ class Options extends Reference\Skeleton
 				'SORT' => 2015,
 				'VALUES' => $yandexpaySystemSplit,
 				'SETTINGS' => [
-					'DEFAULT_VALUE' => end($yandexpaySystemSplit)
+					'DEFAULT_VALUE' => end($yandexpaySystemSplit)['ID']
 				],
 			],
 		];
