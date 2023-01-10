@@ -14,6 +14,7 @@ class Action extends Rest\Reference\EffectiveAction
 	public function bootstrap() : void
 	{
 		parent::bootstrap();
+		$this->bootSetup($this->request->getSetupId());
 		$this->bootMerchantOrder();
 	}
 
@@ -34,7 +35,6 @@ class Action extends Rest\Reference\EffectiveAction
 		}
 		else
 		{
-			$this->bootSetup($this->request->getSetupId());
 			$this->bootMerchant($this->request->getMerchantId());
 		}
 	}
