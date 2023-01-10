@@ -5,7 +5,7 @@ export default class Widget extends Display {
 
 	static defaults = {
 		style: `<style>#STYLE#</style>`,
-		styleBorder: `##ID# .ya-pay-widget, ##ID# .bx-yapay-skeleton-loading {border-radius:#BORDER#px !important;}`,
+		styleBorder: `##ID# .bx-yapay-skeleton-loading {border-radius:#BORDER#px !important;}`,
 		styleWidth: `##ID# .ya-pay-widget, ##ID# .bx-yapay-skeleton-loading, ##ID# .bx-yapay-divider{width: #WIDTH#px !important;}`,
 	}
 
@@ -24,7 +24,7 @@ export default class Widget extends Display {
 			widgetTheme: this.getOption('THEME_WIDGET') || YaPay.WidgetTheme.Dark,
 			buttonTheme: this.getOption('BUTTON_THEME_WIDGET') || YaPay.ButtonTheme.Black,
 			borderRadius: this.getOption('BORDER_RADIUS_VALUE_WIDGET') || '8',
-			bnplSelected: this.getOption('SPLIT_SELECT_WIDGET') || false,
+			bnplSelected: !!Number(this.getOption('SPLIT_SELECT_WIDGET') || false),
 		});
 	}
 
