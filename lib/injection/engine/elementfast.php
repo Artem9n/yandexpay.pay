@@ -80,7 +80,7 @@ class ElementFast extends Element
 
 	protected static function getUrlParamValue(string $param)
 	{
-		$queryValues = static::getRequest()->getQueryList()->getValues();
+		$queryValues = static::getRequest()->getQueryList()->toArray();
 
 		return Utils\BracketChain::get($queryValues, $param);
 	}

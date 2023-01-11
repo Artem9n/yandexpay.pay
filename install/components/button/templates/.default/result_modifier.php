@@ -50,7 +50,7 @@ $arResult['FACTORY_OPTIONS'] += (array)($arParams['~FACTORY_OPTIONS'] ?? []);
 $arResult['FACTORY_OPTIONS']['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
 $arResult['FACTORY_OPTIONS']['containerId'] = $arResult['CONTAINER_ID'];
 $arResult['ORDER'] = $arResult['PARAMS']['order'];
-$arResult['SELECTOR'] = $arResult['PARAMS']['selector'];
+$arResult['SELECTOR'] = htmlspecialcharsback($arResult['PARAMS']['selector']);
 $arResult['POSITION'] = $arResult['PARAMS']['position'];
 
 // css/js content

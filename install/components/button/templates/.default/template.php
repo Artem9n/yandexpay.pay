@@ -12,7 +12,6 @@ use Bitrix\Main;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\Web\Json;
 
-
 Loc::loadMessages(__FILE__);
 
 $this->setFrameMode(true); // not need dynamic area
@@ -23,20 +22,6 @@ $output = '';
 try
 {
 	$output .= $arResult['ASSETS_HTML'];
-
-	// assets expert js
-
-	if ($arResult['JS_CONTENT'] !== null)
-	{
-		Main\Page\Asset::getInstance()->addString(sprintf('<script>%s</script>', $arResult['JS_CONTENT']));
-	}
-
-	// assets expert css
-
-	if ($arResult['CSS_CONTENT'] !== null)
-	{
-		Main\Page\Asset::getInstance()->addString(sprintf('<style>%s</style>', $arResult['CSS_CONTENT']));
-	}
 
 	if (empty($arResult['SELECTOR']))
 	{

@@ -10,19 +10,19 @@ class ElementFast extends Element
 
 	public function getFields() : array
 	{
-		return parent::getFields() + [
+		return [
 			'QUERY_CHECK_PARAMS' => [
 				'TYPE' => 'string',
 				'TITLE' => self::getMessage('FIELD_QUERY_CHECK_PARAMS'),
-				'GROUP' => self::getMessage('GROUP_AJAX_PARAMS'),
+				'GROUP' => static::getMessage('GROUP_BEHAVIOR'),
 				'MANDATORY' => 'Y',
 			],
 			'QUERY_ELEMENT_ID_PARAM' => [
 				'TYPE' => 'string',
 				'TITLE' => self::getMessage('FIELD_QUERY_ELEMENT_ID_PARAM'),
-				'GROUP' => self::getMessage('GROUP_AJAX_PARAMS'),
+				'GROUP' => static::getMessage('GROUP_BEHAVIOR'),
 			],
-		];
+		] + parent::getFields();
 	}
 
 	public function getEngineReference() : string

@@ -10,6 +10,20 @@ use Bitrix\Main\UI\Extension;
 $arResult['ASSETS_HTML'] = '';
 $partials = [];
 
+// assets expert js
+
+if ($arResult['JS_CONTENT'] !== null)
+{
+	$arResult['ASSETS_HTML'] .= sprintf('<script>%s</script>', $arResult['JS_CONTENT']);
+}
+
+// assets expert css
+
+if ($arResult['CSS_CONTENT'] !== null)
+{
+	$arResult['ASSETS_HTML'] .= sprintf('<style>%s</style>', $arResult['CSS_CONTENT']);
+}
+
 if ($APPLICATION->GetPageProperty('yandexpay_extension_widget') !== 'Y')
 {
 	$APPLICATION->SetPageProperty('yandexpay_extension_widget', 'Y');
