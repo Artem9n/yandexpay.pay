@@ -64,3 +64,5 @@ if ($arResult['PARAMS']['cssContent'] !== null)
 {
 	$arResult['CSS_CONTENT'] = str_replace('{$container}', '#' . $arResult['CONTAINER_ID'], $arResult['PARAMS']['cssContent']);
 }
+
+include __DIR__ . '/modifier/assets.php';
