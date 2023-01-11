@@ -59,7 +59,14 @@ class Aspro extends Skeleton
 			Behavior\Registry::ELEMENT_FAST => $design + $elementSettings + [
 				'QUERY_CHECK_PARAMS' => 'FAST_VIEW=Y'
 			],
+
 			Behavior\Registry::BASKET => $design + Guide::getBitrixBasket($context, '/basket/'),
+			Behavior\Registry::BASKET_FLY => [
+				'SELECTOR' => '.header-cart.fly .basket_back',
+				'USE_DIVIDER' => false,
+				'WIDTH_BUTTON' => 'MAX'
+			] + $design + Guide::getBitrixBasket($context, '/ajax/basket_fly.php'),
+
 			Behavior\Registry::ORDER => $design + Guide::getBitrixOrder($context, '/order/'),
 		];
 	}
