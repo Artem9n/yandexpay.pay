@@ -12,7 +12,7 @@ class OrderSave
 
 		if (!$saveResult->isSuccess())
 		{
-			throw new DtoProperty($saveResult->getErrorMessages(), 'OTHER');
+			throw new DtoProperty($saveResult->getErrorMessages());
 		}
 	}
 }

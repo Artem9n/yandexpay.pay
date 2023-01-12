@@ -52,7 +52,7 @@ class PickupDetailCollector extends ResponseCollector
 				'#NAME#' => $deliveryName
 			]);
 
-			throw new DtoProperty($message, 'OTHER');
+			throw new DtoProperty($message);
 		}
 
 		$calculationResult = $state->environment->getDelivery()->calculate($this->deliveryId, $state->order);
@@ -66,7 +66,7 @@ class PickupDetailCollector extends ResponseCollector
 				'#ERROR_MESSAGES#' => implode(', ', $calculationResult->getErrorMessages()),
 			]);
 
-			throw new DtoProperty($message, 'OTHER');
+			throw new DtoProperty($message);
 		}
 
 		$store = $pickup->getDetailPickup($this->storeId);
