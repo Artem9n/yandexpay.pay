@@ -41,6 +41,10 @@ abstract class AbstractBehavior implements BehaviorInterface
 				'TYPE' => 'string',
 				'TITLE' => self::getMessage('SELECTOR'),
 				'MANDATORY' => 'Y',
+				'SETTINGS' => [
+					'ROWS' => 5,
+					'SIZE' => 25,
+				],
 			],
 			'POSITION' => [
 				'GROUP' => self::getMessage('GROUP_POSITION'),

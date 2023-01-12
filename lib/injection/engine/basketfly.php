@@ -23,6 +23,30 @@ class BasketFly extends AbstractEngine
 		);
 	}
 
+	protected static function testUrl(string $path) : bool
+	{
+		$url = static::getUrl();
+
+		if ($url === null) { return false; }
+
+		$paths = explode(PHP_EOL, $path);
+
+		if (empty($paths)) { return false; }
+
+		$find = false;
+
+		foreach ($paths as $part)
+		{
+			if (trim($part) === $url)
+			{
+				$find = true;
+				break;
+			}
+		}
+
+		return $find;
+	}
+
 	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
 	{
 		$params = [

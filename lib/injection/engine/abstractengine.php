@@ -46,6 +46,7 @@ abstract class AbstractEngine extends Event\Base
 		$setup->fill();
 
 		$parameters = static::getComponentParameters($setup, $data);
+		$contents = '';
 
 		if ($mode === self::RENDER_ASSETS)
 		{

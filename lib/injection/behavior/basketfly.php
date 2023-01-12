@@ -21,6 +21,10 @@ class BasketFly extends Basket
 					'TYPE' => 'string',
 					'TITLE' => self::getMessage('PATH'),
 					'MANDATORY' => 'Y',
+					'SETTINGS' => [
+						'ROWS' => 5,
+						'SIZE' => 25,
+					],
 				],
 			] + parent::getFields();
 	}
