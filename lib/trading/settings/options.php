@@ -50,6 +50,13 @@ class Options extends Reference\Skeleton
 		return $result > 0 ? $result : null;
 	}
 
+	public function getPaymentSplit() : ?int
+	{
+		$result = $this->getValue('PAYSYSTEM_SPLIT');
+
+		return $result > 0 ? (int)$result : null;
+	}
+
 	public function useBuyerPhone() : bool
 	{
 		return $this->getProperty('PHONE') !== null;
@@ -73,6 +80,11 @@ class Options extends Reference\Skeleton
 	public function getSolution() : ?string
 	{
 		return $this->getValue('SOLUTION') ?: null;
+	}
+
+	public function getUserGroup() : int
+	{
+		return (int)$this->getValue('USER_GROUPS');
 	}
 
 	public function useBuyerName() : bool
@@ -153,6 +165,7 @@ class Options extends Reference\Skeleton
 			+ $this->getAddressFields($environment, $siteId)
 			+ $this->getCommentFields($environment, $siteId)
 			+ $this->getLoggerFields($environment, $siteId)
+			+ $this->getUserGroupsFileds($environment, $siteId)
 			+ $this->getSuccessUrlFields($environment, $siteId)
 			+ $this->getSolutionFields($environment, $siteId)
 			+ $this->getEditSolutionFields($environment, $siteId)
@@ -187,6 +200,13 @@ class Options extends Reference\Skeleton
 
 	protected function getPaymentFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
+		$yandexpaySystem = $environment->getPaySystem()->getEnum($siteId, [
+			'=ACTION_FILE' => 'yandexpay',
+		]);
+
+		$yandexpaySystemSplit = $yandexpaySystem;
+		array_unshift($yandexpaySystemSplit, ['ID' => 0, 'VALUE' => self::getMessage('PAYSYSTEM_NO_VALUE')]);
+
 		return [
 			'PAYSYSTEM_CASH' => [
 				'TYPE' => 'enumeration',
@@ -197,7 +217,7 @@ class Options extends Reference\Skeleton
 					'!=ACTION_FILE' => 'yandexpay',
 				]),
 				'SETTINGS' => [
-					'CAPTION_NO_VALUE' => self::getMessage('CASH_NO_VALUE'),
+					'CAPTION_NO_VALUE' => self::getMessage('PAYSYSTEM_NO_VALUE'),
 				],
 			],
 			'PAYSYSTEM_CARD' => [
@@ -205,9 +225,17 @@ class Options extends Reference\Skeleton
 				'MANDATORY' => 'Y',
 				'NAME' => self::getMessage('CARD'),
 				'SORT' => 2010,
-				'VALUES' => $environment->getPaySystem()->getEnum($siteId, [
-					'=ACTION_FILE' => 'yandexpay',
-				]),
+				'VALUES' => $yandexpaySystem,
+			],
+			'PAYSYSTEM_SPLIT' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('SPLIT'),
+				'HELP' => self::getMessage('HELP_SPLIT'),
+				'SORT' => 2015,
+				'VALUES' => $yandexpaySystemSplit,
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => end($yandexpaySystemSplit)['ID']
+				],
 			],
 		];
 	}
@@ -372,12 +400,28 @@ class Options extends Reference\Skeleton
 			'URL_SUCCESS' => [
 				'TYPE' => 'string',
 				'NAME' => self::getMessage('URL_SUCCESS'),
+				'HELP' => self::getMessage('URL_SUCCESS_HELP'),
 				'GROUP' => self::getMessage('YANDEX_PAY'),
 				'SORT' => 4000,
 				'SETTINGS' => [
 					'DEFAULT_VALUE' => $solution !== null ? $solution->getOrderPath($context) : '/personal/order/make/',
 				],
 			],
+		];
+	}
+
+	protected function getUserGroupsFileds(Entity\Reference\Environment $environment, string $siteId) : array
+	{
+		return[
+			'USER_GROUPS' => [
+				'TYPE' => 'enumeration',
+				'NAME' => self::getMessage('USER_GROUPS'),
+				'SORT' => 4010,
+				'VALUES' => $environment->getUserGroup()->getGroupList(),
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => $environment->getUserGroup()->getDefaultGroup(),
+				]
+			]
 		];
 	}
 
@@ -456,6 +500,25 @@ class Options extends Reference\Skeleton
 
 	protected function getInjectionFields(Entity\Reference\Environment $environment, string $siteId) : array
 	{
+		$availableSummary = [
+			'IBLOCK',
+			'PATH',
+			'DISPLAY'
+		];
+
+		$summary = [ '#BEHAVIOR#' ];
+
+		foreach (Injection\Behavior\Registry::getTypes() as $type)
+		{
+			$type = mb_strtoupper($type);
+
+			foreach ($availableSummary as $value)
+			{
+				$summaryValue = sprintf('(#SETTINGS.%s_%s#)', $type, $value);
+				$summary[] = $summaryValue;
+			}
+		}
+
 		return [
 			'INJECTION' => [
 				'TYPE' => 'reference',
@@ -467,7 +530,7 @@ class Options extends Reference\Skeleton
 					'DEFAULT_VALUE' => $this->makeInjectionDefaults($environment, $siteId),
 					'DATA_CLASS' => Injection\Setup\RepositoryTable::class,
 					'REFERENCE' => [ 'ID' => 'TRADING_ID' ],
-					'SUMMARY' => '#BEHAVIOR# (#SETTINGS.ELEMENT_IBLOCK#) (#SETTINGS.ORDER_PATH#) (#SETTINGS.BASKET_PATH#)',
+					'SUMMARY' => implode(' ', $summary),
 					'LAYOUT' => 'summary',
 					'MODAL_WIDTH' => 600,
 					'MODAL_HEIGHT' => 450,
