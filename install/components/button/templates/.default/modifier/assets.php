@@ -14,14 +14,14 @@ $partials = [];
 
 if ($arResult['JS_CONTENT'] !== null)
 {
-	$arResult['ASSETS_HTML'] .= sprintf('<script>%s</script>', $arResult['JS_CONTENT']);
+	$arResult['ASSETS_HTML'] .= sprintf('<script>%s</script>', htmlspecialcharsback($arResult['JS_CONTENT']));
 }
 
 // assets expert css
 
 if ($arResult['CSS_CONTENT'] !== null)
 {
-	$arResult['ASSETS_HTML'] .= sprintf('<style>%s</style>', $arResult['CSS_CONTENT']);
+	$arResult['ASSETS_HTML'] .= sprintf('<style>%s</style>', htmlspecialcharsback($arResult['CSS_CONTENT']));
 }
 
 if ($APPLICATION->GetPageProperty('yandexpay_extension_widget') !== 'Y')
