@@ -13,14 +13,14 @@ class Order extends EntityReference\Order
 {
 	use Concerns\HasMessage;
 
-	/** @var Sale\OrderBase */
+	/** @var Sale\Order */
 	protected $calculatable;
 	protected $isStartField;
 
 	/** @var Delivery\AbstractAdapter */
 	protected $delivery;
 
-	public function __construct(Environment $environment, Sale\OrderBase $internalOrder)
+	public function __construct(Environment $environment, Sale\Order $internalOrder)
 	{
 		parent::__construct($environment, $internalOrder);
 	}
@@ -325,9 +325,9 @@ class Order extends EntityReference\Order
 	}
 
 	/**
-	 * @return Sale\OrderBase
+	 * @return Sale\Order
 	 */
-	public function getCalculatable() : Sale\OrderBase
+	public function getCalculatable() : Sale\Order
 	{
 		if ($this->calculatable === null)
 		{
@@ -337,7 +337,7 @@ class Order extends EntityReference\Order
 		return $this->calculatable;
 	}
 
-	protected function createCalculatable() : Sale\OrderBase
+	protected function createCalculatable() : Sale\Order
 	{
 		$order = method_exists($this->internalOrder, 'createClone')
 			? $this->internalOrder->createClone()
@@ -355,7 +355,7 @@ class Order extends EntityReference\Order
 		return $order;
 	}
 
-	protected function getNotSystemShipment(Sale\OrderBase $order = null) : ?Sale\Shipment
+	public function getNotSystemShipment(Sale\Order $order = null) : ?Sale\Shipment
 	{
 		if ($order === null) { $order = $this->internalOrder; }
 
@@ -375,7 +375,7 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	protected function initOrderShipment(Sale\OrderBase $order = null)
+	protected function initOrderShipment(Sale\Order $order = null)
 	{
 		if ($order === null) { $order = $this->internalOrder; }
 
@@ -388,7 +388,7 @@ class Order extends EntityReference\Order
 		return $shipment;
 	}
 
-	public function getOrder()
+	public function getOrder() : ?Sale\Order
 	{
 		return $this->internalOrder;
 	}
@@ -925,7 +925,7 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	protected function getDeliveryService() : ?Sale\Delivery\Services\Base
+	public function getDeliveryService() : ?Sale\Delivery\Services\Base
 	{
 		$shipment = $this->getNotSystemShipment();
 
@@ -1033,7 +1033,7 @@ class Order extends EntityReference\Order
 		$payment->setField('SUM', $price);
 	}
 
-	public function add(string $externalId) : Main\Result
+	public function add() : Main\Result
 	{
 		$result = new Main\Result();
 
@@ -1048,39 +1048,43 @@ class Order extends EntityReference\Order
 			$this->deliveryOnAfterOrderSave();
 
 			$orderId = $orderResult->getId();
-			$orderExportId = $orderId;
 			$orderAccountNumber = $this->getAccountNumber();
 
-			if ($orderAccountNumber !== null)
-			{
-				$orderExportId = $orderAccountNumber;
-			}
+			$this->setAccountNumberForTrading($orderAccountNumber);
 
-			[$paymentId, $paySystemId] = $this->getPayment();
+			$payment = $this->getPayment();
 
 			$result->setData([
-				'ID' => $orderExportId,
+				'ID' => $orderAccountNumber,
 				'INTERNAL_ID' => $orderId,
-				'PAYMENT_ID' => $paymentId,
-				'PAY_SYSTEM_ID' => $paySystemId,
+				'PAYMENT_ID' => $payment->getId(),
+				'PAY_SYSTEM_ID' => $payment->getPaymentSystemId(),
 			]);
 		}
 
 		return $result;
 	}
 
-	public function getAccountNumber() : ?string
+	protected function setAccountNumberForTrading(string $number)
 	{
-		$accountNumber = (string)$this->internalOrder->getField('ACCOUNT_NUMBER');
+		$platform = $this->environment->getPlatform();
+		$trading = $this->searchTradingBinding($platform);
 
-		return $accountNumber !== '' ? $accountNumber : null;
+		if ($trading !== null)
+		{
+			$trading->setFieldNoDemand('EXTERNAL_ORDER_ID', $number);
+			$trading->save();
+		}
 	}
 
-	protected function getPayment() : array
+	public function getAccountNumber() : string
 	{
-		$paymentId = null;
-		$paySystemId = null;
+		return (string)($this->internalOrder->getField('ACCOUNT_NUMBER') ?: $this->internalOrder->getId());
+	}
 
+	public function getPayment() : ?Sale\Payment
+	{
+		$result = null;
 		$paymentCollection = $this->internalOrder->getPaymentCollection();
 
 		/** @var Sale\Payment $payment */
@@ -1088,11 +1092,11 @@ class Order extends EntityReference\Order
 		{
 			if ($payment->isInner()) { continue; }
 
-			$paymentId = $payment->getId();
-			$paySystemId = $payment->getPaymentSystemId();
+			$result = $payment;
+			break;
 		}
 
-		return [$paymentId, $paySystemId];
+		return $result;
 	}
 
 	protected function getIssetPayment(int $paySystemId) : ?Sale\Payment

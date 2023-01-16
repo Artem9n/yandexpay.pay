@@ -26,8 +26,7 @@ class OrderAdd
 
 	protected function addOrder(State\OrderCalculation $state) : void
 	{
-		$externalId = $state->order->getId();
-		$saveResult = $state->order->add($externalId);
+		$saveResult = $state->order->add();
 
 		Exceptions\Facade::handleResult($saveResult);
 

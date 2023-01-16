@@ -68,7 +68,7 @@ class OrderRegistry extends EntityReference\OrderRegistry
 		return $this->makeOrder($internalOrder);
 	}
 
-	protected function makeOrder(Sale\OrderBase $order) : Order
+	protected function makeOrder(Sale\Order $order) : Order
 	{
 		return new Order($this->environment, $order);
 	}

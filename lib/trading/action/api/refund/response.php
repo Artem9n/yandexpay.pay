@@ -2,7 +2,6 @@
 
 namespace YandexPay\Pay\Trading\Action\Api\Refund;
 
-use Bitrix\Main;
 use YandexPay\Pay\Trading\Action\Api;
 
 class Response extends Api\Reference\Response

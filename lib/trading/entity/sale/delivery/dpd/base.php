@@ -29,9 +29,9 @@ abstract class Base extends AbstractAdapter
 		return Main\Loader::includeModule('ipol.dpd');
 	}
 
-	public function prepareCalculation(Sale\OrderBase $orderBase) : void
+	public function prepareCalculation(Sale\Order $Order) : void
 	{
-		$paymentCollection = $orderBase->getPaymentCollection();
+		$paymentCollection = $Order->getPaymentCollection();
 
 		/** @var Sale\Payment $payment */
 		foreach ($paymentCollection as $payment)
@@ -65,7 +65,7 @@ abstract class Base extends AbstractAdapter
 		DPD::OnSaleDeliveryHiddenHTML($arResult, [], []);
 	}
 
-	public function onAfterOrderSave(Sale\OrderBase $order) : void
+	public function onAfterOrderSave(Sale\Order $order) : void
 	{
 		/** @noinspection PhpUndefinedConstantInspection */
 		$key = Main\Config\Option::get(IPOLH_DPD_MODULE, 'ORDER_ID', 'ID');

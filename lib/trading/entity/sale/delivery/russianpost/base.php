@@ -27,7 +27,7 @@ class Base extends AbstractAdapter
 		return '';
 	}
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
 	{
 
 	}

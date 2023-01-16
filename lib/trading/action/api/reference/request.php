@@ -88,7 +88,7 @@ abstract class Request
 		);
 	}
 
-	abstract public function getPath();
+	abstract public function getPath() : string;
 
 	public function getQuery() : array
 	{

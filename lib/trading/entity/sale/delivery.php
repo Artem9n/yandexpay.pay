@@ -259,7 +259,7 @@ class Delivery extends EntityReference\Delivery
 		return $result;
 	}
 
-	protected function isOrderLocationFilled(Sale\OrderBase $order) : bool
+	protected function isOrderLocationFilled(Sale\Order $order) : bool
 	{
 		$propertyCollection = $order->getPropertyCollection();
 
@@ -356,7 +356,7 @@ class Delivery extends EntityReference\Delivery
 		return $result;
 	}
 
-	protected function prepareCalculation(Sale\OrderBase $order, Sale\Delivery\Services\Base $deliveryService) : void
+	protected function prepareCalculation(Sale\Order $order, Sale\Delivery\Services\Base $deliveryService) : void
 	{
 		try
 		{
@@ -431,12 +431,12 @@ class Delivery extends EntityReference\Delivery
 	 *
 	 * @return \Bitrix\Sale\Order
 	 */
-	protected function getOrderCalculatable(EntityReference\Order $order) : Sale\OrderBase
+	protected function getOrderCalculatable(EntityReference\Order $order) : Sale\Order
 	{
 		return $order->getCalculatable();
 	}
 
-	protected function getCalculatableShipment(Sale\OrderBase $order) : Sale\Shipment
+	protected function getCalculatableShipment(Sale\Order $order) : Sale\Shipment
 	{
 		$result = null;
 

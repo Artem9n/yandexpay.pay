@@ -60,12 +60,16 @@ abstract class BaseRest extends Base
 			$this->getParameter('YANDEX_PAY_MERCHANT_ID', true)
 			: $this->getParameter('YANDEX_PAY_REST_API_KEY', true);
 
+		$orderNumber = $this->getPayment()->getOrder()->getField('ACCOUNT_NUMBER');
+		$refundSum = $this->getPayment()->getSum();
+
 		if ($apiKey === null) { return; }
 
 		$request->setLogger($logger);
 		$request->setApiKey($apiKey);
 		$request->setTestMode($isTestMode);
-		$request->setPayment($this->getPayment());
+		$request->setOrderNumber($orderNumber);
+		$request->setRefundAmount($refundSum);
 
 		$data = $request->send();
 		$response = $request->buildResponse($data, Api\Refund\Response::class);

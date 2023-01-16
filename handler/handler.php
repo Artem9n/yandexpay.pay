@@ -187,7 +187,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		if ($basket === null) { return $result; }
 
-		$result['id'] = (string)$order->getId();
+		$result['id'] = (string)$order->getField('ACCOUNT_NUMBER');
 		$result['total'] = $payment->getSum();
 
 		/** @var \Bitrix\Sale\BasketItem $basketItem */
@@ -478,7 +478,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 	/**
 	 * @param Payment $payment
-	 * @param class-string<Api\Reference\Request> $requestClass
+	 * @param class-string<Api\Request> $requestClass
 	 * @param class-string<Api\Reference\Response> $responseClass
 	 * @param Psr\Log\LoggerInterface|null $logger
 	 */
@@ -487,13 +487,14 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		$request = new $requestClass();
 
 		$apiKey = $this->getApiKey($payment);
+		$orderNumber = $payment->getOrder()->getField('ACCOUNT_NUMBER');
 
 		if ($apiKey === null) { return; }
 
 		$request->setLogger($logger ?? new Logger\NullLogger());
 		$request->setApiKey($apiKey);
 		$request->setTestMode($this->isTestMode($payment));
-		$request->setPayment($payment);
+		$request->setOrderNumber($orderNumber);
 
 		$data = $request->send();
 

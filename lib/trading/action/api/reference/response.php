@@ -2,7 +2,6 @@
 
 namespace YandexPay\Pay\Trading\Action\Api\Reference;
 
-use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action;
 

@@ -30,6 +30,7 @@ class OrderDelivery
 	protected function processTransportDelivery(State\Order $state) : void
 	{
 		$status = $this->request->getOrder()->getDeliveryStatus();
+		$orderNumber = $state->order->getField('ACCOUNT_NUMBER');
 
 		if ($status === null) { return; }
 
@@ -50,7 +51,7 @@ class OrderDelivery
 
 			if ($requestId === null) { continue; }
 
-			$requestHandler->notifyTransport($requestId, $status, $state->order->getId(), $shipment->getId());
+			$requestHandler->notifyTransport($requestId, $status, $orderNumber, $shipment->getId());
 		}
 	}
 

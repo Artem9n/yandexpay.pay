@@ -19,7 +19,7 @@ class Pickup extends Base
 		return EntitySale\Delivery::PICKUP_TYPE;
 	}
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
 	{
 		$value = sprintf('%s (%s)', $address, $storeId);
 		$propAddress = $this->addressProperty($order);
@@ -36,12 +36,12 @@ class Pickup extends Base
 		$_REQUEST['IPOLH_DPD_TERMINAL'][$profile] = $storeId;
 	}
 
-	protected function getAddressCode(Sale\OrderBase $order) : string
+	protected function getAddressCode(Sale\Order $order) : string
 	{
 		return (string)Main\Config\Option::get('ipol.dpd', sprintf('RECEIVER_PVZ_FIELD_%s', $order->getPersonTypeId()));
 	}
 
-	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		$stores = $this->loadStores($bounds);
 

@@ -28,7 +28,7 @@ class OrderLoad
 		/** @var \Bitrix\Sale\Order $orderClassName */
 		$orderClassName = $registry->getOrderClassName();
 
-		$state->order = $orderClassName::load($this->orderId);
+		$state->order = $orderClassName::loadByAccountNumber($this->orderId);
 
 		if ($state->order === null)
 		{

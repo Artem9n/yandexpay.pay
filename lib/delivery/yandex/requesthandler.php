@@ -135,7 +135,7 @@ class RequestHandler extends Delivery\Requests\HandlerBase
 		unset($this->waitCreatedExternalData[$externalId]);
 	}
 
-	public function notifyTransport(int $requestId, string $status, int $orderId, int $shipmentId) : void
+	public function notifyTransport(int $requestId, string $status, string $orderId, int $shipmentId) : void
 	{
 		$transport = $this->getTransport($requestId);
 		$transport->setStatus($status);

@@ -14,12 +14,12 @@ class Courier extends Base
 		return  EntitySale\Delivery::DELIVERY_TYPE;
 	}
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
 	{
 		// do nothing
 	}
 
-	public function markSelectedDelivery(Sale\OrderBase $order, array $address) : void
+	public function markSelectedDelivery(Sale\Order $order, array $address) : void
 	{
 		/** @var Sale\Order $order */
 		$this->calculateAndFillSessionValues($order);

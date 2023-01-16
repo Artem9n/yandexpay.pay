@@ -35,7 +35,7 @@ class Base extends AbstractAdapter
 		return '';
 	}
 
-	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		if (!Main\Loader::includeModule('ipol.ozon')) { return []; }
 
@@ -127,7 +127,7 @@ class Base extends AbstractAdapter
 		return $result;
 	}
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
 	{
 		if (!Main\Loader::includeModule('ipol.ozon')) { return; }
 

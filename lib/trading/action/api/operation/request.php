@@ -1,7 +1,6 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Api\Operation;
 
-use Bitrix\Main;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Trading\Action;
 

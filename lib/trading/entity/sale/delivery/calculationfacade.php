@@ -32,7 +32,7 @@ class CalculationFacade
 		return $result;
 	}
 
-	public static function mergeOrderData(EntityReference\Delivery\CalculationResult $result, Sale\OrderBase $order)
+	public static function mergeOrderData(EntityReference\Delivery\CalculationResult $result, Sale\Order $order)
 	{
 		$price = $order->getDeliveryPrice();
 		$priceRounded = static::roundPrice($price);

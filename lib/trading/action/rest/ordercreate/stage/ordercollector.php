@@ -8,7 +8,7 @@ class OrderCollector extends ResponseCollector
 {
 	public function __invoke(State\OrderCalculation $state)
 	{
-		$this->write((string)$state->order->getId());
+		$this->write((string)$state->order->getAccountNumber());
 	}
 }
 
