@@ -1,19 +1,13 @@
 import ElementSkeleton from '../reference/element';
-import factoryLayout from './molecules/factorylayout';
 
 export default class Element extends ElementSkeleton {
 
-	bootFactory(factory) {
-		super.bootFactory(factory);
-		factoryLayout(factory);
-	}
-
 	eventName() {
-		return 'onAsproSkuSetPrice';
+		return 'onCatalogElementChangeOffer';
 	}
 
 	eventProductId(eventData) {
-		const newProductId = parseInt(eventData?.offer?.ID, 10);
+		let newProductId = parseInt(eventData?.newId, 10);
 
 		return !isNaN(newProductId) ? newProductId : null;
 	}

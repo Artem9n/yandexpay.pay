@@ -13,4 +13,12 @@ export default class Basket extends EshopBasket {
 			},
 		});
 	}
+
+	bootCart(cart) {
+		if (typeof BX === 'undefined') { return; }
+
+		this.onEvent('OnBasketChange', () => {
+			cart.delayChangeBasket();
+		});
+	}
 }
