@@ -292,7 +292,7 @@ abstract class Order
 		throw new Main\NotImplementedException('fillTradingSetup is missing');
 	}
 
-	public function getOrder() : ?Sale\Order
+	public function getOrder() : Sale\Order
 	{
 		throw new Main\NotImplementedException('getOrder is missing');
 	}

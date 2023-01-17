@@ -387,7 +387,7 @@ class Order extends EntityReference\Order
 		return $shipment;
 	}
 
-	public function getOrder() : ?Sale\Order
+	public function getOrder() : Sale\Order
 	{
 		return $this->internalOrder;
 	}

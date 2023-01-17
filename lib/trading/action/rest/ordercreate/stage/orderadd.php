@@ -30,15 +30,11 @@ class OrderAdd
 
 		Exceptions\Facade::handleResult($saveResult);
 
-		$saveData = $saveResult->getData();
-
-		if (!isset($saveData['ID']))
-		{
-			throw new Main\SystemException(self::getMessage('ORDER_ACCEPT_SAVE_RESULT_ID_NOT_SET'));
-		}
-
-		$state->logger->info(self::getMessage('ORDER_ACCEPT', [
-			'#ORDER_ID#' => $saveData['ID']
-		]), [ 'AUDIT' => Logger\Audit::INCOMING_RESPONSE]);
+		$state->logger->info(
+			self::getMessage('ORDER_ACCEPT', [
+				'#ORDER_ID#' => $state->order->getAccountNumber(),
+			]),
+			[ 'AUDIT' => Logger\Audit::INCOMING_RESPONSE ]
+		);
 	}
 }
