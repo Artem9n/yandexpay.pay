@@ -59,7 +59,7 @@ class Factory
 			//static::OZON_DELIVERY,
 			static::SDEK_PICKUP,
 			static::SDEK_COURIER,
-			//static::SDEK_POSTAMAT,
+			static::SDEK_POSTAMAT,
 			static::DPD_PICKUP,
 			static::DPD_COURIER,
 			static::BOXBERRY_PVZ,
