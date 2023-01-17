@@ -560,6 +560,18 @@ class Options extends Reference\Skeleton
 
 		foreach ($map as $type => $options)
 		{
+			if (isset($options['desctop'], $options['mobile']))
+			{
+				foreach ($options as $values)
+				{
+					$result[] = [
+						'BEHAVIOR' => $type,
+						'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $values),
+					];
+				}
+				continue;
+			}
+
 			$result[] = [
 				'BEHAVIOR' => $type,
 				'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $options),
