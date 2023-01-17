@@ -29,9 +29,9 @@ abstract class Base extends AbstractAdapter
 		return Main\Loader::includeModule('ipol.dpd');
 	}
 
-	public function prepareCalculation(Sale\Order $Order) : void
+	public function prepareCalculation(Sale\Order $order) : void
 	{
-		$paymentCollection = $Order->getPaymentCollection();
+		$paymentCollection = $order->getPaymentCollection();
 
 		/** @var Sale\Payment $payment */
 		foreach ($paymentCollection as $payment)

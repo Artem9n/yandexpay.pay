@@ -8,6 +8,6 @@ class FinishCollector extends ResponseCollector
 {
 	public function __invoke(State\Order $state)
 	{
-		$this->write((string)$state->order->getField('ACCOUNT_NUMBER'));
+		$this->write((string)$state->orderAdapter->getAccountNumber());
 	}
 }

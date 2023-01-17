@@ -15,10 +15,12 @@ class Order extends EntityReference\Order
 
 	/** @var Sale\Order */
 	protected $calculatable;
+	/** @var bool */
 	protected $isStartField;
-
 	/** @var Delivery\AbstractAdapter */
 	protected $delivery;
+	/** @var int|null */
+	protected $paymentId;
 
 	public function __construct(Environment $environment, Sale\Order $internalOrder)
 	{
@@ -324,9 +326,6 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	/**
-	 * @return Sale\Order
-	 */
 	public function getCalculatable() : Sale\Order
 	{
 		if ($this->calculatable === null)
@@ -1048,11 +1047,10 @@ class Order extends EntityReference\Order
 			$this->deliveryOnAfterOrderSave();
 
 			$orderId = $orderResult->getId();
-			$orderAccountNumber = $this->getAccountNumber();
-
-			$this->setAccountNumberForTrading($orderAccountNumber);
-
+			$orderAccountNumber = $this->internalOrder->getField('ACCOUNT_NUMBER');
 			$payment = $this->getPayment();
+
+			$this->linkPaymentNumber($payment, $orderAccountNumber);
 
 			$result->setData([
 				'ID' => $orderAccountNumber,
@@ -1065,24 +1063,25 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	protected function setAccountNumberForTrading(string $number)
-	{
-		$platform = $this->environment->getPlatform();
-		$trading = $this->searchTradingBinding($platform);
-
-		if ($trading !== null)
-		{
-			$trading->setFieldNoDemand('EXTERNAL_ORDER_ID', $number);
-			$trading->save();
-		}
-	}
-
 	public function getAccountNumber() : string
 	{
-		return (string)($this->internalOrder->getField('ACCOUNT_NUMBER') ?: $this->internalOrder->getId());
+		$payment = $this->getPayment();
+
+		return $payment->getField('PS_INVOICE_ID') ?: $payment->getField('ORDER_ID');
 	}
 
-	public function getPayment() : ?Sale\Payment
+	protected function linkPaymentNumber(Sale\Payment $payment, string $paymentNumber) : void
+	{
+		$payment->setField('PS_INVOICE_ID', $paymentNumber);
+		$payment->save();
+	}
+
+	public function setPaymentId(int $paymentId) : void
+	{
+		$this->paymentId = $paymentId;
+	}
+
+	public function getPayment() : Sale\Payment
 	{
 		$result = null;
 		$paymentCollection = $this->internalOrder->getPaymentCollection();
@@ -1092,8 +1091,16 @@ class Order extends EntityReference\Order
 		{
 			if ($payment->isInner()) { continue; }
 
-			$result = $payment;
-			break;
+			if ($this->paymentId === null || (string)$this->paymentId === (string)$payment->getId())
+			{
+				$result = $payment;
+				break;
+			}
+		}
+
+		if ($result === null)
+		{
+			throw new Main\SystemException('payment not found', 'OTHER');
 		}
 
 		return $result;

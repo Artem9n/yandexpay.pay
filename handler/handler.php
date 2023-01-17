@@ -45,6 +45,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		try
 		{
+			$this->resolvePaymentNumber($payment);
 	        $this->setExtraParams($this->getParams($payment));
 
 	        $showTemplateResult = $this->showTemplate($payment, 'template');
@@ -65,6 +66,25 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
         }
 
         return $result;
+	}
+
+	protected function resolvePaymentNumber(Payment $payment) : void
+	{
+		if ((string)$payment->getField('PS_INVOICE_ID') !== '') { return; }
+
+		$accountNumber = (string)$payment->getOrder()->getField('ACCOUNT_NUMBER');
+
+		foreach ($payment->getCollection() as $sibling)
+		{
+			if ((string)$sibling->getField('PS_INVOICE_ID') === $accountNumber)
+			{
+				$accountNumber = $payment->getField('ACCOUNT_NUMBER');
+				break;
+			}
+		}
+
+		$payment->setField('PS_INVOICE_ID', $accountNumber);
+		$payment->save();
 	}
 
 	protected function setRedirectUrl(Payment $payment) : void
@@ -187,7 +207,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		if ($basket === null) { return $result; }
 
-		$result['id'] = (string)$order->getField('ACCOUNT_NUMBER');
+		$result['id'] = (string)$payment->getField('PS_INVOICE_ID');
 		$result['total'] = $payment->getSum();
 
 		/** @var \Bitrix\Sale\BasketItem $basketItem */
@@ -487,7 +507,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		$request = new $requestClass();
 
 		$apiKey = $this->getApiKey($payment);
-		$orderNumber = $payment->getOrder()->getField('ACCOUNT_NUMBER');
+		$orderNumber = $payment->getField('PS_INVOICE_ID') ?: $payment->getField('ORDER_ID'); // fallback to ORDER_ID without link
 
 		if ($apiKey === null) { return; }
 

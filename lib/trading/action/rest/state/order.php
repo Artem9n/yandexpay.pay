@@ -2,9 +2,12 @@
 namespace YandexPay\Pay\Trading\Action\Rest\State;
 
 use Bitrix\Sale;
+use YandexPay\Pay\Trading\Entity as TradingEntity;
 
 class Order extends Common
 {
+	/** @var TradingEntity\Reference\Order */
+	public $orderAdapter;
 	/** @var Sale\Order */
 	public $order;
 	/** @var Sale\Payment */

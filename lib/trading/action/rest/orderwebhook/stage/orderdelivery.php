@@ -30,7 +30,7 @@ class OrderDelivery
 	protected function processTransportDelivery(State\Order $state) : void
 	{
 		$status = $this->request->getOrder()->getDeliveryStatus();
-		$orderNumber = $state->order->getField('ACCOUNT_NUMBER');
+		$orderNumber = $state->orderAdapter->getAccountNumber();
 
 		if ($status === null) { return; }
 

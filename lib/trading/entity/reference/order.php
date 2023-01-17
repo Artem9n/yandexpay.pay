@@ -297,7 +297,7 @@ abstract class Order
 		throw new Main\NotImplementedException('getOrder is missing');
 	}
 
-	public function getPayment() : ?Sale\Payment
+	public function getPayment() : Sale\Payment
 	{
 		throw new Main\NotImplementedException('getPayment is missing');
 	}

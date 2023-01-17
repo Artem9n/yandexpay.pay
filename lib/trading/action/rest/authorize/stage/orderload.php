@@ -24,16 +24,8 @@ class OrderLoad
 
 	protected function loadOrder(State\Order $state) : void
 	{
-		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
-		/** @var \Bitrix\Sale\Order $orderClassName */
-		$orderClassName = $registry->getOrderClassName();
-
-		$state->order = $orderClassName::loadByAccountNumber($this->orderId);
-
-		if ($state->order === null)
-		{
-			throw new SystemException('order not found');
-		}
+		$state->orderAdapter = $state->environment->getOrderRegistry()->load($this->orderId);
+		$state->order = $state->orderAdapter->getOrder();
 	}
 
 	protected function checkHash(State\Order $state) : void
