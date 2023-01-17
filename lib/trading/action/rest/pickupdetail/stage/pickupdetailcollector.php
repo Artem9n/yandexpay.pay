@@ -1,6 +1,8 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\PickupDetail\Stage;
 
+use Bitrix\Sale;
+use YandexPay\Pay\Data\Vat;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
 use YandexPay\Pay\Trading\Action\Rest\PickupDetail;
@@ -70,14 +72,21 @@ class PickupDetailCollector extends ResponseCollector
 		}
 
 		$store = $pickup->getDetailPickup($this->storeId);
-		$result = $this->collectPickupOption($calculationResult, $store, $this->locationId);
+		$result = $this->collectPickupOption($calculationResult, $deliveryService, $store, $this->locationId);
 
 		$this->write($result);
 	}
 
-	protected function collectPickupOption(EntityReference\Delivery\CalculationResult $calculationResult, array $store, int $locationId = null) : array
+	protected function collectPickupOption(
+		EntityReference\Delivery\CalculationResult $calculationResult,
+		Sale\Delivery\Services\Base $service,
+		array $store,
+		int $locationId = null
+	) : array
 	{
 		$toDate = $calculationResult->getDateTo();
+		$vatList = Vat::getVatList();
+		$vatRate = $vatList[$service->getVatId()] ?? 0;
 
 		return [
 			'pickupPointId' => implode(':', [$calculationResult->getDeliveryId(), $store['ID'], $locationId, $store['ZIP']]),
@@ -93,6 +102,9 @@ class PickupDetailCollector extends ResponseCollector
 			'amount' => (float)$calculationResult->getPrice(),
 			'description' => $store['DESCRIPTION'],
 			'phones' => explode(', ', $store['PHONE']),
+			'receipt' => [
+				'tax' => Vat::convertForService($vatRate),
+			],
 		];
 	}
 }

@@ -2,6 +2,8 @@
 
 namespace YandexPay\Pay\Data;
 
+use Bitrix\Catalog\VatTable;
+
 class Vat
 {
 	protected static $availableValues = [
@@ -10,6 +12,32 @@ class Vat
 		'VAT_10' => 2,
 		'NO_VAT' => 6
 	];
+
+	protected static $vatList;
+
+	public static function getVatList() : array
+	{
+		if (self::$vatList === null)
+		{
+			self::$vatList = static::loadVatList();
+		}
+
+		return self::$vatList;
+	}
+
+	protected static function loadVatList() : array
+	{
+		$result = [];
+
+		$query = VatTable::getList();
+
+		while ($vat = $query->fetch())
+		{
+			$result[$vat['ID']] = $vat['RATE'] / 100;
+		}
+
+		return $result;
+	}
 
 	/**
 	 * @param float|null|string $rate
@@ -30,7 +58,7 @@ class Vat
 		}
 		else
 		{
-			$result = static::$availableValues['VAT_0'];
+			$result = static::$availableValues['NO_VAT'];
 		}
 
 		return $result;
