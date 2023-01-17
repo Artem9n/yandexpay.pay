@@ -476,7 +476,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		);
 
 		$logger->info(Main\Localization\Loc::getMessage('PAYMENT_CANCELLED', [
-			'#ORDER_ID#' => $payment->getOrderId()
+			'#ORDER_ID#' => $payment->getField('PS_INVOICE_ID') ?: $payment->getField('ORDER_ID'),
 		]), ['AUDIT' => Logger\Audit::OUTGOING_REQUEST]);
 	}
 
@@ -492,7 +492,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		);
 
 		$logger->info(Main\Localization\Loc::getMessage('PAYMENT_CONFIMED', [
-			'#ORDER_ID#' => $payment->getOrderId()
+			'#ORDER_ID#' => $payment->getField('PS_INVOICE_ID') ?: $payment->getField('ORDER_ID'),
 		]), ['AUDIT' => Logger\Audit::OUTGOING_REQUEST]);
 	}
 
