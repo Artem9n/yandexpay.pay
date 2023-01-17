@@ -9,6 +9,7 @@ use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 class Postamat extends Base
 {
 	protected $code = 'POSTAMAT';
+	protected $tariff = 'postamat';
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{

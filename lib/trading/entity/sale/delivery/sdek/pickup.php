@@ -10,6 +10,7 @@ use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 class Pickup extends Base
 {
 	protected $code = 'PVZ';
+	protected $tariff = 'pickup';
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
