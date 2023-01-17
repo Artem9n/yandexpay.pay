@@ -20,6 +20,7 @@ class BasketFly extends Basket
 					'GROUP' => self::getMessage('GROUP_BEHAVIOR'),
 					'TYPE' => 'string',
 					'TITLE' => self::getMessage('PATH'),
+					'HELP' => self::getMessage('PATH_HELP'),
 					'MANDATORY' => 'Y',
 					'SETTINGS' => [
 						'ROWS' => 5,
