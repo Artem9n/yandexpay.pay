@@ -329,7 +329,13 @@ class Purchase extends \CBitrixComponent
 
 		$deliveryService = $this->environment->getDelivery()->getDeliveryService($request->getId());
 		$pickup = EntitySale\Delivery\Factory::make($deliveryService, 'pickup');
-		$pickup->prepareCalculatePickup($request->getId(), $request->getStoreId(), $request->getLocationId(), $request->getZip());
+		$pickup->prepareCalculatePickup(
+			$order->getCalculatable(),
+			$request->getId(),
+			$request->getStoreId(),
+			$request->getLocationId(),
+			$request->getZip()
+		);
 		$this->clearCalculatable($order);
 		$this->setLocation($order, $request->getLocationId());
 		$calculationResult = $this->calculateDelivery($order, $request->getId());

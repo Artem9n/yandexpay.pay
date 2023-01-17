@@ -4,7 +4,6 @@ namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\RussianPost;
 
 use Bitrix\Main;
 use Bitrix\Sale;
-use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 use YandexPay\Pay\Utils\Encoding;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
@@ -179,9 +178,9 @@ class Pickup extends Base
 		return $result;
 	}
 
-	public function prepareCalculatePickup(int $deliveryId, string $storeId, string $locationId, string $zip = null) : void
+	public function prepareCalculatePickup(Sale\OrderBase $order, int $deliveryId, string $storeId, string $locationId, string $zip = null) : void
 	{
-		$tariff = $this->getTariff($zip);
+		$tariff = $this->getTariff($order, $zip);
 
 		$_REQUEST['order']['russianpost_result_price'] = $tariff['tariff']['total'];
 		$_REQUEST['order']['DELIVERY_ID'] = $deliveryId;
@@ -204,7 +203,7 @@ class Pickup extends Base
 			}
 		}
 
-		$tariff = $this->getTariff($zip);
+		$tariff = $this->getTariff($order, $zip);
 
 		if ($tariff !== null)
 		{
