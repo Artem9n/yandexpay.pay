@@ -14,6 +14,7 @@ class Action extends Rest\Reference\EffectiveAction
 	public function bootstrap() : void
 	{
 		parent::bootstrap();
+		$this->bootSetup($this->request->getSetupId());
 		$this->bootMerchantOrder();
 	}
 
@@ -34,7 +35,6 @@ class Action extends Rest\Reference\EffectiveAction
 		}
 		else
 		{
-			$this->bootSetup($this->request->getSetupId());
 			$this->bootMerchant($this->request->getMerchantId());
 		}
 	}
@@ -58,6 +58,7 @@ class Action extends Rest\Reference\EffectiveAction
 	protected function processOrder(Rest\Reference\EffectiveResponse $response) : void
 	{
 		(new Rest\Pipeline())
+			->pipe(new Rest\OrderCreate\Stage\Order\Paysystem($this->request->getPaymentType()))
 			->pipe(new Rest\OrderCreate\Stage\Order\FinishCollector($response, 'orderId'))
 			->pipe(new Rest\OrderCreate\Stage\Order\MetaCollector($response, 'metadata'))
 			->process($this->stateOrder);
@@ -76,12 +77,12 @@ class Action extends Rest\Reference\EffectiveAction
 	protected function calculationPipeline() : Rest\Pipeline
 	{
 		return (new Rest\Pipeline())
-			->pipe(new Rest\OrderCreate\Stage\OrderUser($this->request))
 			->pipe(new Rest\Stage\NewOrder(
 				$this->request->getUserId(),
 				$this->request->getFUserId(),
 				$this->request->getCurrencyCode(),
-				$this->request->getCoupons()
+				$this->request->getCoupons(),
+				$this->request->getCartId()
 			))
 			->pipe(new Rest\Stage\OrderInitialize())
 			->pipe(new Rest\OrderCreate\Stage\OrderStatus())
@@ -94,6 +95,7 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe($this->stageDeliveryProperties())
 			->pipe(new Rest\OrderCreate\Stage\RelatedProperties())
 			->pipe(new Rest\OrderCreate\Stage\OrderCheck($this->request))
+			->pipe(new Rest\OrderCreate\Stage\OrderUser($this->request))
 			->pipe(new Rest\OrderCreate\Stage\OrderAdd($this->request));
 	}
 
