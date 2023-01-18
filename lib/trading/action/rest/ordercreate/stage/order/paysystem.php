@@ -15,7 +15,7 @@ class Paysystem
 
 	public function __invoke(State\Order $state)
 	{
-		if ($this->paymentType !== 'SPLIT') { return; }
+		if ($this->paymentType !== 'SPLIT' || $state->options === null) { return; }
 
 		$paySystemId = $state->options->getPaymentSplit() ?? $state->options->getPaymentCard();
 		$paySystem = Sale\PaySystem\Manager::getById($paySystemId);
