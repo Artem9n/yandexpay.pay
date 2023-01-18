@@ -15,7 +15,7 @@ class OptionsCollector extends ResponseCollector
 
 		$availablePaymentMethods = ['CARD'];
 
-		if ($state->options->getPaymentSplit() !== null)
+		if ($state->options === null || $state->options->getPaymentSplit() !== null)
 		{
 			$availablePaymentMethods[] = 'SPLIT';
 		}
