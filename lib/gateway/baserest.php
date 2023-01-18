@@ -60,7 +60,7 @@ abstract class BaseRest extends Base
 			$this->getParameter('YANDEX_PAY_MERCHANT_ID', true)
 			: $this->getParameter('YANDEX_PAY_REST_API_KEY', true);
 
-		$orderNumber = $this->getPayment()->getField('INVOICE_ID') ?: $this->getPayment()->getField('ORDER_ID'); // fallback to ORDER_ID without link
+		$orderNumber = $this->getPayment()->getField('PS_INVOICE_ID') ?: $this->getPayment()->getField('ORDER_ID'); // fallback to ORDER_ID without link
 		$refundSum = $this->getPayment()->getSum();
 
 		if ($apiKey === null) { return; }
