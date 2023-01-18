@@ -560,7 +560,7 @@ class Options extends Reference\Skeleton
 
 		foreach ($map as $type => $options)
 		{
-			if (isset($options['desctop'], $options['mobile']))
+			if (isset($options['desktop'], $options['mobile']))
 			{
 				foreach ($options as $values)
 				{

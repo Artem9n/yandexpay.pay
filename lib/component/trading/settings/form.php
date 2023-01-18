@@ -167,7 +167,7 @@ class Form extends Pay\Component\Plain\Form
 
 		foreach ($map as $type => $options)
 		{
-			if (isset($options['desctop'], $options['mobile']))
+			if (isset($options['desktop'], $options['mobile']))
 			{
 				foreach ($options as $types)
 				{
