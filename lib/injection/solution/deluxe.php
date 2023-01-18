@@ -96,34 +96,6 @@ class Deluxe extends Skeleton
 		return $this->designDefaults() + Guide::getBitrixOrder($context, '/personal/cart/order/');
 	}
 
-	protected function basketFlyDefaults(array $context = []) : array
-	{
-		$paths = [
-			'/ajax/basket_fly.php',
-			'/ajax/showBasketHover.php',
-		];
-
-		foreach ($paths as &$path)
-		{
-			$dir = $context['SITE_DIR'] ?? '';
-			$dir = rtrim($dir, '/');
-			$path = $dir . $path;
-		}
-		unset($path);
-
-		$settings = [
-			'SELECTOR' => '.header-cart.fly .basket_back, .basket_hover_block .basket_wrap .buttons',
-			'USE_DIVIDER' => false,
-			'WIDTH_BUTTON' => 'MAX',
-			'PATH' => implode(PHP_EOL, $paths),
-			'POSITION' => 'afterend',
-		];
-
-		$design = $this->designDefaults();
-
-		return $settings + $design;
-	}
-
 	public function getDefaults(array $context = []) : array
 	{
 		return [
