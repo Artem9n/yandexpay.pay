@@ -7,10 +7,12 @@ class Registry
 {
 	public const ESHOP_BOOTSTRAP = 'EshopBootstrap';
 	public const ASPRO = 'Aspro';
+	public const DELUXE = 'Deluxe';
 
 	public static function getTypes() : array
 	{
 		return [
+			static::DELUXE,
 			static::ASPRO,
 			static::ESHOP_BOOTSTRAP,
 		];
