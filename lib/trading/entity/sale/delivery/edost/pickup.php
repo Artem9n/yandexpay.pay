@@ -1,16 +1,15 @@
 <?php
-/** @noinspection PhpUnused */
-/** @noinspection PhpUndefinedNamespaceInspection */
-/** @noinspection PhpUndefinedClassInspection */
 namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Edost;
 
+use Bitrix\Main;
 use Bitrix\Sale;
-use Ipolh\DPD\DB\Terminal;
-use Ipolh\DPD\Delivery\DPD;
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
 class Pickup extends Base
 {
+	use Concerns\HasOnceStatic;
+
 	protected $code = 'edost:PICKUP';
 
 	public function getServiceType() : string
@@ -30,119 +29,193 @@ class Pickup extends Base
 
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		$stores = $this->loadStores($order, $bounds);
+		$locationCode = '0000876108';
 
-		if (empty($stores)) { return []; }
+		/** @var Sale\Order $order */
+		$config = $this->config($order);
+		$companies = $this->companies($order, $config);
+		$company = $this->deliveryCompany($companies, $service);
+		$companyId = $company['company_id'];
+		$shipment = $this->orderShipment($order, $service);
+		$points = $this->points($shipment, $locationCode, $config, $companies);
 
-		return $stores;
-	}
+		if (!isset($points['data'][$companyId]) || !is_array($points['data'][$companyId])) { return []; }
 
-	/** @noinspection SpellCheckingInspection */
-	protected function loadStores(Sale\OrderBase $order, array $bounds = null) : array
-	{
-		$result = [];
+		$locationId = \CSaleLocation::getLocationIDbyCODE($shipment->getOrder()->getPropertyCollection()->getDeliveryLocation()->getValue());
+		$result = [
+			$locationId => [],
+		];
 
-		if (class_exists('edost_class') && class_exists('CDeliveryEDOST'))
+		foreach ($points['data'][$companyId] as $pickup)
 		{
-			$config = new Config();
-
-			$data = $this->getOffice($config, $order);
-
-			foreach ($data['data'][30] as $pickup)
-			{
-				$result[2440][] = $this->makePickupInfo($pickup);
-			}
-			foreach ($data['data'][23] as $pickup)
-			{
-				$result[2440][] = $this->makePickupInfo($pickup);
-			}
-			foreach ($data['data'][5] as $pickup)
-			{
-				$result[2440][] = $this->makePickupInfo($pickup);
-			}
+			$result[$locationId][] = $this->makePickupInfo($pickup);
 		}
 
 		return $result;
 	}
 
-	protected function getCompanies(Config $config, Sale\OrderBase $order) : array
+	protected function orderShipment(Sale\OrderBase $order, Sale\Delivery\Services\Base $service) : Sale\Shipment
 	{
-		$office = [];
+		/** @var Sale\Order $order */
+		/** @var Sale\BasketItem $basketItem */
+		/** @var Sale\ShipmentItemCollection $shipmentItemCollection */
+		$shipmentCollection = $order->getShipmentCollection();
+		$shipment = $shipmentCollection->getNotSystemItems()->current();
 
-		$parameters = [
+		if ($shipment === null)
+		{
+			$shipment = $shipmentCollection->createItem();
+			$shipmentItemCollection = $shipment->getShipmentItemCollection();
+
+			foreach ($order->getBasket() as $basketItem)
+			{
+				$shipmentItem = $shipmentItemCollection->createItem($basketItem);
+
+				if ($shipmentItem)
+				{
+					$shipmentItem->setQuantity($basketItem->getQuantity());
+				}
+			}
+		}
+
+		$shipment->setField('DELIVERY_ID', $service->getId());
+		$shipment->setField('DELIVERY_NAME', $service->getNameWithParent());
+
+		return $shipment;
+	}
+
+	protected function config(Sale\OrderBase $order) : array
+	{
+		$result = \CDeliveryEDOST::GetEdostConfig($order->getSiteId());
+
+		if (empty($result['id']))
+		{
+			throw new Main\SystemException('cant load config');
+		}
+
+		if (empty($result['ps']))
+		{
+			throw new Main\SystemException('empty config ps');
+		}
+
+		return $result;
+	}
+
+	protected function companies(Sale\OrderBase $order, array $config)
+	{
+		$parameters = array_map('urlencode', [
 			'country' => 0,
-			'region' => 38,
-			'city' => urlencode('Иркутск'),
-			'weight' => urlencode($order->getBasket()->getWeight() / 1000),
-			'insurance' => urlencode($order->getBasket()->getPrice()),
+			'region' => 38, // todo region from location
+			'city' => 'Иркутск',
+			'weight' => $order->getBasket()->getWeight() / 1000,
+			'insurance' => $order->getBasket()->getPrice(),
 			'size' => urlencode(implode('|', $this->getDimensions($order))),
-		];
+		]);
+		$parametersString = implode('&', array_map(
+			static function($key, $value) { return $key . '=' . $value; },
+			array_keys($parameters),
+			$parameters
+		));
 
-		$data = \edost_class::RequestData(
-			'',
-			$config->getId(),
-			$config->getKey(),
-			implode('&', array_map(function($key, $value) { return $key . '=' . $value; }, array_keys($parameters), $parameters)),
+		return static::onceStatic('fetchCompanies', [
+			$config,
+			$parametersString,
+		]);
+	}
+
+	/** @noinspection PhpUnused */
+	protected static function fetchCompanies(array $config, string $parametersString) : array
+	{
+		$response = \edost_class::RequestData(
+			$config['host'],
+			$config['id'],
+			$config['ps'],
+			$parametersString,
 			'delivery'
 		);
 
-		if (!empty($data['data']))
+		if (!isset($response['data']))
 		{
-			foreach ($data['data'] as $item)
-			{
-				$office[] = $item['company_id'];
-			}
-
-			$office = array_unique($office);
+			throw new Main\SystemException('cant fetch companies');
 		}
 
-		return $office;
+		return $response['data'];
 	}
 
-	protected function getOffice(Config $config, Sale\OrderBase $order) : array
+	protected function deliveryCompany(array $companies, Sale\Delivery\Services\Base $service) : array
 	{
-		$companies = $this->getCompanies($config, $order);
-		$dimensions = $this->getDimensions($order);
+		[, $profileId] = explode(':', $service->getCode(), 2);
+		$company = $companies[$profileId] ?? null;
+
+		if (empty($company))
+		{
+			throw new Main\SystemException('not found company for delivery service');
+		}
+
+		if (!is_array($company))
+		{
+			throw new Main\SystemException('invalid company for delivery service');
+		}
+
+		return $company;
+	}
+
+	protected function points(Sale\Shipment $shipment, string $locationCode, array $config, array $companies) : array
+	{
+		$shipment->getOrder()->getPropertyCollection()->getDeliveryLocation()->setValue($locationCode);
+
+		$dimensions = $this->getDimensions($shipment->getOrder());
+		$orderData = \CSaleDelivery::convertOrderNewToOld($shipment);
+		$orderDataOriginal = \CDeliveryEDOST::FilterOrder($orderData);
 
 		$edostOrderData = [
-			'location' => \CDeliveryEDOST::GetEdostLocation(2440),
+			'location' => \CDeliveryEDOST::GetEdostLocation($locationCode),
 			'zip' => '',
-			'weight' => $order->getBasket()->getWeight() / 1000,
-			'price' => $order->getBasket()->getPrice(),
-			'sizesum' => array_sum($dimensions),
-			'size1' => array_shift($dimensions),
-			'size2' => array_shift($dimensions),
-			'size3' => array_shift($dimensions),
-			'config' => $config->getConfig() + [
-					'PAY_SYSTEM_ID' => '76',
-					'COMPACT' => 'off',
-					'PRIORITY' => 'P',
-				],
-			'original' => [
-				'PRICE' => 2.85,
-				'WEIGHT' => 100.0,
-				'LOCATION_FROM' => '0000073738',
-				'SITE_ID' => 's1',
-				'PERSON_TYPE_ID' => 1,
-				'CURRENCY' => 'RUB',
-				'LOCATION_TO' => '0000876108',
-				'LOCATION_ZIP' => '00000',
-				'ITEMS' => [
-					[
-						'PRICE' => 2.85,
-						'CURRENCY' => 'RUB',
-						'WEIGHT' => 100.0,
-						'QUANTITY' => 1.0,
-						'DELAY' => 'N',
-						'CAN_BUY' => 'Y',
-						'DIMENSIONS' => 'xx',
-						'NAME' => 'Футболка Мужская огонь',
-					],
-				],
+			'weight' => $this->shipmentWeight($shipment) / 1000,
+			'price' => $this->shipmentPrice($shipment),
+			'sizesum' => 0, //array_sum($dimensions),
+			'size1' => 0, //array_shift($dimensions),
+			'size2' => 0, //array_shift($dimensions),
+			'size3' => 0, //array_shift($dimensions),
+			'config' => $config + [
+				'PAY_SYSTEM_ID' => '76',
+				'COMPACT' => 'off',
+				'PRIORITY' => 'P',
 			],
+			'original' => $orderDataOriginal,
 		];
 
-		return \edost_class::GetOffice($edostOrderData, $companies);
+		return \edost_class::GetOffice($edostOrderData, array_column($companies, 'company_id'));
+	}
+
+	protected function shipmentWeight(Sale\Shipment $shipment) : float
+	{
+		/** @var Sale\ShipmentItem $shipmentItem */
+		$result = 0.0;
+
+		foreach ($shipment->getShipmentItemCollection() as $shipmentItem)
+		{
+			$basketItem = $shipmentItem->getBasketItem();
+
+			$result += $basketItem->getWeight() * $basketItem->getQuantity();
+		}
+
+		return $result;
+	}
+
+	protected function shipmentPrice(Sale\Shipment $shipment) : float
+	{
+		/** @var Sale\ShipmentItem $shipmentItem */
+		$result = 0.0;
+
+		foreach ($shipment->getShipmentItemCollection() as $shipmentItem)
+		{
+			$basketItem = $shipmentItem->getBasketItem();
+
+			$result += $basketItem->getPrice() * $basketItem->getQuantity();
+		}
+
+		return $result;
 	}
 
 	protected function getDimensions(Sale\OrderBase $order) : array
@@ -159,7 +232,7 @@ class Pickup extends Base
 				$dimensions = $item->getField('DIMENSIONS');
 				if (!empty($dimensions))
 				{
-					$dimensions = unserialize($dimensions);
+					$dimensions = unserialize($dimensions, [ 'allowed_classes' => false ]);
 
 					$width += $dimensions['WIDTH'];
 					$height += $dimensions['HEIGHT'];

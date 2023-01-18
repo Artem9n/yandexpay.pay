@@ -175,6 +175,12 @@ class Delivery extends EntityReference\Delivery
 		{
 			$result = [];
 		}
+		catch (\Throwable $exception)
+		{
+			trigger_error($exception->getMessage(), E_USER_WARNING);
+
+			$result = [];
+		}
 
 		return $result;
 	}
