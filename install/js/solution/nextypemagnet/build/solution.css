@@ -12,7 +12,15 @@
 /*element*/
 .yapay-behavior--element{
 	text-align: right;
-	margin-top: 12px;
+	margin-left: 12px;
+	margin-top: 0;
+}
+
+@media (max-width: 1550px){
+	.yapay-behavior--element{
+		margin-top: 12px;
+		margin-left: 0;
+	}
 }
 
 /*order*/
