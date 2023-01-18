@@ -1,35 +1,30 @@
-import Template from '../../utils/template';
 import AbstractStep from '../abstractstep';
 import { ready } from "../../utils/ready";
-import RestProxy from "./rest";
-import SiteProxy from "./site";
 import Display from "../../ui/display/factory";
+import {EventProxy} from "../../utils/eventproxy";
+import Rest from "./rest";
+import Site from "./site";
 
-export default class AbstractCart extends AbstractStep {
+export default class Cart extends AbstractStep {
 
-	static defaults = {
-		loaderSelector: '.bx-yapay-skeleton-loading',
-	}
+	isBootstrap = false;
+	element;
+	display;
+	initialContent;
 
 	render(node, data) {
-		this.isBootstrap = false;
 		this.element = node;
-		this.paymentButton = null;
-		this.proxy = this.getOption('isRest')
-			? new RestProxy(this)
-			: new SiteProxy(this);
-
-		this.paymentData = this.getPaymentData();
 		this.display = this.getDisplay();
 		this.initialContent = this.element.innerHTML;
 
+		this.bootProxy();
 		this.bootSolution();
-		this.setupPaymentCash();
+		this.bootLocal();
 		this.delayBootstrap();
 	}
 
-	compile(data) {
-		return Template.compile(this.options.template, data);
+	bootProxy() : Rest|Site{
+		this.proxy = this.isRest() ? new Rest(this) : new Site(this);
 	}
 
 	restore(node) {
@@ -38,7 +33,7 @@ export default class AbstractCart extends AbstractStep {
 		}
 
 		this.element = node;
-		this.proxy.restoreButton(node);
+		this.proxy.restore(node);
 	}
 
 	bootstrap() {
@@ -52,6 +47,12 @@ export default class AbstractCart extends AbstractStep {
 		if (solution == null) { return; }
 
 		solution.bootCart(this);
+	}
+
+	bootLocal() {
+		EventProxy.make().fire('bxYapayCartInit', {
+			cart: this,
+		});
 	}
 
 	delayChangeBasket() {
@@ -81,42 +82,9 @@ export default class AbstractCart extends AbstractStep {
 		}
 	}
 
-	setupPaymentCash(){
-		this.proxy?.setupPaymentCash();
-	}
-
-	getPaymentData() {
-		return this.proxy.getPaymentData();
-	}
-
-	createPayment(node, paymentData) {
-		this.proxy.createPayment(node, paymentData);
-	}
-
 	getDisplay() {
 		const type = this.getOption('displayType');
 		const options = this.getOption('displayParameters');
 		return Display.make(type, this, options);
-	}
-
-	amountSum(amountA, amountB) {
-		return (Number(amountA) + Number(amountB)).toFixed(2);
-	}
-
-	showError(type, message, err = null) {
-		let notify = type + ' - ' + message;
-
-		if (err) {
-			notify += ' ' + err;
-		}
-
-		alert(notify);
-	}
-
-	removeLoader() {
-		const loader = this.element.querySelector(this.getOption('loaderSelector'));
-
-		loader?.remove();
-		this.initialContent = null;
 	}
 }

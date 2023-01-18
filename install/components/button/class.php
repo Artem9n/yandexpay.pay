@@ -44,7 +44,7 @@ class TradingButton extends \CBitrixComponent
 		return $arParams;
 	}
 
-	public function executeComponent(): void
+	public function executeComponent(): string
 	{
 		try
 		{
@@ -59,6 +59,8 @@ class TradingButton extends \CBitrixComponent
 			$logger->setUrl($this->request->getRequestUri());
 			$logger->error(...(new Logger\Formatter\Exception($exception))->forLogger());*/
 		}
+
+		return (string)$this->arResult['OUTPUT'];
 	}
 
 	protected function setParameters() : void
@@ -106,6 +108,8 @@ class TradingButton extends \CBitrixComponent
 			'useDivider'        => $this->arParams['USE_DIVIDER'],
 			'displayType'       => $displayType,
 			'displayParameters' => $displayParameters,
+			'jsContent'         => $this->arParams['JS_CONTENT'],
+			'cssContent'        => $this->arParams['CSS_CONTENT'],
 		];
 	}
 

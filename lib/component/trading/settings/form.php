@@ -167,6 +167,18 @@ class Form extends Pay\Component\Plain\Form
 
 		foreach ($map as $type => $options)
 		{
+			if (isset($options['desktop'], $options['mobile']))
+			{
+				foreach ($options as $types)
+				{
+					$result[] = [
+						'BEHAVIOR' => $type,
+						'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $types),
+					];
+				}
+				continue;
+			}
+
 			$result[] = [
 				'BEHAVIOR' => $type,
 				'SETTINGS' => $this->prefixInjectionDefaults(mb_strtoupper($type . '_'), $options),

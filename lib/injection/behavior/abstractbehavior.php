@@ -27,12 +27,24 @@ abstract class AbstractBehavior implements BehaviorInterface
 
 	public function getFields() : array
 	{
+		return $this->getTestFields()
+			+ $this->getDisplayFields()
+			+ $this->getExpertFields();
+	}
+
+	protected function getTestFields() : array
+	{
 		return [
 			'SELECTOR' => [
 				'GROUP' => self::getMessage('GROUP_POSITION'),
+				'HELP' => self::getMessage('HELP_SELECTOR'),
 				'TYPE' => 'string',
 				'TITLE' => self::getMessage('SELECTOR'),
 				'MANDATORY' => 'Y',
+				'SETTINGS' => [
+					'ROWS' => 5,
+					'SIZE' => 25,
+				],
 			],
 			'POSITION' => [
 				'GROUP' => self::getMessage('GROUP_POSITION'),
@@ -54,11 +66,12 @@ abstract class AbstractBehavior implements BehaviorInterface
 				'GROUP' => self::getMessage('GROUP_DECOR'),
 				'TYPE' => 'enumeration',
 				'VALUES' => $this->getDisplayList(),
+				'HELP' => self::getMessage('HELP_DISPLAY'),
 				'SETTINGS' => [
 					'DEFAULT_VALUE' => Display\Registry::BUTTON,
 				],
 			],
-		] + $this->getDisplayFields();
+		];
 	}
 
 	protected function getDisplayFields() : array
@@ -105,6 +118,62 @@ abstract class AbstractBehavior implements BehaviorInterface
 		}
 
 		return $result;
+	}
+
+	protected function getExpertFields() : array
+	{
+		return [
+			'CSS' => [
+				'TITLE' => self::getMessage('CSS'),
+				'GROUP' => self::getMessage('EXPERT_FIELDS'),
+				'HELP' => self::getMessage('EXPERT_CSS_HELP'),
+				'TYPE' => 'boolean',
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_FALSE,
+				],
+			],
+			'CSS_CONTENT' => [
+				'TITLE' => self::getMessage('CSS_CONTENT'),
+				'GROUP' => self::getMessage('EXPERT_FIELDS'),
+				'HELP' => self::getMessage('EXPERT_CSS_CONTENT_HELP'),
+				'TYPE' => 'string',
+				'SETTINGS' => [
+					'ROWS' => 5,
+					'SIZE' => 20,
+				],
+				'DEPEND' => [
+					'CSS' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Ui\UserField\BooleanType::VALUE_TRUE,
+					],
+				],
+			],
+			'JS' => [
+				'TITLE' => self::getMessage('JS'),
+				'GROUP' => self::getMessage('EXPERT_FIELDS'),
+				'HELP' => self::getMessage('EXPERT_JS_HELP'),
+				'TYPE' => 'boolean',
+				'SETTINGS' => [
+					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_FALSE,
+				],
+			],
+			'JS_CONTENT' => [
+				'TITLE' => self::getMessage('JS_CONTENT'),
+				'GROUP' => self::getMessage('EXPERT_FIELDS'),
+				'HELP' => self::getMessage('EXPERT_JS_CONTENT_HELP'),
+				'TYPE' => 'string',
+				'SETTINGS' => [
+					'ROWS' => 5,
+					'SIZE' => 20,
+				],
+				'DEPEND' => [
+					'JS' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Ui\UserField\BooleanType::VALUE_TRUE,
+					],
+				],
+			]
+		];
 	}
 
 	protected function getDisplayList() : array
@@ -167,6 +236,20 @@ abstract class AbstractBehavior implements BehaviorInterface
 		return htmlspecialcharsback($this->requireValue('SELECTOR'));
 	}
 
+	public function getJsContent() : ?string
+	{
+		$value = trim((string)$this->getValue('JS_CONTENT'));
+
+		return $value !== '' ? $value : null;
+	}
+
+	public function getCssContent() : ?string
+	{
+		$value = trim((string)$this->getValue('CSS_CONTENT'));
+
+		return $value !== '' ? $value : null;
+	}
+
 	public function getPosition() : string
 	{
 		return $this->requireValue('POSITION');
@@ -216,14 +299,17 @@ abstract class AbstractBehavior implements BehaviorInterface
 		/** @var Engine\AbstractEngine $classEngine */
 		$classEngine = $this->getClassEngine();
 
-		$classEngine::register([
-			'module' => 'main',
-			'event' => 'onEpilog',
-			'arguments' => [
-				$injectionId,
-				$this->eventSettings(),
-			],
-		]);
+		foreach ($this->events() as [$module, $event])
+		{
+			$classEngine::register([
+				'module' => $module,
+				'event' => $event,
+				'arguments' => [
+					$injectionId,
+					$this->eventSettings(),
+				],
+			]);
+		}
 	}
 
 	public function uninstall(int $injectionId) : void
@@ -233,18 +319,28 @@ abstract class AbstractBehavior implements BehaviorInterface
 
 		try
 		{
-			$classEngine::unregister([
-				'module' => 'main',
-				'event' => 'onEpilog',
-				'arguments' => [
-					$injectionId,
-					$this->eventSettings(),
-				],
-			]);
+			foreach ($this->events() as [$module, $event])
+			{
+				$classEngine::unregister([
+					'module' => $module,
+					'event' => $event,
+					'arguments' => [
+						$injectionId,
+						$this->eventSettings(),
+					],
+				]);
+			}
 		}
 		catch (Main\SystemException $exception)
 		{
 			// nothing
 		}
+	}
+
+	protected function events() : array
+	{
+		return [
+			[ 'main', 'onEpilog' ],
+		];
 	}
 }
