@@ -2,11 +2,14 @@
 
 namespace YandexPay\Pay\Gateway;
 
-use YandexPay\Pay\Trading\Action\Api;
 use YandexPay\Pay\Logger;
+use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Trading\Action\Api;
 
 abstract class BaseRest extends Base
 {
+	use Concerns\HasMessage;
+
 	public function refund(): void
 	{
 		if ($this->isRest())

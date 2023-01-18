@@ -30,7 +30,6 @@ class OrderDelivery
 	protected function processTransportDelivery(State\Order $state) : void
 	{
 		$status = $this->request->getOrder()->getDeliveryStatus();
-		$orderNumber = $state->orderAdapter->getAccountNumber();
 
 		if ($status === null) { return; }
 
@@ -51,7 +50,7 @@ class OrderDelivery
 
 			if ($requestId === null) { continue; }
 
-			$requestHandler->notifyTransport($requestId, $status, $orderNumber, $shipment->getId());
+			$requestHandler->notifyTransport($requestId, $status, $state->orderAdapter, $shipment->getId());
 		}
 	}
 
@@ -61,7 +60,8 @@ class OrderDelivery
 
 		$query = Sale\Delivery\Requests\ShipmentTable::getList([
 			'filter' => [
-				'=SHIPMENT_ID' => $shipmentId
+				'=SHIPMENT_ID' => $shipmentId,
+				'=SYSTEM' => 'N',
 			],
 			'limit' => 1
 		]);

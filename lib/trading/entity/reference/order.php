@@ -311,4 +311,14 @@ abstract class Order
 	{
 		throw new Main\NotImplementedException('getDeliveryService is missing');
 	}
+
+	public function getPaymentTestMode() : bool
+	{
+		throw new Main\NotImplementedException('getPaymentTestMode is missing');
+	}
+
+	public function getPaymentApiKey() : ?string
+	{
+		throw new Main\NotImplementedException('getPaymentTestMode is missing');
+	}
 }

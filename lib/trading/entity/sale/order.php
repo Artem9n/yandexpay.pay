@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Trading\Entity\Sale;
 
+use Sale\Handlers\PaySystem\YandexPayHandler;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
@@ -1104,6 +1105,30 @@ class Order extends EntityReference\Order
 		}
 
 		return $result;
+	}
+
+	public function getPaymentTestMode() : bool
+	{
+		$payment = $this->getPayment();
+
+		/** @var \Sale\Handlers\PaySystem\YandexPayHandler $handler */
+		$handler = $this->environment->getPaySystem()->getHandler($payment->getPaymentSystemId());
+
+		Assert::typeOf($handler, YandexPayHandler::class, 'not YandexPayHandler');
+
+		return $handler->isTestMode($payment);
+	}
+
+	public function getPaymentApiKey() : ?string
+	{
+		$payment = $this->getPayment();
+
+		/** @var \Sale\Handlers\PaySystem\YandexPayHandler $handler */
+		$handler = $this->environment->getPaySystem()->getHandler($payment->getPaymentSystemId());
+
+		Assert::typeOf($handler, YandexPayHandler::class, 'not YandexPayHandler');
+
+		return $handler->getApiKey($payment);
 	}
 
 	protected function getIssetPayment(int $paySystemId) : ?Sale\Payment
