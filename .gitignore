@@ -38,3 +38,4 @@ core.*
 .last_version/*
 public/*
 !public/update_create.php
+!public/bounds-to-city
