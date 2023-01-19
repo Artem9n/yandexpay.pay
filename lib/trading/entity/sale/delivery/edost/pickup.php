@@ -3,6 +3,7 @@ namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Edost;
 
 use Bitrix\Main;
 use Bitrix\Sale;
+use YandexPay\Pay\Data;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
@@ -29,29 +30,44 @@ class Pickup extends Base
 
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		$locationCode = '0000876108';
+		if ($bounds === null) { return []; }
 
 		/** @var Sale\Order $order */
 		$config = $this->config($order);
-		$companies = $this->companies($order, $config);
-		$company = $this->deliveryCompany($companies, $service);
-		$companyId = $company['company_id'];
-		$shipment = $this->orderShipment($order, $service);
-		$points = $this->points($shipment, $locationCode, $config, $companies);
+		$result = [];
 
-		if (!isset($points['data'][$companyId]) || !is_array($points['data'][$companyId])) { return []; }
-
-		$locationId = \CSaleLocation::getLocationIDbyCODE($shipment->getOrder()->getPropertyCollection()->getDeliveryLocation()->getValue());
-		$result = [
-			$locationId => [],
-		];
-
-		foreach ($points['data'][$companyId] as $pickup)
+		foreach ($this->locations($bounds) as $locationCode)
 		{
-			$result[$locationId][] = $this->makePickupInfo($pickup);
+			$edostLocation = \CDeliveryEDOST::GetEdostLocation($locationCode);
+
+			if (empty($edostLocation)) { continue; }
+
+			$companies = $this->companies($order, $edostLocation, $config);
+			$company = $this->deliveryCompany($companies, $service);
+			$companyId = $company['company_id'];
+			$shipment = $this->orderShipment($order, $service);
+			$points = $this->points($shipment, $locationCode, $config, $companies);
+
+			if (!isset($points['data'][$companyId]) || !is_array($points['data'][$companyId])) { continue; }
+
+			$locationId = \CSaleLocation::getLocationIDbyCODE($locationCode);
+			$result[$locationId] = [];
+
+			foreach ($points['data'][$companyId] as $pickup)
+			{
+				$result[$locationId][] = $this->makePickupInfo($pickup);
+			}
 		}
 
 		return $result;
+	}
+
+	protected function locations(array $bounds) : array
+	{
+		$metadata = new Data\Location\MetaData();
+		$finder = new Data\Location\Bounds($metadata);
+
+		return array_keys($finder->search($bounds));
 	}
 
 	protected function orderShipment(Sale\OrderBase $order, Sale\Delivery\Services\Base $service) : Sale\Shipment
@@ -101,12 +117,12 @@ class Pickup extends Base
 		return $result;
 	}
 
-	protected function companies(Sale\OrderBase $order, array $config)
+	protected function companies(Sale\OrderBase $order, array $edostLocation, array $config)
 	{
 		$parameters = array_map('urlencode', [
-			'country' => 0,
-			'region' => 38, // todo region from location
-			'city' => 'Иркутск',
+			'country' => $edostLocation['country'],
+			'region' => $edostLocation['region'],
+			'city' => $edostLocation['city'],
 			'weight' => $order->getBasket()->getWeight() / 1000,
 			'insurance' => $order->getBasket()->getPrice(),
 			'size' => urlencode(implode('|', $this->getDimensions($order))),
@@ -118,7 +134,11 @@ class Pickup extends Base
 		));
 
 		return static::onceStatic('fetchCompanies', [
-			$config,
+			array_intersect_key($config, [
+				'host' => true,
+				'id' => true,
+				'ps' => true,
+			]),
 			$parametersString,
 		]);
 	}
@@ -265,7 +285,7 @@ class Pickup extends Base
 	{
 		$coords = explode(',', $pickup['gps']);
 
-		$result = [
+		return [
 			'ID' => $pickup['code'],
 			'ADDRESS' => $pickup['address_full'],
 			'TITLE' => sprintf('(%s) %s', $this->title, $pickup['name'] ?: $pickup['code']),
@@ -276,7 +296,5 @@ class Pickup extends Base
 			//'DESCRIPTION' => $pickup['ADDRESS_DESCR'],
 			//'PROVIDER' => 'eDost',
 		];
-
-		return $result;
 	}
 }
