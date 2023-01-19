@@ -6,7 +6,6 @@ use Bitrix\Main;
 use Bitrix\Currency;
 use Bitrix\Sale\Delivery;
 use Bitrix\Sale\Shipment;
-use Sale\Handlers\PaySystem\YandexPayHandler;
 use YandexPay\Pay\Delivery\Yandex\Api;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Concerns;
