@@ -47,7 +47,7 @@ $arResult['FACTORY_OPTIONS'] = array_intersect_key($arResult['PARAMS'], [
 	'useDivider' => true,
 ]);
 $arResult['FACTORY_OPTIONS'] += (array)($arParams['~FACTORY_OPTIONS'] ?? []);
-$arResult['FACTORY_OPTIONS']['label'] = GetMessage('YANDEXPAY_BUTTON_LABEL');
+$arResult['FACTORY_OPTIONS']['label'] = $arResult['PARAMS']['textDivider'] ?? GetMessage('YANDEXPAY_BUTTON_LABEL');
 $arResult['FACTORY_OPTIONS']['containerId'] = $arResult['CONTAINER_ID'];
 $arResult['ORDER'] = $arResult['PARAMS']['order'];
 $arResult['SELECTOR'] = htmlspecialcharsback($arResult['PARAMS']['selector']);
