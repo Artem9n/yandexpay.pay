@@ -4,7 +4,11 @@ namespace YandexPay\Pay\Data\Location;
 
 class Bounds
 {
+	protected $bounds;
 	protected $metaData;
+	protected $distLimits = [
+		10, 15, 20, //km
+	];
 
 	public function __construct(MetaData $metaData)
 	{
@@ -13,7 +17,21 @@ class Bounds
 
 	public function search(array $bounds) : array
 	{
-		return $this->searchInside($bounds) ?: $this->searchNearest($bounds);
+		$result = $this->searchInside($bounds);
+
+		if (empty($result))
+		{
+			$this->boundsNormalize($bounds);
+			$boundsDistance = $this->boundsDistance();
+
+			foreach ($this->distLimits as $limit)
+			{
+				$result = $this->searchUnderLimit(min($limit, $boundsDistance));
+				if (!empty($result)) { break; }
+			}
+		}
+
+		return $result;
 	}
 
 	public function searchInside(array $bounds) : array
@@ -34,76 +52,54 @@ class Bounds
 		return $result;
 	}
 
-	public function searchNearest(array $bounds) : array
+	public function searchUnderLimit(float $limit) : array
 	{
 		$result = [];
-		$minDistance = null;
 
 		foreach ($this->metaData as $locationCode => $data)
 		{
-			$distance = $this->distanceToBounds($data, $bounds);
+			$distance = $this->distanceToBounds($data);
 
-			if ($minDistance === null || $distance < $minDistance)
+			if ($distance <= $limit)
 			{
-				$minDistance = $distance;
-				$result = [
-					$locationCode => $data,
-				];
+				$result[$locationCode] = $data;
 			}
 		}
 
 		return $result;
 	}
 
-	protected function distanceToBounds(array $point, array $bounds) : float
+	protected function distanceToBounds(array $point) : float
 	{
-		$result = null;
-
-		foreach ($this->boundsToLines($bounds) as $line)
-		{
-			$distance = $this->distanceToLine(
-				$point['latitude'],
-				$point['longitude'],
-				...$line[0],
-				...$line[1]
-			);
-
-			if ($result === null || $result > $distance)
-			{
-				$result = $distance;
-			}
-		}
-
-		return $result;
+		return $this->distanceToLine(
+			$point['latitude'],
+			$point['longitude'],
+			...$this->bounds[0],
+			...$this->bounds[1]
+		);
 	}
 
-	protected function boundsToLines(array $bounds) : array
+	protected function boundsDistance() : float
 	{
-		$result = [];
-
-		foreach ($bounds as $pointKey => $point)
-		{
-			$pointCoords = [ $point['latitude'], $point['longitude'] ];
-
-			foreach ($bounds as $siblingKey => $sibling)
-			{
-				if ($pointKey !== $siblingKey) { continue; }
-
-				$result[] = [
-					$pointCoords,
-					[ $point['latitude'], $sibling['longitude'] ]
-				];
-				$result[] = [
-					$pointCoords,
-					[ $sibling['latitude'], $point['longitude'] ]
-				];
-			}
-		}
-
-		return $result;
+		return $this->distanceBetweenPoints(...$this->bounds[0], ...$this->bounds[1]);
 	}
 
-	protected function distanceToLine($x, $y, $x1, $y1, $x2, $y2) : float
+	protected function boundsNormalize(array $bounds) : void
+	{
+		foreach ($bounds as $point)
+		{
+			$this->bounds[] = [ $point['latitude'], $point['longitude'] ];
+		}
+	}
+
+	protected function distanceToLine(
+		float $x,
+		float $y,
+		float $x1,
+		float $y1,
+		float $x2,
+		float $y2
+	) : float
 	{
 		$A = $x - $x1;
 		$B = $y - $y1;
@@ -135,9 +131,26 @@ class Bounds
 			$yy = $y1 + $param * $D;
 		}
 
-		$dx = $x - $xx;
-		$dy = $y - $yy;
+		return $this->distanceBetweenPoints($x, $y, $xx, $yy);
+	}
 
-		return sqrt($dx * $dx + $dy * $dy);
+	public function distanceBetweenPoints(
+		float $lat1,
+		float $lon1,
+		float $lat2,
+		float $lon2
+	) : float
+	{
+		$R = 6371; // Radius of the earth in km
+		$dLat = deg2rad($lat2-$lat1);  // deg2rad below
+		$dLon = deg2rad($lon2-$lon1);
+		$a =
+			sin($dLat/2) * sin($dLat/2) +
+			cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+			sin($dLon/2) * sin($dLon/2)
+		;
+		$c = 2 * atan2(sqrt($a), sqrt(1-$a));
+
+		return $R * $c; // Distance in km
 	}
 }
