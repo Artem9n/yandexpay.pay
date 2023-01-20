@@ -6,43 +6,32 @@ namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Edost;
 use Bitrix\Main;
 use Bitrix\Sale;
 use Ipolh\DPD\Delivery\DPD;
+use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 
 abstract class Base extends AbstractAdapter
 {
-	protected $code = '';
-	protected $title;
+	use Concerns\HasMessage;
 
-	protected $typeMap = [
-		'pickup' => 'PICKUP',
-		'delivery' => 'COURIER',
-	];
+	protected $title;
+	protected $format;
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
 		if (!($service instanceof Sale\Delivery\Services\AutomaticProfile)) { return false; }
 
-		$code = $this->getCode($service->getCode());
+		if (!$this->load()) { return false; }
+
+		$code = $service->getCode();
+
+		if (mb_strpos($code, 'edost') === false) { return false; }
+
+		$profile = \CDeliveryEDOST::GetEdostProfile($service->getId());
+		$format = \edost_class::GetFormat($profile);
 
 		$this->title = $service->getName();
 
-		return $code === $this->code;
-	}
-
-	protected function getCode(string $code) : string
-	{
-		$codeModify = 'edost:PICKUP';
-		if ($code === 'edost:75')
-		{
-			$codeModify = 'edost:COURIER';
-		}
-
-		return $codeModify;
-
-		/*$vendor = array_shift(explode(':', $code));
-		$type = $this->typeMap[$this->getServiceType()];
-
-		return implode(':', [$vendor, $type]);*/
+		return $format === $this->format;
 	}
 
 	public function load() : bool
@@ -50,42 +39,24 @@ abstract class Base extends AbstractAdapter
 		return Main\Loader::includeModule('edost.delivery');
 	}
 
-	public function prepareCalculation(Sale\OrderBase $orderBase) : void
+	protected function getProvider() : ?string
 	{
-		$paymentCollection = $orderBase->getPaymentCollection();
+		$result = null;
 
-		/** @var Sale\Payment $payment */
-		/*foreach ($paymentCollection as $payment)
+		$providerMap = [
+			'BOXBERRY' => self::getMessage('PART_PROVIDER_BOXBERRY'),
+			'RUSSIAN_POST' => self::getMessage('PART_PROVIDER_RUSSIAN_POST'),
+			'CDEK' => self::getMessage('PART_PROVIDER_CDEK'),
+			'PICKPOINT' => self::getMessage('PART_PROVIDER_PICKPOINT'),
+		];
+
+		foreach ($providerMap as $providerType => $searchPart)
 		{
-			if ($payment->isInner()) { continue; }
-
-			$_REQUEST['PAY_SYSTEM_ID'] = $payment->getPaymentSystemId();
-		}*/
-	}
-
-	protected function calculateAndFillSessionValues(Sale\Order $order) : void
-	{
-		$shipments = $order->getShipmentCollection();
-
-		/** @var Sale\Shipment $shipment */
-		foreach ($shipments as $shipment)
-		{
-			if ($shipment->isSystem()) { continue; }
-
-			$shipment->calculateDelivery();
+			if (mb_strpos(mb_strtolower($this->title), $searchPart) === false) { continue; }
+			$result = $providerType;
+			break;
 		}
 
-		$arResult['DELIVERY'] = [
-			$this->code => [
-				'ID' => $this->code,
-				'PERIOD_TEXT' => '',
-				'CHECKED' => 'Y'
-			]
-		];
-	}
-
-	public function onAfterOrderSave(Sale\OrderBase $order) : void
-	{
-
+		return $result;
 	}
 }

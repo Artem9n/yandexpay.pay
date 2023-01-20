@@ -90,6 +90,7 @@ class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 			'title'     => $store['TITLE'],
 			'description' => $store['DESCRIPTION'],
 			'phones' => explode(', ', $store['PHONE']),
+			'amount' => $store['AMOUNT'] ?? null,
 		];
 	}
 }

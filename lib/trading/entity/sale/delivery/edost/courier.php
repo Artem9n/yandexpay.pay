@@ -7,7 +7,7 @@ use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
 class Courier extends Base
 {
-	protected $code = 'edost:COURIER';
+	protected $format = 'door';
 
 	public function getServiceType() : string
 	{
