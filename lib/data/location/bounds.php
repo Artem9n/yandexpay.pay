@@ -84,7 +84,7 @@ class Bounds
 		float $longitudeFrom,
 		float $latitudeTo,
 		float $longitudeTo
-	) {
+	) : float {
 		// convert from degrees to radians
 		$latFrom = deg2rad($latitudeFrom);
 		$lonFrom = deg2rad($longitudeFrom);
