@@ -93,7 +93,12 @@ class Pickup extends Base
 		$metadata = new Data\Location\MetaData();
 		$finder = new Data\Location\Bounds($metadata);
 
-		return array_keys($finder->search($bounds));
+		return array_keys($finder->search(
+			$bounds['sw']['latitude'],
+			$bounds['sw']['longitude'],
+			$bounds['ne']['latitude'],
+			$bounds['ne']['longitude'])
+		);
 	}
 
 	protected function orderShipment(Sale\OrderBase $order, Sale\Delivery\Services\Base $service) : Sale\Shipment
