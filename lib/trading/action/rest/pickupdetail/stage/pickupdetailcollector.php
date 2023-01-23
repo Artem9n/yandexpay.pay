@@ -35,7 +35,14 @@ class PickupDetailCollector extends ResponseCollector
 	{
 		$deliveryService = $state->environment->getDelivery()->getDeliveryService($this->deliveryId);
 		$pickup = Delivery\Factory::make($deliveryService, Delivery::PICKUP_TYPE);
-		$pickup->prepareCalculatePickup($this->deliveryId, $this->storeId, $this->locationId, $this->zip);
+
+		$pickup->prepareCalculatePickup(
+			$state->order->getCalculatable(),
+			$this->deliveryId,
+			$this->storeId,
+			$this->locationId,
+			$this->zip
+		);
 
 		$state->order->clearCalculatable();
 

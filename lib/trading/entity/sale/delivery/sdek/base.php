@@ -13,6 +13,7 @@ class Base extends AbstractAdapter
 {
 	protected $title;
 	protected $code;
+	protected $tariff;
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
@@ -153,7 +154,7 @@ class Base extends AbstractAdapter
 			$shipment->calculateDelivery();
 		}
 
-		$tariff = $_SESSION['IPOLSDEK_CHOSEN']['pickup'];
+		$tariff = $_SESSION['IPOLSDEK_CHOSEN'][$this->tariff];
 
 		/** @var \Bitrix\Sale\PropertyValue $property */
 		foreach ($order->getPropertyCollection() as $property)

@@ -32,7 +32,7 @@ class Base extends AbstractAdapter
 
 	}
 
-	protected function getTariff(string $indexTo) : ?array
+	protected function getTariff(Sale\OrderBase $order, string $indexTo) : ?array
 	{
 		$result = null;
 
@@ -42,7 +42,12 @@ class Base extends AbstractAdapter
 			$account = $this->getAccount();
 			$accountId = $account[$this->accountId];
 
-			$data = $httpClient->get(sprintf('https://widget.pochta.ru/api/data/free_tariff_by_settings?id=%s&indexTo=%s', $accountId, $indexTo));
+			$data = $httpClient->get(sprintf('https://widget.pochta.ru/api/data/free_tariff_by_settings?id=%s&indexTo=%s&weight=%s&sumoc=%s',
+				$accountId,
+				$indexTo,
+				(int)$order->getBasket()->getWeight(),
+				(int)($order->getPrice() * 100)
+			));
 			$data = Main\Web\Json::decode($data);
 			$result = $data;
 

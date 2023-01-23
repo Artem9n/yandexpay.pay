@@ -39,7 +39,7 @@ abstract class AbstractAdapter
 
 	}
 
-	public function prepareCalculatePickup(int $deliveryId, string $storeId, string $locationId, string $zip = null) : void
+	public function prepareCalculatePickup(Sale\OrderBase $order, int $deliveryId, string $storeId, string $locationId, string $zip = null) : void
 	{
 
 	}
