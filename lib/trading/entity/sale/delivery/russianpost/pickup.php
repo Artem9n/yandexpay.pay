@@ -231,16 +231,4 @@ class Pickup extends Base
 	{
 		return EntitySale\Delivery::PICKUP_TYPE;
 	}
-
-	public function getCityName(string $city) : string
-	{
-		$parts = explode(' ', $city, 2);
-
-		if (mb_strlen($parts[0]) <= 3 && mb_strtolower($parts[0]) === $parts[0])
-		{
-			$city = $parts[1];
-		}
-
-		return $city;
-	}
 }
