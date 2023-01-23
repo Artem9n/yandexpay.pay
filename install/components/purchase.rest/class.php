@@ -177,7 +177,7 @@ class PurchaseRest extends \CBitrixComponent
 	{
 		$response = new Main\Engine\Response\Json($overrides + [
 			'status' => 'fail',
-			'reasonCode' => (string)($exception->getCode() ?: 'UNKNOWN'),
+			'reasonCode' => (string)($exception->getCode() ?: 'OTHER'),
 			'reason' => $exception->getMessage(),
 			'trace' => $exception->getTraceAsString(), // todo remove
 		]);

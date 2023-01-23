@@ -133,7 +133,7 @@ class Base extends AbstractAdapter
 
 		if (isset($point['err']) || !$point)
 		{
-			throw new DtoProperty(($point['err'] ?? 'not detail point: ') . $storeId, 'OTHER');
+			throw new DtoProperty(($point['err'] ?? 'not detail point: ') . $storeId);
 		}
 
 		$pointGps = explode(',', $point['GPS']);

@@ -61,7 +61,7 @@ class OrderLoad
 
 		if ($state->payment === null)
 		{
-			throw new TradingAction\Reference\Exceptions\DtoProperty('payment not found', 'OTHER');
+			throw new TradingAction\Reference\Exceptions\DtoProperty('payment not found');
 		}
 	}
 

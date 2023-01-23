@@ -106,7 +106,7 @@ class OrderPay
 
 		if (!$resultPayment->isSuccess())
 		{
-			throw new DtoProperty(implode(', ', $resultPayment->getErrorMessages()), 'OTHER');
+			throw new DtoProperty(implode(', ', $resultPayment->getErrorMessages()));
 		}
 	}
 }
