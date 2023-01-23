@@ -35,22 +35,6 @@ class Base extends AbstractAdapter
 		return $this->loadStores($bounds);
 	}
 
-	protected function combineStores(array $stores) : array
-	{
-		$result = [];
-
-		$locationsIds = $this->getLocationIds(array_keys($stores));
-
-		foreach ($stores as $cityName => $pickupList)
-		{
-			if (!isset($locationsIds[$cityName])) { continue; }
-
-			$result[$locationsIds[$cityName]] = $pickupList;
-		}
-
-		return $result;
-	}
-
 	protected function getLocationIdsByCodes(array $locationsCodes) : array
 	{
 		$result = [];

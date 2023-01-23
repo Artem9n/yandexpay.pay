@@ -18,7 +18,7 @@ class Pickup extends Base
 		return EntitySale\Delivery::PICKUP_TYPE;
 	}
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
 	{
 		$propAddress = $this->addressProperty($order);
 
@@ -28,11 +28,10 @@ class Pickup extends Base
 		}
 	}
 
-	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		if ($bounds === null) { return []; }
 
-		/** @var Sale\Order $order */
 		$config = $this->config($order);
 		$profile = \CDeliveryEDOST::GetEdostProfile($service->getId());
 		$tariff = \CDeliveryEDOST::GetEdostTariff($profile['profile']);

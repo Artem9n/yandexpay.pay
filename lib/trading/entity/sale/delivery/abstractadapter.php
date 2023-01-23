@@ -34,7 +34,7 @@ abstract class AbstractAdapter
 		return [];
 	}
 
-	public function prepareCalculation(Sale\Order $Order) : void
+	public function prepareCalculation(Sale\Order $order) : void
 	{
 
 	}

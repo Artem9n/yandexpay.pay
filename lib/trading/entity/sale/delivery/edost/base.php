@@ -5,7 +5,6 @@ namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Edost;
 
 use Bitrix\Main;
 use Bitrix\Sale;
-use Ipolh\DPD\Delivery\DPD;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 

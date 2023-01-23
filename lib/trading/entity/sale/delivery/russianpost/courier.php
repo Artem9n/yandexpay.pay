@@ -35,7 +35,7 @@ class Courier extends Base
 
 	public function markSelectedDelivery(Sale\Order $order, array $address) : void
 	{
-		$tariff = $this->getTariff($address['zip']);
+		$tariff = $this->getTariff($order, $address['zip']);
 
 		$propZip = $order->getPropertyCollection()->getDeliveryLocationZip();
 
