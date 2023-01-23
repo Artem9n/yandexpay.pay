@@ -6,6 +6,7 @@ use Bitrix\Main;
 use Bitrix\Sale;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 use YandexPay\Pay\Utils\Encoding;
+use YandexPay\Pay\Data;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
 /** @property \Sale\Handlers\Delivery\RussianpostProfile $service */
@@ -26,47 +27,21 @@ class Pickup extends Base
 
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		$stores = $this->loadStores($bounds);
-
-		if (empty($stores)) { return []; }
-
-		return $this->combineStores($stores);
+		return $this->loadStores($bounds);
 	}
 
-	protected function combineStores(array $stores) : array
+	protected function getLocationIdsByCodes(array $locationsCodes) : array
 	{
 		$result = [];
 
-		$locationsIds = $this->getLocationIds(array_keys($stores));
+		$query = Sale\Location\LocationTable::getList(array(
+			'select' => [ 'ID', 'CODE' ],
+			'filter' => [ '=CODE' => $locationsCodes ],
+		));
 
-		foreach ($stores as $cityName => $pickupList)
+		while ($row = $query->fetch())
 		{
-			if (!isset($locationsIds[$cityName])) { continue; }
-
-			$result[$locationsIds[$cityName]] = $pickupList;
-		}
-
-		return $result;
-	}
-
-	protected function getLocationIds(array $locationsName) : array
-	{
-		$result = [];
-
-		$query = Sale\Location\Name\LocationTable::getList([
-			'filter' => [
-				'NAME' => $locationsName,
-				'=LANGUAGE_ID' => 'ru',
-			],
-			'select' => [
-				'LOCATION_ID',
-				'NAME',
-			],
-		]);
-
-		while ($location = $query->fetch())
-		{
-			$result[$location['NAME']] = $location['LOCATION_ID'];
+			$result[$row['CODE']] = $row['ID'];
 		}
 
 		return $result;
@@ -77,6 +52,19 @@ class Pickup extends Base
 		$result = [];
 
 		$account = $this->getAccount();
+
+		$metadata = new Data\Location\MetaData();
+		$finder = new Data\Location\Bounds($metadata);
+
+		$locations = $finder->search(
+			$bounds['sw']['latitude'],
+			$bounds['sw']['longitude'],
+			$bounds['ne']['latitude'],
+			$bounds['ne']['longitude']);
+
+		if (empty($locations)) { return $result; }
+
+		$locationsIdsMap = $this->getLocationIdsByCodes(array_keys($locations));
 
 		try
 		{
@@ -98,7 +86,11 @@ class Pickup extends Base
 
 			foreach ($pickupList['data'] as $pickup)
 			{
-				$cityName = $this->getCityName($pickup['address']['place']);
+				$locationCode = $finder->findClosestCity($locations, $pickup['geo']['coordinates'][1], $pickup['geo']['coordinates'][0]);
+
+				if ($locationCode === null) { continue; }
+
+				$locationId = $locationsIdsMap[$locationCode];
 
 				$address = array_filter([
 					$pickup['address']['index'],
@@ -112,15 +104,15 @@ class Pickup extends Base
 					$pickup['address']['corpus'],
 				]);
 
-				$result[$cityName][] = [
+				$result[$locationId][] = [
 					'ID' => $pickup['id'],
 					'REGION' => $pickup['address']['region'],
 					'CITY' => $pickup['address']['place'],
 					'STREET' => $pickup['address']['street'],
 					'ADDRESS' => implode(', ', $address),
 					'TITLE' => $this->title,
-					'GPS_N' => $pickup['geo']['coordinates'][1],
-					'GPS_S' => $pickup['geo']['coordinates'][0],
+					'GPS_N' => $pickup['geo']['coordinates'][1], //latitude
+					'GPS_S' => $pickup['geo']['coordinates'][0], //longitude
 					'SCHEDULE' => '',
 					'PHONE' => $pickup['PHONE'] ?? '',
 					'DESCRIPTION' => implode(', ', $pickup['workTime']),

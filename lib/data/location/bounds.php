@@ -79,6 +79,30 @@ class Bounds
 		return $result;
 	}
 
+	public function findClosestCity(array $cities, float $pickupPointLatitude, float $pickupPointLongitude): ?string
+	{
+		$result = null;
+		$minDistance = null;
+
+		foreach ($cities as $locationCode => $coordinates)
+		{
+			$distance = $this->haversineGreatCircleDistance(
+				$pickupPointLatitude,
+				$pickupPointLongitude,
+				$coordinates['latitude'],
+				$coordinates['longitude']
+			);
+
+			if ($minDistance === null || $distance < $minDistance)
+			{
+				$minDistance = $distance;
+				$result = $locationCode;
+			}
+		}
+
+		return $result;
+	}
+
 	private function haversineGreatCircleDistance(
 		float $latitudeFrom,
 		float $longitudeFrom,

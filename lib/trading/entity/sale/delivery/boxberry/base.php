@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Boxberry;
 
 use Bitrix\Sale;
 use Bitrix\Main;
+use YandexPay\Pay\Data;
 use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
@@ -31,11 +32,7 @@ class Base extends AbstractAdapter
 
 	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		$stores = $this->loadStores($bounds);
-
-		if (empty($stores)) { return []; }
-
-		return $this->combineStores($stores);
+		return $this->loadStores($bounds);
 	}
 
 	protected function combineStores(array $stores) : array
@@ -54,24 +51,18 @@ class Base extends AbstractAdapter
 		return $result;
 	}
 
-	protected function getLocationIds(array $locationsName) : array
+	protected function getLocationIdsByCodes(array $locationsCodes) : array
 	{
 		$result = [];
 
-		$query = Sale\Location\Name\LocationTable::getList([
-			'filter' => [
-				'NAME' => $locationsName,
-				'=LANGUAGE_ID' => 'ru'
-			],
-			'select' => [
-				'LOCATION_ID',
-				'NAME'
-			],
-		]);
+		$query = Sale\Location\LocationTable::getList(array(
+			'select' => [ 'ID', 'CODE' ],
+			'filter' => [ '=CODE' => $locationsCodes ],
+		));
 
-		while ($location = $query->fetch())
+		while ($row = $query->fetch())
 		{
-			$result[$location['NAME']] = $location['LOCATION_ID'];
+			$result[$row['CODE']] = $row['ID'];
 		}
 
 		return $result;
@@ -85,6 +76,19 @@ class Base extends AbstractAdapter
 
 		$pickupList = \CBoxberry::methodExec('ListPoints', 36000, ['prepaid=1']);
 
+		$metadata = new Data\Location\MetaData();
+		$finder = new Data\Location\Bounds($metadata);
+
+		$locations = $finder->search(
+			$bounds['sw']['latitude'],
+			$bounds['sw']['longitude'],
+			$bounds['ne']['latitude'],
+			$bounds['ne']['longitude']);
+
+		if (empty($locations)) { return $result; }
+
+		$locationsIdsMap = $this->getLocationIdsByCodes(array_keys($locations));
+
 		if (empty($pickupList) || !empty(static::$pickupList)) { return $result; }
 
 		foreach ($pickupList as $point)
@@ -96,7 +100,13 @@ class Base extends AbstractAdapter
 				&& $pointGps[1] <= $bounds['ne']['longitude']
 				&& $pointGps[1] >= $bounds['sw']['longitude'])
 			{
-				$result[$point['CityName']][] = [
+				$locationCode = $finder->findClosestCity($locations, $pointGps[0], $pointGps[1]);
+
+				if ($locationCode === null) { continue; }
+
+				$locationId = $locationsIdsMap[$locationCode];
+
+				$result[$locationId][] = [
 					'ID' => $point['Code'],
 					'ADDRESS' => $point['Address'] ?: $point['AddressReduce'],
 					'TITLE' => sprintf('%s (%s) ', 'Boxberry', $this->title),
