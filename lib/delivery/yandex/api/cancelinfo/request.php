@@ -15,6 +15,6 @@ class Request extends Api\Reference\Request
 
 	public function getPath() : string
 	{
-		return sprintf('/api/merchant/v1/orders/%s/delivery/cancel-info', $this->getOrderId());
+		return sprintf('/api/merchant/v1/orders/%s/delivery/cancel-info', $this->getOrderNumber());
 	}
 }

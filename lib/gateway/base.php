@@ -195,7 +195,7 @@ abstract class Base implements IGateway
 
 	public function getOrderId() : string
 	{
-		return (string)$this->payment->getOrderId();
+		return (string)($this->payment->getField('PS_INVOICE_ID') ?: $this->payment->getField('ORDER_ID'));
 	}
 
 	public function getPaymentSum() : float

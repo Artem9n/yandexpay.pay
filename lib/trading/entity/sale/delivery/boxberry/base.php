@@ -30,7 +30,7 @@ class Base extends AbstractAdapter
 		return '';
 	}
 
-	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		return $this->loadStores($bounds);
 	}
@@ -156,7 +156,7 @@ class Base extends AbstractAdapter
 		$_SESSION['selPVZ'] = $storeId;
 	}
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
 	{
 		\CBoxberry::disableCheckPvz();
 
@@ -179,12 +179,12 @@ class Base extends AbstractAdapter
 		$propAddress->setValue(sprintf('Boxberry: %s #%s', $address, $storeId));
 	}
 
-	protected function getZipCode(Sale\OrderBase $order) : string
+	protected function getZipCode(Sale\Order $order) : string
 	{
 		return Main\Config\Option::get(\CBoxberry::$moduleId, 'BB_ZIP');
 	}
 
-	protected function getAddressCode(Sale\OrderBase $order) : string
+	protected function getAddressCode(Sale\Order $order) : string
 	{
 		return Main\Config\Option::get(\CBoxberry::$moduleId, 'BB_ADDRESS');
 	}

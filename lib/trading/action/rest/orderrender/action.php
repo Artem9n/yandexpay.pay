@@ -14,7 +14,12 @@ class Action extends Rest\Reference\EffectiveAction
 	public function bootstrap() : void
 	{
 		parent::bootstrap();
-		$this->bootSetup($this->request->getSetupId());
+		$setupId = $this->request->getSetupId();
+		if ($setupId > 0)
+		{
+			$this->bootSetup($setupId);
+		}
+
 		$this->bootMerchantOrder();
 	}
 

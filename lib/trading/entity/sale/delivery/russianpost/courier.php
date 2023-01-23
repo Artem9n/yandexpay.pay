@@ -33,7 +33,7 @@ class Courier extends Base
 		return EntitySale\Delivery::DELIVERY_TYPE;
 	}
 
-	public function markSelectedDelivery(Sale\OrderBase $order, array $address) : void
+	public function markSelectedDelivery(Sale\Order $order, array $address) : void
 	{
 		$tariff = $this->getTariff($address['zip']);
 

@@ -26,7 +26,7 @@ class Store extends AbstractAdapter
 		return !empty($stores);
 	}
 
-	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		$storeIds = $this->getUsedStoreIds($service);
 		$stores = $this->loadStores($storeIds, $bounds);
@@ -104,7 +104,7 @@ class Store extends AbstractAdapter
 		return Main\Config\Option::get('sale', 'location', null);
 	}
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
 	{
 		$shipments = $order->getShipmentCollection();
 

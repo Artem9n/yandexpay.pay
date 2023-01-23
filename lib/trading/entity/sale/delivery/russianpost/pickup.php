@@ -24,7 +24,7 @@ class Pickup extends Base
 		return $code === 'POST';
 	}
 
-	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		return $this->loadStores($bounds);
 	}
@@ -181,7 +181,7 @@ class Pickup extends Base
 		$_REQUEST['order']['russianpost_delivery_description'] = Encoding::convert($tariff['delivery']['description']);
 	}
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
 	{
 		[$zip, $city] = explode(',', $address, 2);
 
@@ -217,12 +217,12 @@ class Pickup extends Base
 		$propAddress->setValue($address);
 	}
 
-	protected function getZipCode(Sale\OrderBase $order) : string
+	protected function getZipCode(Sale\Order $order) : string
 	{
 		return (string)\Russianpost\Post\Optionpost::get('zip', true, $order->getSiteId());
 	}
 
-	protected function getAddressCode(Sale\OrderBase $order) : string
+	protected function getAddressCode(Sale\Order $order) : string
 	{
 		return (string)\Russianpost\Post\Optionpost::get('address', true, $order->getSiteId());
 	}

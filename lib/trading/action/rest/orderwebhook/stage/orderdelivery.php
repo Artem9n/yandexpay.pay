@@ -50,7 +50,7 @@ class OrderDelivery
 
 			if ($requestId === null) { continue; }
 
-			$requestHandler->notifyTransport($requestId, $status, $state->order->getId(), $shipment->getId());
+			$requestHandler->notifyTransport($requestId, $status, $state->orderAdapter, $shipment->getId());
 		}
 	}
 
@@ -60,7 +60,8 @@ class OrderDelivery
 
 		$query = Sale\Delivery\Requests\ShipmentTable::getList([
 			'filter' => [
-				'=SHIPMENT_ID' => $shipmentId
+				'=SHIPMENT_ID' => $shipmentId,
+				'=SYSTEM' => 'N',
 			],
 			'limit' => 1
 		]);

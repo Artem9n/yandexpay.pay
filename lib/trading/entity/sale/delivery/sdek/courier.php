@@ -30,7 +30,7 @@ class Courier extends Base
 		return EntitySale\Delivery::DELIVERY_TYPE;
 	}
 
-	public function markSelectedDelivery(Sale\OrderBase $order, array $address) : void
+	public function markSelectedDelivery(Sale\Order $order, array $address) : void
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $order->getShipmentCollection();

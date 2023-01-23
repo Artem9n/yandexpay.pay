@@ -10,7 +10,7 @@ abstract class AbstractAdapter
 
 	abstract public function isMatch(Sale\Delivery\Services\Base $service) : bool;
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
 	{
 
 	}
@@ -18,13 +18,13 @@ abstract class AbstractAdapter
 	abstract public function load() : bool;
 
 	/**
-	 * @param \Bitrix\Sale\OrderBase              $order
+	 * @param \Bitrix\Sale\Order              $order
 	 * @param \Bitrix\Sale\Delivery\Services\Base $service
 	 * @param array|null                          $bounds
 	 *
 	 * @return array{ID: string|int, LOCATION_ID: int, ADDRESS: string, DESCRIPTION: ?string, PHONE: ?string, EMAIL: ?string }
 	 */
-	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		return [];
 	}
@@ -34,7 +34,7 @@ abstract class AbstractAdapter
 		return [];
 	}
 
-	public function prepareCalculation(Sale\OrderBase $orderBase) : void
+	public function prepareCalculation(Sale\Order $Order) : void
 	{
 
 	}
@@ -44,17 +44,17 @@ abstract class AbstractAdapter
 
 	}
 
-	public function markSelectedDelivery(Sale\OrderBase $order, array $address) : void
+	public function markSelectedDelivery(Sale\Order $order, array $address) : void
 	{
 
 	}
 
-	public function onAfterOrderSave(Sale\OrderBase $order) : void
+	public function onAfterOrderSave(Sale\Order $order) : void
 	{
 
 	}
 
-	protected function zipProperty(Sale\OrderBase $order) : ?Sale\PropertyValueBase
+	protected function zipProperty(Sale\Order $order) : ?Sale\PropertyValueBase
 	{
 		$propertyCollection = $order->getPropertyCollection();
 		$zipCode = $this->getZipCode($order);
@@ -74,7 +74,7 @@ abstract class AbstractAdapter
 		return $itemProperty ?? $propertyCollection->getDeliveryLocationZip();
 	}
 
-	protected function addressProperty(Sale\OrderBase $order) : ?Sale\PropertyValueBase
+	protected function addressProperty(Sale\Order $order) : ?Sale\PropertyValueBase
 	{
 		$propertyCollection = $order->getPropertyCollection();
 		$addressCode = $this->getAddressCode($order);
@@ -94,12 +94,12 @@ abstract class AbstractAdapter
 		return $itemProperty ?? $propertyCollection->getAddress();
 	}
 
-	protected function getAddressCode(Sale\OrderBase $order) : string
+	protected function getAddressCode(Sale\Order $order) : string
 	{
 		return '';
 	}
 
-	protected function getZipCode(Sale\OrderBase $order) : string
+	protected function getZipCode(Sale\Order $order) : string
 	{
 		return '';
 	}

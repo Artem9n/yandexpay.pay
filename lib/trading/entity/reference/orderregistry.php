@@ -18,6 +18,11 @@ abstract class OrderRegistry
 		throw new Main\NotImplementedException('createOrder is missing');
 	}
 
+	public function load(string $paymentNumber) : Order
+	{
+		throw new Main\NotImplementedException('load is missing');
+	}
+
 	public function loadOrder(int $orderId) : Order
 	{
 		throw new Main\NotImplementedException('loadOrder is missing');

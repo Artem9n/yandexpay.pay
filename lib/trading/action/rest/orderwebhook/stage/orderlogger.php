@@ -47,7 +47,7 @@ class OrderLogger
 	{
 		$message = self::getMessage(
 			sprintf('PAYMENT_STATUS_%s', $paymentStatus), [
-				'#ORDER_ID#' => $state->payment->getOrderId(),
+				'#ORDER_ID#' => $state->orderAdapter->getAccountNumber(),
 			]
 		);
 
@@ -91,7 +91,7 @@ class OrderLogger
 	{
 		$message = self::getMessage(
 			sprintf('OPERATION_TYPE_%s', $operation->getType()), [
-				'#ORDER_ID#' => $state->payment->getOrderId(),
+				'#ORDER_ID#' => $state->orderAdapter->getAccountNumber(),
 			]
 		);
 

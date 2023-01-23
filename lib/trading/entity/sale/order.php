@@ -2,6 +2,7 @@
 
 namespace YandexPay\Pay\Trading\Entity\Sale;
 
+use Sale\Handlers\PaySystem\YandexPayHandler;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
@@ -13,14 +14,16 @@ class Order extends EntityReference\Order
 {
 	use Concerns\HasMessage;
 
-	/** @var Sale\OrderBase */
+	/** @var Sale\Order */
 	protected $calculatable;
+	/** @var bool */
 	protected $isStartField;
-
 	/** @var Delivery\AbstractAdapter */
 	protected $delivery;
+	/** @var int|null */
+	protected $paymentId;
 
-	public function __construct(Environment $environment, Sale\OrderBase $internalOrder)
+	public function __construct(Environment $environment, Sale\Order $internalOrder)
 	{
 		parent::__construct($environment, $internalOrder);
 	}
@@ -324,10 +327,7 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	/**
-	 * @return Sale\OrderBase
-	 */
-	public function getCalculatable() : Sale\OrderBase
+	public function getCalculatable() : Sale\Order
 	{
 		if ($this->calculatable === null)
 		{
@@ -337,7 +337,7 @@ class Order extends EntityReference\Order
 		return $this->calculatable;
 	}
 
-	protected function createCalculatable() : Sale\OrderBase
+	protected function createCalculatable() : Sale\Order
 	{
 		$order = method_exists($this->internalOrder, 'createClone')
 			? $this->internalOrder->createClone()
@@ -355,7 +355,7 @@ class Order extends EntityReference\Order
 		return $order;
 	}
 
-	protected function getNotSystemShipment(Sale\OrderBase $order = null) : ?Sale\Shipment
+	public function getNotSystemShipment(Sale\Order $order = null) : ?Sale\Shipment
 	{
 		if ($order === null) { $order = $this->internalOrder; }
 
@@ -375,7 +375,7 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	protected function initOrderShipment(Sale\OrderBase $order = null)
+	protected function initOrderShipment(Sale\Order $order = null)
 	{
 		if ($order === null) { $order = $this->internalOrder; }
 
@@ -388,7 +388,7 @@ class Order extends EntityReference\Order
 		return $shipment;
 	}
 
-	public function getOrder()
+	public function getOrder() : Sale\Order
 	{
 		return $this->internalOrder;
 	}
@@ -925,7 +925,7 @@ class Order extends EntityReference\Order
 		return $result;
 	}
 
-	protected function getDeliveryService() : ?Sale\Delivery\Services\Base
+	public function getDeliveryService() : ?Sale\Delivery\Services\Base
 	{
 		$shipment = $this->getNotSystemShipment();
 
@@ -1033,7 +1033,7 @@ class Order extends EntityReference\Order
 		$payment->setField('SUM', $price);
 	}
 
-	public function add(string $externalId) : Main\Result
+	public function add() : Main\Result
 	{
 		$result = new Main\Result();
 
@@ -1048,39 +1048,43 @@ class Order extends EntityReference\Order
 			$this->deliveryOnAfterOrderSave();
 
 			$orderId = $orderResult->getId();
-			$orderExportId = $orderId;
-			$orderAccountNumber = $this->getAccountNumber();
+			$orderAccountNumber = $this->internalOrder->getField('ACCOUNT_NUMBER');
+			$payment = $this->getPayment();
 
-			if ($orderAccountNumber !== null)
-			{
-				$orderExportId = $orderAccountNumber;
-			}
-
-			[$paymentId, $paySystemId] = $this->getPayment();
+			$this->linkPaymentNumber($payment, $orderAccountNumber);
 
 			$result->setData([
-				'ID' => $orderExportId,
+				'ID' => $orderAccountNumber,
 				'INTERNAL_ID' => $orderId,
-				'PAYMENT_ID' => $paymentId,
-				'PAY_SYSTEM_ID' => $paySystemId,
+				'PAYMENT_ID' => $payment->getId(),
+				'PAY_SYSTEM_ID' => $payment->getPaymentSystemId(),
 			]);
 		}
 
 		return $result;
 	}
 
-	public function getAccountNumber() : ?string
+	public function getAccountNumber() : string
 	{
-		$accountNumber = (string)$this->internalOrder->getField('ACCOUNT_NUMBER');
+		$payment = $this->getPayment();
 
-		return $accountNumber !== '' ? $accountNumber : null;
+		return $payment->getField('PS_INVOICE_ID') ?: $payment->getField('ORDER_ID');
 	}
 
-	protected function getPayment() : array
+	protected function linkPaymentNumber(Sale\Payment $payment, string $paymentNumber) : void
 	{
-		$paymentId = null;
-		$paySystemId = null;
+		$payment->setField('PS_INVOICE_ID', $paymentNumber);
+		$payment->save();
+	}
 
+	public function setPaymentId(int $paymentId) : void
+	{
+		$this->paymentId = $paymentId;
+	}
+
+	public function getPayment() : Sale\Payment
+	{
+		$result = null;
 		$paymentCollection = $this->internalOrder->getPaymentCollection();
 
 		/** @var Sale\Payment $payment */
@@ -1088,11 +1092,43 @@ class Order extends EntityReference\Order
 		{
 			if ($payment->isInner()) { continue; }
 
-			$paymentId = $payment->getId();
-			$paySystemId = $payment->getPaymentSystemId();
+			if ($this->paymentId === null || (string)$this->paymentId === (string)$payment->getId())
+			{
+				$result = $payment;
+				break;
+			}
 		}
 
-		return [$paymentId, $paySystemId];
+		if ($result === null)
+		{
+			throw new Main\SystemException('payment not found', 'OTHER');
+		}
+
+		return $result;
+	}
+
+	public function getPaymentTestMode() : bool
+	{
+		$payment = $this->getPayment();
+
+		/** @var \Sale\Handlers\PaySystem\YandexPayHandler $handler */
+		$handler = $this->environment->getPaySystem()->getHandler($payment->getPaymentSystemId());
+
+		Assert::typeOf($handler, YandexPayHandler::class, 'not YandexPayHandler');
+
+		return $handler->isTestMode($payment);
+	}
+
+	public function getPaymentApiKey() : ?string
+	{
+		$payment = $this->getPayment();
+
+		/** @var \Sale\Handlers\PaySystem\YandexPayHandler $handler */
+		$handler = $this->environment->getPaySystem()->getHandler($payment->getPaymentSystemId());
+
+		Assert::typeOf($handler, YandexPayHandler::class, 'not YandexPayHandler');
+
+		return $handler->getApiKey($payment);
 	}
 
 	protected function getIssetPayment(int $paySystemId) : ?Sale\Payment

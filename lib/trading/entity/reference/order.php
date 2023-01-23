@@ -9,11 +9,11 @@ abstract class Order
 {
 	/** @var Environment */
 	protected $environment;
-	/** @var Sale\OrderBase */
+	/** @var Sale\Order */
 	protected $internalOrder;
 	/** @var int|null */
 	protected $fUserId;
-	/** @var Sale\OrderBase */
+	/** @var Sale\Order */
 	protected $calculatable;
 
 	public function __construct(Environment $environment, $internalOrder)
@@ -174,11 +174,10 @@ abstract class Order
 	}
 
 	/**
-	 * @param string $externalId
 	 *
 	 * @return Main\Result
 	 */
-	public function add(string $externalId) : Main\Result
+	public function add() : Main\Result
 	{
 		throw new Main\NotImplementedException('add is missing');
 	}
@@ -291,5 +290,35 @@ abstract class Order
 	public function fillTradingSetup(Platform $platform, string $externalId = null) : void
 	{
 		throw new Main\NotImplementedException('fillTradingSetup is missing');
+	}
+
+	public function getOrder() : Sale\Order
+	{
+		throw new Main\NotImplementedException('getOrder is missing');
+	}
+
+	public function getPayment() : Sale\Payment
+	{
+		throw new Main\NotImplementedException('getPayment is missing');
+	}
+
+	public function getNotSystemShipment(Sale\Order $order = null) : ?Sale\Shipment
+	{
+		throw new Main\NotImplementedException('getNotSystemShipment is missing');
+	}
+
+	public function getDeliveryService() : ?Sale\Delivery\Services\Base
+	{
+		throw new Main\NotImplementedException('getDeliveryService is missing');
+	}
+
+	public function getPaymentTestMode() : bool
+	{
+		throw new Main\NotImplementedException('getPaymentTestMode is missing');
+	}
+
+	public function getPaymentApiKey() : ?string
+	{
+		throw new Main\NotImplementedException('getPaymentTestMode is missing');
 	}
 }

@@ -30,7 +30,7 @@ class Base extends AbstractAdapter
 		return '';
 	}
 
-	public function getStores(Sale\OrderBase $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		$stores = $this->loadStores($bounds);
 
@@ -141,7 +141,7 @@ class Base extends AbstractAdapter
 		return $result;
 	}
 
-	public function markSelected(Sale\OrderBase $order, string $storeId = null, string $address = null) : void
+	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
 	{
 		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
 		$shipmentCollection = $order->getShipmentCollection();
@@ -172,7 +172,7 @@ class Base extends AbstractAdapter
 		$propAddress->setValue($value);
 	}
 
-	protected function getAddressCode(Sale\OrderBase $order) : string
+	protected function getAddressCode(Sale\Order $order) : string
 	{
 		return (string)\Ipolh\SDEK\option::get('pvzPicker');
 	}

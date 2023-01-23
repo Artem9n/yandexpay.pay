@@ -2,11 +2,14 @@
 
 namespace YandexPay\Pay\Gateway;
 
-use YandexPay\Pay\Trading\Action\Api;
 use YandexPay\Pay\Logger;
+use YandexPay\Pay\Reference\Concerns;
+use YandexPay\Pay\Trading\Action\Api;
 
 abstract class BaseRest extends Base
 {
+	use Concerns\HasMessage;
+
 	public function refund(): void
 	{
 		if ($this->isRest())
@@ -60,12 +63,16 @@ abstract class BaseRest extends Base
 			$this->getParameter('YANDEX_PAY_MERCHANT_ID', true)
 			: $this->getParameter('YANDEX_PAY_REST_API_KEY', true);
 
+		$orderNumber = $this->getPayment()->getField('PS_INVOICE_ID') ?: $this->getPayment()->getField('ORDER_ID'); // fallback to ORDER_ID without link
+		$refundSum = $this->getPayment()->getSum();
+
 		if ($apiKey === null) { return; }
 
 		$request->setLogger($logger);
 		$request->setApiKey($apiKey);
 		$request->setTestMode($isTestMode);
-		$request->setPayment($this->getPayment());
+		$request->setOrderNumber($orderNumber);
+		$request->setRefundAmount($refundSum);
 
 		$data = $request->send();
 		$response = $request->buildResponse($data, Api\Refund\Response::class);

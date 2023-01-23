@@ -25,12 +25,9 @@ class OrderRegistry extends EntityReference\OrderRegistry
 				'=TRADING_PLATFORM_ID' => $platform->getId(),
 				'=XML_ID' => $externalId,
 			],
-			'select' => [
-				'ORDER_ID'
-			],
-			'order' => [
-				'ID' => 'DESC'
-			]
+			'select' => [ 'ORDER_ID' ],
+			'order' => [ 'ID' => 'DESC' ],
+			'limit' => 1,
 		]);
 
 		if ($row = $query->fetch())
@@ -39,6 +36,36 @@ class OrderRegistry extends EntityReference\OrderRegistry
 		}
 
 		return $result;
+	}
+
+	public function load(string $paymentNumber) : EntityReference\Order
+	{
+		/** @var Sale\Payment $paymentClassName */
+		$registry = Sale\Registry::getInstance(Sale\Registry::REGISTRY_TYPE_ORDER);
+		$paymentClassName = $registry->getPaymentClassName();
+
+		$query = $paymentClassName::getList([
+			'filter' => [ '=PS_INVOICE_ID' => $paymentNumber ],
+			'select' => [ 'ID', 'ORDER_ID' ],
+			'limit' => 1,
+		]);
+
+		// todo test is our payment
+
+		if ($row = $query->fetch())
+		{
+			$order = $this->loadOrder($row['ORDER_ID']);
+			$order->setPaymentId($row['ID']);
+
+			return $order;
+		}
+
+		if (!is_numeric($paymentNumber))
+		{
+			throw new Main\SystemException('order not found', 'ORDER_NOT_FOUND');
+		}
+
+		return $this->loadOrder((int)$paymentNumber); // fallback to old behavior without link
 	}
 
 	public function loadOrder(int $orderId) : EntityReference\Order
@@ -68,13 +95,8 @@ class OrderRegistry extends EntityReference\OrderRegistry
 		return $this->makeOrder($internalOrder);
 	}
 
-	protected function makeOrder(Sale\OrderBase $order) : Order
+	protected function makeOrder(Sale\Order $order) : Order
 	{
 		return new Order($this->environment, $order);
-	}
-
-	public static function useAccountNumber() : bool
-	{
-		return (string)Main\Config\Option::get('sale', 'account_number_template') !== '';
 	}
 }
