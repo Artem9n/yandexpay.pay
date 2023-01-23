@@ -12,9 +12,6 @@ class Factory
 	public const SDEK_PICKUP = 'sdek:pickup';
 	public const SDEK_POSTAMAT = 'sdek:postamat';
 	public const SDEK_COURIER = 'sdek:courier';
-	public const OZON_PICKUP = 'ozon:pickup';
-	public const OZON_POSTAMAT = 'ozon:postamat';
-	public const OZON_DELIVERY = 'ozon:delivery';
 	public const BOXBERRY_PVZ = 'boxberry:pvz';
 	public const DPD_PICKUP = 'dpd:pickup';
 	public const DPD_COURIER = 'dpd:courier';
@@ -56,9 +53,6 @@ class Factory
 	{
 		return [
 			static::SITE_STORE,
-			//static::OZON_PICKUP,
-			//static::OZON_POSTAMAT,
-			//static::OZON_DELIVERY,
 			static::SDEK_PICKUP,
 			static::SDEK_COURIER,
 			static::SDEK_POSTAMAT,
