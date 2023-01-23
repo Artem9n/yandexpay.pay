@@ -33,8 +33,6 @@ class Pickup extends Base
 		if ($bounds === null) { return []; }
 
 		$config = $this->config($order);
-		$profile = \CDeliveryEDOST::GetEdostProfile($service->getId());
-		$tariff = \CDeliveryEDOST::GetEdostTariff($profile['profile']);
 		$providerType = $this->getProvider();
 		$deliveryId = $service->getId();
 
@@ -66,6 +64,9 @@ class Pickup extends Base
 				[ 'id' => $deliveryId ],
 				$config
 			);
+
+			$profile = \CDeliveryEDOST::GetEdostProfile($deliveryId);
+			$tariff = \CDeliveryEDOST::GetEdostTariff($profile['profile']);
 
 			$locationId = \CSaleLocation::getLocationIDbyCODE($locationCode);
 			$result[$locationId] = [];

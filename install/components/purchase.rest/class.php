@@ -68,7 +68,7 @@ class PurchaseRest extends \CBitrixComponent
 		catch (TradingAction\Reference\Exceptions\DtoProperty $exception)
 		{
 			$response = $this->makeExceptionResponse($exception, static::HTTP_STATUS_400, [
-				'reasonCode' => $exception->getParameter()
+				'reasonCode' => $exception->getParameter() ?: 'OTHER'
 			]);
 
 			$this->logResponse($response, Psr\Log\LogLevel::ERROR);
