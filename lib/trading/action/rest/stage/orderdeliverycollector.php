@@ -2,6 +2,8 @@
 namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
 use Bitrix\Main;
+use Bitrix\Sale;
+use YandexPay\Pay\Data\Vat;
 use YandexPay\Pay\Logger;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Action\Rest\State;
@@ -94,7 +96,7 @@ class OrderDeliveryCollector extends ResponseCollector
 				continue;
 			}
 
-			$result[] = $this->collectDeliveryOption($calculationResult);
+			$result[] = $this->collectDeliveryOption($calculationResult, $deliveryService);
 		}
 
 		if (!empty($result))
@@ -168,18 +170,26 @@ class OrderDeliveryCollector extends ResponseCollector
 		return $result;
 	}
 
-	protected function collectDeliveryOption(EntityReference\Delivery\CalculationResult $calculationResult) : array
+	protected function collectDeliveryOption(
+		EntityReference\Delivery\CalculationResult $calculationResult,
+		Sale\Delivery\Services\Base $service
+	) : array
 	{
 		$toDate = $calculationResult->getDateTo();
+		$vatList = Vat::getVatList();
+		$vatRate = $vatList[$service->getVatId()] ?? 0;
 
 		return [
 			'courierOptionId' => (string)$calculationResult->getDeliveryId(),
-			'provider' => 'COURIER', //todo # Идентификатор службы доставки. enum<COURIER|CDEK|EMS|DHL>
-			'category' => $calculationResult->getCategory(), // enum<EXPRESS|TODAY|STANDARD>
+			'provider' => 'COURIER',
+			'category' => $calculationResult->getCategory(),
 			'title' => $calculationResult->getServiceName(),
 			'amount'    => (float)$calculationResult->getPrice(),
 			'fromDate' => $calculationResult->getDateFrom()->format('Y-m-d'),
 			'toDate' => $toDate !== null ? $toDate->format('Y-m-d') : null,
+			'receipt' => [
+				'tax' => Vat::convertForService($vatRate),
+			],
 		];
 	}
 

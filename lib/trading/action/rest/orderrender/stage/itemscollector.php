@@ -58,6 +58,9 @@ class ItemsCollector extends ResponseCollector
 
 	protected function deliveryCollector(State\Order $state) : void
 	{
+		$vatList = Vat::getVatList();
+		$vatRate = $vatList[$state->delivery->getVatId()] ?? 0;
+
 		$this->items[] = [
 			'productId' => (string)$state->delivery->getId(),
 			'unitPrice' => (float)$state->order->getDeliveryPrice(),
@@ -66,7 +69,7 @@ class ItemsCollector extends ResponseCollector
 			'total' => (float)$state->order->getDeliveryPrice(),
 			'title' => $state->delivery->getNameWithParent(),
 			'receipt' => [
-				'tax' => Vat::convertForService($state->delivery->getVatId()),
+				'tax' => Vat::convertForService($vatRate),
 			],
 			'quantity' => [
 				'count' => 1,
