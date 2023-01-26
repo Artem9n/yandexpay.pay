@@ -106,6 +106,7 @@ class TradingButton extends \CBitrixComponent
 			'userGroup'         => $options->getUserGroup(),
 			'currencyCode'      => Currency\CurrencyManager::getBaseCurrency(),
 			'useDivider'        => $this->arParams['USE_DIVIDER'],
+			'textDivider'       => $this->arParams['TEXT_DIVIDER'],
 			'displayType'       => $displayType,
 			'displayParameters' => $displayParameters,
 			'jsContent'         => $this->arParams['JS_CONTENT'],

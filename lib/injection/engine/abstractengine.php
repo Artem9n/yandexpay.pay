@@ -2,6 +2,7 @@
 namespace YandexPay\Pay\Injection\Engine;
 
 use Bitrix\Main;
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Event;
 use YandexPay\Pay\Injection;
@@ -42,6 +43,8 @@ abstract class AbstractEngine extends Event\Base
 
 		if (SITE_ID !== $data['SITE_ID']) { return ''; }
 
+		if (!static::resolveRender($data)) { return ''; }
+
 		$setup = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
 		$setup->fill();
 
@@ -61,6 +64,23 @@ abstract class AbstractEngine extends Event\Base
 		return $contents;
 	}
 
+	protected static function resolveRender(array $parameters) : bool
+	{
+		$event = new Main\Event(Config::getModuleName(), 'onRenderYandexPay', $parameters);
+		$event->send();
+		$data = $event->getResults();
+
+		if ($data) {
+			foreach ($data as $evenResult) {
+				if ($evenResult->getType() === \Bitrix\Main\EventResult::ERROR) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
 	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
 	{
 		/** @var Injection\Behavior\AbstractBehavior $options */
@@ -78,6 +98,7 @@ abstract class AbstractEngine extends Event\Base
 			'DISPLAY_TYPE' => $display->getType(),
 			'DISPLAY_PARAMETERS' => $display->getWidgetParameters(),
 			'USE_DIVIDER' => $options->useDivider(),
+			'TEXT_DIVIDER' => $options->textDivider(),
 			'JS_CONTENT' => $options->getJsContent(),
 			'CSS_CONTENT' => $options->getCssContent(),
 		];
@@ -100,7 +121,22 @@ abstract class AbstractEngine extends Event\Base
 
 		$url = static::normalize($url);
 
+		if (static::isPathRegexp($path)) { return static::testPathRegexp($path, $url); }
+
 		return $path === $url;
+	}
+
+	protected static function isPathRegexp(string $path) : bool
+	{
+		return mb_strpos($path, '*');
+	}
+
+	protected static function testPathRegexp(string $path, string $url) : bool
+	{
+		$regexp = str_replace(['#', '*'] , ['\\#', '.*?'], $path);
+		$regexp = '#^' . $regexp . '$#i';
+
+		return (bool)preg_match($regexp, $url);
 	}
 
 	protected static function normalize($path) : string

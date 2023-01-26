@@ -30,6 +30,8 @@ export default class Factory {
 		useDivider: false,
 		containerSelector: '.bx-yapay-drawer',
 		loaderSelector: '.bx-yapay-skeleton-loading',
+		event: null,
+		eventConfig: {},
 		preserve: {
 			composite: true,
 		},
@@ -57,6 +59,7 @@ export default class Factory {
 			.then(() => {
 				selectorSanitized = this.filterMedia(selector);
 			})
+			.then(() => this.waitEvent())
 			.then(() => this.waitElement(selectorSanitized))
 			.then((anchor) => this.checkElement(anchor))
 			.then((anchor) => this.renderElement(anchor, position))
@@ -170,6 +173,22 @@ export default class Factory {
 	insertLoader(widget) {
 		widget.bootLoader();
 		return widget;
+	}
+
+	waitEvent() {
+		const name = this.getOption('event');
+
+		if (name == null) { return null; }
+
+		return new Promise((resolve) => {
+			const eventProxy = EventProxy.make(this.getOption('eventConfig'));
+			const callback = () => {
+				eventProxy.off(name, callback);
+				resolve();
+			};
+
+			eventProxy.on(name, callback);
+		});
 	}
 
 	waitElement(selector) {
