@@ -8,6 +8,9 @@ use YandexPay\Pay\Injection;
 
 abstract class AbstractEngine extends Event\Base
 {
+	protected const RENDER_ASSETS = 'assets';
+	protected const RENDER_RETURN = 'return';
+
 	protected static $handlerDisallowYaPay = false;
 
 	protected static function loadModule(string $name) : void
@@ -24,7 +27,6 @@ abstract class AbstractEngine extends Event\Base
 
 		return (
 			!$request->isAdminSection()
-			//&& !$request->isAjaxRequest()
 			&& mb_strpos($request->getRequestedPage(), '/bitrix/') !== 0
 		);
 	}
@@ -34,26 +36,29 @@ abstract class AbstractEngine extends Event\Base
 		return Main\Context::getCurrent()->getRequest();
 	}
 
-	protected static function render(int $injectionId, array $data = []) : void
+	protected static function render(int $injectionId, array $data = [], $mode = self::RENDER_ASSETS) : string
 	{
 		global $APPLICATION;
 
-		if (SITE_ID !== $data['SITE_ID']) { return; }
-
-		if (static::$handlerDisallowYaPay) { return; }
-
-		static::$handlerDisallowYaPay = true;
+		if (SITE_ID !== $data['SITE_ID']) { return ''; }
 
 		$setup = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
 		$setup->fill();
 
 		$parameters = static::getComponentParameters($setup, $data);
+		$contents = '';
 
-		ob_start();
-		$APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
-		$contents = ob_get_clean();
+		if ($mode === self::RENDER_ASSETS)
+		{
+			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+			Main\Page\Asset::getInstance()->addString($contents, false, Main\Page\AssetLocation::AFTER_JS);
+		}
+		else if ($mode === self::RENDER_RETURN)
+		{
+			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+		}
 
-		Main\Page\Asset::getInstance()->addString($contents, false, Main\Page\AssetLocation::AFTER_JS);
+		return $contents;
 	}
 
 	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
@@ -73,6 +78,9 @@ abstract class AbstractEngine extends Event\Base
 			'DISPLAY_TYPE' => $display->getType(),
 			'DISPLAY_PARAMETERS' => $display->getWidgetParameters(),
 			'USE_DIVIDER' => $options->useDivider(),
+			'TEXT_DIVIDER' => $options->textDivider(),
+			'JS_CONTENT' => $options->getJsContent(),
+			'CSS_CONTENT' => $options->getCssContent(),
 		];
 	}
 

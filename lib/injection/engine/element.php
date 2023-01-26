@@ -10,16 +10,22 @@ use YandexPay\Pay\Trading\Entity as TradingEntity;
 class Element extends AbstractEngine
 {
 	protected static $environment;
+	private static $disabled = false;
 
 	public static function onEpilog(int $injectionId, array $settings) : void
 	{
-		if (!static::testRequest()) { return; }
+		if (static::$disabled || !static::testRequest()) { return; }
 
 		$elementId = static::findProduct($settings);
 
 		if ($elementId === null) { return; }
 
 		static::render($injectionId, ['PRODUCT_ID' => $elementId, 'SITE_ID' => $settings['SITE_ID']]);
+	}
+
+	public static function disable() : void
+	{
+		self::$disabled = true;
 	}
 
 	protected static function findProduct(array $settings) : ?int
