@@ -39,38 +39,10 @@ class NextypeMagnet extends Skeleton
 		];
 	}
 
-	protected function basketFlyDefaults(array $context = []) : array
-	{
-		$paths = [
-			'/ajax/basket_fly.php',
-			'/ajax/showBasketHover.php',
-		];
-
-		foreach ($paths as &$path)
-		{
-			$dir = $context['SITE_DIR'] ?? '';
-			$dir = rtrim($dir, '/');
-			$path = $dir . $path;
-		}
-		unset($path);
-
-		$settings = [
-			'SELECTOR' => '.header-cart.fly .basket_back, .basket_hover_block .basket_wrap .buttons',
-			'USE_DIVIDER' => false,
-			'WIDTH_BUTTON' => 'MAX',
-			'PATH' => implode(PHP_EOL, $paths),
-			'POSITION' => 'afterend',
-		];
-
-		$design = $this->designDefaults();
-
-		return $settings + $design;
-	}
-
 	protected function elementDefaults(array $context = []) : array
 	{
 		return [
-				'SELECTOR' => '.product-main-info .info .order-container .buttons .product-item-button-container div',
+				'SELECTOR' => '.product-main-info .info .order-container .buttons .product-item-button-container div, .product-fast-view .order-container .buttons .product-item-button-container div',
 				'POSITION' => 'afterend',
 				'IBLOCK' => $context['IBLOCK'],
 				'HEIGHT_VALUE_BUTTON' => 42,
@@ -103,7 +75,7 @@ class NextypeMagnet extends Skeleton
 	protected function elementFastDefaults(array $context = []) : array
 	{
 		$elementSettings = $this->elementDefaults($context);
-		$elementSettings['QUERY_CHECK_PARAMS'] = 'FAST_VIEW=Y';
+		$elementSettings['QUERY_CHECK_PARAMS'] = 'is_fast_view=Y';
 
 		return $elementSettings;
 	}
@@ -112,10 +84,9 @@ class NextypeMagnet extends Skeleton
 	{
 		return [
 			Behavior\Registry::ELEMENT => $this->elementDefaults($context),
+			Behavior\Registry::ELEMENT_FAST => $this->elementFastDefaults($context),
 			Behavior\Registry::BASKET => $this->basketDefaults($context),
 			Behavior\Registry::ORDER => $this->orderDefaults($context),
-			Behavior\Registry::BASKET_FLY => $this->basketFlyDefaults($context),
-			Behavior\Registry::ELEMENT_FAST => $this->elementFastDefaults($context),
 		];
 	}
 }
