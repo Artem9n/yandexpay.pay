@@ -11,7 +11,7 @@ class Pickup extends Base
 {
 	use Concerns\HasOnceStatic;
 
-	protected $format = 'office';
+	protected $format = ['office', 'post'];
 
 	public function getServiceType() : string
 	{
@@ -33,6 +33,7 @@ class Pickup extends Base
 		if ($bounds === null) { return []; }
 
 		$config = $this->config($order);
+		$config['template'] = 'N3'; //template bitrix
 		$providerType = $this->getProvider();
 		$deliveryId = $service->getId();
 
@@ -71,7 +72,7 @@ class Pickup extends Base
 			$locationId = \CSaleLocation::getLocationIDbyCODE($locationCode);
 			$result[$locationId] = [];
 
-			if (empty($formatTariff['office'])) { return  $result; }
+			if (empty($formatTariff['office'])) { continue; }
 
 			foreach ($formatTariff['office'] as $company)
 			{
@@ -111,6 +112,7 @@ class Pickup extends Base
 
 		if ($shipment === null)
 		{
+			/** @var Sale\Shipment $shipment */
 			$shipment = $shipmentCollection->createItem();
 			$shipmentItemCollection = $shipment->getShipmentItemCollection();
 
@@ -123,6 +125,13 @@ class Pickup extends Base
 					$shipmentItem->setQuantity($basketItem->getQuantity());
 				}
 			}
+		}
+
+		$availableFields = $shipment::getAvailableFieldsMap();
+
+		if (isset($availableFields['WEIGHT']))
+		{
+			$shipment->setField('WEIGHT', $order->getBasket()->getWeight());
 		}
 
 		$shipment->setField('DELIVERY_ID', $service->getId());
