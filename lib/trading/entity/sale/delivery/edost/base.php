@@ -26,11 +26,21 @@ abstract class Base extends AbstractAdapter
 		if (mb_strpos($code, 'edost') === false) { return false; }
 
 		$profile = \CDeliveryEDOST::GetEdostProfile($service->getId());
+		$tariffId = (int)$profile['tariff'];
 		$format = \edost_class::GetFormat($profile);
+
+		if (in_array($tariffId, [35,56,57,58])) // shop office
+		{
+			$format = 'office';
+		}
+		else if(in_array($tariffId, [31,32,33,34])) // shop courier
+		{
+			$format = 'door';
+		}
 
 		$this->title = $service->getName();
 
-		return $format === $this->format;
+		return in_array($format, $this->format);
 	}
 
 	public function load() : bool
