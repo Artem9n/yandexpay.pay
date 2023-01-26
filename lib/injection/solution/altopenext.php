@@ -49,6 +49,14 @@ class AltopEnext extends Skeleton
 		] + $this->designDefaults();
 	}
 
+	protected function elementFastDefaults(array $context = []) : array
+	{
+		$elementSettings = $this->elementDefaults($context);
+		$elementSettings['QUERY_CHECK_PARAMS'] = 'action=quickViewFull';
+
+		return $elementSettings;
+	}
+
 	protected function basketDefaults(array $context = []) : array
 	{
 		$design = [
@@ -81,6 +89,7 @@ class AltopEnext extends Skeleton
 	{
 		return [
 			Behavior\Registry::ELEMENT => $this->elementDefaults($context),
+			Behavior\Registry::ELEMENT_FAST => $this->elementFastDefaults($context),
 			Behavior\Registry::BASKET => $this->basketDefaults($context),
 			Behavior\Registry::ORDER => $this->orderDefaults($context)
 		];
