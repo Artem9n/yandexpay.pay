@@ -18,11 +18,11 @@ export default class Element extends Page {
 	}
 
 	handleStarterOffer(dir) {
-		this[dir ? 'onEvent' : 'offEvent']('onCatalogElementChangeOffer', this.onStarterOffer);
+		this[dir ? 'onEvent' : 'offEvent'](this.eventName(), this.onStarterOffer);
 	}
 
 	handleCommonOffer(dir) {
-		this[dir ? 'onEvent' : 'offEvent']('onCatalogElementChangeOffer', this.onCommonOffer);
+		this[dir ? 'onEvent' : 'offEvent'](this.eventName(), this.onCommonOffer);
 	}
 
 	onStarterOffer = (eventData) => {

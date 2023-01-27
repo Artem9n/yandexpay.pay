@@ -61,6 +61,22 @@ abstract class AbstractBehavior implements BehaviorInterface
 					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_FALSE,
 				],
 			],
+			'TEXT_DIVIDER' => [
+				'TYPE' => 'string',
+				'GROUP' => self::getMessage('GROUP_DECOR'),
+				'NAME' => self::getMessage('TEXT_DIVIDER'),
+				'HELP' => self::getMessage('HELP_TEXT_DIVIDER'),
+				'DEPEND' => [
+					'USE_DIVIDER' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Ui\UserField\BooleanType::VALUE_TRUE,
+					],
+				],
+				'SETTINGS' => [
+					'ROWS' => 5,
+					'SIZE' => 25,
+				],
+			],
 			'DISPLAY' => [
 				'TITLE' => self::getMessage('DISPLAY'),
 				'GROUP' => self::getMessage('GROUP_DECOR'),
@@ -258,6 +274,13 @@ abstract class AbstractBehavior implements BehaviorInterface
 	public function useDivider() : bool
 	{
 		return (bool)$this->getValue('USE_DIVIDER');
+	}
+
+	public function textDivider() : ?string
+	{
+		$value = trim((string)$this->getValue('TEXT_DIVIDER'));
+
+		return $value !== '' ? $value : null;
 	}
 
 	public function getDisplay() : Display\IDisplay
