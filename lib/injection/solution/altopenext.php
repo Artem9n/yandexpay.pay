@@ -44,7 +44,7 @@ class AltopEnext extends Skeleton
 		return [
 			'SELECTOR' => '.product-item-detail-pay-block .product-item-detail-button-container',
 			'POSITION' => 'afterend',
-			'IBLOCK' => 29,
+			'IBLOCK' => $context['IBLOCK'],
 			'HEIGHT_VALUE_BUTTON' => 48,
 		] + $this->designDefaults();
 	}
