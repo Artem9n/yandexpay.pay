@@ -1,13 +1,16 @@
 <?php
-namespace YandexPay\Pay\Injection\Solution;
+namespace YandexPay\Pay\Injection\Solution\Aspro;
 
-use Bitrix\Main\Loader;
+use Bitrix\Main;
+use YandexPay\Pay\Injection\Solution;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Injection\Behavior;
 
-class Aspro extends Skeleton
+class Base extends Solution\Skeleton
 {
 	use Concerns\HasMessage;
+
+	protected static $isMatch = false;
 
 	public function getTitle() : string
 	{
@@ -16,17 +19,17 @@ class Aspro extends Skeleton
 
 	public function getType() : string
 	{
-		return 'Aspro';
+		return Solution\Registry::ASPRO_DEF;
 	}
 
 	public function isMatch(array $context = []) : bool
 	{
-		return Utils::matchTemplates('aspro', $context);
+		return (!static::$isMatch && Solution\Utils::matchTemplates('aspro', $context));
 	}
 
 	public function getOrderPath(array $context = []) : string
 	{
-		return Guide::getBitrixOrderPath($context, '/order/');
+		return Solution\Guide::getBitrixOrderPath($context, '/order/');
 	}
 
 	protected function designDefaults() : array
@@ -73,12 +76,12 @@ class Aspro extends Skeleton
 
 	protected function basketDefaults(array $context = []) : array
 	{
-		return $this->designDefaults() + Guide::getBitrixBasket($context, '/basket/');
+		return $this->designDefaults() + Solution\Guide::getBitrixBasket($context, '/basket/');
 	}
 
 	protected function orderDefaults(array $context = []) : array
 	{
-		return $this->designDefaults() + Guide::getBitrixOrder($context, '/order/');
+		return $this->designDefaults() + Solution\Guide::getBitrixOrder($context, '/order/');
 	}
 
 	protected function basketFlyDefaults(array $context = []) : array
