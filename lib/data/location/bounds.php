@@ -108,6 +108,19 @@ class Bounds
 		return $result;
 	}
 
+	public function filterCities(array $cities) : array
+	{
+		$result = [];
+
+		foreach ($this->cityList as $locationCode => $city)
+		{
+			if (!isset($cities[$locationCode])) { continue; }
+			$result[$locationCode] = $city;
+		}
+
+		return $result;
+	}
+
 	private function haversineGreatCircleDistance(
 		float $latitudeFrom,
 		float $longitudeFrom,

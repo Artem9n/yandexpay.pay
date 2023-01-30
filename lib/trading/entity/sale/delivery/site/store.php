@@ -103,14 +103,13 @@ class Store extends AbstractAdapter
 		$storesByLocation = [];
 
 		$locationsRestricts = array_flip($this->getLocationsByRestrict($deliveryId));
+		$locations = $finder->filterCities($locationsRestricts);
 
 		foreach ($stores as $store)
 		{
-			$locationCode = $finder->findClosestCity($store['GPS_N'], $store['GPS_S']);
+			$locationCode = $finder->findClosestCity($store['GPS_N'], $store['GPS_S'], $locations);
 
 			if ($locationCode === null) { continue; }
-
-			if(!empty($locationsRestricts) && !isset($locationsRestricts[$locationCode])) { continue; }
 
 			if (!isset($storesByLocation[$locationCode])) { $storesByLocation[$locationCode] = []; }
 
