@@ -108,9 +108,9 @@ class Bounds
 		return $result;
 	}
 
-	public function filterCities(array $cities) : array
+	public function filterCities(array $cities) : ?array
 	{
-		$result = [];
+		$result = null;
 
 		foreach ($this->cityList as $locationCode => $city)
 		{
