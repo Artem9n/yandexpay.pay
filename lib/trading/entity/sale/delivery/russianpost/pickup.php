@@ -26,7 +26,22 @@ class Pickup extends Base
 
 	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		return $this->loadStores($bounds);
+		$result = [];
+		$storesByLocation = $this->loadStores($bounds);
+
+		if (empty($storesByLocation)) { return $result; }
+
+		$locationsIdsMap = $this->getLocationIdsByCodes(array_keys($storesByLocation));
+
+		foreach ($storesByLocation as $locationCode => $stores)
+		{
+			$locationId = $locationsIdsMap[$locationCode];
+			if (!isset($locationId)) { continue; }
+
+			$result[$locationId] = $stores;
+		}
+
+		return $result;
 	}
 
 	protected function getLocationIdsByCodes(array $locationsCodes) : array
@@ -52,19 +67,6 @@ class Pickup extends Base
 
 		$account = $this->getAccount();
 
-		$metadata = new Data\Location\MetaData();
-		$finder = new Data\Location\Bounds($metadata);
-
-		$locations = $finder->search(
-			$bounds['sw']['latitude'],
-			$bounds['sw']['longitude'],
-			$bounds['ne']['latitude'],
-			$bounds['ne']['longitude']);
-
-		if (empty($locations)) { return $result; }
-
-		$locationsIdsMap = $this->getLocationIdsByCodes(array_keys($locations));
-
 		try
 		{
 			$httpClient = new Main\Web\HttpClient();
@@ -83,13 +85,16 @@ class Pickup extends Base
 
 			if (empty($pickupList['data'])) { return $result; }
 
+			$metadata = new Data\Location\MetaData();
+			$finder = new Data\Location\Bounds($metadata);
+
 			foreach ($pickupList['data'] as $pickup)
 			{
-				$locationCode = $finder->findClosestCity($locations, $pickup['geo']['coordinates'][1], $pickup['geo']['coordinates'][0]);
+				$locationCode = $finder->findClosestCity($pickup['geo']['coordinates'][1], $pickup['geo']['coordinates'][0]);
 
 				if ($locationCode === null) { continue; }
 
-				$locationId = $locationsIdsMap[$locationCode];
+				if (!isset($result[$locationCode])) { $result[$locationCode] = []; }
 
 				$address = array_filter([
 					$pickup['address']['index'],
@@ -103,7 +108,7 @@ class Pickup extends Base
 					$pickup['address']['corpus'],
 				]);
 
-				$result[$locationId][] = [
+				$result[$locationCode][] = [
 					'ID' => $pickup['id'],
 					'REGION' => $pickup['address']['region'],
 					'CITY' => $pickup['address']['place'],
