@@ -69,7 +69,7 @@ class PurchaseRest extends \CBitrixComponent
 		catch (TradingAction\Reference\Exceptions\DtoProperty $exception)
 		{
 			$response = $this->makeExceptionResponse($exception, static::HTTP_STATUS_400, [
-				'reasonCode' => $exception->getParameter()
+				'reasonCode' => $exception->getParameter() ?: 'OTHER'
 			]);
 
 			$this->logResponse($response, Psr\Log\LogLevel::ERROR);
@@ -186,7 +186,7 @@ class PurchaseRest extends \CBitrixComponent
 	{
 		$response = new Main\Engine\Response\Json($overrides + [
 			'status' => $overrides['status'] ?? 'fail',
-			'reasonCode' => (string)($exception->getCode() ?: 'UNKNOWN'),
+				'reasonCode' => (string)($exception->getCode() ?: 'OTHER'),
 			'reason' => $exception->getMessage(),
 			'trace' => $exception->getTraceAsString(), // todo remove
 		]);
