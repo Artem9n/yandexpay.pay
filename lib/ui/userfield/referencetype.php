@@ -136,10 +136,6 @@ class ReferenceType extends FieldsetType
 		$dataClass = static::referenceDataClass($userField);
 		[$primary, $data] = static::extractPrimary($userField, $value);
 
-		$prefix = mb_strtoupper($data['BEHAVIOR']);
-		$selectorKey = $prefix . '_SELECTOR';
-		$data['SETTINGS'][$selectorKey] = htmlspecialcharsbx($data['SETTINGS'][$selectorKey]);
-
 		if (!empty($primary))
 		{
 			$saveResult = $dataClass::update($primary, $data);
