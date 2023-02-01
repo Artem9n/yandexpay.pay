@@ -1,8 +1,9 @@
 <?php
 namespace YandexPay\Pay\Injection\Solution;
 
-use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Injection\Behavior;
+use YandexPay\Pay\Injection\Engine;
+use YandexPay\Pay\Reference\Concerns;
 
 class AltopEnext extends Skeleton
 {
@@ -20,7 +21,7 @@ class AltopEnext extends Skeleton
 
 	public function isMatch(array $context = []) : bool
 	{
-		return true;
+		return Utils::matchTemplates('enext', $context);
 	}
 
 	public function getOrderPath(array $context = []) : string
@@ -93,5 +94,20 @@ class AltopEnext extends Skeleton
 			Behavior\Registry::BASKET => $this->basketDefaults($context),
 			Behavior\Registry::ORDER => $this->orderDefaults($context)
 		];
+	}
+
+	public function eventSettings(Behavior\BehaviorInterface $behavior) : array
+	{
+		if (
+			$behavior instanceof Behavior\BasketFly
+			|| $behavior instanceof Behavior\ElementFast
+		)
+		{
+			return [
+				'RENDER' => Engine\AbstractEngine::RENDER_OUTPUT,
+			];
+		}
+
+		return [];
 	}
 }

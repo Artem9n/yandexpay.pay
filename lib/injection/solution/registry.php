@@ -13,8 +13,8 @@ class Registry
 	{
 		return [
 			static::ASPRO,
-			static::ESHOP_BOOTSTRAP,
 			static::ALTOP_ENEXT,
+			static::ESHOP_BOOTSTRAP,
 		];
 	}
 

@@ -20,7 +20,10 @@ class WakeUpBasket
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		if ($this->mode === Pay\Injection\Behavior\Registry::ELEMENT)
+		$resolveModeElement = Pay\Injection\Behavior\Registry::resolveModeElement();
+		$resolveModeBasket = Pay\Injection\Behavior\Registry::resolveModeBasket();
+
+		if (isset($resolveModeElement[$this->mode]))
 		{
 			$productId = $this->productId;
 			$offerId = $state->environment->getProduct()->resolveOffer($productId);
@@ -31,10 +34,7 @@ class WakeUpBasket
 			$quantity = $basketData['RATIO'] ?? 1;
 			$addResult = $state->order->addProduct($offerId, $quantity, $basketData);
 		}
-		elseif (
-			$this->mode === Pay\Injection\Behavior\Registry::BASKET
-			|| $this->mode === Pay\Injection\Behavior\Registry::ORDER
-		)
+		elseif (isset($resolveModeBasket[$this->mode]))
 		{
 			$addResult = $state->order->initUserBasket();
 		}

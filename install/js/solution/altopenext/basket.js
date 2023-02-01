@@ -1,16 +1,22 @@
 import EshopBasket from '../eshopbootstrap/basket';
-import factoryLayout from './molecules/factorylayout';
 
 export default class Basket extends EshopBasket {
+	bootCart(cart) {
 
-	bootFactory(factory) {
-		factoryLayout(factory, {
-			preserve: {
-				mutation: {
-					anchor: '[data-entity="basket-total-block"]',
-					delay: null,
-				},
-			},
+		if (typeof BX === 'undefined') { return; }
+
+		if (this.initialized != null) { return; }
+
+		this.onEvent('onAjaxSuccess', (response, config) => {
+
+			if (
+				config.url
+				&& config.url.indexOf('/bitrix/components/altop/sale.basket.basket/ajax.php') !== -1
+			)
+			{
+				cart.delayChangeBasket();
+				this.initialized = true;
+			}
 		});
 	}
 }

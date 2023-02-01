@@ -1,26 +1,33 @@
 <?php
 namespace YandexPay\Pay\Injection\Engine;
 
+use Bitrix\Main\Component\ParameterSigner;
 use YandexPay\Pay\Injection;
 use YandexPay\Pay\Utils;
 
 class ElementFast extends Element
 {
 	protected static $elementId;
+	protected static $widgetContent;
 
 	public static function OnProlog(int $injectionId, array $settings) : void
 	{
 		if (!static::testRequest() || !static::testQuery($settings)) { return; }
 
 		static::$elementId = static::findProduct($settings);
+
+		if (static::$elementId === null) { return; }
+
 		Element::disable();
+
+		static::$widgetContent = static::render($injectionId, ['SITE_ID' => $settings['SITE_ID'], 'PRODUCT_ID' => static::$elementId ], $settings['RENDER'] ?? self::RENDER_RETURN);
 	}
 
 	public static function onEndBufferContent(int $injectionId, array $settings, string &$content) : void
 	{
-		if (static::$elementId === null) { return; }
+		if ((string)static::$widgetContent === '' || mb_strpos($content, 'YandexPay') !== false) { return; }
 
-		$content .= static::render($injectionId, ['PRODUCT_ID' => static::$elementId, 'SITE_ID' => $settings['SITE_ID']], self::RENDER_RETURN);
+		$content .= static::$widgetContent;
 	}
 
 	protected static function testQuery(array $settings = []) : bool
@@ -80,7 +87,7 @@ class ElementFast extends Element
 
 	protected static function getUrlParamValue(string $param)
 	{
-		$queryValues = static::getRequest()->getQueryList()->toArray();
+		$queryValues = static::getRequest()->toArray();
 
 		return Utils\BracketChain::get($queryValues, $param);
 	}

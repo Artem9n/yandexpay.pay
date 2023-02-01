@@ -9,8 +9,9 @@ use YandexPay\Pay\Injection;
 
 abstract class AbstractEngine extends Event\Base
 {
-	protected const RENDER_ASSETS = 'assets';
-	protected const RENDER_RETURN = 'return';
+	public const RENDER_ASSETS = 'assets';
+	public const RENDER_RETURN = 'return';
+	public const RENDER_OUTPUT = 'output';
 
 	protected static $handlerDisallowYaPay = false;
 
@@ -60,6 +61,10 @@ abstract class AbstractEngine extends Event\Base
 		{
 			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
 		}
+		else if ($mode === self::RENDER_OUTPUT)
+		{
+			echo $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+		}
 
 		return $contents;
 	}
@@ -104,31 +109,56 @@ abstract class AbstractEngine extends Event\Base
 		];
 	}
 
-	protected static function getUrl() : ?string
+	protected static function getUrlVariants() : array
 	{
 		$url = Main\Context::getCurrent()->getRequest()->getRequestUri();
 
-		return $url !== null ? urldecode($url) : null;
+		if ($url === null) { return []; }
+
+		return [ urldecode($url) ];
 	}
 
 	protected static function testUrl(string $path) : bool
 	{
-		$url = static::getUrl();
+		$result = false;
 
-		if ($url === null) { return false; }
+		$paths = explode(PHP_EOL, $path);
 
-		if ($url === $path) { return true; }
+		if (empty($paths)) { return false; }
 
-		$url = static::normalize($url);
+		foreach (static::getUrlVariants() as $url)
+		{
+			if ($url === null) { continue; }
 
-		if (static::isPathRegexp($path)) { return static::testPathRegexp($path, $url); }
+			if ($result) { break; }
 
-		return $path === $url;
+			foreach ($paths as $path)
+			{
+				if ($url === $path)
+				{
+					$result = true;
+					break;
+				}
+
+				$url = static::normalize($url);
+				$matched = static::isPathRegexp($path)
+					? static::testPathRegexp($path, $url)
+					: $path === $url;
+
+				if ($matched)
+				{
+					$result = true;
+					break;
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	protected static function isPathRegexp(string $path) : bool
 	{
-		return mb_strpos($path, '*');
+		return mb_strpos($path, '*') !== false;
 	}
 
 	protected static function testPathRegexp(string $path, string $url) : bool

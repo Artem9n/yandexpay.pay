@@ -2,6 +2,7 @@
 namespace YandexPay\Pay\Injection\Solution;
 
 use Bitrix\Main;
+use YandexPay\Pay\Injection\Behavior\BehaviorInterface;
 
 abstract class Skeleton
 {
@@ -14,6 +15,11 @@ abstract class Skeleton
 	abstract public function getDefaults(array $context = []) : array;
 
 	abstract public function getOrderPath(array $context = []) : string;
+
+	public function eventSettings(BehaviorInterface $behavior) : array
+	{
+		return [];
+	}
 
 	public function getAssets() : ?array
 	{

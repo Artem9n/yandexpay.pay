@@ -11,14 +11,19 @@ class Order extends AbstractEngine
 	{
 		if (!static::testRequest()) { return; }
 
-		if (!isset($settings['PATH']) || !static::isOrderPath($settings['PATH'])) { return; }
+		if (!isset($settings['PATH']) || !static::testUrl($settings['PATH'])) { return; }
 
 		static::render($injectionId, ['SITE_ID' => $settings['SITE_ID']]);
 	}
 
-	protected static function isOrderPath(string $path) : bool
+	/*protected static function isOrderPath(string $path) : bool
 	{
-		$url = static::getUrl();
+		$url = static::getUrlVariants();
+
+		foreach (static::getUrlVariants() as $urlVariant)
+		{
+
+		}
 
 		if ($url === null || static::isOrderId($url)) { return false; }
 
@@ -32,5 +37,5 @@ class Order extends AbstractEngine
 	protected static function isOrderId(string $url) : bool
 	{
 		return mb_strpos($url, 'ORDER_ID') !== false;
-	}
+	}*/
 }

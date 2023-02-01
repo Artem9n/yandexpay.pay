@@ -1,12 +1,19 @@
 /*basket*/
 .yapay-behavior--basket{
-	text-align: right;
+	margin-bottom: 0;
+	line-height: unset !important;
 }
 
 @media (max-width: 1042px) {
 	.yapay-behavior--basket{
 		width: 100%;
 	}
+}
+
+/*basketFly*/
+.yapay-behavior--basketFly{
+	margin-top: 18px;
+	margin-bottom: 0;
 }
 
 /*element*/
