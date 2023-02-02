@@ -42,11 +42,11 @@ class NextypeMagnet extends Skeleton
 	protected function elementDefaults(array $context = []) : array
 	{
 		return [
-				'SELECTOR' => '.product-main-info .info .order-container .buttons .product-item-button-container div, .product-fast-view .order-container .buttons .product-item-button-container div',
-				'POSITION' => 'afterend',
-				'IBLOCK' => $context['IBLOCK'],
-				'HEIGHT_VALUE_BUTTON' => 42,
-			] + $this->designDefaults();
+			'SELECTOR' => '.product-item-button-container',
+			'POSITION' => 'beforeend',
+			'IBLOCK' => $context['IBLOCK'],
+			'HEIGHT_VALUE_BUTTON' => 42,
+		] + $this->designDefaults();
 	}
 
 	protected function basketDefaults(array $context = []) : array
@@ -56,6 +56,21 @@ class NextypeMagnet extends Skeleton
 		] + $this->designDefaults();
 
 		$settings = Guide::getBitrixBasket($context);
+
+		return $design + $settings;
+	}
+
+	protected function basketFlyDefaults(array $context = []) : array
+	{
+		$design = [
+			'HEIGHT_VALUE_BUTTON' => 44,
+		] + $this->designDefaults();
+
+		$settings = [
+			'SELECTOR' => '#bx_basketFKauiI .basket-list-footer .right',
+			'PATH' => '*',
+			'POSITION' => 'beforeend',
+		];
 
 		return $design + $settings;
 	}
@@ -86,6 +101,7 @@ class NextypeMagnet extends Skeleton
 			Behavior\Registry::ELEMENT => $this->elementDefaults($context),
 			Behavior\Registry::ELEMENT_FAST => $this->elementFastDefaults($context),
 			Behavior\Registry::BASKET => $this->basketDefaults($context),
+			Behavior\Registry::BASKET_FLY => $this->basketFlyDefaults($context),
 			Behavior\Registry::ORDER => $this->orderDefaults($context),
 		];
 	}
