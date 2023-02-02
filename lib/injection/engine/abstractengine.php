@@ -13,14 +13,21 @@ abstract class AbstractEngine extends Event\Base
 	public const RENDER_RETURN = 'return';
 	public const RENDER_OUTPUT = 'output';
 
-	protected static $handlerDisallowYaPay = false;
-
 	protected static function loadModule(string $name) : void
 	{
 		if (!Main\Loader::includeModule($name))
 		{
 			throw new Main\SystemException(sprintf('missing %s module', $name));
 		}
+	}
+
+	protected static function testShow(array $settings) : bool
+	{
+		return (
+			SITE_ID === $settings['SITE_ID']
+			&& static::testRequest()
+			&& static::testRender($settings)
+		);
 	}
 
 	protected static function testRequest() : bool
@@ -33,43 +40,71 @@ abstract class AbstractEngine extends Event\Base
 		);
 	}
 
+	protected static function getRenderParameters(int $injectionId, array $data = []) : array
+	{
+		$injection = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
+		$injection->fill();
+
+		$behavior = $injection->wakeupOptions();
+
+		Assert::typeOf($behavior, Injection\Behavior\BehaviorInterface::class, 'behavior');
+
+		$display = $behavior->getDisplay();
+
+		$solutionName = $injection->getTrading()->wakeupOptions()->getSolution();
+		$solutionParameters = [];
+
+		if ($solutionName !== null)
+		{
+			$solution = Injection\Solution\Registry::getInstance($solutionName);
+			$solutionParameters = $solution->eventSettings($behavior);
+		}
+
+		$componentParameters = $data + [
+			'MODE' => $behavior->getMode(),
+			'SELECTOR' => $behavior->getSelector(),
+			'POSITION' => $behavior->getPosition(),
+			'TRADING_ID' => $injection->getTradingId(),
+			'DISPLAY_TYPE' => $display->getType(),
+			'DISPLAY_PARAMETERS' => $display->getWidgetParameters(),
+			'USE_DIVIDER' => $behavior->useDivider(),
+			'TEXT_DIVIDER' => $behavior->textDivider(),
+			'JS_CONTENT' => $behavior->getJsContent(),
+			'CSS_CONTENT' => $behavior->getCssContent(),
+		];
+
+		return [ $componentParameters, $solutionParameters ];
+	}
+
 	protected static function getRequest()
 	{
 		return Main\Context::getCurrent()->getRequest();
 	}
 
-	protected static function render(int $injectionId, array $data = [], $mode = self::RENDER_ASSETS) : string
+	protected static function render(array $componentParameters, $mode = self::RENDER_ASSETS) : string
 	{
 		global $APPLICATION;
 
-		if (SITE_ID !== $data['SITE_ID']) { return ''; }
-
-		if (!static::resolveRender($data)) { return ''; }
-
-		$setup = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
-		$setup->fill();
-
-		$parameters = static::getComponentParameters($setup, $data);
 		$contents = '';
 
 		if ($mode === self::RENDER_ASSETS)
 		{
-			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $componentParameters, false);
 			Main\Page\Asset::getInstance()->addString($contents, false, Main\Page\AssetLocation::AFTER_JS);
 		}
 		else if ($mode === self::RENDER_RETURN)
 		{
-			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $componentParameters, false);
 		}
 		else if ($mode === self::RENDER_OUTPUT)
 		{
-			echo $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+			echo $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $componentParameters, false);
 		}
 
 		return $contents;
 	}
 
-	protected static function resolveRender(array $parameters) : bool
+	protected static function testRender(array $parameters) : bool
 	{
 		$event = new Main\Event(Config::getModuleName(), 'onRenderYandexPay', $parameters);
 		$event->send();
@@ -86,29 +121,6 @@ abstract class AbstractEngine extends Event\Base
 		return true;
 	}
 
-	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
-	{
-		/** @var Injection\Behavior\AbstractBehavior $options */
-		$options = $setup->wakeupOptions();
-
-		Assert::typeOf($options, Injection\Behavior\BehaviorInterface::class, 'options');
-
-		$display = $options->getDisplay();
-
-		return $data + [
-			'MODE' => $options->getMode(),
-			'SELECTOR' => $options->getSelector(),
-			'POSITION' => $options->getPosition(),
-			'TRADING_ID' => $setup->getTradingId(),
-			'DISPLAY_TYPE' => $display->getType(),
-			'DISPLAY_PARAMETERS' => $display->getWidgetParameters(),
-			'USE_DIVIDER' => $options->useDivider(),
-			'TEXT_DIVIDER' => $options->textDivider(),
-			'JS_CONTENT' => $options->getJsContent(),
-			'CSS_CONTENT' => $options->getCssContent(),
-		];
-	}
-
 	protected static function getUrlVariants() : array
 	{
 		$url = Main\Context::getCurrent()->getRequest()->getRequestUri();
@@ -122,18 +134,22 @@ abstract class AbstractEngine extends Event\Base
 	{
 		$result = false;
 
-		$paths = explode(PHP_EOL, $path);
+		$parts = explode(PHP_EOL, $path);
 
-		if (empty($paths)) { return false; }
+		if (empty($parts)) { return false; }
 
 		foreach (static::getUrlVariants() as $url)
 		{
 			if ($url === null) { continue; }
 
+			$url = trim($url);
+
 			if ($result) { break; }
 
-			foreach ($paths as $path)
+			foreach ($parts as $path)
 			{
+				$path = trim($path);
+
 				if ($url === $path)
 				{
 					$result = true;
