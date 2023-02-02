@@ -30,6 +30,11 @@ class ElementFast extends Element
 		return Engine\ElementFast::class;
 	}
 
+	public function getMode() : string
+	{
+		return Registry::ELEMENT_FAST;
+	}
+
 	protected function eventSettings() : array
 	{
 		return [

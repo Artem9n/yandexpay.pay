@@ -1,6 +1,7 @@
 <?php
 namespace YandexPay\Pay\Injection\Solution;
 
+use Bitrix\Main\Loader;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Injection\Behavior;
 
@@ -15,7 +16,7 @@ class Aspro extends Skeleton
 
 	public function getType() : string
 	{
-		return Registry::ASPRO;
+		return 'Aspro';
 	}
 
 	public function isMatch(array $context = []) : bool

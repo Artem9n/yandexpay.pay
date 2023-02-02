@@ -1,26 +1,45 @@
 <?php
 namespace YandexPay\Pay\Injection\Engine;
 
-use YandexPay\Pay\Injection;
 use YandexPay\Pay\Utils;
 
 class ElementFast extends Element
 {
 	protected static $elementId;
+	protected static $widgetContent;
 
 	public static function OnProlog(int $injectionId, array $settings) : void
 	{
-		if (!static::testRequest() || !static::testQuery($settings)) { return; }
+		if (!static::testShow($settings)) { return; }
 
 		static::$elementId = static::findProduct($settings);
+
+		if (static::$elementId === null) { return; }
+
 		Element::disable();
+
+		[ $componentParameters, $solutionParameters ] = static::getRenderParameters($injectionId, [
+			'SITE_ID' => $settings['SITE_ID'],
+			'PRODUCT_ID' => static::$elementId,
+			'FACTORY_OPTIONS' => [
+				'preserve' => false
+			]
+		]);
+
+		static::$widgetContent = static::render($componentParameters, $solutionParameters['RENDER'] ?? self::RENDER_RETURN);
 	}
 
 	public static function onEndBufferContent(int $injectionId, array $settings, string &$content) : void
 	{
-		if (static::$elementId === null) { return; }
+		if ((string)static::$widgetContent === '' || mb_strpos($content, 'YandexPay') !== false) { return; }
 
-		$content .= static::render($injectionId, ['PRODUCT_ID' => static::$elementId, 'SITE_ID' => $settings['SITE_ID']], self::RENDER_RETURN);
+		$content .= static::$widgetContent;
+	}
+
+	protected static function testShow(array $settings) : bool
+	{
+		return (string)static::$widgetContent === ''
+			&& (parent::testShow($settings) && static::testQuery($settings));
 	}
 
 	protected static function testQuery(array $settings = []) : bool
@@ -68,19 +87,9 @@ class ElementFast extends Element
 		);
 	}
 
-	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
-	{
-		$params = [
-			'FACTORY_OPTIONS' => [
-				'preserve' => false
-			]
-		];
-		return $params + parent::getComponentParameters($setup, $data);
-	}
-
 	protected static function getUrlParamValue(string $param)
 	{
-		$queryValues = static::getRequest()->getQueryList()->toArray();
+		$queryValues = static::getRequest()->toArray();
 
 		return Utils\BracketChain::get($queryValues, $param);
 	}

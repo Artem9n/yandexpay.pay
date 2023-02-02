@@ -1,16 +1,38 @@
 <?php
 namespace YandexPay\Pay\Injection\Engine;
 
-use YandexPay\Pay\Injection;
 class BasketFly extends AbstractEngine
 {
-	public static function onEndBufferContent(int $injectionId, array $settings, string &$content) : void
+	protected static $widgetContent;
+
+	public static function onProlog(int $injectionId, array $settings) : void
 	{
-		if (!static::testRequest()) { return; }
+		if (!static::testShow($settings)) { return; }
 
 		if (!isset($settings['PATH']) || !static::testUrl($settings['PATH'])) { return; }
 
-		$content .= static::render($injectionId, ['SITE_ID' => $settings['SITE_ID']],self::RENDER_RETURN);
+		[ $componentParameters, $solutionParameters ] = static::getRenderParameters(
+			$injectionId, [
+				'SITE_ID' => $settings['SITE_ID'],
+				'FACTORY_OPTIONS' => [
+					'preserve' => false
+				]
+			]
+		);
+
+		static::$widgetContent = static::render($componentParameters, $solutionParameters['RENDER'] ?? self::RENDER_RETURN);
+	}
+
+	public static function onEndBufferContent(int $injectionId, array $settings, string &$content) : void
+	{
+		if ((string)static::$widgetContent === '' || mb_strpos($content, 'YandexPay') !== false) { return; }
+
+		$content .= static::$widgetContent;
+	}
+
+	protected static function testShow(array $settings) : bool
+	{
+		return (string)static::$widgetContent === '' && parent::testShow($settings);
 	}
 
 	protected static function testRequest() : bool
@@ -23,37 +45,17 @@ class BasketFly extends AbstractEngine
 		);
 	}
 
-	protected static function testUrl(string $path) : bool
+	protected static function getUrlVariants() : array
 	{
-		$url = static::getUrl();
+		$result = parent::getUrlVariants();
 
-		if ($url === null) { return false; }
+		$scriptName = static::getRequest()->getScriptName();
 
-		$paths = explode(PHP_EOL, $path);
-
-		if (empty($paths)) { return false; }
-
-		$find = false;
-
-		foreach ($paths as $part)
+		if ($scriptName !== null)
 		{
-			if (trim($part) === $url)
-			{
-				$find = true;
-				break;
-			}
+			$result = array_merge($result, [urldecode($scriptName)]);
 		}
 
-		return $find;
-	}
-
-	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
-	{
-		$params = [
-			'FACTORY_OPTIONS' => [
-				'preserve' => false
-			]
-		];
-		return $params + parent::getComponentParameters($setup, $data);
+		return array_unique($result);
 	}
 }
