@@ -17,7 +17,8 @@
 }
 
 /*element*/
-.yapay-behavior--element{
+.yapay-behavior--element,
+.yapay-behavior--elementFast{
 	margin-top: 18px;
 }
 
