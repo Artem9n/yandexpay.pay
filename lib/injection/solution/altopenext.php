@@ -34,9 +34,11 @@ class AltopEnext extends Skeleton
 		return [
 			'DISPLAY' => Behavior\Display\Registry::BUTTON,
 			'HEIGHT_TYPE_BUTTON' => 'OWN',
+			'HEIGHT_VALUE_BUTTON' => 48,
 			'BORDER_RADIUS_TYPE_BUTTON' => 'OWN',
 			'BORDER_RADIUS_VALUE_BUTTON' => 4,
 			'WIDTH_BUTTON' => 'MAX',
+			'POSITION' => 'afterend',
 		];
 	}
 
@@ -44,9 +46,7 @@ class AltopEnext extends Skeleton
 	{
 		return [
 			'SELECTOR' => '.product-item-detail-pay-block .product-item-detail-button-container',
-			'POSITION' => 'afterend',
 			'IBLOCK' => $context['IBLOCK'],
-			'HEIGHT_VALUE_BUTTON' => 48,
 		] + $this->designDefaults();
 	}
 
@@ -54,6 +54,7 @@ class AltopEnext extends Skeleton
 	{
 		$elementSettings = $this->elementDefaults($context);
 		$elementSettings['QUERY_CHECK_PARAMS'] = 'action=quickViewFull';
+		$elementSettings['QUERY_ELEMENT_ID_PARAM'] = 'productId';
 
 		return $elementSettings;
 	}
@@ -61,30 +62,38 @@ class AltopEnext extends Skeleton
 	protected function basketDefaults(array $context = []) : array
 	{
 		$design = [
-				'SELECTOR' => '.bx_ordercart_order_pay .bx_ordercart_order_pay_right',
-				'HEIGHT_TYPE_BUTTON' => 'OWN',
-				'HEIGHT_VALUE_BUTTON' => 42,
-				'POSITION' => 'beforeend',
-			] + $this->designDefaults();
+			'HEIGHT_VALUE_BUTTON' => 42,
+			'POSITION' => 'beforeend',
+		] + $this->designDefaults();
 
-		$settings = Guide::getBitrixBasket($context);
+		$settings = [
+			'SELECTOR' => '.bx_ordercart_order_pay .bx_ordercart_order_pay_right',
+		] + Guide::getBitrixBasket($context);
 
 		return $design + $settings;
+	}
+
+	protected function basketFlyDefaults(array $context = []) : array
+	{
+		return [
+			'SELECTOR' => '.slide-panel-basket-footer',
+			'PATH' => '/ajax/slide_panel.php',
+			'HEIGHT_VALUE_BUTTON' => 42,
+			'POSITION' => 'beforeend',
+		] + $this->designDefaults();
 	}
 
 	protected function orderDefaults(array $context = []) : array
 	{
 		$design = [
-				'HEIGHT_TYPE_BUTTON' => 'OWN',
-				'HEIGHT_VALUE_BUTTON' => 46,
-				'POSITION' => 'beforeend',
-			] + $this->designDefaults();
+			'HEIGHT_VALUE_BUTTON' => 42,
+			'POSITION' => 'beforeend',
+		] + $this->designDefaults();
 
 		$settings = Guide::getBitrixOrder($context);
 
 		return $design + $settings;
 	}
-
 
 	public function getDefaults(array $context = []) : array
 	{
@@ -92,6 +101,7 @@ class AltopEnext extends Skeleton
 			Behavior\Registry::ELEMENT => $this->elementDefaults($context),
 			Behavior\Registry::ELEMENT_FAST => $this->elementFastDefaults($context),
 			Behavior\Registry::BASKET => $this->basketDefaults($context),
+			Behavior\Registry::BASKET_FLY => $this->basketFlyDefaults($context),
 			Behavior\Registry::ORDER => $this->orderDefaults($context)
 		];
 	}
