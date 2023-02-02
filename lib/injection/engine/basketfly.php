@@ -1,19 +1,26 @@
 <?php
 namespace YandexPay\Pay\Injection\Engine;
 
-use YandexPay\Pay\Injection;
-
 class BasketFly extends AbstractEngine
 {
 	protected static $widgetContent;
 
 	public static function onProlog(int $injectionId, array $settings) : void
 	{
-		if (!static::testRequest()) { return; }
+		if (!static::testShow($settings)) { return; }
 
 		if (!isset($settings['PATH']) || !static::testUrl($settings['PATH'])) { return; }
 
-		static::$widgetContent = static::render($injectionId, ['SITE_ID' => $settings['SITE_ID']], $settings['RENDER'] ?? self::RENDER_RETURN);
+		[ $componentParameters, $solutionParameters ] = static::getRenderParameters(
+			$injectionId, [
+				'SITE_ID' => $settings['SITE_ID'],
+				'FACTORY_OPTIONS' => [
+					'preserve' => false
+				]
+			]
+		);
+
+		static::$widgetContent = static::render($componentParameters, $solutionParameters['RENDER'] ?? self::RENDER_RETURN);
 	}
 
 	public static function onEndBufferContent(int $injectionId, array $settings, string &$content) : void
@@ -21,6 +28,11 @@ class BasketFly extends AbstractEngine
 		if ((string)static::$widgetContent === '' || mb_strpos($content, 'YandexPay') !== false) { return; }
 
 		$content .= static::$widgetContent;
+	}
+
+	protected static function testShow(array $settings) : bool
+	{
+		return (string)static::$widgetContent === '' && parent::testShow($settings);
 	}
 
 	protected static function testRequest() : bool
@@ -44,16 +56,6 @@ class BasketFly extends AbstractEngine
 			$result = array_merge($result, [urldecode($scriptName)]);
 		}
 
-		return $result;
-	}
-
-	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
-	{
-		$params = [
-			'FACTORY_OPTIONS' => [
-				'preserve' => false
-			]
-		];
-		return $params + parent::getComponentParameters($setup, $data);
+		return array_unique($result);
 	}
 }

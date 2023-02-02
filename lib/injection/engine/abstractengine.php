@@ -142,24 +142,18 @@ abstract class AbstractEngine extends Event\Base
 		{
 			if ($url === null) { continue; }
 
-			$url = trim($url);
-
 			if ($result) { break; }
 
-			foreach ($parts as $path)
+			$url = trim($url);
+			$url = static::normalize($url);
+
+			foreach ($parts as $part)
 			{
-				$path = trim($path);
+				$part = trim($part);
 
-				if ($url === $path)
-				{
-					$result = true;
-					break;
-				}
-
-				$url = static::normalize($url);
-				$matched = static::isPathRegexp($path)
-					? static::testPathRegexp($path, $url)
-					: $path === $url;
+				$matched = static::isPathRegexp($part)
+					? static::testPathRegexp($part, $url)
+					: $part === $url;
 
 				if ($matched)
 				{

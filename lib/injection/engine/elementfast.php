@@ -1,8 +1,6 @@
 <?php
 namespace YandexPay\Pay\Injection\Engine;
 
-use Bitrix\Main\Component\ParameterSigner;
-use YandexPay\Pay\Injection;
 use YandexPay\Pay\Utils;
 
 class ElementFast extends Element
@@ -12,7 +10,7 @@ class ElementFast extends Element
 
 	public static function OnProlog(int $injectionId, array $settings) : void
 	{
-		if (!static::testRequest() || !static::testQuery($settings)) { return; }
+		if (!static::testShow($settings)) { return; }
 
 		static::$elementId = static::findProduct($settings);
 
@@ -20,7 +18,15 @@ class ElementFast extends Element
 
 		Element::disable();
 
-		static::$widgetContent = static::render($injectionId, ['SITE_ID' => $settings['SITE_ID'], 'PRODUCT_ID' => static::$elementId ], $settings['RENDER'] ?? self::RENDER_RETURN);
+		[ $componentParameters, $solutionParameters ] = static::getRenderParameters($injectionId, [
+			'SITE_ID' => $settings['SITE_ID'],
+			'PRODUCT_ID' => static::$elementId,
+			'FACTORY_OPTIONS' => [
+				'preserve' => false
+			]
+		]);
+
+		static::$widgetContent = static::render($componentParameters, $solutionParameters['RENDER'] ?? self::RENDER_RETURN);
 	}
 
 	public static function onEndBufferContent(int $injectionId, array $settings, string &$content) : void
@@ -28,6 +34,12 @@ class ElementFast extends Element
 		if ((string)static::$widgetContent === '' || mb_strpos($content, 'YandexPay') !== false) { return; }
 
 		$content .= static::$widgetContent;
+	}
+
+	protected static function testShow(array $settings) : bool
+	{
+		return (string)static::$widgetContent === ''
+			&& (parent::testShow($settings) && static::testQuery($settings));
 	}
 
 	protected static function testQuery(array $settings = []) : bool
@@ -73,16 +85,6 @@ class ElementFast extends Element
 			!$request->isAdminSection()
 			&& $request->isAjaxRequest()
 		);
-	}
-
-	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
-	{
-		$params = [
-			'FACTORY_OPTIONS' => [
-				'preserve' => false
-			]
-		];
-		return $params + parent::getComponentParameters($setup, $data);
 	}
 
 	protected static function getUrlParamValue(string $param)

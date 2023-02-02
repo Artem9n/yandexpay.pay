@@ -9,33 +9,32 @@ class Order extends AbstractEngine
 {
 	public static function onEpilog(int $injectionId, array $settings) : void
 	{
-		if (!static::testRequest()) { return; }
+		if (!static::testShow($settings)) { return; }
 
 		if (!isset($settings['PATH']) || !static::testUrl($settings['PATH'])) { return; }
 
-		static::render($injectionId, ['SITE_ID' => $settings['SITE_ID']]);
+		[ $componentParameters ] = static::getRenderParameters($injectionId, ['SITE_ID' => $settings['SITE_ID']]);
+
+		static::render($componentParameters);
 	}
 
-	/*protected static function isOrderPath(string $path) : bool
+	protected static function getUrlVariants() : array
 	{
-		$url = static::getUrlVariants();
+		$variants = parent::getUrlVariants();
 
-		foreach (static::getUrlVariants() as $urlVariant)
+		foreach ($variants as $url)
 		{
-
+			if (static::isOrderId($url))
+			{
+				return [];
+			}
 		}
 
-		if ($url === null || static::isOrderId($url)) { return false; }
-
-		if ($url === $path) { return true; }
-
-		$url = static::normalize($url);
-
-		return $path === $url;
+		return $variants;
 	}
 
 	protected static function isOrderId(string $url) : bool
 	{
 		return mb_strpos($url, 'ORDER_ID') !== false;
-	}*/
+	}
 }
