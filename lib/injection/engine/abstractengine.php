@@ -9,10 +9,9 @@ use YandexPay\Pay\Injection;
 
 abstract class AbstractEngine extends Event\Base
 {
-	protected const RENDER_ASSETS = 'assets';
-	protected const RENDER_RETURN = 'return';
-
-	protected static $handlerDisallowYaPay = false;
+	public const RENDER_ASSETS = 'assets';
+	public const RENDER_RETURN = 'return';
+	public const RENDER_OUTPUT = 'output';
 
 	protected static function loadModule(string $name) : void
 	{
@@ -20,6 +19,15 @@ abstract class AbstractEngine extends Event\Base
 		{
 			throw new Main\SystemException(sprintf('missing %s module', $name));
 		}
+	}
+
+	protected static function testShow(array $settings) : bool
+	{
+		return (
+			SITE_ID === $settings['SITE_ID']
+			&& static::testRequest()
+			&& static::testRender($settings)
+		);
 	}
 
 	protected static function testRequest() : bool
@@ -32,39 +40,71 @@ abstract class AbstractEngine extends Event\Base
 		);
 	}
 
+	protected static function getRenderParameters(int $injectionId, array $data = []) : array
+	{
+		$injection = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
+		$injection->fill();
+
+		$behavior = $injection->wakeupOptions();
+
+		Assert::typeOf($behavior, Injection\Behavior\BehaviorInterface::class, 'behavior');
+
+		$display = $behavior->getDisplay();
+
+		$solutionName = $injection->getTrading()->wakeupOptions()->getSolution();
+		$solutionParameters = [];
+
+		if ($solutionName !== null)
+		{
+			$solution = Injection\Solution\Registry::getInstance($solutionName);
+			$solutionParameters = $solution->eventSettings($behavior);
+		}
+
+		$componentParameters = $data + [
+			'MODE' => $behavior->getMode(),
+			'SELECTOR' => $behavior->getSelector(),
+			'POSITION' => $behavior->getPosition(),
+			'TRADING_ID' => $injection->getTradingId(),
+			'DISPLAY_TYPE' => $display->getType(),
+			'DISPLAY_PARAMETERS' => $display->getWidgetParameters(),
+			'USE_DIVIDER' => $behavior->useDivider(),
+			'TEXT_DIVIDER' => $behavior->textDivider(),
+			'JS_CONTENT' => $behavior->getJsContent(),
+			'CSS_CONTENT' => $behavior->getCssContent(),
+		];
+
+		return [ $componentParameters, $solutionParameters ];
+	}
+
 	protected static function getRequest()
 	{
 		return Main\Context::getCurrent()->getRequest();
 	}
 
-	protected static function render(int $injectionId, array $data = [], $mode = self::RENDER_ASSETS) : string
+	protected static function render(array $componentParameters, $mode = self::RENDER_ASSETS) : string
 	{
 		global $APPLICATION;
 
-		if (SITE_ID !== $data['SITE_ID']) { return ''; }
-
-		if (!static::resolveRender($data)) { return ''; }
-
-		$setup = Injection\Setup\Model::wakeUp(['ID' => $injectionId]);
-		$setup->fill();
-
-		$parameters = static::getComponentParameters($setup, $data);
 		$contents = '';
 
 		if ($mode === self::RENDER_ASSETS)
 		{
-			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $componentParameters, false);
 			Main\Page\Asset::getInstance()->addString($contents, false, Main\Page\AssetLocation::AFTER_JS);
 		}
 		else if ($mode === self::RENDER_RETURN)
 		{
-			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $parameters, false);
+			$contents = $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $componentParameters, false);
+		}
+		else if ($mode === self::RENDER_OUTPUT)
+		{
+			echo $APPLICATION->IncludeComponent('yandexpay.pay:button', '', $componentParameters, false);
 		}
 
 		return $contents;
 	}
 
-	protected static function resolveRender(array $parameters) : bool
+	protected static function testRender(array $parameters) : bool
 	{
 		$event = new Main\Event(Config::getModuleName(), 'onRenderYandexPay', $parameters);
 		$event->send();
@@ -81,54 +121,54 @@ abstract class AbstractEngine extends Event\Base
 		return true;
 	}
 
-	protected static function getComponentParameters(Injection\Setup\Model $setup, array $data = []) : array
-	{
-		/** @var Injection\Behavior\AbstractBehavior $options */
-		$options = $setup->wakeupOptions();
-
-		Assert::typeOf($options, Injection\Behavior\BehaviorInterface::class, 'options');
-
-		$display = $options->getDisplay();
-
-		return $data + [
-			'MODE' => $options->getMode(),
-			'SELECTOR' => $options->getSelector(),
-			'POSITION' => $options->getPosition(),
-			'TRADING_ID' => $setup->getTradingId(),
-			'DISPLAY_TYPE' => $display->getType(),
-			'DISPLAY_PARAMETERS' => $display->getWidgetParameters(),
-			'USE_DIVIDER' => $options->useDivider(),
-			'TEXT_DIVIDER' => $options->textDivider(),
-			'JS_CONTENT' => $options->getJsContent(),
-			'CSS_CONTENT' => $options->getCssContent(),
-		];
-	}
-
-	protected static function getUrl() : ?string
+	protected static function getUrlVariants() : array
 	{
 		$url = Main\Context::getCurrent()->getRequest()->getRequestUri();
 
-		return $url !== null ? urldecode($url) : null;
+		if ($url === null) { return []; }
+
+		return [ urldecode($url) ];
 	}
 
 	protected static function testUrl(string $path) : bool
 	{
-		$url = static::getUrl();
+		$result = false;
 
-		if ($url === null) { return false; }
+		$parts = explode(PHP_EOL, $path);
 
-		if ($url === $path) { return true; }
+		if (empty($parts)) { return false; }
 
-		$url = static::normalize($url);
+		foreach (static::getUrlVariants() as $url)
+		{
+			if ($url === null) { continue; }
 
-		if (static::isPathRegexp($path)) { return static::testPathRegexp($path, $url); }
+			if ($result) { break; }
 
-		return $path === $url;
+			$url = trim($url);
+			$url = static::normalize($url);
+
+			foreach ($parts as $part)
+			{
+				$part = trim($part);
+
+				$matched = static::isPathRegexp($part)
+					? static::testPathRegexp($part, $url)
+					: $part === $url;
+
+				if ($matched)
+				{
+					$result = true;
+					break;
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	protected static function isPathRegexp(string $path) : bool
 	{
-		return mb_strpos($path, '*');
+		return mb_strpos($path, '*') !== false;
 	}
 
 	protected static function testPathRegexp(string $path, string $url) : bool

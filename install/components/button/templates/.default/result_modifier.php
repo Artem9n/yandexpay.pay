@@ -31,7 +31,7 @@ else
 // widget index
 
 $arResult['WIDGET_INDEX'] = (int)$APPLICATION->GetPageProperty('yandexpay_widget_index');
-$arResult['CONTAINER_ID'] = 'yandexpay' . ($arResult['WIDGET_INDEX'] > 0 ? '-' . $arResult['WIDGET_INDEX'] : '');
+$arResult['CONTAINER_ID'] = sprintf('yandexpay-%s', $arResult['PARAMS']['mode']) . ($arResult['WIDGET_INDEX'] > 0 ? '-' . $arResult['WIDGET_INDEX'] : '');
 
 $APPLICATION->SetPageProperty('yandexpay_widget_index', ++$arResult['WIDGET_INDEX']);
 
