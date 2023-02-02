@@ -1,13 +1,16 @@
 <?php
-namespace YandexPay\Pay\Injection\Solution;
+namespace YandexPay\Pay\Injection\Solution\Aspro;
 
-use Bitrix\Main\Loader;
+use Bitrix\Main;
+use YandexPay\Pay\Injection\Solution;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Injection\Behavior;
 
-class Aspro extends Skeleton
+class Lite extends Base
 {
 	use Concerns\HasMessage;
+
+	protected $moduleName = 'aspro.lite';
 
 	public function getTitle() : string
 	{
@@ -16,17 +19,25 @@ class Aspro extends Skeleton
 
 	public function getType() : string
 	{
-		return 'Aspro';
+		return Solution\Registry::ASPRO_LITE;
 	}
 
 	public function isMatch(array $context = []) : bool
 	{
-		return Utils::matchTemplates('aspro', $context);
+		$result = false;
+
+		if (Main\ModuleManager::isModuleInstalled('aspro.lite'))
+		{
+			static::$isMatch = true;
+			$result = true;
+		}
+
+		return $result;
 	}
 
 	public function getOrderPath(array $context = []) : string
 	{
-		return Guide::getBitrixOrderPath($context, '/order/');
+		return Solution\Guide::getBitrixOrderPath($context, '/order/');
 	}
 
 	protected function designDefaults() : array
@@ -34,9 +45,9 @@ class Aspro extends Skeleton
 		return [
 			'DISPLAY' => Behavior\Display\Registry::BUTTON,
 			'HEIGHT_TYPE_BUTTON' => 'OWN',
-			'HEIGHT_VALUE_BUTTON' => 49,
+			'HEIGHT_VALUE_BUTTON' => 47,
 			'BORDER_RADIUS_TYPE_BUTTON' => 'OWN',
-			'BORDER_RADIUS_VALUE_BUTTON' => 3,
+			'BORDER_RADIUS_VALUE_BUTTON' => 8,
 			'USE_DIVIDER' => true,
 		];
 	}
@@ -45,16 +56,8 @@ class Aspro extends Skeleton
 	{
 		$design = $this->designDefaults();
 
-		$selectors = implode(', ', [
-			'.buy_block .offer_buy_block',
-			'.buy_block .wrapp-one-click',
-			'.buy_block .wrapp_one_click',
-			'.buy_block .counter_wrapp',
-			'.buy_block .buttons',
-		]);
-
 		$settings = [
-			'SELECTOR' => $selectors,
+			'SELECTOR' => '.buy_block .buttons',
 			'POSITION' => 'afterend',
 			'IBLOCK' => $context['IBLOCK'],
 			'WIDTH_BUTTON' => 'MAX',
@@ -66,6 +69,7 @@ class Aspro extends Skeleton
 	protected function elementFastDefaults(array $context = []) : array
 	{
 		$elementSettings = $this->elementDefaults($context);
+		$elementSettings['SELECTOR'] = '#fast_view_item .buttons';
 		$elementSettings['QUERY_CHECK_PARAMS'] = 'FAST_VIEW=Y';
 
 		return $elementSettings;
@@ -73,12 +77,16 @@ class Aspro extends Skeleton
 
 	protected function basketDefaults(array $context = []) : array
 	{
-		return $this->designDefaults() + Guide::getBitrixBasket($context, '/basket/');
+		$design = [
+				'WIDTH_BUTTON' => 'MAX',
+			] + $this->designDefaults();
+
+		return $design + Solution\Guide::getBitrixBasket($context, '/basket/');
 	}
 
 	protected function orderDefaults(array $context = []) : array
 	{
-		return $this->designDefaults() + Guide::getBitrixOrder($context, '/order/');
+		return $this->designDefaults() + Solution\Guide::getBitrixOrder($context, '/order/');
 	}
 
 	protected function basketFlyDefaults(array $context = []) : array

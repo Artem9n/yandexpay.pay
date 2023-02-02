@@ -35,9 +35,15 @@ class BasketFly extends Basket
 		return Engine\BasketFly::class;
 	}
 
+	public function getMode() : string
+	{
+		return Registry::BASKET_FLY;
+	}
+
 	protected function events() : array
 	{
 		return [
+			['main', 'onProlog'],
 			['main', 'onEndBufferContent'],
 		];
 	}

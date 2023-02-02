@@ -22,6 +22,23 @@ class Registry
 		];
 	}
 
+	public static function resolveModeElement() : array
+	{
+		return array_flip([
+			static::ELEMENT,
+			static::ELEMENT_FAST,
+		]);
+	}
+
+	public static function resolveModeBasket() : array
+	{
+		return array_flip([
+			static::BASKET,
+			static::BASKET_FLY,
+			static::ORDER,
+		]);
+	}
+
 	public static function getInstance(string $type) : BehaviorInterface
 	{
 		$className = static::makeClassName($type);
