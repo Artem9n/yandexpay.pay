@@ -1,11 +1,14 @@
-.bx-yapay-drawer-container{
-	margin-top: 10px;
+.bx-yapay-drawer-container {
 	margin-bottom: 0;
 }
 
 /*basket*/
 .yapay-behavior--basket{
-	text-align: right;
+	margin-top: 12px;
+}
+
+/*basketFly*/
+.yapay-behavior--basketFly{
 	margin-top: 12px;
 }
 
@@ -16,16 +19,17 @@
 	margin-top: 0;
 }
 
-.fastview-popup .yapay-behavior--element{
-	margin-left: 0;
-	margin-top: 6px;
-}
-
-@media (max-width: 1550px){
+@media (max-width: 1566px){
 	.yapay-behavior--element{
 		margin-top: 12px;
 		margin-left: 0;
+		width: 100%;
 	}
+}
+
+/*elementFast*/
+.yapay-behavior--elementFast{
+	margin-top: 6px;
 }
 
 /*order*/
