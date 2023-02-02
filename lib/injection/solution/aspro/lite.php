@@ -45,9 +45,9 @@ class Lite extends Base
 		return [
 			'DISPLAY' => Behavior\Display\Registry::BUTTON,
 			'HEIGHT_TYPE_BUTTON' => 'OWN',
-			'HEIGHT_VALUE_BUTTON' => 49,
+			'HEIGHT_VALUE_BUTTON' => 47,
 			'BORDER_RADIUS_TYPE_BUTTON' => 'OWN',
-			'BORDER_RADIUS_VALUE_BUTTON' => 3,
+			'BORDER_RADIUS_VALUE_BUTTON' => 8,
 			'USE_DIVIDER' => true,
 		];
 	}
@@ -56,16 +56,8 @@ class Lite extends Base
 	{
 		$design = $this->designDefaults();
 
-		$selectors = implode(', ', [
-			'.buy_block .offer_buy_block',
-			'.buy_block .wrapp-one-click',
-			'.buy_block .wrapp_one_click',
-			'.buy_block .counter_wrapp',
-			'.buy_block .buttons',
-		]);
-
 		$settings = [
-			'SELECTOR' => $selectors,
+			'SELECTOR' => '.buy_block .buttons',
 			'POSITION' => 'afterend',
 			'IBLOCK' => $context['IBLOCK'],
 			'WIDTH_BUTTON' => 'MAX',
@@ -77,6 +69,7 @@ class Lite extends Base
 	protected function elementFastDefaults(array $context = []) : array
 	{
 		$elementSettings = $this->elementDefaults($context);
+		$elementSettings['SELECTOR'] = '#fast_view_item .buttons';
 		$elementSettings['QUERY_CHECK_PARAMS'] = 'FAST_VIEW=Y';
 
 		return $elementSettings;
@@ -84,7 +77,11 @@ class Lite extends Base
 
 	protected function basketDefaults(array $context = []) : array
 	{
-		return $this->designDefaults() + Solution\Guide::getBitrixBasket($context, '/basket/');
+		$design = [
+				'WIDTH_BUTTON' => 'MAX',
+			] + $this->designDefaults();
+
+		return $design + Solution\Guide::getBitrixBasket($context, '/basket/');
 	}
 
 	protected function orderDefaults(array $context = []) : array
