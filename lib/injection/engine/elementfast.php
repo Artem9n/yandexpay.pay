@@ -80,7 +80,7 @@ class ElementFast extends Element
 		return is_numeric($parameter) ? (int)$parameter : null;
 	}
 
-	protected static function testRequest() : bool
+	protected static function testRequest(array $settings = []) : bool
 	{
 		$request = static::getRequest();
 

@@ -25,17 +25,18 @@ abstract class AbstractEngine extends Event\Base
 	{
 		return (
 			SITE_ID === $settings['SITE_ID']
-			&& static::testRequest()
+			&& static::testRequest($settings)
 			&& static::testRender($settings)
 		);
 	}
 
-	protected static function testRequest() : bool
+	protected static function testRequest(array $settings = []) : bool
 	{
 		$request = static::getRequest();
 
 		return (
 			!$request->isAdminSection()
+			&& !$request->isAjaxRequest()
 			&& mb_strpos($request->getRequestedPage(), '/bitrix/') !== 0
 		);
 	}

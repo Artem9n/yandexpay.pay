@@ -42,6 +42,21 @@ class BasketFly extends AbstractEngine
 		return (string)static::$widgetContent === '' && parent::testShow($settings);
 	}
 
+	protected static function testRequest(array $settings = []) : bool
+	{
+		$request = static::getRequest();
+
+		if (static::isPathRegexp($settings['PATH']))
+		{
+			return parent::testRequest($settings);
+		}
+
+		return (
+			!$request->isAdminSection()
+			&& $request->isAjaxRequest()
+		);
+	}
+
 	protected static function getUrlVariants() : array
 	{
 		$result = parent::getUrlVariants();
