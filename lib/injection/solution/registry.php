@@ -10,7 +10,6 @@ class Registry
 	public const ASPRO_DEF = 'Aspro.Base';
 	public const ASPRO_MAX = 'Aspro.Max';
 	public const ASPRO_LITE = 'Aspro.Lite';
-	public const ASPRO_CORP = 'Aspro.Corp';
 	public const DELUXE = 'Deluxe';
 	public const NEXTYPE_MAGNET= 'NextypeMagnet';
 
@@ -22,7 +21,6 @@ class Registry
 			static::ALTOP_ENEXT,
 			static::ASPRO_MAX,
 			static::ASPRO_LITE,
-			static::ASPRO_CORP,
 			static::ASPRO_DEF,
 			static::ESHOP_BOOTSTRAP,
 		];

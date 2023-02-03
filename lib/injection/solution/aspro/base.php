@@ -1,7 +1,6 @@
 <?php
 namespace YandexPay\Pay\Injection\Solution\Aspro;
 
-use Bitrix\Main;
 use YandexPay\Pay\Injection\Solution;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Injection\Behavior;
@@ -29,7 +28,7 @@ class Base extends Solution\Skeleton
 
 	public function getOrderPath(array $context = []) : string
 	{
-		return Solution\Guide::getBitrixOrderPath($context, '/order/');
+		return Solution\Guide::path($context, '/order/');
 	}
 
 	protected function designDefaults() : array
@@ -40,6 +39,7 @@ class Base extends Solution\Skeleton
 			'HEIGHT_VALUE_BUTTON' => 49,
 			'BORDER_RADIUS_TYPE_BUTTON' => 'OWN',
 			'BORDER_RADIUS_VALUE_BUTTON' => 3,
+			'WIDTH_BUTTON' => 'MAX',
 			'USE_DIVIDER' => true,
 		];
 	}
@@ -60,7 +60,6 @@ class Base extends Solution\Skeleton
 			'SELECTOR' => $selectors,
 			'POSITION' => 'afterend',
 			'IBLOCK' => $context['IBLOCK'],
-			'WIDTH_BUTTON' => 'MAX',
 		];
 
 		return $design + $settings;
@@ -68,15 +67,23 @@ class Base extends Solution\Skeleton
 
 	protected function elementFastDefaults(array $context = []) : array
 	{
-		$elementSettings = $this->elementDefaults($context);
-		$elementSettings['QUERY_CHECK_PARAMS'] = 'FAST_VIEW=Y';
+		$selectors = implode(', ', [
+			'#fast_view_item .buy_block .offer_buy_block',
+			'#fast_view_item .buy_block .wrapp-one-click',
+			'#fast_view_item .buy_block .wrapp_one_click',
+			'#fast_view_item .buy_block .counter_wrapp',
+			'#fast_view_item .buy_block .buttons',
+		]);
 
-		return $elementSettings;
+		return [
+			'QUERY_CHECK_PARAMS' => 'FAST_VIEW=Y',
+			'SELECTOR' => $selectors
+		] + $this->elementDefaults($context);
 	}
 
 	protected function basketDefaults(array $context = []) : array
 	{
-		return $this->designDefaults() + Solution\Guide::getBitrixBasket($context, '/basket/');
+		return  Solution\Guide::getBitrixBasket($context, '/basket/') + $this->designDefaults();
 	}
 
 	protected function orderDefaults(array $context = []) : array
@@ -93,21 +100,17 @@ class Base extends Solution\Skeleton
 
 		foreach ($paths as &$path)
 		{
-			$dir = $context['SITE_DIR'] ?? '';
-			$dir = rtrim($dir, '/');
-			$path = $dir . $path;
+			$path = Solution\Guide::path($context, $path);
 		}
 		unset($path);
 
 		$settings = [
 			'SELECTOR' => '.header-cart.fly .basket_back, .basket_hover_block .basket_wrap .buttons',
-			'USE_DIVIDER' => false,
-			'WIDTH_BUTTON' => 'MAX',
 			'PATH' => implode(PHP_EOL, $paths),
 			'POSITION' => 'afterend',
 		];
 
-		$design = $this->designDefaults();
+		$design = ['USE_DIVIDER' => false] + $this->designDefaults();
 
 		return $settings + $design;
 	}

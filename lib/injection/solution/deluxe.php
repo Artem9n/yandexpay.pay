@@ -25,7 +25,7 @@ class Deluxe extends Skeleton
 
 	public function getOrderPath(array $context = []) : string
 	{
-		return Guide::getBitrixOrderPath($context, '/personal/cart/order/');
+		return Guide::path($context, '/personal/cart/order/');
 	}
 
 	protected function designDefaults() : array
@@ -40,14 +40,15 @@ class Deluxe extends Skeleton
 
 	protected function elementDesktopDefaults(array $context = []) : array
 	{
-		$design = $this->designDefaults();
+		$design = [
+			'WIDTH_BUTTON' => 'OWN',
+			'WIDTH_VALUE_BUTTON' => 220
+		] + $this->designDefaults();
 
 		$settings = [
 			'SELECTOR' => '.mobileButtonsContainer:media(min-width: 1101px)',
 			'POSITION' => 'beforeend',
 			'IBLOCK' => $context['IBLOCK'],
-			'WIDTH_BUTTON' => 'OWN',
-			'WIDTH_VALUE_BUTTON' => 220,
 		];
 
 		return $settings + $design;
@@ -83,12 +84,11 @@ class Deluxe extends Skeleton
 
 	protected function basketDefaults(array $context = []) : array
 	{
-		$design = $this->designDefaults();
+		$design = [
+			'WIDTH_BUTTON' => 'AUTO',
+		] + $this->designDefaults();
 
-		$design['WIDTH_BUTTON'] = 'AUTO';
-		$design['SELECTOR'] = '.goToOrder';
-
-		return $design + Guide::getBitrixBasket($context);
+		return $design + ['SELECTOR' => '.goToOrder'] + Guide::getBitrixBasket($context);
 	}
 
 	protected function orderDefaults(array $context = []) : array

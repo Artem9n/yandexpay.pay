@@ -26,7 +26,7 @@ class AltopEnext extends Skeleton
 
 	public function getOrderPath(array $context = []) : string
 	{
-		return Guide::getBitrixOrderPath($context);
+		return Guide::path($context);
 	}
 
 	protected function designDefaults() : array
@@ -55,6 +55,7 @@ class AltopEnext extends Skeleton
 		$elementSettings = $this->elementDefaults($context);
 		$elementSettings['QUERY_CHECK_PARAMS'] = 'action=quickViewFull';
 		$elementSettings['QUERY_ELEMENT_ID_PARAM'] = 'productId';
+		$elementSettings['SELECTOR'] = '.popup-panel .product-item-detail-pay-block .product-item-detail-button-container';
 
 		return $elementSettings;
 	}
@@ -77,7 +78,7 @@ class AltopEnext extends Skeleton
 	{
 		return [
 			'SELECTOR' => '.slide-panel-basket-footer',
-			'PATH' => '/ajax/slide_panel.php',
+			'PATH' => Guide::path($context, '/ajax/slide_panel.php'),
 			'HEIGHT_VALUE_BUTTON' => 42,
 			'POSITION' => 'beforeend',
 		] + $this->designDefaults();

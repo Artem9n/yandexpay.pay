@@ -27,7 +27,8 @@ class Guide
 		];
 	}
 
-	public static function path(array $context = [], string $path = '/personal/order/make/') : string {
+	public static function path(array $context = [], string $path = '/personal/order/make/') : string
+	{
 		$dir = $context['SITE_DIR'] ?? '';
 		$dir = rtrim($dir, '/');
 
