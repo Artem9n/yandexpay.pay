@@ -27,22 +27,19 @@ class BasketFly extends AbstractEngine
 	{
 		if ((string)static::$widgetContent === '' || mb_strpos($content, 'YandexPay') !== false) { return; }
 
+		if (!static::isHtml($content)) { return; }
+
 		$content .= static::$widgetContent;
+	}
+
+	protected static function isHtml(string $content)
+	{
+		return preg_match('/^\s*</m', $content); // first symbol is tag opener
 	}
 
 	protected static function testShow(array $settings) : bool
 	{
 		return (string)static::$widgetContent === '' && parent::testShow($settings);
-	}
-
-	protected static function testRequest() : bool
-	{
-		$request = static::getRequest();
-
-		return (
-			!$request->isAdminSection()
-			&& $request->isAjaxRequest()
-		);
 	}
 
 	protected static function getUrlVariants() : array
