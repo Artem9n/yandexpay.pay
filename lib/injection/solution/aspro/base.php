@@ -104,8 +104,14 @@ class Base extends Solution\Skeleton
 		}
 		unset($path);
 
+		$selectors = implode(', ', [
+			'.header-cart.fly .buttons .basket_back',
+			'.header-cart.fly .buttons .wrap_button',
+			'.basket_hover_block .basket_wrap .buttons',
+		]);
+
 		$settings = [
-			'SELECTOR' => '.header-cart.fly .basket_back, .basket_hover_block .basket_wrap .buttons',
+			'SELECTOR' => $selectors,
 			'PATH' => implode(PHP_EOL, $paths),
 			'POSITION' => 'afterend',
 		];
