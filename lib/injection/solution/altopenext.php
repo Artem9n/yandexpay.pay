@@ -52,10 +52,15 @@ class AltopEnext extends Skeleton
 
 	protected function elementFastDefaults(array $context = []) : array
 	{
+		$selectors = implode(', ', [
+			'.popup-panel .product-item-detail-article-button-container',
+			'.popup-panel .product-item-detail-pay-block .product-item-detail-button-container',
+		]);
+
 		$elementSettings = $this->elementDefaults($context);
-		$elementSettings['QUERY_CHECK_PARAMS'] = 'action=quickViewFull';
+		$elementSettings['QUERY_CHECK_PARAMS'] = 'action=quickViewFull&action=quickView';
 		$elementSettings['QUERY_ELEMENT_ID_PARAM'] = 'productId';
-		$elementSettings['SELECTOR'] = '.popup-panel .product-item-detail-pay-block .product-item-detail-button-container';
+		$elementSettings['SELECTOR'] = $selectors;
 
 		return $elementSettings;
 	}

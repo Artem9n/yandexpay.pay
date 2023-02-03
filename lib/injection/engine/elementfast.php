@@ -48,19 +48,22 @@ class ElementFast extends Element
 
 		if (empty($checkParamsString)) { return false; }
 
+		$result = false;
+
 		$checkParams = explode('&', $checkParamsString);
 
 		foreach ($checkParams as $param)
 		{
 			[$name, $value] = explode('=', $param);
 
-			if ($value === '' || static::getUrlParamValue($name) !== $value)
+			if ($value !== '' && static::getUrlParamValue($name) === $value)
 			{
-				return false;
+				$result = true;
+				break;
 			}
 		}
 
-		return true;
+		return $result;
 	}
 
 	protected static function findProduct(array $settings) : ?int
