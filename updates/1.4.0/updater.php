@@ -83,12 +83,17 @@ if (Main\ModuleManager::isModuleInstalled('yandexpay.pay'))
 
 				// new behavior aspro solution
 
+				$result['INJECTION'] = [];
+
+				foreach ($optionsValues['INJECTION'] as $value)
+				{
+					$result['INJECTION'][] = $value['ID'];
+				}
+
 				$newBehaviors = [
 					Injection\Behavior\Registry::BASKET_FLY,
 					Injection\Behavior\Registry::ELEMENT_FAST,
 				];
-
-				$result = [];
 
 				foreach ($newBehaviors as $behavior)
 				{
