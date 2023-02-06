@@ -2,10 +2,9 @@
 namespace YandexPay\Pay\Trading\Action\Rest\OrderWebhook\Stage;
 
 use Bitrix\Sale;
-use Bitrix\Main\Type;
+use Bitrix\Main;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
-use YandexPay\Pay\Trading\Action\Api;
 use YandexPay\Pay\Trading\Action\Reference\Exceptions\DtoProperty;
 use YandexPay\Pay\Trading\Action\Rest\OrderWebhook\Request;
 use YandexPay\Pay\Trading\Action\Rest\State;
@@ -38,7 +37,7 @@ class OrderPay
 		if ($status === null) { return; }
 
 		$datetime = new \DateTime($this->request->getEventTime());
-		$datetime->setTimezone((new Type\DateTime())->getTimeZone());
+		$datetime->setTimezone((new Main\Type\DateTime())->getTimeZone());
 
 		$orderStatusCapture = $state->handler->orderStatusCapture($state->payment);
 		$orderStatusHold = $state->handler->orderStatusHold($state->payment);
@@ -49,22 +48,20 @@ class OrderPay
 		$data = [
 			'PS_STATUS_CODE' => $status,
 			'PS_STATUS_DESCRIPTION' => $this->request->getEvent(),
-			'PS_RESPONSE_DATE' => new Type\DateTime($datetime->format('d.m.Y H:i:s'))
+			'PS_RESPONSE_DATE' => new Main\Type\DateTime($datetime->format('d.m.Y H:i:s'))
 		];
 
 		if ($status === EntitySale\Status::PAYMENT_STATUS_CAPTURE)
 		{
 			$data['PAID'] = 'Y';
 
-			if (!empty($orderStatusCapture))
+			if (!empty($orderStatusCapture) && $this->saleStatusOnPaid() === '')
 			{
 				$state->order->setField('STATUS_ID', $orderStatusCapture);
 			}
 		}
 		else if ($status === EntitySale\Status::PAYMENT_STATUS_AUTHORIZE)
 		{
-			$data['PAID'] = 'Y';
-
 			if (!empty($orderStatusHold))
 			{
 				$state->order->setField('STATUS_ID', $orderStatusHold);
@@ -108,6 +105,11 @@ class OrderPay
 		{
 			throw new DtoProperty(implode(', ', $resultPayment->getErrorMessages()));
 		}
+	}
+
+	protected function saleStatusOnPaid() : string
+	{
+		return Main\Config\Option::get('sale', 'status_on_paid');
 	}
 }
 

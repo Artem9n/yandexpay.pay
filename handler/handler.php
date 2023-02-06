@@ -19,6 +19,7 @@ use YandexPay\Pay\Ui\Admin\PaySystemEditPage;
 use YandexPay\Pay\Utils\Url;
 use YandexPay\Pay\Trading\Action\Api;
 use YandexPay\Pay\Trading\Setup as TradingSetup;
+use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
 Loader::includeModule('yandexpay.pay');
 
@@ -43,6 +44,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		$result = new PaySystem\ServiceResult();
 
+		if ($this->isPaymentAuthorized($payment)) { return $result; }
+
 		try
 		{
 			$this->resolvePaymentNumber($payment);
@@ -66,6 +69,13 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
         }
 
         return $result;
+	}
+
+	protected function isPaymentAuthorized(Payment $payment) : bool
+	{
+		$status = $payment->getField('PS_STATUS_CODE');
+
+		return $status === EntitySale\Status::PAYMENT_STATUS_AUTHORIZE;
 	}
 
 	protected function resolvePaymentNumber(Payment $payment) : void
