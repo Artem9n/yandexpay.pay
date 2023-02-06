@@ -96,7 +96,7 @@ class Order extends EntityReference\Order
 
 			if ($basket->count() === 0)
 			{
-				$result->addError(new Main\Error(self::getMessage('EMPTY_BASKET')));
+				$result->addError(new Main\Error(self::getMessage('EMPTY_BASKET'), 'EMPTY_BASKET'));
 			}
 		}
 		catch (Main\SystemException $exception)

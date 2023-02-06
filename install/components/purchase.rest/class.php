@@ -74,6 +74,11 @@ class PurchaseRest extends \CBitrixComponent
 			$this->logResponse($response, Psr\Log\LogLevel::ERROR);
 			$this->sendResponse($response);
 		}
+		catch (TradingAction\Reference\Exceptions\NotLog $exception)
+		{
+			$response = $this->makeExceptionResponse($exception, static::HTTP_STATUS_400);
+			$this->sendResponse($response);
+		}
 		catch (\Throwable $exception)
 		{
 			$response = $this->makeExceptionResponse($exception, static::HTTP_STATUS_500);
