@@ -85,9 +85,12 @@ if (Main\ModuleManager::isModuleInstalled('yandexpay.pay'))
 
 				$result['INJECTION'] = [];
 
-				foreach ($optionsValues['INJECTION'] as $value)
+				foreach ($optionsValues['INJECTION'] as $inject)
 				{
-					$result['INJECTION'][] = $value['ID'];
+					foreach ($inject as $value)
+					{
+						$result['INJECTION'][] = $value['ID'];
+					}
 				}
 
 				$newBehaviors = [
