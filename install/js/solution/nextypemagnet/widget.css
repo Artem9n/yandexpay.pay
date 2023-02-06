@@ -1,0 +1,38 @@
+.bx-yapay-drawer-container {
+	margin-bottom: 0;
+}
+
+/*basket*/
+.yapay-behavior--basket{
+	margin-top: 12px;
+}
+
+/*basketFly*/
+.yapay-behavior--basketFly{
+	margin-top: 12px;
+}
+
+/*element*/
+.yapay-behavior--element{
+	text-align: right;
+	margin-left: 12px;
+	margin-top: 0;
+}
+
+@media (max-width: 1566px){
+	.yapay-behavior--element{
+		margin-top: 12px;
+		margin-left: 0;
+		width: 100%;
+	}
+}
+
+/*elementFast*/
+.yapay-behavior--elementFast{
+	margin-top: 6px;
+}
+
+/*order*/
+.yapay-behavior--order{
+	margin-top: 29px;
+}

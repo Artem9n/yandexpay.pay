@@ -2,7 +2,7 @@
 
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_POSITION'] = 'Позиция добавляемой кнопки относительно селектора';
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_SELECTOR'] = 'Селектор, куда привязывать кнопку "Yandex Pay"';
-$MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_HELP_SELECTOR'] = 'Укажите css селектор (селекторы через ", "), куда будет привязана кнопка Yandex Pay.
+$MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_HELP_SELECTOR'] = 'Укажите css селектор (селекторы через <strong>", "</strong>)(запятую), куда будет привязана кнопка Yandex Pay.
 <br><br>Есть возможность настроить привязку для <strong>десктопа</strong> и <strong>мобильной</strong> версиях отображения, разные опции.<br><br>
 Создайте два шаблона, например "Карточка товара", укажите селекторы для разных версий отображения.<br><br>
 Пример "Карточки товара" мобильной версии: .ваш селектор<strong>:media(max-width: 700px)</strong><br>
@@ -23,6 +23,8 @@ $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_DISPLAY'] = 'Отображение'
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_HELP_DISPLAY'] = 'Внешний вид виджета/кнопки Yandex Pay может меняться в зависимости от текущего браузера, результата скоринга, 
 <br>авторизации на ya.ru, наличия аватара или привязанной банковской карты.';
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_USE_DIVIDER'] = 'Использовать разделитель';
+$MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_TEXT_DIVIDER'] = 'Текст разделителя';
+$MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_HELP_TEXT_DIVIDER'] = 'Укажите текст, который будет отображаться перед кнопкой/виджетом';
 
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_EXPERT_FIELDS'] = 'Экспертные настройки';
 $MESS['YANDEX_PAY_INJECTION_BEHAVIOR_ABSTRACT_BEHAVIOR_CSS'] = 'Css';

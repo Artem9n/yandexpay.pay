@@ -41,6 +41,10 @@ abstract class AbstractBehavior implements BehaviorInterface
 				'TYPE' => 'string',
 				'TITLE' => self::getMessage('SELECTOR'),
 				'MANDATORY' => 'Y',
+				'SETTINGS' => [
+					'ROWS' => 5,
+					'SIZE' => 25,
+				],
 			],
 			'POSITION' => [
 				'GROUP' => self::getMessage('GROUP_POSITION'),
@@ -55,6 +59,22 @@ abstract class AbstractBehavior implements BehaviorInterface
 				'NAME' => self::getMessage('USE_DIVIDER'),
 				'SETTINGS' => [
 					'DEFAULT_VALUE' => Ui\UserField\BooleanType::VALUE_FALSE,
+				],
+			],
+			'TEXT_DIVIDER' => [
+				'TYPE' => 'string',
+				'GROUP' => self::getMessage('GROUP_DECOR'),
+				'NAME' => self::getMessage('TEXT_DIVIDER'),
+				'HELP' => self::getMessage('HELP_TEXT_DIVIDER'),
+				'DEPEND' => [
+					'USE_DIVIDER' => [
+						'RULE' => Utils\Userfield\DependField::RULE_ANY,
+						'VALUE' => Ui\UserField\BooleanType::VALUE_TRUE,
+					],
+				],
+				'SETTINGS' => [
+					'ROWS' => 5,
+					'SIZE' => 25,
 				],
 			],
 			'DISPLAY' => [
@@ -256,6 +276,13 @@ abstract class AbstractBehavior implements BehaviorInterface
 		return (bool)$this->getValue('USE_DIVIDER');
 	}
 
+	public function textDivider() : ?string
+	{
+		$value = trim((string)$this->getValue('TEXT_DIVIDER'));
+
+		return $value !== '' ? $value : null;
+	}
+
 	public function getDisplay() : Display\IDisplay
 	{
 		if ($this->display === null)
@@ -295,14 +322,17 @@ abstract class AbstractBehavior implements BehaviorInterface
 		/** @var Engine\AbstractEngine $classEngine */
 		$classEngine = $this->getClassEngine();
 
-		$classEngine::register([
-			'module' => 'main',
-			'event' => 'onEpilog',
-			'arguments' => [
-				$injectionId,
-				$this->eventSettings(),
-			],
-		]);
+		foreach ($this->events() as [$module, $event])
+		{
+			$classEngine::register([
+				'module' => $module,
+				'event' => $event,
+				'arguments' => [
+					$injectionId,
+					$this->eventSettings(),
+				],
+			]);
+		}
 	}
 
 	public function uninstall(int $injectionId) : void
@@ -312,18 +342,28 @@ abstract class AbstractBehavior implements BehaviorInterface
 
 		try
 		{
-			$classEngine::unregister([
-				'module' => 'main',
-				'event' => 'onEpilog',
-				'arguments' => [
-					$injectionId,
-					$this->eventSettings(),
-				],
-			]);
+			foreach ($this->events() as [$module, $event])
+			{
+				$classEngine::unregister([
+					'module' => $module,
+					'event' => $event,
+					'arguments' => [
+						$injectionId,
+						$this->eventSettings(),
+					],
+				]);
+			}
 		}
 		catch (Main\SystemException $exception)
 		{
 			// nothing
 		}
+	}
+
+	protected function events() : array
+	{
+		return [
+			[ 'main', 'onEpilog' ],
+		];
 	}
 }

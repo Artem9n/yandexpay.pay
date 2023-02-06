@@ -1,0 +1,14 @@
+/*element*/
+
+@media screen and (max-width: 1101px), projection and (max-width: 1101px), tv and (max-width: 1101px), handheld and (max-width: 1101px) {
+	.yapay-behavior--element {
+		margin-top: 12px;
+	}
+}
+
+/*order*/
+
+.yapay-behavior--order {
+	margin-top: 12px;
+	margin-bottom: 0;
+}

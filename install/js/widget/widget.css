@@ -82,6 +82,7 @@
 	text-align: center;
 	padding-left: 15px;
 	padding-right: 15px;
+	overflow-wrap: anywhere;
 }
 
 .bx-yapay-divider__corner {
