@@ -87,9 +87,9 @@ if (Main\ModuleManager::isModuleInstalled('yandexpay.pay'))
 
 				foreach ($optionsValues['INJECTION'] as $inject)
 				{
-					foreach ($inject as $value)
+					foreach ($inject as $injectId)
 					{
-						$result['INJECTION'][] = $value['ID'];
+						$result['INJECTION'][] = $injectId;
 					}
 				}
 
