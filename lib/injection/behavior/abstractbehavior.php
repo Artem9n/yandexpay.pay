@@ -229,7 +229,7 @@ abstract class AbstractBehavior implements BehaviorInterface
 
 	public function getSelector() : string
 	{
-		return htmlspecialcharsback($this->requireValue('SELECTOR'));
+		return $this->requireValue('SELECTOR');
 	}
 
 	public function getJsContent() : ?string
