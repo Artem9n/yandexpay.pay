@@ -32,7 +32,22 @@ class Base extends AbstractAdapter
 
 	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
-		return $this->loadStores($bounds);
+		$result = [];
+		$storesByLocation = $this->loadStores($bounds);
+
+		if (empty($storesByLocation)) { return $result; }
+
+		$locationsIdsMap = $this->getLocationIdsByCodes(array_keys($storesByLocation));
+
+		foreach ($storesByLocation as $locationCode => $stores)
+		{
+			$locationId = $locationsIdsMap[$locationCode];
+			if (!isset($locationId)) { continue; }
+
+			$result[$locationId] = $stores;
+		}
+
+		return $result;
 	}
 
 	protected function getLocationIdsByCodes(array $locationsCodes) : array
@@ -60,20 +75,10 @@ class Base extends AbstractAdapter
 
 		$pickupList = \CBoxberry::methodExec('ListPoints', 36000, ['prepaid=1']);
 
+		if (empty($pickupList) || !empty(static::$pickupList)) { return $result; }
+
 		$metadata = new Data\Location\MetaData();
 		$finder = new Data\Location\Bounds($metadata);
-
-		$locations = $finder->search(
-			$bounds['sw']['latitude'],
-			$bounds['sw']['longitude'],
-			$bounds['ne']['latitude'],
-			$bounds['ne']['longitude']);
-
-		if (empty($locations)) { return $result; }
-
-		$locationsIdsMap = $this->getLocationIdsByCodes(array_keys($locations));
-
-		if (empty($pickupList) || !empty(static::$pickupList)) { return $result; }
 
 		foreach ($pickupList as $point)
 		{
@@ -84,13 +89,13 @@ class Base extends AbstractAdapter
 				&& $pointGps[1] <= $bounds['ne']['longitude']
 				&& $pointGps[1] >= $bounds['sw']['longitude'])
 			{
-				$locationCode = $finder->findClosestCity($locations, $pointGps[0], $pointGps[1]);
+				$locationCode = $finder->findClosestCity($pointGps[0], $pointGps[1]);
 
 				if ($locationCode === null) { continue; }
 
-				$locationId = $locationsIdsMap[$locationCode];
+				if (!isset($result[$locationCode])) { $result[$locationCode] = []; }
 
-				$result[$locationId][] = [
+				$result[$locationCode][] = [
 					'ID' => $point['Code'],
 					'ADDRESS' => $point['Address'] ?: $point['AddressReduce'],
 					'TITLE' => sprintf('%s (%s) ', 'Boxberry', $this->title),

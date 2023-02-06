@@ -3,15 +3,18 @@
 namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Site;
 
 use Bitrix\Main;
-use Bitrix\Catalog;
 use Bitrix\Sale;
+use Bitrix\Catalog;
 use Bitrix\Sale\Shipment;
+use YandexPay\Pay\Data;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 
 /** @property Sale\Delivery\Services\Configurable $service */
 class Store extends AbstractAdapter
 {
+	protected $locationsRestrict;
+
 	public function load() : bool
 	{
 		return true;
@@ -33,9 +36,13 @@ class Store extends AbstractAdapter
 
 		if (empty($stores)) { return []; }
 
+		$filterStoresByLocations = $this->filterStoresByLocations($stores, $service->getId());
+
+		if (!empty($filterStoresByLocations)) { return $filterStoresByLocations; }
+
 		$locationId = $this->getLocationId($service->getId());
 
-		return $this->combineStores($stores, $locationId);
+		return [$locationId => $stores];
 	}
 
 	protected function loadStores(array $storeIds, array $bounds = null) : array
@@ -70,21 +77,82 @@ class Store extends AbstractAdapter
 		return Sale\Delivery\ExtraServices\Manager::getStoresList($service->getId());
 	}
 
-	protected function combineStores(array $stores, int $locationId) : array
+	protected function getLocationIdsByCodes(array $locationsCodes) : array
 	{
-		return [$locationId => $stores];
+		$result = [];
+
+		$query = Sale\Location\LocationTable::getList(array(
+			'select' => [ 'ID', 'CODE' ],
+			'filter' => [ '=CODE' => $locationsCodes ],
+		));
+
+		while ($row = $query->fetch())
+		{
+			$result[$row['CODE']] = $row['ID'];
+		}
+
+		return $result;
+	}
+
+	protected function filterStoresByLocations(array $stores, int $deliveryId) : array
+	{
+		$result = [];
+
+		$metadata = new Data\Location\MetaData();
+		$finder = new Data\Location\Bounds($metadata);
+		$storesByLocation = [];
+
+		$locationsRestricts = array_flip($this->getLocationsByRestrict($deliveryId));
+		$locations = $finder->filterCities($locationsRestricts);
+
+		foreach ($stores as $store)
+		{
+			$locationCode = $finder->findClosestCity($store['GPS_N'], $store['GPS_S'], $locations);
+
+			if ($locationCode === null) { continue; }
+
+			if (!isset($storesByLocation[$locationCode])) { $storesByLocation[$locationCode] = []; }
+
+			$storesByLocation[$locationCode][] = $store;
+		}
+
+		if (empty($storesByLocation)) { return $result; }
+
+		$locationsIdsMap = $this->getLocationIdsByCodes(array_keys($storesByLocation));
+
+		foreach ($storesByLocation as $locationsCode => $stores)
+		{
+			$locationsId = $locationsIdsMap[$locationsCode];
+
+			if (!isset($locationsId)) { continue; }
+
+			$result[$locationsId] = $stores;
+		}
+
+		return $result;
 	}
 
 	public function getLocationId(int $deliveryId) : int
 	{
-		$locationRestrict = $this->getLocationByRestrict($deliveryId);
+		$locationRestricts = $this->getLocationsByRestrict($deliveryId);
+		$locationRestrict = !empty($locationRestricts) ? end($locationRestricts) : null;
 		$locationSettings = $this->getLocationBySettingSale();
 		$locationCode = $locationRestrict ?? $locationSettings;
 
 		return (int)\CSaleLocation::getLocationIDbyCODE($locationCode);
 	}
 
-	public function getLocationByRestrict(int $deliveryId) : ?string
+	public function getLocationsByRestrict(int $deliveryId) : array
+	{
+		if ($this->locationsRestrict === null)
+		{
+			$this->locationsRestrict = $this->loadLocationsRestrict($deliveryId);
+		}
+
+		return $this->locationsRestrict;
+	}
+
+	protected function loadLocationsRestrict(int $deliveryId)
 	{
 		$result = Sale\Delivery\DeliveryLocationTable::getList([
 			'filter' => [
@@ -92,11 +160,7 @@ class Store extends AbstractAdapter
 			]
 		])->fetchCollection();
 
-		$result = $result->getLocationCodeList();
-
-		if (empty($result)) { return null; }
-
-		return end($result);
+		return $result->getLocationCodeList();
 	}
 
 	public function getLocationBySettingSale() : ?string
