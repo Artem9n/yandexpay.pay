@@ -56,7 +56,7 @@ class PaySystemTab extends Pay\Reference\Event\Regular
 		$path = $request->getRequestedPage();
 		$path = mb_strtolower($path);
 
-		return ($path === '/bitrix/admin/sale_pay_system_edit.php');
+		return ($path === '/bitrix/admin/sale_pay_system_edit.php' || $path === '/shop/settings/sale_pay_system_edit.php');
 	}
 
 	protected static function getPaySystemId(Main\HttpRequest $request) : ?int

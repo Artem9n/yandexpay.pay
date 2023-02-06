@@ -41,7 +41,7 @@
 			if (!!this._handled['formSave'] === dir) { return; }
 
 			this._handled['formSave'] = dir;
-			BX[dir ? 'addCustomEvent' : 'removeCustomEvent']('yapayFormSave', BX.proxy(this.onFormSave, this));
+			top.BX[dir ? 'addCustomEvent' : 'removeCustomEvent']('yapayFormSave', BX.proxy(this.onFormSave, this));
 		},
 
 		handlePostAction: function(dir) {
