@@ -71,6 +71,11 @@ class Lite extends Base
 		return $this->designDefaults() + Solution\Guide::getBitrixBasket($context, '/basket/');
 	}
 
+	protected function basketFlyDefaults(array $context = []) : array
+	{
+		return ['HEIGHT_VALUE_BUTTON' => 42] + parent::basketFlyDefaults($context);
+	}
+
 	protected function orderDefaults(array $context = []) : array
 	{
 		return $this->designDefaults() + Solution\Guide::getBitrixOrder($context, '/order/');

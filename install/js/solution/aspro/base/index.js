@@ -1,7 +1,7 @@
 import Element from './element';
 import Basket from './basket';
 import Order from './order';
-import Factory from '../reference/factory';
+import Factory from '../../reference/factory';
 
 import './widget.css';
 

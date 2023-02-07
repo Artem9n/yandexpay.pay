@@ -1,4 +1,4 @@
-import Page from '../reference/page';
+import Page from '../../reference/page';
 import factoryLayout from './molecules/factorylayout';
 
 export default class Order extends Page {

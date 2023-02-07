@@ -112,6 +112,6 @@ export default class AbstractStep {
 			notify += ' ' + err;
 		}
 
-		alert(notify);
+		console.error(notify);
 	}
 }

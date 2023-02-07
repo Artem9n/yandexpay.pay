@@ -1,4 +1,4 @@
-import ElementSkeleton from '../reference/element';
+import ElementSkeleton from '../../reference/element';
 import factoryLayout from './molecules/factorylayout';
 
 export default class Element extends ElementSkeleton {

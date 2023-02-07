@@ -4,7 +4,7 @@ import Basket from './basket';
 import Order from './order';
 import Factory from '../../reference/factory';
 
-import './../widget.css';
+import '../base/widget.css';
 
 const factory = new Factory({
 	element: Element,

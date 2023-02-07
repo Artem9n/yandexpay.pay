@@ -1,4 +1,3 @@
-import BaseElement from '../element';
 import Page from "../../reference/page";
 
 export default class Element extends Page {
