@@ -1,13 +1,12 @@
 import Page from '../reference/page';
-import factoryLayout from './molecules/factorylayout';
 
 export default class Order extends Page {
 
 	bootFactory(factory) {
-		factoryLayout(factory, {
+		factory.extendDefaults({
 			preserve: {
 				mutation: {
-					anchor: '#bx-soa-total, #bx-soa-total-mobile',
+					anchor: '#bx-soa-total-mobile, .bx-soa-cart-total',
 					delay: null,
 				},
 			},
