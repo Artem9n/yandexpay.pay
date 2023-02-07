@@ -99,6 +99,7 @@ class Element extends AbstractEngine
 			'ID' => true,
 			'CODE' => true,
 			'EXTERNAL_ID' => true,
+			'XML_ID' => true,
 		];
 
 		if (count(array_intersect_key($variables, $required)) === 0)
