@@ -1,3 +1,3 @@
 <?php
 
-$MESS['YANDEX_PAY_INJECTION_SOLUTION_NEXTYPE_MAGNET_TITLE'] = 'ÐÐµÐºÑÑ‚Ð°Ð¹Ð¿: ÐœÐ°Ð³Ð½Ð¸Ñ‚ â€” Ð¸Ð½Ñ‚ÐµÑ€Ð½ÐµÑ‚-Ð¼Ð°Ð³Ð°Ð·Ð¸Ð½';
+$MESS['YANDEX_PAY_INJECTION_SOLUTION_NEXTYPE_MAGNET_TITLE'] = 'Íåêñòàéï: Ìàãíèò — èíòåðíåò-ìàãàçèí';

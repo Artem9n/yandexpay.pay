@@ -1,3 +1,3 @@
 <?php
 
-$MESS['YANDEX_PAY_INJECTION_SOLUTION_ALTOP_ENEXT_TITLE'] = 'Ð­Ð›Ð•ÐšÐ¢Ð ÐžÐ¡Ð˜Ð›Ð NEXT - Ð¨Ð¸Ñ€Ð¾ÐºÐ¾Ñ„Ð¾Ñ€Ð¼Ð°Ñ‚Ð½Ñ‹Ð¹ Ð¸Ð½Ñ‚ÐµÑ€Ð½ÐµÑ‚-Ð¼Ð°Ð³Ð°Ð·Ð¸Ð½';
+$MESS['YANDEX_PAY_INJECTION_SOLUTION_ALTOP_ENEXT_TITLE'] = 'ÝËÅÊÒÐÎÑÈËÀ NEXT - Øèðîêîôîðìàòíûé èíòåðíåò-ìàãàçèí';
