@@ -25,6 +25,17 @@ export default class Widget {
 		this.bootSolution();
 	}
 
+	destroy() {
+		this.destroyStep()
+		this.destroySolution();
+	}
+
+	testLifecycle() {
+		if (document.documentElement.contains(this.el)) { return; }
+
+		this.destroy();
+	}
+
 	/**
 	 * @param {Object} data
 	 */
@@ -51,6 +62,12 @@ export default class Widget {
 	go(type, data) {
 		this.step = this.makeStep(type);
 		this.step.render(this.el, data);
+	}
+
+	destroyStep() {
+		if (this.step === null) { return; }
+
+		this.step.destroy();
 	}
 
 	bootLoader() {
@@ -87,6 +104,14 @@ export default class Widget {
 		if (solution == null) { return; }
 
 		solution.bootWidget(this);
+	}
+
+	destroySolution() {
+		const solution = this.getSolution();
+
+		if (solution == null) { return; }
+
+		solution.destroyWidget(this);
 	}
 
 	extendDefaults(options) {

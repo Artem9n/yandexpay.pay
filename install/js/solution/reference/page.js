@@ -10,7 +10,15 @@ export default class Page {
 
 	}
 
+	destroyWidget(widget) {
+
+	}
+
 	bootCart(cart) {
+
+	}
+
+	destroyCart(cart) {
 
 	}
 

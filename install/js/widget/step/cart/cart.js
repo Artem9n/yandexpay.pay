@@ -12,6 +12,14 @@ export default class Cart extends AbstractStep {
 	display;
 	initialContent;
 
+	destroy() {
+		const solution = this.widget.getSolution();
+
+		if (solution == null) { return; }
+
+		solution.destroyCart(this);
+	}
+
 	render(node, data) {
 		this.element = node;
 		this.display = this.getDisplay();
@@ -37,6 +45,7 @@ export default class Cart extends AbstractStep {
 	}
 
 	bootstrap() {
+		console.log('boot - ' + this.isBootstrap);
 		this.isBootstrap = true;
 		this.proxy.bootstrap();
 	}
@@ -75,6 +84,8 @@ export default class Cart extends AbstractStep {
 	}
 
 	changeOffer(newProductId) {
+		console.log('offer - ' + this.isBootstrap);
+
 		if (this.isBootstrap) {
 			this.proxy?.changeOffer(newProductId);
 		} else {

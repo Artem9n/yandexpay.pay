@@ -6,7 +6,14 @@ export default class Element extends Page {
 	cart;
 
 	bootFactory(factory) {
+
+		/*if (window.initialHandler != null) { return; }
+		console.log(this.initialHandler);*/
 		this.handleStarterOffer(true);
+
+		/*window.initialHandler = true;
+
+		console.log('test');*/
 	}
 
 	bootCart(cart) {
@@ -15,6 +22,15 @@ export default class Element extends Page {
 		this.handleStarterOffer(false);
 		this.bootInitialProduct();
 		this.handleCommonOffer(true);
+	}
+
+	destroyCart(cart) {
+		super.destroyCart(cart);
+
+		this.cart = null;
+
+		this.handleStarterOffer(false);
+		this.handleCommonOffer(false);
 	}
 
 	handleStarterOffer(dir) {

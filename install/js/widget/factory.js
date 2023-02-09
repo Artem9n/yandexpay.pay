@@ -5,6 +5,7 @@ import {EventProxy} from "./utils/eventproxy";
 import {Sdkloader} from "./sdkloader";
 import {Intersection} from "./intersection";
 import Display from "./ui/display/factory";
+import {Concurrency} from "./concurrency";
 
 export default class Factory {
 
@@ -74,7 +75,16 @@ export default class Factory {
 
 				return intersection.wait().then(() => widget);
 			})
-			.then((widget) => Sdkloader.getInstance().load().then(() => widget));
+			.then((widget) => Sdkloader.getInstance().load().then(() => widget))
+			.then((widget) => {
+				for (const sibling of Concurrency.same(widget)) {
+					widget.testLifecycle();
+				}
+
+				Concurrency.push(widget);
+
+				return widget;
+			});
 	}
 
 	filterMedia(selector: string) : string {
