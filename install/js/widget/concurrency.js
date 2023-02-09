@@ -1,30 +1,25 @@
 export class Concurrency {
 
-	static elements = [];
+	static elements = {};
 
-	static push(widget: Widget) : void {
-		this.elements.push(widget);
+	static push(mode: string, widget: Widget) : void {
+		if (this.elements[mode] == null) {
+			this.elements[mode] = [];
+		}
+
+		this.elements[mode].push(widget);
 	}
 
-	static pop(widget: Widget) : void {
-		const index = this.elements.indexOf(widget);
+	static pop(mode: string, widget: Widget) : void {
+		const index = this.elements[mode].indexOf(widget);
 
 		if (index === -1) { return; }
 
-		this.elements.splice(index, 1);
+		this.elements[mode].splice(index, 1);
 	}
 
-	static same(widget: Widget) : Array {
-		const targetType = widget.getOption('type');
-		const result = [];
-
-		for (const sibling of this.elements) {
-			if (targetType === sibling.getOption('type')) {
-				result.push(sibling);
-			}
-		}
-
-		return result;
+	static same(mode: string) : Array {
+		return this.elements[mode] ?? [];
 	}
 
 }

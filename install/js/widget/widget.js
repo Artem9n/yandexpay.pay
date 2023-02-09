@@ -1,6 +1,7 @@
 import StepFactory from './step/factory';
 import Loader from './step/loader';
-import SolutionRegistry from "./solutionregistry";
+import Page from "../solution/reference/page";
+import NodePreserver from "./ui/nodepreserver";
 
 export default class Widget {
 
@@ -11,6 +12,10 @@ export default class Widget {
 	loader;
 	el;
 	step;
+	/** @var Page|null */
+	solution;
+	/** @var NodePreserver|null */
+	preserver;
 
 	/**
 	 * @param {Object<Element>} element
@@ -22,18 +27,16 @@ export default class Widget {
 		this.el = element;
 
 		this.setOptions(options);
+	}
+
+	boot() {
 		this.bootSolution();
 	}
 
 	destroy() {
 		this.destroyStep()
 		this.destroySolution();
-	}
-
-	testLifecycle() {
-		if (document.documentElement.contains(this.el)) { return; }
-
-		this.destroy();
+		this.destroyPreserver();
 	}
 
 	/**
@@ -65,9 +68,7 @@ export default class Widget {
 	}
 
 	destroyStep() {
-		if (this.step === null) { return; }
-
-		this.step.destroy();
+		this.step?.destroy();
 	}
 
 	bootLoader() {
@@ -91,27 +92,28 @@ export default class Widget {
 		return StepFactory.make(type, this, options);
 	}
 
-	getSolution() {
-		const name = this.getOption('solution');
-		const mode = this.getOption('mode');
+	setPreserver(preserver: NodePreserver) : void {
+		this.preserver = preserver;
+	}
 
-		return SolutionRegistry.getPage(name, mode);
+	destroyPreserver() : void {
+		this.preserver?.destroy();
+	}
+
+	setSolution(solution: Page) : void {
+		this.solution = solution;
+	}
+
+	getSolution() : Page {
+		return this.solution;
 	}
 
 	bootSolution() {
-		const solution = this.getSolution();
-
-		if (solution == null) { return; }
-
-		solution.bootWidget(this);
+		this.getSolution()?.bootWidget(this);
 	}
 
 	destroySolution() {
-		const solution = this.getSolution();
-
-		if (solution == null) { return; }
-
-		solution.destroyWidget(this);
+		this.getSolution()?.destroyWidget(this);
 	}
 
 	extendDefaults(options) {

@@ -43,12 +43,14 @@ export default class Factory {
 	defaults;
 	options;
 	waitCount = 0;
+	solution;
 
 	constructor(options = {}) {
 		this.defaults = Object.assign({}, this.constructor.defaults);
 		this.options = {};
 
 		this.setOptions(options);
+		this.createSolution();
 		this.bootSolution();
 		this.bootLocal();
 	}
@@ -75,16 +77,8 @@ export default class Factory {
 
 				return intersection.wait().then(() => widget);
 			})
-			.then((widget) => Sdkloader.getInstance().load().then(() => widget))
-			.then((widget) => {
-				for (const sibling of Concurrency.same(widget)) {
-					widget.testLifecycle();
-				}
-
-				Concurrency.push(widget);
-
-				return widget;
-			});
+			.then((widget) => this.testConcurrency(widget))
+			.then((widget) => Sdkloader.getInstance().load().then(() => widget));
 	}
 
 	filterMedia(selector: string) : string {
@@ -151,6 +145,8 @@ export default class Factory {
 				this.restore(selector, position, widget, intersection);
 			},
 		}));
+
+		widget.setPreserver(preserver);
 	}
 
 	preserveOptions() {
@@ -176,8 +172,30 @@ export default class Factory {
 			});
 	}
 
+	testConcurrency(widget) {
+		const mode = this.getOption('mode');
+
+		if (mode == null) { return; }
+
+		for (const sibling of Concurrency.same(mode)) {
+			if (document.documentElement.contains(sibling.el)) { continue; }
+
+			sibling.destroy();
+			Concurrency.pop(mode, sibling);
+		}
+
+		Concurrency.push(mode, widget);
+
+		return widget;
+	}
+
 	install(element) {
-		return new BX.YandexPay.Widget(element);
+		const widget = new BX.YandexPay.Widget(element);
+
+		widget.setSolution(this.solution);
+		widget.boot();
+
+		return widget;
 	}
 
 	insertLoader(widget) {
@@ -357,14 +375,15 @@ export default class Factory {
 		return result;
 	}
 
-	bootSolution() {
+	createSolution() {
 		const name = this.getOption('solution');
 		const mode = this.getOption('mode');
-		const solution = SolutionRegistry.getPage(name, mode);
 
-		if (solution == null) { return; }
+		this.solution = SolutionRegistry.createPage(name, mode);
+	}
 
-		solution.bootFactory(this);
+	bootSolution() {
+		this.solution?.bootFactory(this);
 	}
 
 	getDisplay() {

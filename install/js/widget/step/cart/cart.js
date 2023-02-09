@@ -12,14 +12,6 @@ export default class Cart extends AbstractStep {
 	display;
 	initialContent;
 
-	destroy() {
-		const solution = this.widget.getSolution();
-
-		if (solution == null) { return; }
-
-		solution.destroyCart(this);
-	}
-
 	render(node, data) {
 		this.element = node;
 		this.display = this.getDisplay();
@@ -29,6 +21,11 @@ export default class Cart extends AbstractStep {
 		this.bootSolution();
 		this.bootLocal();
 		this.delayBootstrap();
+	}
+
+	destroy() {
+		this.destroyLocal()
+		this.destroySolution();
 	}
 
 	bootProxy() : Rest|Site{
@@ -45,21 +42,26 @@ export default class Cart extends AbstractStep {
 	}
 
 	bootstrap() {
-		console.log('boot - ' + this.isBootstrap);
 		this.isBootstrap = true;
 		this.proxy.bootstrap();
 	}
 
 	bootSolution() {
-		const solution = this.widget.getSolution();
+		this.widget.getSolution()?.bootCart(this);
+	}
 
-		if (solution == null) { return; }
-
-		solution.bootCart(this);
+	destroySolution() {
+		this.widget.getSolution()?.destroyCart(this);
 	}
 
 	bootLocal() {
 		EventProxy.make().fire('bxYapayCartInit', {
+			cart: this,
+		});
+	}
+
+	destroyLocal() {
+		EventProxy.make().fire('bxYapayCartDestroy', {
 			cart: this,
 		});
 	}
