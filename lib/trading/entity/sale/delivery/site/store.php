@@ -146,7 +146,7 @@ class Store extends AbstractAdapter
 
 	protected function pickupStoreDescription(array $store) :array
 	{
-		$template = \YandexPay\Pay\Config::getOption('catalog_store_description');
+		$template = \YandexPay\Pay\Config::getOption('catalog_store_description', '#DESCRIPTION#');
 
 		if (trim($template === ''))
 		{
