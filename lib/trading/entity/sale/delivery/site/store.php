@@ -148,15 +148,13 @@ class Store extends AbstractAdapter
 	{
 		$template = \YandexPay\Pay\Config::getOption('catalog_store_description', '#DESCRIPTION#');
 
-		if (trim($template === '')) {	return ''; }
+		if (trim($template) === '') {	return ''; }
 
 		foreach ($store as $code => $value)
 		{
 			if (!is_scalar($value)) { continue; }
 
 			$marker = sprintf("#%s#", $code);
-
-			if (mb_strpos($template, $marker) === false) { continue; }
 
 			$template = str_replace($marker, $value, $template);
 		}
