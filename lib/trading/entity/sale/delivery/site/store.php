@@ -69,7 +69,7 @@ class Store extends AbstractAdapter
 
 		while ($store = $query->fetch())
 		{
-			$result[] = $store;
+			$result[$store['ID']] = $store;
 		}
 
 		return $result;
@@ -79,11 +79,13 @@ class Store extends AbstractAdapter
 	{
 		if (empty($storeIds) || $bounds === null) { return []; }
 
+		$stores = $this->loadStores($storeIds, $bounds);
+
 		$result = [];
 
 		$basket = $order->getBasket();
 
-		if ($basket === null) { return $result; }
+		if ($basket === null) { return $stores; }
 
 		$productIds = [];
 
@@ -93,31 +95,46 @@ class Store extends AbstractAdapter
 			$productIds[] = $item->getProductId();
 		}
 
-		if (empty($productIds)) { return $result; }
+		if (empty($productIds)) { return $stores; }
 
 		$queryStoreProduct = Catalog\StoreProductTable::getList([
 			'filter' => [
 				'=STORE_ID' => $storeIds,
 				'=PRODUCT_ID' => $productIds,
-				'>AMOUNT' => 0,
-				['<=STORE.GPS_N' => $bounds['ne']['latitude']],
-				['>=STORE.GPS_N' => $bounds['sw']['latitude']],
-				['<=STORE.GPS_S' => $bounds['ne']['longitude']],
-				['>=STORE.GPS_S' => $bounds['sw']['longitude']],
-				'!STORE.ADDRESS' => false,
 			],
-			'select' => ['STORE'],
+			'select' => ['PRODUCT_ID', 'AMOUNT', 'STORE_ID'],
 		]);
 
-		while ($store = $queryStoreProduct->fetch())
+		$storeProducts = [];
+
+		while ($product = $queryStoreProduct->fetch())
 		{
-			foreach ($store as $code => $value)
+			$storeProducts[$product['STORE_ID']][$product['PRODUCT_ID']] = $product['AMOUNT'];
+		}
+
+		foreach ($stores as $storeId => $store)
+		{
+			$isAvailable = true;
+
+			if (!isset($storeProducts[$storeId])) { continue; }
+
+			$diff = array_diff($productIds, array_keys($storeProducts[$storeId]));
+
+			if (!empty($diff)) { continue; }
+
+			foreach ($storeProducts[$storeId] as $amount)
 			{
-				$code = str_replace('CATALOG_STORE_PRODUCT_STORE_', '', $code);
-				$store[$code] = $value;
+				if ($amount <= 0)
+				{
+					$isAvailable = false;
+					break;
+				}
 			}
 
-			$result[] = $store;
+			if ($isAvailable)
+			{
+				$result[$storeId] = $store;
+			}
 		}
 
 		return $result;
