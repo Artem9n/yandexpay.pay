@@ -79,12 +79,12 @@ class Bounds
 		return $result;
 	}
 
-	public function findClosestCity(float $pickupPointLatitude, float $pickupPointLongitude, array $cities = null): ?string
+	public function findClosestCity(float $pickupPointLatitude, float $pickupPointLongitude, array $cities = []): ?string
 	{
 		$result = null;
 		$minDistance = null;
 
-		if ($cities === null)
+		if (empty($cities))
 		{
 			$cities = $this->cityList;
 		}
@@ -108,9 +108,9 @@ class Bounds
 		return $result;
 	}
 
-	public function filterCities(array $cities) : ?array
+	public function filterCities(array $cities) : array
 	{
-		$result = null;
+		$result = [];
 
 		foreach ($this->cityList as $locationCode => $city)
 		{
