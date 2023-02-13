@@ -6,6 +6,7 @@ use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Catalog;
 use Bitrix\Sale\Shipment;
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Data;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
@@ -32,7 +33,9 @@ class Store extends AbstractAdapter
 	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		$storeIds = $this->getUsedStoreIds($service);
-		$stores = $this->loadStores($storeIds, $bounds);
+		$isCheckAmount = Config::getOption('stores_by_amount', 'N');
+
+		$stores = $isCheckAmount === 'N' ? $this->loadStores($storeIds, $bounds) : $this->loadStoresByAmount($storeIds, $order, $bounds);
 
 		if (empty($stores)) { return []; }
 
@@ -66,6 +69,54 @@ class Store extends AbstractAdapter
 
 		while ($store = $query->fetch())
 		{
+			$result[] = $store;
+		}
+
+		return $result;
+	}
+
+	protected function loadStoresByAmount(array $storeIds, Sale\Order $order, array $bounds = null) : array
+	{
+		if (empty($storeIds) || $bounds === null) { return []; }
+
+		$result = [];
+
+		$basket = $order->getBasket();
+
+		if ($basket === null) { return $result; }
+
+		$productIds = [];
+
+		/** @var \Bitrix\Sale\BasketItem $item */
+		foreach ($basket as $item)
+		{
+			$productIds[] = $item->getProductId();
+		}
+
+		if (empty($productIds)) { return $result; }
+
+		$queryStoreProduct = Catalog\StoreProductTable::getList([
+			'filter' => [
+				'=STORE_ID' => $storeIds,
+				'=PRODUCT_ID' => $productIds,
+				'>AMOUNT' => 0,
+				['<=STORE.GPS_N' => $bounds['ne']['latitude']],
+				['>=STORE.GPS_N' => $bounds['sw']['latitude']],
+				['<=STORE.GPS_S' => $bounds['ne']['longitude']],
+				['>=STORE.GPS_S' => $bounds['sw']['longitude']],
+				'!STORE.ADDRESS' => false,
+			],
+			'select' => ['STORE'],
+		]);
+
+		while ($store = $queryStoreProduct->fetch())
+		{
+			foreach ($store as $code => $value)
+			{
+				$code = str_replace('CATALOG_STORE_PRODUCT_STORE_', '', $code);
+				$store[$code] = $value;
+			}
+
 			$result[] = $store;
 		}
 
@@ -157,7 +208,7 @@ class Store extends AbstractAdapter
 		$result = Sale\Delivery\DeliveryLocationTable::getList([
 			'filter' => [
 				'=DELIVERY_ID' => $deliveryId,
-			]
+			],
 		])->fetchCollection();
 
 		return $result->getLocationCodeList();
@@ -196,7 +247,7 @@ class Store extends AbstractAdapter
 			'filter' => [
 				'=ID' => $storeId,
 			],
-			'limit' => 1
+			'limit' => 1,
 		]);
 
 		if ($store = $query->fetch())
