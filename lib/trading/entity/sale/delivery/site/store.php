@@ -137,34 +137,30 @@ class Store extends AbstractAdapter
 
 		if ($store = $query->fetch())
 		{
-			$store = $this->pickupStoreDescription($store);
+			$store['DESCRIPTION'] = $this->pickupStoreDescription($store);
 			$result = $store;
 		}
 
 		return $result;
 	}
 
-	protected function pickupStoreDescription(array $store) :array
+	protected function pickupStoreDescription(array $store) :string
 	{
 		$template = \YandexPay\Pay\Config::getOption('catalog_store_description', '#DESCRIPTION#');
 
-		if (trim($template === ''))
+		if (trim($template === '')) {	return ''; }
+
+		foreach ($store as $code => $value)
 		{
-			$store['DESCRIPTION'] = '';
-			return $store;
+			if (!is_scalar($value)) { continue; }
+
+			$marker = sprintf("#%s#", $code);
+
+			if (mb_strpos($template, $marker) === false) { continue; }
+
+			$template = str_replace($marker, $value, $template);
 		}
 
-		preg_match_all('/(?<=[#])[A-Z][^#]+/', $template, $matches);
-
-		foreach ($matches[0] as $match)
-		{
-			if (!isset($store[$match])) { continue; }
-
-			$template = str_replace('#' . $match . '#', $store[$match], $template);
-		}
-
-		$store['DESCRIPTION'] = $template;
-
-		return $store;
+		return $template;
 	}
 }
