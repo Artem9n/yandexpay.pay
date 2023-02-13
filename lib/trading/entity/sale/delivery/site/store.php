@@ -33,9 +33,13 @@ class Store extends AbstractAdapter
 	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		$storeIds = $this->getUsedStoreIds($service);
-		$isCheckAmount = Config::getOption('stores_by_amount', 'N');
+		$isAvailable = Config::getOption('stores_by_available', 'N');
+		$stores = $this->loadStores($storeIds, $bounds);
 
-		$stores = $isCheckAmount === 'N' ? $this->loadStores($storeIds, $bounds) : $this->loadStoresByAmount($storeIds, $order, $bounds);
+		if ($isAvailable === 'Y')
+		{
+			$stores = $this->filterStoreByAvailable($stores, $order);
+		}
 
 		if (empty($stores)) { return []; }
 
@@ -75,17 +79,15 @@ class Store extends AbstractAdapter
 		return $result;
 	}
 
-	protected function loadStoresByAmount(array $storeIds, Sale\Order $order, array $bounds = null) : array
+	protected function filterStoreByAvailable(array $stores, Sale\Order $order) : array
 	{
-		if (empty($storeIds) || $bounds === null) { return []; }
-
-		$stores = $this->loadStores($storeIds, $bounds);
+		if (empty($stores)) { return []; }
 
 		$result = [];
 
 		$basket = $order->getBasket();
 
-		if ($basket === null) { return $stores; }
+		if ($basket === null) { return []; }
 
 		$productIds = [];
 
@@ -95,11 +97,11 @@ class Store extends AbstractAdapter
 			$productIds[] = $item->getProductId();
 		}
 
-		if (empty($productIds)) { return $stores; }
+		if (empty($productIds)) { return []; }
 
 		$queryStoreProduct = Catalog\StoreProductTable::getList([
 			'filter' => [
-				'=STORE_ID' => $storeIds,
+				'=STORE_ID' => array_keys($stores),
 				'=PRODUCT_ID' => $productIds,
 			],
 			'select' => ['PRODUCT_ID', 'AMOUNT', 'STORE_ID'],
