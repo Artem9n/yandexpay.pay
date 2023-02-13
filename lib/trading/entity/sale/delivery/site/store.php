@@ -6,6 +6,7 @@ use Bitrix\Main;
 use Bitrix\Catalog;
 use Bitrix\Sale;
 use Bitrix\Sale\Shipment;
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 
@@ -146,7 +147,7 @@ class Store extends AbstractAdapter
 
 	protected function pickupStoreDescription(array $store) :string
 	{
-		$template = \YandexPay\Pay\Config::getOption('catalog_store_description', '#DESCRIPTION#');
+		$template = Config::getOption('catalog_store_description', '#DESCRIPTION#');
 
 		if (trim($template) === '') {	return ''; }
 
