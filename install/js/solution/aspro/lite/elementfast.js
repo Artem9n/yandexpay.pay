@@ -4,8 +4,6 @@ export default class ElementFast extends Element {
 
 	bootFactory(factory) {
 
-		super.bootFactory(factory);
-
 		factory.setOptions({
 			event: 'bxYapayFastViewInit',
 			eventConfig: {
