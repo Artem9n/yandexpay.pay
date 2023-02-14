@@ -1,15 +1,5 @@
-import Page from '../reference/page';
+import EshopOrder from "../eshopbootstrap/order";
 
-export default class Order extends Page {
+export default class Order extends EshopOrder {
 
-	bootFactory(factory) {
-		factory.extendDefaults({
-			preserve: {
-				mutation: {
-					anchor: '#bx-soa-total-mobile, .bx-soa-cart-total',
-					delay: null,
-				},
-			},
-		});
-	}
 }
