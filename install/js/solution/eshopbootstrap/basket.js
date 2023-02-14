@@ -3,6 +3,10 @@ import Page from '../reference/page';
 export default class Basket extends Page {
 
 	cart;
+	eventConfig = {
+		bx: true,
+		strict: true,
+	};
 
 	bootFactory(factory) {
 		factory.extendDefaults({
@@ -17,12 +21,16 @@ export default class Basket extends Page {
 
 	bootCart(cart) {
 		this.cart = cart;
-		this.onEvent('OnBasketChange', this.onBasketChange);
+		this.handleBasketChange(true);
 	}
 
 	destroyCart(cart) {
-		this.cart = cart;
-		this.offEvent('OnBasketChange', this.onBasketChange);
+		this.cart = null;
+		this.handleBasketChange(false);
+	}
+
+	handleBasketChange(dir: boolean) {
+		this[dir ? 'onEvent' : 'offEvent']('OnBasketChange', this.onBasketChange, this.eventConfig);
 	}
 
 	onBasketChange = () => {
