@@ -57,10 +57,8 @@ export class EventProxy {
 		if (this.canProxyCallback(selfConfig)) {
 			const originalCallback = callback;
 
-			callback = (evt, data) => {
-				const proxyData = data != null ? data : evt?.originalEvent?.detail;
-
-				originalCallback(proxyData);
+			callback = (...args) => {
+				originalCallback(...args);
 			};
 
 			this.pushCallbackVariation('jquery', originalCallback, callback);
