@@ -33,12 +33,14 @@ class Store extends AbstractAdapter
 	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
 	{
 		$storeIds = $this->getUsedStoreIds($service);
-		$isAvailable = Config::getOption('stores_by_available', 'N');
 		$stores = $this->loadStores($storeIds, $bounds);
 
-		if ($isAvailable === 'Y')
+		$strategyType = Config::getOption('stores_by_available');
+
+		if ((string)$strategyType !== '')
 		{
-			$stores = $this->filterStoreByAvailable($stores, $order);
+			$strategyAvailable = EntitySale\Delivery\Site\AvailableStore\Strategy::getInstance($strategyType);
+			$stores = $strategyAvailable->resolve($stores, $order);
 		}
 
 		if (empty($stores)) { return []; }
@@ -74,69 +76,6 @@ class Store extends AbstractAdapter
 		while ($store = $query->fetch())
 		{
 			$result[$store['ID']] = $store;
-		}
-
-		return $result;
-	}
-
-	protected function filterStoreByAvailable(array $stores, Sale\Order $order) : array
-	{
-		if (empty($stores)) { return []; }
-
-		$result = [];
-
-		$basket = $order->getBasket();
-
-		if ($basket === null) { return []; }
-
-		$productIds = [];
-
-		/** @var \Bitrix\Sale\BasketItem $item */
-		foreach ($basket as $item)
-		{
-			$productIds[] = $item->getProductId();
-		}
-
-		if (empty($productIds)) { return []; }
-
-		$queryStoreProduct = Catalog\StoreProductTable::getList([
-			'filter' => [
-				'=STORE_ID' => array_keys($stores),
-				'=PRODUCT_ID' => $productIds,
-			],
-			'select' => ['PRODUCT_ID', 'AMOUNT', 'STORE_ID'],
-		]);
-
-		$storeProducts = [];
-
-		while ($product = $queryStoreProduct->fetch())
-		{
-			$storeProducts[$product['STORE_ID']][$product['PRODUCT_ID']] = $product['AMOUNT'];
-		}
-
-		foreach ($stores as $storeId => $store)
-		{
-			$isAvailable = true;
-
-			if (!isset($storeProducts[$storeId])) { continue; }
-
-			$diff = array_diff($productIds, array_keys($storeProducts[$storeId]));
-
-			if (!empty($diff)) { continue; }
-
-			foreach ($storeProducts[$storeId] as $amount)
-			{
-				if ($amount <= 0)
-				{
-					$isAvailable = false;
-					break;
-				}
-			}
-
-			if ($isAvailable)
-			{
-				$result[$storeId] = $store;
-			}
 		}
 
 		return $result;
