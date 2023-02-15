@@ -72,6 +72,7 @@ export default class Widget {
 	}
 
 	bootLoader() {
+		if (this.loader != null) { return; }
 		this.loader = new Loader(this);
 		this.loader.render(this.el);
 	}
@@ -79,11 +80,12 @@ export default class Widget {
 	removeLoader() {
 		if (this.loader == null) { return; }
 		this.loader.remove(this.el);
+		this.loader = null;
 	}
 
 	/**
 	 * @param {String} type
-	 * @returns {AbstractCart|Finish|Step3ds|Payment|Failure}
+	 * @returns {Cart|Finish|Step3ds|Payment|Failure}
 	 * @throws {Error}
 	 */
 	makeStep(type) {
