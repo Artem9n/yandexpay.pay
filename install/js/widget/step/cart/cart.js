@@ -7,7 +7,7 @@ import Site from "./site";
 
 export default class Cart extends AbstractStep {
 
-	isBootstrap = false;
+	isBootstrap;
 	element;
 	display;
 	initialContent;
@@ -16,6 +16,7 @@ export default class Cart extends AbstractStep {
 		this.element = node;
 		this.display = this.getDisplay();
 		this.initialContent = this.element.innerHTML;
+		this.isBootstrap = false;
 
 		this.bootProxy();
 		this.bootSolution();
@@ -86,8 +87,6 @@ export default class Cart extends AbstractStep {
 	}
 
 	changeOffer(newProductId) {
-		console.log('offer - ' + this.isBootstrap);
-
 		if (this.isBootstrap) {
 			this.proxy?.changeOffer(newProductId);
 		} else {
