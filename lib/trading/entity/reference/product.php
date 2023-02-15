@@ -18,9 +18,14 @@ abstract class Product
 		throw new Main\NotImplementedException('getBasketData is missing');
 	}
 
-	public function isSku(int $productId) : bool
+	public function isSku(array $product) : bool
 	{
 		throw new Main\NotImplementedException('isSku is missing');
+	}
+
+	public function isOffer(array $product) : bool
+	{
+		throw new Main\NotImplementedException('isOffer is missing');
 	}
 
 	public function searchOffers(int $productId, int $iblockId = 0, array $filter = []) : array
@@ -28,8 +33,8 @@ abstract class Product
 		throw new Main\NotImplementedException('searchOffers is missing');
 	}
 
-	public function resolveOffer(int $productId) : int
+	public function searchProductId(int $offerId) : int
 	{
-		throw new Main\NotImplementedException('resolveOffer is missing');
+		throw new Main\NotImplementedException('searchProductId is missing');
 	}
 }

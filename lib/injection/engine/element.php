@@ -16,13 +16,14 @@ class Element extends AbstractEngine
 	{
 		if (self::$disabled || !static::testShow($settings)) { return; }
 
-		$elementId = static::findProduct($settings);
+		[ $elementId, $products ] = static::findProduct($settings);
 
 		if ($elementId === null) { return; }
 
 		[ $componentParameters ] = static::getRenderParameters($injectionId, [
 			'SITE_ID' => $settings['SITE_ID'],
 			'PRODUCT_ID' => $elementId,
+			'PRODUCTS' => $products,
 		]);
 
 		static::render($componentParameters);
@@ -33,23 +34,39 @@ class Element extends AbstractEngine
 		self::$disabled = true;
 	}
 
-	protected static function findProduct(array $settings) : ?int
+	protected static function findProduct(array $settings) : array
 	{
 		try
 		{
 			$template = static::iblockTemplate($settings['IBLOCK']);
 			$variables = static::parseTemplate($template);
 			$elementFilter = static::elementFilter($settings['IBLOCK'], $variables);
-			$elementId = static::searchElement($elementFilter);
-			$offerId = static::resolveOffer($settings['IBLOCK'], $elementId, [
-				'PRODUCT_URL' => \CComponentEngine::makePathFromTemplate($template, $variables),
-			]);
 
-			$result = $offerId ?? $elementId;
+			if (empty($elementFilter))
+			{
+				throw new Main\SystemException('cant build element filter');
+			}
+
+			$elementId = static::searchElement($elementFilter);
+			$products = static::findProducts($settings['IBLOCK'], $elementId);
+
+			if (!isset($products[$elementId])) // isSku
+			{
+				$offerId = static::resolveOffer($settings['IBLOCK'], $products, [
+					'PRODUCT_URL' => \CComponentEngine::makePathFromTemplate($template, $variables),
+				]);
+
+				$selectedId = $offerId ?? $elementId;
+			}
+			else
+			{
+				$selectedId = $elementId;
+			}
 		}
 		catch (Main\ArgumentException $exception)
 		{
-			$result = null;
+			$selectedId = null;
+			$products = null;
 		}
 		catch (Main\SystemException $exception)
 		{
@@ -58,10 +75,11 @@ class Element extends AbstractEngine
 				'AUDIT' => Logger\Audit::INJECTION_ELEMENT,
 				'URL' => static::getRequest()->getRequestUri(),
 			]))->forLogger());
-			$result = null;
+			$selectedId = null;
+			$products = null;
 		}
 
-		return $result;
+		return [$selectedId, $products];
 	}
 
 	protected static function iblockTemplate(int $iblockId = null, string $default = null) : string
@@ -99,7 +117,7 @@ class Element extends AbstractEngine
 
 		if (count(array_intersect_key($variables, $required)) === 0)
 		{
-			throw new Main\SystemException('cant build element filter');
+			return [];
 		}
 
 		$map = [
@@ -140,7 +158,31 @@ class Element extends AbstractEngine
 		return (int)$row['ID'];
 	}
 
-	protected static function resolveOffer(int $productIblockId, int $productId, array $defined = []) : ?int
+	protected static function findProducts(int $productIblockId, int $productId) : array
+	{
+		$environmentProduct = static::getEnvironment()->getProduct();
+		$productData = $environmentProduct->productData($productId);
+
+		if ($environmentProduct->isSku($productData))
+		{
+			$result = $environmentProduct->searchOffers($productId, $productIblockId);
+		}
+		else if ($environmentProduct->isOffer($productData))
+		{
+			$productId = $environmentProduct->searchProductId($productId, static::offerIblock($productIblockId));
+			$result = $environmentProduct->searchOffers($productId, $productIblockId);
+		}
+		else
+		{
+			$result = [
+				$productId => $productData,
+			];
+		}
+
+		return $result;
+	}
+
+	protected static function resolveOffer(int $productIblockId, array $products, array $defined = []) : ?int
 	{
 		try
 		{
@@ -149,9 +191,7 @@ class Element extends AbstractEngine
 			$offerVariables = static::parseTemplate($offerTemplate, $defined);
 			$offerFilter = static::elementFilter($offerIblock, $offerVariables);
 
-			if (!static::isSku($productId)) { return null; }
-
-			$result = static::searchOffer($productIblockId, $productId, $offerFilter);
+			$result = static::selectOffer($offerIblock, $products, $offerFilter);
 		}
 		catch (Main\SystemException $exception)
 		{
@@ -222,7 +262,7 @@ class Element extends AbstractEngine
 
 		if ($matched !== 'target')
 		{
-			throw new Main\ArgumentException('page not matched');
+			return [];
 		}
 
 		return $variables;
@@ -258,29 +298,14 @@ class Element extends AbstractEngine
 			$template = str_replace('#' . $key . '#', $value, $template);
 		}
 
-		$template = str_replace('//', '/', $template);
-
-		return $template;
+		return str_replace('//', '/', $template);
 	}
 
-	protected static function isSku(int $elementId) : bool
+	protected static function selectOffer(int $iblockId, array $products, array $filter = []) : ?int
 	{
-		$environment = static::getEnvironment();
-		$productEnvironment = $environment->getProduct();
+		$productEnvironment = static::getEnvironment()->getProduct();
 
-		return $productEnvironment->isSku($elementId);
-	}
-
-	protected static function searchOffer(int $iblockId, int $elementId, array $filter = []) : ?int
-	{
-		if (empty($filter)) { return null; }
-
-		$environment = static::getEnvironment();
-		$productEnvironment = $environment->getProduct();
-
-		$offers = $productEnvironment->searchOffers($elementId, $iblockId, $filter);
-
-		return !empty($offers) ? (int)reset($offers) : null;
+		return $productEnvironment->selectOffer($iblockId, $products, $filter);
 	}
 
 	protected static function getEnvironment() : TradingEntity\Reference\Environment

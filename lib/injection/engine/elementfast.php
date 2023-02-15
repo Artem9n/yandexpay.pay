@@ -12,15 +12,16 @@ class ElementFast extends Element
 	{
 		if (!static::testShow($settings)) { return; }
 
-		static::$elementId = static::findProduct($settings);
+		[ $elementId, $products ] = static::findProduct($settings);
 
-		if (static::$elementId === null) { return; }
+		if ($elementId === null) { return; }
 
 		Element::disable();
 
 		[ $componentParameters, $solutionParameters ] = static::getRenderParameters($injectionId, [
 			'SITE_ID' => $settings['SITE_ID'],
-			'PRODUCT_ID' => static::$elementId,
+			'PRODUCT_ID' => $elementId,
+			'PRODUCTS' => $products,
 			'FACTORY_OPTIONS' => [
 				'preserve' => false
 			]
@@ -66,7 +67,7 @@ class ElementFast extends Element
 		return $result;
 	}
 
-	protected static function findProduct(array $settings) : ?int
+	protected static function findProduct(array $settings) : array
 	{
 		$idParam = $settings['QUERY_ELEMENT_ID_PARAM'];
 
@@ -77,7 +78,27 @@ class ElementFast extends Element
 
 		$parameter = self::getUrlParamValue($idParam);
 
-		return is_numeric($parameter) ? (int)$parameter : null;
+		if (!is_numeric($parameter))
+		{
+			return [];
+		}
+
+		$elementId = (int)$parameter;
+
+		$products = static::findProducts($settings['IBLOCK'], $elementId);
+
+		if (!isset($products[$elementId])) // isSku
+		{
+			$offerId = static::selectOffer(static::offerIblock($settings['IBLOCK']), $products);
+
+			$selectedId = $offerId ?? $elementId;
+		}
+		else
+		{
+			$selectedId = $elementId;
+		}
+
+		return [ $selectedId, $products ];
 	}
 
 	protected static function testRequest(array $settings = []) : bool
