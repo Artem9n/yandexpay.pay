@@ -28,4 +28,13 @@ export default class ElementFast extends Element {
 		}, 100);
 	}
 
+	onStarterOffer() {
+		const offerProp = document.querySelector('#fast_view_item .sku-props.sku-props--detail');
+		const firstOfferId = parseInt(offerProp?.dataset?.offerId, 10);
+
+		if (isNaN(firstOfferId)) { return; }
+
+		this.cart.changeOffer(firstOfferId);
+	}
+
 }
