@@ -37,8 +37,8 @@ export default class Element extends Page {
 	onAjaxSuccess = (event, request, settings, data) => {
 		if (
 			typeof settings.url === 'string'
-			&& settings.url.match(/(\/catalog.item\/)(.*)(\/ajax.php)/) != null
 			&& (typeof settings.data === 'string' && settings.data.indexOf('act=selectSku') !== -1)
+			|| settings.url.indexOf('act=selectSku') !== -1
 		)
 		{
 			const response = data;
