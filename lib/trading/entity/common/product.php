@@ -54,7 +54,7 @@ class Product extends EntityReference\Product
 	{
 		$filter += ['ACTIVE' => 'Y'];
 
-		$offers = \CCatalogSku::getOffersList($productId, $iblockId, $filter, [ 'ID' ], [], [], [ 'AVAILABLE' => 'DESC', 'SORT' => 'ASC' ]);
+		$offers = \CCatalogSku::getOffersList($productId, $iblockId, $filter, [ 'ID', 'AVAILABLE' ], [], [], [ 'AVAILABLE' => 'DESC', 'SORT' => 'ASC' ]);
 
 		if (empty($offers[$productId]))
 		{
