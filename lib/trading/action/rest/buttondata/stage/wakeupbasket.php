@@ -27,13 +27,12 @@ class WakeUpBasket
 		if (isset($resolveModeElement[$this->mode]))
 		{
 			$productId = $this->productId;
-			$offerId = $state->environment->getProduct()->resolveOffer($productId);
 
 			$state->order->initEmptyBasket();
 
-			$basketData = $this->getProductBasketData($state, $offerId);
+			$basketData = $this->getProductBasketData($state, $productId);
 			$quantity = $basketData['RATIO'] ?? 1;
-			$addResult = $state->order->addProduct($offerId, $quantity, $basketData);
+			$addResult = $state->order->addProduct($productId, $quantity, $basketData);
 		}
 		elseif (isset($resolveModeBasket[$this->mode]))
 		{

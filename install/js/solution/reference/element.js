@@ -4,6 +4,10 @@ export default class Element extends Page {
 
 	initialProduct;
 	cart;
+	eventConfig = {
+		bx: true,
+		strict: true,
+	};
 
 	bootFactory(factory) {
 		this.handleStarterOffer(true);
@@ -11,18 +15,23 @@ export default class Element extends Page {
 
 	bootCart(cart) {
 		this.cart = cart;
-
 		this.handleStarterOffer(false);
 		this.bootInitialProduct();
 		this.handleCommonOffer(true);
 	}
 
+	destroyCart(cart) {
+		this.cart = null;
+		this.handleStarterOffer(false);
+		this.handleCommonOffer(false);
+	}
+
 	handleStarterOffer(dir) {
-		this[dir ? 'onEvent' : 'offEvent'](this.eventName(), this.onStarterOffer);
+		this[dir ? 'onEvent' : 'offEvent'](this.eventName(), this.onStarterOffer, this.eventConfig);
 	}
 
 	handleCommonOffer(dir) {
-		this[dir ? 'onEvent' : 'offEvent'](this.eventName(), this.onCommonOffer);
+		this[dir ? 'onEvent' : 'offEvent'](this.eventName(), this.onCommonOffer, this.eventConfig);
 	}
 
 	onStarterOffer = (eventData) => {

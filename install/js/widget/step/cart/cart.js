@@ -7,7 +7,7 @@ import Site from "./site";
 
 export default class Cart extends AbstractStep {
 
-	isBootstrap = false;
+	isBootstrap;
 	element;
 	display;
 	initialContent;
@@ -16,11 +16,17 @@ export default class Cart extends AbstractStep {
 		this.element = node;
 		this.display = this.getDisplay();
 		this.initialContent = this.element.innerHTML;
+		this.isBootstrap = false;
 
 		this.bootProxy();
 		this.bootSolution();
 		this.bootLocal();
 		this.delayBootstrap();
+	}
+
+	destroy() {
+		this.destroyLocal()
+		this.destroySolution();
 	}
 
 	bootProxy() : Rest|Site{
@@ -42,15 +48,21 @@ export default class Cart extends AbstractStep {
 	}
 
 	bootSolution() {
-		const solution = this.widget.getSolution();
+		this.widget.getSolution()?.bootCart(this);
+	}
 
-		if (solution == null) { return; }
-
-		solution.bootCart(this);
+	destroySolution() {
+		this.widget.getSolution()?.destroyCart(this);
 	}
 
 	bootLocal() {
 		EventProxy.make().fire('bxYapayCartInit', {
+			cart: this,
+		});
+	}
+
+	destroyLocal() {
+		EventProxy.make().fire('bxYapayCartDestroy', {
 			cart: this,
 		});
 	}

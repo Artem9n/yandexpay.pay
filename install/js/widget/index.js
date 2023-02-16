@@ -1,7 +1,8 @@
-import Factory from './factory';
-import Widget from './widget';
+import FactoryClass from './factory';
+import WidgetClass from './widget';
 
-export {
-	Factory,
-	Widget
-};
+const previousFactory = window.BX?.YandexPay?.Factory;
+const previousWidget = window.BX?.YandexPay?.Widget;
+
+export const Factory = previousFactory ?? FactoryClass;
+export const Widget = previousWidget ?? WidgetClass;

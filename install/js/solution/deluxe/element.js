@@ -1,13 +1,27 @@
-import Page from "../reference/page";
+import Page from '../reference/page';
 
 export default class Element extends Page {
 
-	initialHandler;
+	initialProduct;
+
+	eventConfig = {
+		jquery: true,
+		strict: true,
+	};
 
 	bootCart(cart) {
 		this.cart = cart;
+		this.handleCommonOffer(true);
 		this.onStarterOffer();
-		this.onCommonOffer();
+	}
+
+	destroyCart(cart) {
+		this.cart = null;
+		this.handleCommonOffer(false);
+	}
+
+	handleCommonOffer(dir: boolean) {
+		this[dir ? 'onEvent' : 'offEvent']('ajaxSuccess', this.onAjaxSuccess, this.eventConfig);
 	}
 
 	onStarterOffer() {
@@ -20,43 +34,31 @@ export default class Element extends Page {
 		this.cart.changeOffer(firstOfferId);
 	}
 
-	onCommonOffer() {
+	onAjaxSuccess = (event, request, settings, data) => {
+		if (
+			typeof settings.url === 'string'
+			&& (typeof settings.data === 'string' && settings.data.indexOf('act=selectSku') !== -1)
+			|| settings.url.indexOf('act=selectSku') !== -1
+		)
+		{
+			const response = data;
 
-		if (this.initialHandler != null) { return; }
+			if (typeof response !== "object") { return; }
 
-		$(document).ajaxSuccess(( event, request, settings, data ) => {
-			if (
-				settings.url.match(/(\/catalog.item\/)(.*)(\/ajax.php)/) != null
-				|| settings.url.indexOf('act=selectSku') !== -1
-			) {
-				const response = data;
+			let newProductId;
 
-				if (typeof response !== "object") { return; }
+			for (let key in response) {
 
-				let newProductId;
+				if (!response.hasOwnProperty(key) && !response[key].hasOwnProperty('PRODUCT')) { continue; }
 
-				for (let key in response) {
+				newProductId = parseInt(response[key].PRODUCT?.ID, 10);
 
-					if (!response.hasOwnProperty(key)) { continue; }
-
-					for (let entity in response[key]) {
-
-						if (!response[key].hasOwnProperty(entity)) { continue; }
-
-						if (entity !== 'PRODUCT') { continue; }
-
-						newProductId = parseInt(response[key].PRODUCT?.ID, 10);
-
-						if (!isNaN(newProductId)) { break; }
-					}
-				}
-
-				if (newProductId == null || isNaN(newProductId)) { return; }
-
-				this.initialHandler = true;
-
-				this.cart.delayChangeOffer(newProductId);
+				if (!isNaN(newProductId)) { break; }
 			}
-		});
+
+			if (newProductId == null || isNaN(newProductId)) { return; }
+
+			this.cart.delayChangeOffer(newProductId);
+		}
 	}
 }

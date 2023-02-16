@@ -2,6 +2,10 @@ import {EventProxy} from "../../widget/utils/eventproxy";
 
 export default class Page {
 
+	constructor() {
+		this.eventProxies = {};
+	}
+
 	bootFactory(factory) {
 
 	}
@@ -10,16 +14,30 @@ export default class Page {
 
 	}
 
+	destroyWidget(widget) {
+
+	}
+
 	bootCart(cart) {
 
 	}
 
+	destroyCart(cart) {
+
+	}
+
 	onEvent(name, callback, config = {}) {
-		EventProxy.make(config).on(name, callback);
+		if (this.eventProxies[name] == null) {
+			this.eventProxies[name] = EventProxy.make(config);
+		}
+
+		this.eventProxies[name].on(name, callback);
 	}
 
 	offEvent(name, callback, config = {}) {
-		EventProxy.make(config).off(name, callback);
+		if (this.eventProxies[name] == null) { return; }
+
+		this.eventProxies[name].off(name, callback);
 	}
 
 }

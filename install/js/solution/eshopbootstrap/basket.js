@@ -2,6 +2,12 @@ import Page from '../reference/page';
 
 export default class Basket extends Page {
 
+	cart;
+	eventConfig = {
+		bx: true,
+		strict: true,
+	};
+
 	bootFactory(factory) {
 		factory.extendDefaults({
 			preserve: {
@@ -14,10 +20,20 @@ export default class Basket extends Page {
 	}
 
 	bootCart(cart) {
-		if (typeof BX === 'undefined') { return; }
+		this.cart = cart;
+		this.handleBasketChange(true);
+	}
 
-		this.onEvent('OnBasketChange', () => {
-			cart.delayChangeBasket();
-		});
+	destroyCart(cart) {
+		this.cart = null;
+		this.handleBasketChange(false);
+	}
+
+	handleBasketChange(dir: boolean) {
+		this[dir ? 'onEvent' : 'offEvent']('OnBasketChange', this.onBasketChange, this.eventConfig);
+	}
+
+	onBasketChange = () => {
+		this.cart.delayChangeBasket();
 	}
 }

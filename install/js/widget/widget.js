@@ -1,6 +1,7 @@
 import StepFactory from './step/factory';
 import Loader from './step/loader';
-import SolutionRegistry from "./solutionregistry";
+import Page from "../solution/reference/page";
+import NodePreserver from "./ui/nodepreserver";
 
 export default class Widget {
 
@@ -11,6 +12,10 @@ export default class Widget {
 	loader;
 	el;
 	step;
+	/** @var Page|null */
+	solution;
+	/** @var NodePreserver|null */
+	preserver;
 
 	/**
 	 * @param {Object<Element>} element
@@ -22,7 +27,16 @@ export default class Widget {
 		this.el = element;
 
 		this.setOptions(options);
+	}
+
+	boot() {
 		this.bootSolution();
+	}
+
+	destroy() {
+		this.destroyStep()
+		this.destroySolution();
+		this.destroyPreserver();
 	}
 
 	/**
@@ -53,7 +67,12 @@ export default class Widget {
 		this.step.render(this.el, data);
 	}
 
+	destroyStep() {
+		this.step?.destroy();
+	}
+
 	bootLoader() {
+		if (this.loader != null) { return; }
 		this.loader = new Loader(this);
 		this.loader.render(this.el);
 	}
@@ -61,11 +80,12 @@ export default class Widget {
 	removeLoader() {
 		if (this.loader == null) { return; }
 		this.loader.remove(this.el);
+		this.loader = null;
 	}
 
 	/**
 	 * @param {String} type
-	 * @returns {AbstractCart|Finish|Step3ds|Payment|Failure}
+	 * @returns {Cart|Finish|Step3ds|Payment|Failure}
 	 * @throws {Error}
 	 */
 	makeStep(type) {
@@ -74,19 +94,28 @@ export default class Widget {
 		return StepFactory.make(type, this, options);
 	}
 
-	getSolution() {
-		const name = this.getOption('solution');
-		const mode = this.getOption('mode');
+	setPreserver(preserver: NodePreserver) : void {
+		this.preserver = preserver;
+	}
 
-		return SolutionRegistry.getPage(name, mode);
+	destroyPreserver() : void {
+		this.preserver?.destroy();
+	}
+
+	setSolution(solution: Page) : void {
+		this.solution = solution;
+	}
+
+	getSolution() : Page {
+		return this.solution;
 	}
 
 	bootSolution() {
-		const solution = this.getSolution();
+		this.getSolution()?.bootWidget(this);
+	}
 
-		if (solution == null) { return; }
-
-		solution.bootWidget(this);
+	destroySolution() {
+		this.getSolution()?.destroyWidget(this);
 	}
 
 	extendDefaults(options) {

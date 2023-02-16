@@ -1,16 +1,5 @@
-import Page from '../../reference/page';
-import factoryLayout from './molecules/factorylayout';
+import EshopOrder from '../../eshopbootstrap/order';
 
-export default class Order extends Page {
+export default class Order extends EshopOrder {
 
-	bootFactory(factory) {
-		factoryLayout(factory, {
-			preserve: {
-				mutation: {
-					anchor: '#bx-soa-total, #bx-soa-total-mobile',
-					delay: null,
-				},
-			},
-		});
-	}
 }

@@ -12,15 +12,42 @@ class Product extends EntityReference\Product
 {
 	use Concerns\HasMessage;
 
-	public function isSku(int $productId) : bool
+	public function productData(int $productId) : array
 	{
-		$products = $this->loadProducts([$productId], [ 'TYPE' ]);
+		$products = $this->loadProducts([$productId], [ 'TYPE', 'AVAILABLE' ]);
 
-		if (!isset($products[$productId])) { return false; }
+		if (!isset($products[$productId]))
+		{
+			throw new Main\ArgumentException(static::getMessage('NOT_PRODUCT_DATA', [
+				'#PRODUCT_ID#' => $productId
+			]));
+		}
 
-		$product = $products[$productId];
+		return $products[$productId];
+	}
 
+	public function isSku(array $product) : bool
+	{
 		return (int)$product['TYPE'] === Catalog\ProductTable::TYPE_SKU;
+	}
+
+	public function isOffer(array $product) : bool
+	{
+		return (int)$product['TYPE'] === Catalog\ProductTable::TYPE_OFFER;
+	}
+
+	public function searchProductId(int $offerId, int $iblockId = 0) : int
+	{
+		$products = \CCatalogSku::getProductList($offerId, $iblockId);
+
+		if (empty($products[$offerId]))
+		{
+			throw new Main\ArgumentException(static::getMessage('NOT_PRODUCT_PARENT', [
+				'#OFFER_ID#' => $offerId
+			]));
+		}
+
+		return (int)$products[$offerId]['ID'];
 	}
 
 	public function searchOffers(int $productId, int $iblockId = 0, array $filter = []) : array
@@ -29,18 +56,83 @@ class Product extends EntityReference\Product
 
 		$offers = \CCatalogSku::getOffersList($productId, $iblockId, $filter, [ 'ID' ], [], [], [ 'AVAILABLE' => 'DESC', 'SORT' => 'ASC' ]);
 
-		if (empty($offers[$productId])) { return []; }
+		if (empty($offers[$productId]))
+		{
+			throw new Main\ArgumentException(static::getMessage('NOT_OFFERS', [
+				'#PRODUCT_ID#' => $productId
+			]));
+		}
 
-		return array_column($offers[$productId], 'ID');
+		return $offers[$productId];
 	}
 
-	public function resolveOffer(int $productId) : int
+	public function selectOffer(int $iblockId, array $products, array $filter) : ?int
 	{
-		if (!$this->isSku($productId)) { return $productId; }
+		if (empty($products))
+		{
+			throw new Main\ArgumentException(static::getMessage('NOT_PRODUCTS'));
+		}
 
-		$offers = $this->searchOffers($productId);
+		if (empty($filter))
+		{
+			$result = null;
 
-		return !empty($offers) ? reset($offers) : $productId;
+			foreach ($products as $productId => $product)
+			{
+				if ($product['AVAILABLE'] === 'Y')
+				{
+					$result = $productId;
+					break;
+				}
+				else if ($result === null)
+				{
+					$result = $productId;
+				}
+			}
+		}
+		else if (isset($filter['=ID']))
+		{
+			$idFilter = $filter['=ID'];
+
+			if (!is_numeric($idFilter))
+			{
+				throw new Main\ArgumentException(static::getMessage('ERR_FILTER_ID'));
+			}
+
+			if (!isset($products[$idFilter]))
+			{
+				throw new Main\ArgumentException(static::getMessage('ERR_FILTER_ID_PRODUCTS'));
+			}
+
+			$result = (int)$idFilter;
+		}
+		else
+		{
+			$query = \CIBlockElement::GetList(
+				[],
+				[
+					'IBLOCK_ID' => $iblockId,
+					'=ID' => array_keys($products),
+					$filter,
+				],
+				false,
+				[ 'nTopCount' => 1 ],
+				[ 'ID' ]
+			);
+
+			if ($row = $query->Fetch())
+			{
+				$result = (int)$row['ID'];
+			}
+			else
+			{
+				throw new Main\ArgumentException(static::getMessage('NOT_FOUND_OFFER', [
+					'#PRODUCT_ID#' => implode(', ', array_keys($products))
+				]));
+			}
+		}
+
+		return $result;
 	}
 
 	public function getBasketData(array $productIds) : array

@@ -20,6 +20,8 @@ class BasketFly extends AbstractEngine
 			]
 		);
 
+		if (!static::testRender($componentParameters)) { return; }
+
 		static::$widgetContent = static::render($componentParameters, $solutionParameters['RENDER'] ?? self::RENDER_RETURN);
 	}
 

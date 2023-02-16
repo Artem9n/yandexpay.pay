@@ -4,6 +4,7 @@ import {EventProxy} from "../../utils/eventproxy";
 export default class Rest extends Proxy {
 
 	bootstrap() {
+		this.widget.bootLoader();
 		this.getButtonData()
 			.then((result) => {
 				if (result.status === 'fail') { throw new Error(result.reason); }
@@ -22,6 +23,7 @@ export default class Rest extends Proxy {
 			mode: this.getOption('mode'),
 			currencyCode: this.getOption('currencyCode'),
 			setupId: this.getOption('setupId'),
+			products: this.getOption('products'),
 		};
 
 		return this.cart.query(this.getOption('restUrl') + 'button/data', data);
@@ -109,15 +111,16 @@ export default class Rest extends Proxy {
 		this.cart.initialContent = null;
 		this.payment = payment;
 		this.cart.display.mount(this.cart.element, payment, YaPay.ButtonType.Checkout);
-
 		EventProxy.make().fire('bxYapayMountButton');
 	}
 
-	restore(node) {
-		if (this.payment == null) {
-			return;
-		}
+	unmount() {
+		this._mounted = null;
+		this.cart.display.unmount(this.cart.element, this.payment);
+	}
 
+	restore(node) {
+		if (this.payment == null) { return; }
 		this.cart.display.mount(node, this.payment, YaPay.ButtonType.Checkout);
 		EventProxy.make().fire('bxYapayRestoreButton');
 	}
@@ -142,15 +145,17 @@ export default class Rest extends Proxy {
 	changeOffer(newProductId) {
 		let productId = this.getOption('productId');
 
-		if (productId !== newProductId) { // todo in items
-			this.widget.setOptions({productId: newProductId});
+		if (productId === newProductId) { return; }
 
-			if (this._mounted == null) {
-				this.bootstrap();
-			}
-			else {
-				this.update();
-			}
+		this.widget.setOptions({productId: newProductId});
+
+		if (!this.validateProduct(newProductId)) { return; }
+
+		if (this._mounted == null) {
+			this.bootstrap();
+		}
+		else {
+			this.update();
 		}
 	}
 
@@ -163,12 +168,12 @@ export default class Rest extends Proxy {
 			const result = await this.getButtonData()
 				.then(result => result)
 				.catch((error) => {
+					this.unmount();
 					this.cart.showError('getButtonData','get not button data', error);
 				});
 
 			if (result.status === 'fail') {
-				this._mounted = null;
-				this.cart.display.unmount(this.cart.element, this.payment);
+				this.unmount();
 				throw new Error(result.reason);
 			}
 
@@ -182,5 +187,21 @@ export default class Rest extends Proxy {
 				metadata: result.data.metadata,
 			}
 		});
+	}
+
+	validateProduct(productId) {
+		const products = this.getOption('products');
+
+		if (productId != null && products != null && products.length !== 0)
+		{
+			if (!products.hasOwnProperty(productId)) { return false; }
+
+			if (products[productId].AVAILABLE === 'N') {
+				this.unmount();
+				return false;
+			}
+		}
+
+		return true;
 	}
 }
