@@ -26,6 +26,8 @@ class Element extends AbstractEngine
 			'PRODUCTS' => $products,
 		]);
 
+		if (!static::testRender($componentParameters)) { return; }
+
 		static::render($componentParameters);
 	}
 

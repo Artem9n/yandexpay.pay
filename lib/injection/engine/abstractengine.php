@@ -26,7 +26,6 @@ abstract class AbstractEngine extends Event\Base
 		return (
 			SITE_ID === $settings['SITE_ID']
 			&& static::testRequest($settings)
-			&& static::testRender($settings)
 		);
 	}
 
