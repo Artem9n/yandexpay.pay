@@ -72,8 +72,11 @@ export default class Widget {
 	}
 
 	bootLoader() {
-		if (this.loader != null) { return; }
-		this.loader = new Loader(this);
+		if (this.loader == null)
+		{
+			this.loader = new Loader(this);
+		}
+
 		this.loader.render(this.el);
 	}
 
