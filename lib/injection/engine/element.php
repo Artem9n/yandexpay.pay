@@ -46,7 +46,7 @@ class Element extends AbstractEngine
 
 			if (empty($elementFilter))
 			{
-				throw new Main\SystemException('cant build element filter');
+				throw new Main\ArgumentException('cant build element filter');
 			}
 
 			$elementId = static::searchElement($elementFilter);
