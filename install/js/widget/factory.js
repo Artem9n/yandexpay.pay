@@ -175,7 +175,7 @@ export default class Factory {
 	testConcurrency(widget) {
 		const mode = this.getOption('mode');
 
-		if (mode == null) { return; }
+		if (mode == null) { return widget; }
 
 		for (const sibling of Concurrency.same(mode)) {
 			if (document.documentElement.contains(sibling.el)) { continue; }
