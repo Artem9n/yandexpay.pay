@@ -14,6 +14,8 @@ class Basket extends AbstractEngine
 
 		[ $componentParameters ] = static::getRenderParameters($injectionId, ['SITE_ID' => $settings['SITE_ID']]);
 
+		if (!static::testRender($componentParameters)) { return; }
+
 		static::render($componentParameters);
 	}
 }

@@ -6,6 +6,7 @@ use Bitrix\Main;
 use Bitrix\Sale;
 use Bitrix\Catalog;
 use Bitrix\Sale\Shipment;
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Data;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
@@ -33,6 +34,14 @@ class Store extends AbstractAdapter
 	{
 		$storeIds = $this->getUsedStoreIds($service);
 		$stores = $this->loadStores($storeIds, $bounds);
+
+		$strategyType = Config::getOption('stores_by_available');
+
+		if ((string)$strategyType !== '')
+		{
+			$strategyAvailable = EntitySale\Delivery\Site\AvailableStore\Strategy::getInstance($strategyType);
+			$stores = $strategyAvailable->resolve($stores, $order);
+		}
 
 		if (empty($stores)) { return []; }
 
@@ -66,7 +75,7 @@ class Store extends AbstractAdapter
 
 		while ($store = $query->fetch())
 		{
-			$result[] = $store;
+			$result[$store['ID']] = $store;
 		}
 
 		return $result;
@@ -157,7 +166,7 @@ class Store extends AbstractAdapter
 		$result = Sale\Delivery\DeliveryLocationTable::getList([
 			'filter' => [
 				'=DELIVERY_ID' => $deliveryId,
-			]
+			],
 		])->fetchCollection();
 
 		return $result->getLocationCodeList();
@@ -196,7 +205,7 @@ class Store extends AbstractAdapter
 			'filter' => [
 				'=ID' => $storeId,
 			],
-			'limit' => 1
+			'limit' => 1,
 		]);
 
 		if ($store = $query->fetch())

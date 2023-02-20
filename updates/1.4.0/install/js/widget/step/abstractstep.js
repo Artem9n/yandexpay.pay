@@ -21,6 +21,10 @@ export default class AbstractStep {
 		this.options = Object.assign({}, options);
 	}
 
+	destroy() {
+		// nothing by default
+	}
+
 	/**
 	 *
 	 * @param {string} name

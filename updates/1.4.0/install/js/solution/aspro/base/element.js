@@ -1,11 +1,28 @@
 import ElementSkeleton from '../../reference/element';
-import factoryLayout from './molecules/factorylayout';
 
 export default class Element extends ElementSkeleton {
-
 	bootFactory(factory) {
-		super.bootFactory(factory);
-		factoryLayout(factory);
+
+	}
+
+	bootCart(cart) {
+		this.cart = cart;
+		this.onStarterOffer();
+		this.handleCommonOffer(true);
+	}
+
+	destroyCart(cart) {
+		this.cart = null;
+		this.handleCommonOffer(false);
+	}
+
+	onStarterOffer = () => {
+		const offerProp = document.querySelector(".to-cart:not(.read_more)");
+		const firstOfferId = parseInt(offerProp?.dataset?.item, 10);
+
+		if (isNaN(firstOfferId)) { return; }
+
+		this.cart.changeOffer(firstOfferId);
 	}
 
 	eventName() {

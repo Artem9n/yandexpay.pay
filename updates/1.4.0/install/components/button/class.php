@@ -5,6 +5,7 @@ namespace YandexPay\Pay\Components;
 use Bitrix\Currency;
 use Bitrix\Main;
 use Bitrix\Sale;
+use Bitrix\Catalog;
 use Bitrix\Main\Localization\Loc;
 use YandexPay\Pay\Config;
 use YandexPay\Pay\Logger;
@@ -95,6 +96,7 @@ class TradingButton extends \CBitrixComponent
 			'siteUrl'           => Utils\Url::absolutizePath(),
 			'successUrl'        => $options->getSuccessUrl(),
 			'productId'         => $this->arParams['PRODUCT_ID'],
+			'products'          => $this->arParams['PRODUCTS'],
 			'siteId'            => $setup->getSiteId(),
 			'setupId'           => $setup->getId(),
 			'paySystemId'       => $options->getPaymentCard(),
