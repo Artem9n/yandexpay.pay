@@ -210,9 +210,28 @@ class Store extends AbstractAdapter
 
 		if ($store = $query->fetch())
 		{
+			$store['DESCRIPTION'] = $this->pickupStoreDescription($store);
 			$result = $store;
 		}
 
 		return $result;
+	}
+
+	protected function pickupStoreDescription(array $store) :string
+	{
+		$template = Config::getOption('catalog_store_description', '#DESCRIPTION#');
+
+		if (trim($template) === '') {	return ''; }
+
+		foreach ($store as $code => $value)
+		{
+			if (!is_scalar($value)) { continue; }
+
+			$marker = sprintf("#%s#", $code);
+
+			$template = str_replace($marker, $value, $template);
+		}
+
+		return $template;
 	}
 }
