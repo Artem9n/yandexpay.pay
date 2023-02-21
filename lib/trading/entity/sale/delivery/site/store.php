@@ -18,7 +18,7 @@ class Store extends AbstractAdapter
 
 	public function load() : bool
 	{
-		return true;
+		return Main\Loader::includeModule('catalog');
 	}
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
