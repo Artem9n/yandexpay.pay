@@ -41,6 +41,7 @@ class TradingButton extends \CBitrixComponent
 		$arParams['POSITION'] = !empty($arParams['POSITION']) ? (string)$arParams['POSITION'] : null;
 		$arParams['SELECTOR'] = !empty($arParams['SELECTOR']) ? (string)$arParams['SELECTOR'] : null;
 		$arParams['MODE'] = !empty($arParams['MODE']) ? (string)$arParams['MODE'] : null;
+		$arParams['OUTPUT'] = $arParams['OUTPUT'] ?? 'Y';
 
 		return $arParams;
 	}

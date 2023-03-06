@@ -81,7 +81,7 @@ CONTENT;
 
 $arResult['OUTPUT'] = $output;
 
-if (!$arParams['RETURN'])
+if ($arParams['OUTPUT'] === 'Y')
 {
 	echo $arResult['OUTPUT'];
 }
