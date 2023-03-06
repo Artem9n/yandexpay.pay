@@ -22,10 +22,11 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_NO_VALUE'] = '---Не выбрано---';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_NO_PROMPT'] = '---Не запрашивать---';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_NO_DEFAULTS'] = '---Собственное решение---';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_VALIDATE_ONE_OF_EMAIL_PHONE'] = 'Не установлен флаг "Запрашивать E-mail покупателя", либо "Запрашивать телефон покупателя"';
-$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS'] = 'Адрес';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY'] = 'Доставка';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_ZIP'] = 'Индекс';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_CITY'] = 'Город';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_ADDRESS'] = 'Адрес';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_DATE_DELIVERY'] = 'Дата доставки';
 
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_LOG_LEVEL_NAME'] = 'Содержание журнала событий';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_LOG_LEVEL_HELP'] = 'Выберите вариант «Информация» — тогда в журнале событий будут отображаться ошибки и любые действия с заказами.';

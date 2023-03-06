@@ -319,6 +319,7 @@ class Options extends Reference\Skeleton
 			'ZIP',
 			'CITY',
 			'ADDRESS',
+			'DATE_DELIVERY'
 		];
 		$sort = 3100;
 
@@ -326,8 +327,9 @@ class Options extends Reference\Skeleton
 		{
 			$propertyFields['PROPERTY_' . $key] = [
 				'NAME' => static::getMessage('ADDRESS_' . $key, null, $key),
+				'HELP' => static::getMessage('ADDRESS_' . $key . '_HELP', null, ''),
 				'TYPE' => 'orderProperty',
-				'GROUP' => static::getMessage('ADDRESS'),
+				'GROUP' => static::getMessage('DELIVERY'),
 				'SORT' => $sort++,
 				'VALUES' => $propertyEnum,
 				'SETTINGS' => [
