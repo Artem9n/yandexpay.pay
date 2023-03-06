@@ -96,7 +96,7 @@ class OrderDeliveryCollector extends ResponseCollector
 				continue;
 			}
 
-			$result[] = $this->collectDeliveryOption($calculationResult, $deliveryService);
+			$result[] = $this->collectDeliveryOption($state, $calculationResult, $deliveryService);
 		}
 
 		if (!empty($result))
@@ -171,26 +171,103 @@ class OrderDeliveryCollector extends ResponseCollector
 	}
 
 	protected function collectDeliveryOption(
+		State\OrderCalculation $state,
 		EntityReference\Delivery\CalculationResult $calculationResult,
 		Sale\Delivery\Services\Base $service
 	) : array
 	{
-		$toDate = $calculationResult->getDateTo();
-		$vatList = Vat::getVatList();
-		$vatRate = $vatList[$service->getVatId()] ?? 0;
-
 		return [
 			'courierOptionId' => (string)$calculationResult->getDeliveryId(),
 			'provider' => 'COURIER',
 			'category' => $calculationResult->getCategory(),
 			'title' => $calculationResult->getServiceName(),
-			'amount'    => (float)$calculationResult->getPrice(),
-			'fromDate' => $calculationResult->getDateFrom()->format('Y-m-d'),
-			'toDate' => $toDate !== null ? $toDate->format('Y-m-d') : null,
+			'amount' => (float)$calculationResult->getPrice(),
 			'receipt' => [
-				'tax' => Vat::convertForService($vatRate),
+				'tax' => $this->collectDeliveryTax($service->getVatId()),
 			],
+		] + $this->collectDeliveryDateTime($state, $calculationResult, $service->getId());
+	}
+
+	protected function collectDeliveryTax(int $vatId) : int
+	{
+		$vatList = Vat::getVatList();
+		$vatRate = $vatList[$vatId] ?? 0;
+
+		return Vat::convertForService($vatRate);
+	}
+
+	protected function collectDeliveryDateTime(
+		State\OrderCalculation $state,
+		EntityReference\Delivery\CalculationResult $calculationResult,
+		int $deliveryId
+	) : array
+	{
+		$deliveryOption = $state->options->getDeliveryOptions()->getItemByServiceId($deliveryId);
+
+		$serviceFromDate = $calculationResult->getDateFrom()->format('Y-m-d');
+		$serviceToDate = $calculationResult->getDateTo() !== null ? $calculationResult->getDateTo()->format('Y-m-d') : null;
+
+		$result = [
+			'type' => 'PLAIN',
+			'fromDate' => $serviceFromDate,
+			'toDate' => $serviceToDate,
 		];
+
+		if ($deliveryOption === null) { return $result; }
+
+		$courierOptions = $deliveryOption->getCourierOptions();
+
+		$optionFromDate = $courierOptions->getDateInterval()->getFromDate();
+		$optionToDate = $courierOptions->getDateInterval()->getToDate();
+		$type = $courierOptions->getTypeSchedule();
+		$typeTime = $courierOptions->getTypeTimeInterval();
+
+		$timeIntervals = [];
+
+		if ($type === 'PLAIN')
+		{
+			$timeIntervals = [
+				'fromTime' => $courierOptions->getTimeInterval()->getFromTime(),
+				'toTime' => $courierOptions->getTimeInterval()->getToTime(),
+			];
+		}
+		else if ($typeTime !== null)
+		{
+			$timeIntervals['timeIntervals'] = [
+				'type' => $typeTime,
+			];
+
+			if ($typeTime === 'GRID')
+			{
+				$timeIntervals['timeIntervals'] += [
+					'grid' => [
+						'duration' => $courierOptions->getDuration(),
+						'start' => $courierOptions->getStartTime(),
+						'end' => $courierOptions->getEndTime(),
+						'step' => $courierOptions->getStepTime(),
+					]
+				];
+			}
+			else
+			{
+				$values = array_map(static function($value) {
+					return [
+						'start' => $value['FROM_TIME'],
+						'end' => $value['TO_TIME']
+					];
+				}, $courierOptions->getTimeIntervals()->getValues());
+
+				$timeIntervals['timeIntervals'] += [
+					'values' => $values
+				];
+			}
+		}
+
+		return [
+			'type' => $type,
+			'fromDate' => $optionFromDate ?? $serviceFromDate,
+			'toDate' => $optionToDate ?? $serviceToDate,
+		] + $timeIntervals;
 	}
 
 	protected function pushMethod(string $type) : void
