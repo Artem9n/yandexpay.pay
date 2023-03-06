@@ -3,6 +3,7 @@
 namespace YandexPay\Pay\Trading\Entity\Sale;
 
 use Sale\Handlers\PaySystem\YandexPayHandler;
+use YandexPay\Pay\Config;
 use YandexPay\Pay\Reference\Assert;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Reference as EntityReference;
@@ -712,7 +713,7 @@ class Order extends EntityReference\Order
 			'QUANTITY' => $count,
 			'CURRENCY' => $this->internalOrder->getCurrency(),
 			'MODULE' => 'catalog',
-			'PRODUCT_PROVIDER_CLASS' => Catalog\Product\Basket::getDefaultProviderName(),
+			'PRODUCT_PROVIDER_CLASS' => $this->productProviderClass(),
 		];
 
 		if ($data !== null)
@@ -721,6 +722,29 @@ class Order extends EntityReference\Order
 		}
 
 		return $result;
+	}
+
+	protected function productProviderClass() : string
+	{
+		$className = (string)Config::getOption('environment_product_provider', '');
+
+		if ($className !== '')
+		{
+			if (!is_subclass_of($className, Sale\SaleProviderBase::class) && !is_subclass_of($className, \IBXSaleProductProvider::class))
+			{
+				throw new Main\SystemException(sprintf(
+					'Product provider %s must be child of %s or %s. Change option environment_product_provider for module %s',
+					$className,
+					Sale\SaleProviderBase::class,
+					\IBXSaleProductProvider::class,
+					Config::getModuleName()
+				));
+			}
+
+			return $className;
+		}
+
+		return Catalog\Product\Basket::getDefaultProviderName();
 	}
 
 	public function applyCoupon(string $coupon) : Main\Result
