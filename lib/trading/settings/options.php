@@ -323,11 +323,17 @@ class Options extends Reference\Skeleton
 		];
 		$sort = 3100;
 
+		$replaceHelp = [
+			'DATE_DELIVERY' => [
+				'#PERSON_TYPE_ID#' => $this->getPersonTypeId(),
+			],
+		];
+
 		foreach ($keys as $key)
 		{
 			$propertyFields['PROPERTY_' . $key] = [
 				'NAME' => static::getMessage('ADDRESS_' . $key, null, $key),
-				'HELP' => static::getMessage('ADDRESS_' . $key . '_HELP', null, ''),
+				'HELP' => static::getMessage('ADDRESS_' . $key . '_HELP', $replaceHelp[$key], ''),
 				'TYPE' => 'orderProperty',
 				'GROUP' => static::getMessage('DELIVERY'),
 				'SORT' => $sort++,

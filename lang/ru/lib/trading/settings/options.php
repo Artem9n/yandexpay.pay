@@ -23,6 +23,9 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_NO_PROMPT'] = '---Не запрашивать---';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_NO_DEFAULTS'] = '---Собственное решение---';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_VALIDATE_ONE_OF_EMAIL_PHONE'] = 'Не установлен флаг "Запрашивать E-mail покупателя", либо "Запрашивать телефон покупателя"';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY'] = 'Доставка';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_DATE_DELIVERY_HELP'] = 'Укажите свойство заказа, для сохранения даты и время доставки, при наличие настроек интервалов для курьерской доставки, 
+либо создайте свойство указав его как  <strong>"служебное"</strong> <a target="_blank" href="/bitrix/admin/sale_order_props_edit.php?lang=ru&PERSON_TYPE_ID=#PERSON_TYPE_ID#">Создать</a>';
+
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_ZIP'] = 'Индекс';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_CITY'] = 'Город';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_ADDRESS_ADDRESS'] = 'Адрес';
