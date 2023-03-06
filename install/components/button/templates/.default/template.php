@@ -80,3 +80,8 @@ CONTENT;
 }
 
 $arResult['OUTPUT'] = $output;
+
+if (!$arParams['RETURN'])
+{
+	echo $arResult['OUTPUT'];
+}
