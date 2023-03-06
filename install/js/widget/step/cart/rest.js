@@ -196,7 +196,7 @@ export default class Rest extends Proxy {
 		{
 			if (!products.hasOwnProperty(productId)) { return false; }
 
-			if (products[productId].AVAILABLE === 'N') {
+			if (this.getOption('checkAvailable') && products[productId].AVAILABLE === 'N') {
 				this.unmount();
 				return false;
 			}
