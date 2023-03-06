@@ -15,4 +15,34 @@ class Delivery extends ActionReference\Dto
 	{
 		return (float)$this->requireField('amount');
 	}
+
+	public function getCustomerChoiceDate() : ?string
+	{
+		return $this->getField('customerChoice.date');
+	}
+
+	public function getCustomerChoiceTime() : ?array
+	{
+		return $this->getField('customerChoice.time');
+	}
+
+	public function getScheduleType() : string
+	{
+		return $this->requireField('type');
+	}
+
+	public function getPlainToDate() : string
+	{
+		return $this->requireField('toDate');
+	}
+
+	public function getPlainFromTime() : ?string
+	{
+		return $this->getField('fromTime');
+	}
+
+	public function getPlainToTime() : ?string
+	{
+		return $this->getField('toTime');
+	}
 }

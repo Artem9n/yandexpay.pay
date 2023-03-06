@@ -22,6 +22,7 @@ class OrderProperties
 
 		$this->fillAddress($state);
 		$this->fillComment($state);
+		$this->fillDeliveryDateTime($state);
 	}
 
 	protected function fillBuyerProperties(State\OrderCalculation $state) : void
@@ -60,5 +61,34 @@ class OrderProperties
 		{
 			$state->order->setComment($comment);
 		}
+	}
+
+	protected function fillDeliveryDateTime(State\OrderCalculation $state) : void
+	{
+		$deliveryRequest = $this->request->getDelivery();
+		$scheduleType = $deliveryRequest->getScheduleType();
+
+		if ($scheduleType === 'PLAIN')
+		{
+			$deliveryDate = $deliveryRequest->getPlainToDate();
+			$deliveryFromTime = $deliveryRequest->getPlainFromTime();
+			$deliveryToTime = $deliveryRequest->getPlainToTime();
+			$valueTime = $deliveryFromTime !== null && $deliveryToTime !== null
+				? $deliveryFromTime . ' - ' . $deliveryToTime
+				: '';
+		}
+		else
+		{
+			$deliveryDate = $deliveryRequest->getCustomerChoiceDate();
+			$deliveryTime = $deliveryRequest->getCustomerChoiceTime();
+
+			if ($deliveryDate === null && $deliveryTime === null) { return; }
+
+			$valueTime = $deliveryTime !== null ? $deliveryTime['start'] . ' - ' . $deliveryTime['end'] : '';
+		}
+
+		Utils\OrderProperties::setMeaningfulPropertyValues($state, [
+			'DATE_DELIVERY' => trim(sprintf('%s %s', $deliveryDate, $valueTime)),
+		]);
 	}
 }
