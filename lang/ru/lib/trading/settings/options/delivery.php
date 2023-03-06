@@ -28,3 +28,7 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_EMERGENCY_REQUIRED'] =
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_STORE_CONTACT_REQUIRED'] = 'не установлено пользовательское свойство склада "Яндекс.Pay: адрес склада"';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_STORE_WAREHOUSE_REQUIRED'] = 'не установлено пользовательское свойство склада "Яндекс.Pay: контакт пользователя"';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_FIELD_STORE_SHIPMENT_SCHEDULE_REQUIRED'] = 'не установлено пользовательское свойство склада "Яндекс.Pay: график склада"';
+
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_COURIER_OPTIONS'] = 'Расписание доставки';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_COURIER_OPTIONS_GROUP'] = 'Настройки Курьерской доставки';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_DELIVERY_COURIER_OPTIONS_HELP'] = 'Настройте интервелы дат и времени доставки';
