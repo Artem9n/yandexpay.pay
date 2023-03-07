@@ -19,14 +19,7 @@ export default class Factory {
 				'yapay-width--#WIDTH# ' +
 				'yapay-solution--#SOLUTION#">' +
 				'#STYLE#' +
-				'#DIVIDER#' +
 				'<div class="bx-yapay-drawer"></div>' +
-			'</div>',
-		divider:
-			'<div class="bx-yapay-divider"> ' +
-				'<span class="bx-yapay-divider__corner"></span> ' +
-				'<span class="bx-yapay-divider__text">#LABEL#</span> ' +
-				'<span class="bx-yapay-divider__corner at--right"></span> ' +
 			'</div>',
 		useDivider: false,
 		containerSelector: '.bx-yapay-drawer',
@@ -67,7 +60,7 @@ export default class Factory {
 			.then((anchor) => this.checkElement(anchor))
 			.then((anchor) => this.renderElement(anchor, position))
 			.then((element) => this.install(element))
-			.then((widget) => this.insertLoader(widget))
+			.then((widget) => this.insertToolsDisplay(widget))
 			.then((widget) => {
 				const intersection = new Intersection(widget.el);
 				
@@ -190,7 +183,7 @@ export default class Factory {
 	}
 
 	install(element) {
-		const widget = new BX.YandexPay.Widget(element);
+		const widget = new BX.YandexPay.Widget(element, this.options);
 
 		widget.setSolution(this.solution);
 		widget.boot();
@@ -198,8 +191,8 @@ export default class Factory {
 		return widget;
 	}
 
-	insertLoader(widget) {
-		widget.bootLoader();
+	insertToolsDisplay(widget) {
+		widget.bootToolsDisplay();
 		return widget;
 	}
 
@@ -342,11 +335,9 @@ export default class Factory {
 
 	renderElement(anchor, position) {
 		const selector = this.containerSelector();
-		const divider = this.getDivider();
 		const display = this.getDisplay();
 
 		const html = Utils.compile(this.getOption('template'), {
-			divider: divider,
 			style: display != null ? display.style() : '',
 			width: display != null ? display.width().toLowerCase() : 'auto',
 			id: this.getOption('containerId'),

@@ -2,6 +2,7 @@ import Secure3d from './secure3d';
 import Finish from './finish';
 import Failure from './failure';
 import Loader from './loader';
+import Divider from './divider';
 import Cart from './cart/cart';
 import Payment from './payment/payment';
 
