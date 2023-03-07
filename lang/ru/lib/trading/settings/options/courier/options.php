@@ -23,6 +23,10 @@ $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_COURIER_OPTIONS_TIME_INTERVAL'] = 'Ин
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_COURIER_OPTIONS_TIME_INTERVAL_HELP'] = 'Укажите один интервал времени для доставки';
 
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_COURIER_OPTIONS_TYPE_TIME_INTERVALS'] = 'Тип временного интервала';
+$MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_COURIER_OPTIONS_TYPE_TIME_INTERVALS_HELP'] = '<strong>Сетка:</strong> автоматически сформируется список временных интервалов на основание настроек.
+<br><br>
+<strong>Настраиваемый:</strong> задается список временных интервалов в ручную. Рекомендуемое максимальная количество интервалов - 20.';
+
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_COURIER_OPTIONS_GRID'] = 'Сетка';
 $MESS['YANDEX_PAY_TRADING_SETTINGS_OPTIONS_COURIER_OPTIONS_VALUES'] = 'Настраиваемый';
 

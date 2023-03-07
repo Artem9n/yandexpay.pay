@@ -105,6 +105,7 @@ class Options extends Settings\Reference\Fieldset
 			'TYPE_TIME_INTERVALS' => [
 				'TYPE' => 'enumeration',
 				'NAME' => self::getMessage('TYPE_TIME_INTERVALS'),
+				'HELP' => self::getMessage('TYPE_TIME_INTERVALS_HELP'),
 				'VALUES' => [
 					[
 						'ID' => 'GRID',
