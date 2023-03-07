@@ -247,12 +247,9 @@ class Options extends Settings\Reference\Fieldset
 					$result->addError(new Main\Error(static::getMessage(sprintf('FIELD_%s_REQUIRED', $code))));
 				}
 			}
-			else
+			else if ($typeTimeInterval === 'VALUES' && empty($this->getTimeIntervals()->getValues()))
 			{
-				if (empty($this->getTimeIntervals()->getValues()))
-				{
-					$result->addError(new Main\Error(static::getMessage('FIELD_TIME_INTERVALS_REQUIRED')));
-				}
+				$result->addError(new Main\Error(static::getMessage('FIELD_TIME_INTERVALS_REQUIRED')));
 			}
 		}
 
