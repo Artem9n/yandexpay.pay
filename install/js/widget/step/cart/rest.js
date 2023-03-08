@@ -4,7 +4,7 @@ import {EventProxy} from "../../utils/eventproxy";
 export default class Rest extends Proxy {
 
 	bootstrap() {
-		this.widget.bootLoader();
+		this.widget.bootToolsDisplay();
 		this.getButtonData()
 			.then((result) => {
 				if (result.status === 'fail') { throw new Error(result.reason); }
@@ -12,7 +12,7 @@ export default class Rest extends Proxy {
 				this.createPayment(this.cart.element, this.paymentData);
 			})
 			.catch((error) => {
-				this.widget.removeLoader();
+				this.widget.removeToolsDisplay();
 			});
 	}
 
@@ -117,6 +117,7 @@ export default class Rest extends Proxy {
 	unmount() {
 		this._mounted = null;
 		this.cart.display.unmount(this.cart.element, this.payment);
+		this.widget.removeToolsDisplay();
 	}
 
 	restore(node) {

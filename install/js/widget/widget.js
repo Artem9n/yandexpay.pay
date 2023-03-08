@@ -1,5 +1,6 @@
 import StepFactory from './step/factory';
 import Loader from './step/loader';
+import Divider from "./step/divider";
 import Page from "../solution/reference/page";
 import NodePreserver from "./ui/nodepreserver";
 
@@ -10,6 +11,7 @@ export default class Widget {
 	defaults;
 	options;
 	loader;
+	divider;
 	el;
 	step;
 	/** @var Page|null */
@@ -56,6 +58,7 @@ export default class Widget {
 	restore(element) {
 		this.el = element;
 		this.step?.restore(element);
+		this.restoreToolsDisplay(element);
 	}
 
 	/**
@@ -69,6 +72,35 @@ export default class Widget {
 
 	destroyStep() {
 		this.step?.destroy();
+	}
+
+	bootToolsDisplay() {
+		this.bootDivider();
+		this.bootLoader();
+	}
+
+	restoreToolsDisplay(element) {
+		this.divider?.restore(element);
+	}
+
+	removeToolsDisplay() {
+		this.removeDivider();
+		this.removeLoader();
+	}
+
+	bootDivider() {
+		if (this.divider == null)
+		{
+			this.divider = new Divider(this);
+		}
+
+		this.divider.render(this.el);
+	}
+
+	removeDivider() {
+		if (this.divider == null) { return; }
+		this.divider.remove(this.el);
+		this.divider = null;
 	}
 
 	bootLoader() {
