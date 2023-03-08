@@ -80,3 +80,8 @@ CONTENT;
 }
 
 $arResult['OUTPUT'] = $output;
+
+if ($arParams['OUTPUT'] === 'Y')
+{
+	echo $arResult['OUTPUT'];
+}

@@ -71,6 +71,7 @@ abstract class AbstractEngine extends Event\Base
 			'TEXT_DIVIDER' => $behavior->textDivider(),
 			'JS_CONTENT' => $behavior->getJsContent(),
 			'CSS_CONTENT' => $behavior->getCssContent(),
+			'OUTPUT' => 'N',
 		];
 
 		return [ $componentParameters, $solutionParameters ];
