@@ -78,6 +78,8 @@ class TradingButton extends \CBitrixComponent
 		$params = $this->getHandlerParams($handler, $paySystemId, $setup->getPersonTypeId());
 		[$displayType, $displayParameters] = $this->makeDisplay();
 
+		$checkAvailable = (string)Config::getOption('check_product_available', 'Y');
+
 		$gateway = $handler->getGateway();
 		$gateway->setParameters($params);
 
@@ -98,6 +100,7 @@ class TradingButton extends \CBitrixComponent
 			'successUrl'        => $options->getSuccessUrl(),
 			'productId'         => $this->arParams['PRODUCT_ID'],
 			'products'          => $this->arParams['PRODUCTS'],
+			'checkAvailable'    => $checkAvailable === 'Y',
 			'siteId'            => $setup->getSiteId(),
 			'setupId'           => $setup->getId(),
 			'paySystemId'       => $options->getPaymentCard(),
