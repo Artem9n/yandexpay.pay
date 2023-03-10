@@ -216,10 +216,13 @@ class OrderDeliveryCollector extends ResponseCollector
 		if ($deliveryOption === null) { return $result; }
 
 		$courierOptions = $deliveryOption->getCourierOptions();
+		$type = $courierOptions->getTypeSchedule();
+
+		if ($type === null) { return $result; }
 
 		$optionFromDate = $courierOptions->getDateInterval()->getFromDate();
 		$optionToDate = $courierOptions->getDateInterval()->getToDate();
-		$type = $courierOptions->getTypeSchedule();
+
 		$typeTime = $courierOptions->getTypeTimeInterval();
 
 		$timeIntervals = [];

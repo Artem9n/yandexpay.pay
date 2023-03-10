@@ -30,9 +30,9 @@ class Options extends Settings\Reference\Fieldset
 		return $this->getFieldset('DATE_INTERVAL');
 	}
 
-	public function getTypeSchedule() : string
+	public function getTypeSchedule() : ?string
 	{
-		return $this->requireValue('TYPE_SCHEDULE');
+		return $this->getValue('TYPE_SCHEDULE') ?: null;
 	}
 
 	public function getTypeTimeInterval() : ?string
