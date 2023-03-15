@@ -14,7 +14,10 @@ class Mapping
 
 		if ($codeKey === 'YANDEX_PAY_DISPLAY')
 		{
-			$mapping['PROVIDER_VALUE'] = static::formatDisplayFields($mapping['PROVIDER_VALUE']);
+			if (is_array($mapping['PROVIDER_VALUE']))
+			{
+				$mapping['PROVIDER_VALUE'] = static::formatDisplayFields($mapping['PROVIDER_VALUE']);
+			}
 		}
 
 		$request = Main\Application::getInstance()->getContext()->getRequest();
