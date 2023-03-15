@@ -7,6 +7,7 @@ class Registry
 {
 	public const PREFIX = 'yapay';
 	public const TYPE_MERCHANT = 'merchant';
+	public const TYPE_DISPLAY = 'display';
 
 	protected static $ready = false;
 
@@ -35,6 +36,7 @@ class Registry
 	{
 		return [
 			static::TYPE_MERCHANT => MerchantType::class,
+			static::TYPE_DISPLAY => DisplayType::class,
 		];
 	}
 }
