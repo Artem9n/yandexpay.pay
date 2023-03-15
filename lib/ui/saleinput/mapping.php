@@ -2,7 +2,7 @@
 namespace YandexPay\Pay\Ui\SaleInput;
 
 use Bitrix\Main;
-use Bitrix\Sale\BusinessValue;
+use Bitrix\Sale;
 
 if (!Main\Loader::includeModule('sale')) { return; }
 
@@ -25,11 +25,11 @@ class Mapping
 
 		if ((int)$request->get('ID') > 0)
 		{
-			$consumerKey = 'PAYSYSTEM_'.$request->get('ID');
+			$consumerKey = Sale\PaySystem\Service::PAY_SYSTEM_PREFIX.$request->get('ID');
 		}
 
 		$common = !IsModuleInstalled('bitrix24');
-		BusinessValue::setMapping($codeKey, $consumerKey, $personTypeId, $mapping, $common);
+		Sale\BusinessValue::setMapping($codeKey, $consumerKey, $personTypeId, $mapping, $common);
 
 		return $result;
 	}
@@ -44,6 +44,7 @@ class Mapping
 			if (
 				$key !== 'DISPLAY'
 				&& substr($key, strlen($key) - strlen($display)) !== $display
+				|| trim($value) === ''
 			) { continue; }
 
 			$displayFields[$key] = $value;
