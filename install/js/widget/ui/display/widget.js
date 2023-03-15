@@ -19,11 +19,16 @@ export default class Widget extends Display {
 	}
 
 	mount(node, payment, type) {
+		const borderType = this.getOption('BORDER_RADIUS_TYPE_WIDGET');
+		let borderValue = this.getOption('BORDER_RADIUS_VALUE_WIDGET') || '8';
+
+		if (borderType == null) { borderValue = '8'; }
+
 		payment.mountWidget(node, {
 			widgetType: this.getOption('TYPE_WIDGET') || YaPay.WidgetType.Compact,
 			widgetTheme: this.getOption('THEME_WIDGET') || YaPay.WidgetTheme.Dark,
 			buttonTheme: this.getOption('BUTTON_THEME_WIDGET') || YaPay.ButtonTheme.Black,
-			borderRadius: this.getOption('BORDER_RADIUS_VALUE_WIDGET') || '8',
+			borderRadius: borderValue,
 			bnplSelected: !!Number(this.getOption('SPLIT_SELECT_WIDGET') || false),
 		});
 	}
