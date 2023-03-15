@@ -53,6 +53,9 @@ $APPLICATION->SetPageProperty('yandexpay_widget_index', ++$widgetIndex);
 
 $factoryOptions = array_intersect_key($params, [
 	'buttonWidth' => true,
+	'displayType' => true,
+	'displayParameters' => true,
+	'mode' => true,
 ]);
 
 $position = 'afterbegin';
