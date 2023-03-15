@@ -340,3 +340,8 @@ span.b-tag-tooltip--content { /* specifity */
 .b-icon.indent--right {
 	margin-right: 8px;
 }
+
+.b-form-pill.sale-yapay-display {
+	display: inline-flex;
+	padding: 6px 20px 6px 10px;
+}
