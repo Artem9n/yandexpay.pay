@@ -10,7 +10,7 @@ class DeliveryMethodsCollector extends OrderDeliveryCollector
 	{
 		$deliveries = $this->restrictedDeliveries($state, true);
 		$pickupDeliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::PICKUP_TYPE);
-		$courierDeliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::DELIVERY_TYPE);
+		$courierDeliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::COURIER_TYPE);
 
 		$result = [];
 
