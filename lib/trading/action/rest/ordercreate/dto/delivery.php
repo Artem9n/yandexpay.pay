@@ -31,9 +31,14 @@ class Delivery extends ActionReference\Dto
 		return $this->requireField('type');
 	}
 
-	public function getPlainToDate() : string
+	public function getPlainToDate() : ?string
 	{
-		return $this->requireField('toDate');
+		return $this->getField('toDate');
+	}
+
+	public function getPlainFromDate() : ?string
+	{
+		return $this->getField('fromDate');
 	}
 
 	public function getPlainFromTime() : ?string
