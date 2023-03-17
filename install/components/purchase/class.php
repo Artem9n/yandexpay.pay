@@ -169,7 +169,7 @@ class Purchase extends \CBitrixComponent
 		$order->finalize();
 
 		$deliveries = $this->restrictedDeliveries($order);
-		$deliveries = $this->filterDeliveryByType($deliveries, EntitySale\Delivery::DELIVERY_TYPE);
+		$deliveries = $this->filterDeliveryByType($deliveries, EntitySale\Delivery::COURIER_TYPE);
 
 		foreach ($deliveries as $deliveryId)
 		{
@@ -327,15 +327,17 @@ class Purchase extends \CBitrixComponent
 
 		$order->finalize();
 
-		$deliveryService = $this->environment->getDelivery()->getDeliveryService($request->getId());
-		$pickup = EntitySale\Delivery\Factory::make($deliveryService, 'pickup');
-		$pickup->prepareCalculatePickup(
+		$deliveryEnv = $this->environment->getDelivery();
+		$deliveryService = $deliveryEnv->getDeliveryService($request->getId());
+		$deliveryIntegration = $deliveryEnv->deliveryIntegration($deliveryService, EntitySale\Delivery::PICKUP_TYPE);
+		$deliveryIntegration->prepareCalculatePickup(
 			$order->getCalculatable(),
 			$request->getId(),
 			$request->getStoreId(),
 			$request->getLocationId(),
 			$request->getZip()
 		);
+
 		$this->clearCalculatable($order);
 		$this->setLocation($order, $request->getLocationId());
 		$calculationResult = $this->calculateDelivery($order, $request->getId());
@@ -345,7 +347,7 @@ class Purchase extends \CBitrixComponent
 			throw new Main\SystemException(implode(', ', $calculationResult->getErrorMessages()));
 		}
 
-		$store = $pickup->getDetailPickup($request->getStoreId());
+		$store = $deliveryIntegration->getDetailPickup($request->getStoreId());
 
 		$result = $this->collectPickupDetail($calculationResult, $store, $request->getLocationId());
 
@@ -433,7 +435,7 @@ class Purchase extends \CBitrixComponent
 		{
 			$this->fillLocation($order, $request->getAddress());
 			$this->fillBasket($order, $request->getItems());
-			$this->fillDelivery($order, $request->getDelivery(), $request->getAddress()->getFields());
+			$this->fillDelivery($order, $request->getDelivery(), $request->getAddress());
 		}
 
 		$this->fillPaySystem($order, $request);
@@ -537,7 +539,7 @@ class Purchase extends \CBitrixComponent
 
 		$order->createShipment($deliveryId, $price);
 		$order->recalculateShipment();
-		$order->fillPropertiesStore($pickup->getStoreId(), $pickup->getAddress());
+		$order->fillPropertiesPickup($pickup->getStoreId(), $pickup->getAddress());
 	}
 
 	protected function wakeUpBasket(EntityReference\Order $order, TradingAction\Incoming\Product $request) : void
@@ -761,7 +763,11 @@ class Purchase extends \CBitrixComponent
 		}
 	}
 
-	protected function fillDelivery(EntityReference\Order $order, TradingAction\Incoming\OrderAccept\Delivery $delivery, array $address) : void
+	protected function fillDelivery(
+		EntityReference\Order $order,
+		TradingAction\Incoming\OrderAccept\Delivery $delivery,
+		TradingAction\Incoming\Address $address
+	) : void
 	{
 		$deliveryId = $delivery->getId();
 
@@ -772,7 +778,7 @@ class Purchase extends \CBitrixComponent
 
 		$order->createShipment($deliveryId);
 		$order->recalculateShipment();
-		$order->fillPropertiesDelivery($address);
+		$order->fillPropertiesCourier($address->getMeaningfulAddress(), $address->getMeaningfulZip());
 	}
 
 	protected function fillStatus(EntityReference\Order $order) : void
