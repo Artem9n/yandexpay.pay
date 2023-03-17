@@ -8,9 +8,8 @@ use Bitrix\Sale;
 use Ipolh\DPD\Delivery\DPD;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 
-abstract class Base extends AbstractAdapter
+class Base extends AbstractAdapter
 {
-	protected $code = '';
 	protected $title;
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
@@ -21,25 +20,12 @@ abstract class Base extends AbstractAdapter
 
 		$this->title = $service->getName();
 
-		return $code === $this->code;
+		return $code === $this->codeService;
 	}
 
 	public function load() : bool
 	{
 		return Main\Loader::includeModule('ipol.dpd');
-	}
-
-	public function prepareCalculation(Sale\Order $order) : void
-	{
-		$paymentCollection = $order->getPaymentCollection();
-
-		/** @var Sale\Payment $payment */
-		foreach ($paymentCollection as $payment)
-		{
-			if ($payment->isInner()) { continue; }
-
-			$_REQUEST['PAY_SYSTEM_ID'] = $payment->getPaymentSystemId();
-		}
 	}
 
 	protected function calculateAndFillSessionValues(Sale\Order $order) : void
@@ -55,8 +41,8 @@ abstract class Base extends AbstractAdapter
 		}
 
 		$arResult['DELIVERY'] = [
-			$this->code => [
-				'ID' => $this->code,
+			$this->codeService => [
+				'ID' => $this->codeService,
 				'PERIOD_TEXT' => '',
 				'CHECKED' => 'Y'
 			]
@@ -67,13 +53,11 @@ abstract class Base extends AbstractAdapter
 
 	public function onAfterOrderSave(Sale\Order $order) : void
 	{
-		/** @noinspection PhpUndefinedConstantInspection */
 		$key = Main\Config\Option::get(IPOLH_DPD_MODULE, 'ORDER_ID', 'ID');
 		$orderId = $order->getField($key);
 		$entity  = \Ipolh\DPD\DB\Order\Table::findByOrder($orderId, true);
 
-		$profile = DPD::getDeliveryProfile($this->code);
-
+		$profile = DPD::getDeliveryProfile($this->codeService);
 
 		if ($entity->id) {
 			return;
@@ -86,5 +70,20 @@ abstract class Base extends AbstractAdapter
 		$entity->save();
 
 		unset($_SESSION['IPOLH_DPD_ORDER'], $_SESSION['IPOLH_DPD_TARIFF']);
+	}
+
+	protected function zipCode(Sale\Order $order) : string
+	{
+		return '';
+	}
+
+	protected function addressCode(Sale\Order $order) : string
+	{
+		return (string)Main\Config\Option::get('ipol.dpd', sprintf('RECEIVER_PVZ_FIELD_%s', $order->getPersonTypeId()));
+	}
+
+	public function providerType() : ?string
+	{
+		return 'DPD';
 	}
 }
