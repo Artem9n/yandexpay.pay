@@ -11,6 +11,10 @@ class Address extends ActionReference\Dto
 
 	public function getMeaningfulAddress(array $skipAdditionalTypes = []) : string
 	{
+		$addressLine = $this->getAddressLine();
+
+		if ($addressLine !== null) { return $addressLine; }
+
 		$values = $this->getAddressValues();
 
 		return $this->combineAddress($values, $skipAdditionalTypes);
@@ -176,6 +180,11 @@ class Address extends ActionReference\Dto
 		Assert::isArray($result, 'location');
 
 		return $result;
+	}
+
+	public function getAddressLine() : ?string
+	{
+		return $this->getField('addressLine');
 	}
 
 	public function getLat() : ?float
