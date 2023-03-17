@@ -15,6 +15,9 @@ class DeliveryProperties
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		$state->order->fillPropertiesDelivery($this->address->getFields());
+		$state->order->fillPropertiesCourier(
+			$this->address->getMeaningfulAddress(),
+			$this->address->getMeaningfulZip()
+		);
 	}
 }
