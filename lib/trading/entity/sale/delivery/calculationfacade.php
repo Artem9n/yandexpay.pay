@@ -77,7 +77,7 @@ class CalculationFacade
 	{
 		if ($dateFrom === null) { return EntitySale\Delivery::CATEGORY_TODAY; }
 
-		$category = EntitySale\Delivery::CATEGORY_STANDART;
+		$category = EntitySale\Delivery::CATEGORY_STANDARD;
 
 		$nowDate = new Main\Type\DateTime();
 
