@@ -6,25 +6,38 @@ use Bitrix\Sale;
 
 abstract class AbstractAdapter
 {
-	abstract public function getServiceType() : string;
+	protected $title;
+	protected $codeService;
 
-	abstract public function isMatch(Sale\Delivery\Services\Base $service) : bool;
+	abstract public function load() : bool;
 
-	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
+	abstract public function providerType() : ?string;
+
+	abstract protected function addressCode(Sale\Order $order) : string;
+
+	abstract protected function zipCode(Sale\Order $order) : string;
+
+	public function serviceType() : string
+	{
+		return '';
+	}
+
+	public function isMatch(Sale\Delivery\Services\Base $service) : bool
+	{
+		return false;
+	}
+
+	public function markSelectedPickup(Sale\Order $order, string $storeId, string $address) : void
 	{
 
 	}
 
-	abstract public function load() : bool;
+	public function markSelectedCourier(Sale\Order $order, string $address, string $zip) : void
+	{
 
-	/**
-	 * @param \Bitrix\Sale\Order              $order
-	 * @param \Bitrix\Sale\Delivery\Services\Base $service
-	 * @param array|null                          $bounds
-	 *
-	 * @return array{ID: string|int, LOCATION_ID: int, ADDRESS: string, DESCRIPTION: ?string, PHONE: ?string, EMAIL: ?string }
-	 */
-	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	}
+
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds) : array
 	{
 		return [];
 	}
@@ -34,17 +47,18 @@ abstract class AbstractAdapter
 		return [];
 	}
 
-	public function prepareCalculation(Sale\Order $order) : void
+	public function prepareCalculateCourier(Sale\Order $order) : void
 	{
 
 	}
 
-	public function prepareCalculatePickup(Sale\OrderBase $order, int $deliveryId, string $storeId, string $locationId, string $zip = null) : void
-	{
-
-	}
-
-	public function markSelectedDelivery(Sale\Order $order, array $address) : void
+	public function prepareCalculatePickup(
+		Sale\Order $order,
+		int $deliveryId,
+		string $pickupId,
+		string $locationId,
+		string $zip = null
+	) : void
 	{
 
 	}
@@ -57,7 +71,7 @@ abstract class AbstractAdapter
 	protected function zipProperty(Sale\Order $order) : ?Sale\PropertyValueBase
 	{
 		$propertyCollection = $order->getPropertyCollection();
-		$zipCode = $this->getZipCode($order);
+		$zipCode = $this->zipCode($order);
 		$itemProperty = null;
 
 		if ($zipCode !== '')
@@ -77,7 +91,7 @@ abstract class AbstractAdapter
 	protected function addressProperty(Sale\Order $order) : ?Sale\PropertyValueBase
 	{
 		$propertyCollection = $order->getPropertyCollection();
-		$addressCode = $this->getAddressCode($order);
+		$addressCode = $this->addressCode($order);
 		$itemProperty = null;
 
 		if ($addressCode !== '')
@@ -94,13 +108,63 @@ abstract class AbstractAdapter
 		return $itemProperty ?? $propertyCollection->getAddress();
 	}
 
-	protected function getAddressCode(Sale\Order $order) : string
+	protected function fillAddress(Sale\Order $order, string $address) : void
 	{
-		return '';
+		$property = $this->addressProperty($order);
+
+		if ($property !== null)
+		{
+			$property->setValue($address);
+		}
 	}
 
-	protected function getZipCode(Sale\Order $order) : string
+	protected function fillZip(Sale\Order $order, string $zip) : void
 	{
-		return '';
+		$property = $this->zipProperty($order);
+
+		if ($property !== null)
+		{
+			$property->setValue($zip);
+		}
+	}
+
+	protected function getLocationIdsByNames(array $locationsName) : array
+	{
+		$result = [];
+
+		$query = Sale\Location\Name\LocationTable::getList([
+			'filter' => [
+				'NAME' => $locationsName,
+				'=LANGUAGE_ID' => 'ru'
+			],
+			'select' => [
+				'LOCATION_ID',
+				'NAME'
+			],
+		]);
+
+		while ($location = $query->fetch())
+		{
+			$result[$location['NAME']] = $location['LOCATION_ID'];
+		}
+
+		return $result;
+	}
+
+	protected function getLocationIdsByCodes(array $locationsCodes) : array
+	{
+		$result = [];
+
+		$query = Sale\Location\LocationTable::getList(array(
+			'select' => [ 'ID', 'CODE' ],
+			'filter' => [ '=CODE' => $locationsCodes ],
+		));
+
+		while ($row = $query->fetch())
+		{
+			$result[$row['CODE']] = $row['ID'];
+		}
+
+		return $result;
 	}
 }
