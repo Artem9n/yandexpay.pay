@@ -21,15 +21,15 @@ class Delivery extends EntityReference\Delivery
 	/** @var array<string, bool> */
 	protected $existsDeliveryDiscount = [];
 	/** @var Sale\Delivery\Services\Base */
-	protected $yandexDeliverySerice;
+	protected $yandexDeliveryService;
 
 	public const EMPTY_DELIVERY = 'emptyDelivery';
 
-	public const CATEGORY_STANDART = 'STANDARD';
+	public const CATEGORY_STANDARD = 'STANDARD';
 	public const CATEGORY_EXPRESS = 'EXPRESS';
 	public const CATEGORY_TODAY = 'TODAY';
 
-	public const DELIVERY_TYPE = 'delivery';
+	public const COURIER_TYPE = 'courier';
 	public const PICKUP_TYPE = 'pickup';
 	public const YANDEX_DELIVERY_TYPE = 'yandexDelivery';
 
@@ -161,28 +161,15 @@ class Delivery extends EntityReference\Delivery
 		return Sale\Delivery\Services\Manager::getEmptyDeliveryServiceId();
 	}
 
-	public function getPickupStores(int $deliveryId, EntityReference\Order $order, array $bounds = null) : array
+	public function getPickupStores(int $deliveryId, EntityReference\Order $order, array $bounds) : array
 	{
-		try
-		{
-			$calculatableOrder = $this->getOrderCalculatable($order);
-			$service = $this->getDeliveryService($deliveryId);
-			$pickup = Delivery\Factory::make($service, static::PICKUP_TYPE);
+		$calculatableOrder = $this->getOrderCalculatable($order);
+		$deliveryService = $this->getDeliveryService($deliveryId);
+		$deliveryIntegration = $this->deliveryIntegration($deliveryService, self::PICKUP_TYPE);
 
-			$result = $pickup->getStores($calculatableOrder, $service, $bounds);
-		}
-		catch (Main\SystemException $exception)
-		{
-			$result = [];
-		}
-		catch (\Throwable $exception)
-		{
-			trigger_error($exception->getMessage(), E_USER_WARNING);
+		if ($deliveryIntegration === null) { return []; }
 
-			$result = [];
-		}
-
-		return $result;
+		return $deliveryIntegration->getStores($calculatableOrder, $deliveryService, $bounds);
 	}
 
 	public function getStore(int $storeId) : array
@@ -218,7 +205,7 @@ class Delivery extends EntityReference\Delivery
 		{
 			try
 			{
-				/** @var Sale\Delivery\Services\Base $serviceClassName */
+				/** @var class-string<Sale\Delivery\Services\Base> $serviceClassName */
 				$serviceClassName = $serviceParameters['CLASS_NAME'];
 				$serviceId = (int)$serviceParameters['ID'];
 
@@ -333,8 +320,6 @@ class Delivery extends EntityReference\Delivery
 				$deliveryService->getExtraServices()->setOperationCurrency($currency);
 			}
 
-			$this->prepareCalculation($calculatableOrder, $deliveryService);
-
 			$calculationResult = $shipment->calculateDelivery();
 
 			if ($calculationResult->isSuccess())
@@ -360,19 +345,6 @@ class Delivery extends EntityReference\Delivery
 		}
 
 		return $result;
-	}
-
-	protected function prepareCalculation(Sale\Order $order, Sale\Delivery\Services\Base $deliveryService) : void
-	{
-		try
-		{
-			$delivery = Delivery\Factory::make($deliveryService);
-			$delivery->prepareCalculation($order);
-		}
-		catch (Main\ArgumentException $exception)
-		{
-			//	nothing
-		}
 	}
 
 	public function configureShipment(Order $order, $deliveryId)
@@ -409,12 +381,12 @@ class Delivery extends EntityReference\Delivery
 
 	public function getYandexDeliveryService() : ?Sale\Delivery\Services\Base
 	{
-		if ($this->yandexDeliverySerice === null)
+		if ($this->yandexDeliveryService === null)
 		{
-			$this->yandexDeliverySerice = $this->loadYandexDeliveryService();
+			$this->yandexDeliveryService = $this->loadYandexDeliveryService();
 		}
 
-		return $this->yandexDeliverySerice;
+		return $this->yandexDeliveryService;
 	}
 
 	protected function loadYandexDeliveryService() : ?Sale\Delivery\Services\Base
@@ -537,7 +509,7 @@ class Delivery extends EntityReference\Delivery
 		if (empty($processTypes)) { return null; }
 
 		$deliveryService = $this->getDeliveryService($deliveryId);
-		$result = static::DELIVERY_TYPE;
+		$result = static::COURIER_TYPE;
 
 		foreach ($processTypes as $type)
 		{
@@ -551,27 +523,21 @@ class Delivery extends EntityReference\Delivery
 		return $result;
 	}
 
-	protected function matchDeliveryType(Sale\Delivery\Services\Base $deliveryService, $type) : bool
+	public function deliveryIntegration(Sale\Delivery\Services\Base $deliveryService, string $type) : ?Pay\Trading\Entity\Sale\Delivery\AbstractAdapter
 	{
-		try
-		{
-			Delivery\Factory::make($deliveryService, $type);
+		return Delivery\Factory::make($deliveryService, $type);
+	}
 
-			$result = true;
-		}
-		catch (Main\ArgumentException $exception)
-		{
-			$result = false;
-		}
-
-		return $result;
+	protected function matchDeliveryType(Sale\Delivery\Services\Base $deliveryService, string $type) : bool
+	{
+		return $this->deliveryIntegration($deliveryService, $type) !== null;
 	}
 
 	protected function getSuggestImplementedDeliveryTypes() : array
 	{
 		return [
 			static::PICKUP_TYPE,
-			static::DELIVERY_TYPE
+			static::COURIER_TYPE
 		];
 	}
 

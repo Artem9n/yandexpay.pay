@@ -958,50 +958,45 @@ class Order extends EntityReference\Order
 		return null;
 	}
 
-	public function fillPropertiesDelivery(array $address, string $type = Delivery::DELIVERY_TYPE) : void
+	public function fillPropertiesCourier(string $address, string $zip) : void
 	{
 		$deliveryService = $this->getDeliveryService();
 
-		try
-		{
-			if ($deliveryService !== null)
-			{
-				$this->delivery = Delivery\Factory::make($deliveryService, $type);
-				$this->delivery->markSelectedDelivery($this->internalOrder, $address);
-			}
-		}
-		catch (Main\ArgumentException $exception)
-		{
-			//nothing
-		}
+		if ($deliveryService === null) { return; }
+
+		$deliveryIntegration = $this->environment->getDelivery()->deliveryIntegration($deliveryService, Delivery::COURIER_TYPE);
+
+		if ($deliveryIntegration === null) { return; }
+
+		$deliveryIntegration->markSelectedCourier($this->internalOrder, $address, $zip);
 	}
 
-	public function fillPropertiesStore(string $storeId, string $address) : void
+	public function fillPropertiesPickup(string $storeId, string $address) : void
 	{
 		$deliveryService = $this->getDeliveryService();
 
-		try
-		{
-			if ($deliveryService !== null)
-			{
-				$this->delivery = Delivery\Factory::make($deliveryService, Delivery::PICKUP_TYPE);
-				$this->delivery->markSelected($this->internalOrder, $storeId, $address);
-			}
-		}
-		catch (Main\ArgumentException $exception)
-		{
-			//nothing
-		}
+		if ($deliveryService === null) { return; }
+
+		$deliveryIntegration = $this->environment->getDelivery()->deliveryIntegration($deliveryService, Delivery::PICKUP_TYPE);
+
+		if ($deliveryIntegration === null) { return; }
+
+		$deliveryIntegration->markSelectedPickup($this->internalOrder, $storeId, $address);
 	}
 
 	protected function deliveryOnAfterOrderSave() : void
 	{
-		if ($this->delivery === null)
-		{
-			return;
-		}
+		$deliveryService = $this->getDeliveryService();
 
-		$this->delivery->onAfterOrderSave($this->internalOrder);
+		if ($deliveryService === null) { return; }
+
+		$type = $this->environment->getDelivery()->suggestDeliveryType($deliveryService->getId());
+
+		$deliveryIntegration = $this->environment->getDelivery()->deliveryIntegration($deliveryService, $type);
+
+		if ($deliveryIntegration === null) { return; }
+
+		$deliveryIntegration->onAfterOrderSave($this->internalOrder);
 	}
 
 	public function recalculateShipment() : Main\Result
