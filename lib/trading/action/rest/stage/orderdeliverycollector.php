@@ -18,7 +18,7 @@ class OrderDeliveryCollector extends ResponseCollector
 	{
 		$deliveries = $this->restrictedDeliveries($state);
 		$pickupDeliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::PICKUP_TYPE);
-		$courierDeliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::DELIVERY_TYPE);
+		$courierDeliveries = $this->filterDeliveryByType($state, $deliveries, EntitySale\Delivery::COURIER_TYPE);
 
 		$this->pickupOptions($state, $pickupDeliveries);
 		$this->courierOptions($state, $courierDeliveries);
@@ -61,15 +61,16 @@ class OrderDeliveryCollector extends ResponseCollector
 		$result = [];
 		$logMessages = [];
 
-		$yandexDelivery = $state->environment->getDelivery()->getYandexDeliveryService();
+		$deliveryEnv = $state->environment->getDelivery();
+		$yandexDelivery = $deliveryEnv->getYandexDeliveryService();
 		$yandexDeliveryId = $yandexDelivery !== null ? (int)$yandexDelivery->getId() : 0;
 
 		foreach ($deliveries as $deliveryId)
 		{
-			$deliveryService = $state->environment->getDelivery()->getDeliveryService($deliveryId);
+			$deliveryService = $deliveryEnv->getDeliveryService($deliveryId);
 			$deliveryName = $deliveryService->getNameWithParent();
 
-			if (!$state->environment->getDelivery()->isCompatible($deliveryId, $state->order))
+			if (!$deliveryEnv->isCompatible($deliveryId, $state->order))
 			{
 				$logMessages[] = self::getMessage('DELIVERY_NOT_COMPATIBLE', [
 					'#ID#' => $deliveryId,
@@ -81,7 +82,16 @@ class OrderDeliveryCollector extends ResponseCollector
 
 			if ($yandexDeliveryId > 0 && (int)$deliveryId === $yandexDeliveryId) { continue; }
 
-			$calculationResult = $state->environment->getDelivery()->calculate($deliveryId, $state->order);
+			$deliveryIntegration = $deliveryEnv->deliveryIntegration($deliveryService, EntitySale\Delivery::COURIER_TYPE);
+			$providerType = null;
+
+			if ($deliveryIntegration !== null)
+			{
+				$deliveryIntegration->prepareCalculateCourier($state->order->getCalculatable());
+				$providerType = $deliveryIntegration->providerType();
+			}
+
+			$calculationResult = $deliveryEnv->calculate($deliveryId, $state->order);
 
 			if (!$calculationResult->isSuccess())
 			{
@@ -96,7 +106,7 @@ class OrderDeliveryCollector extends ResponseCollector
 				continue;
 			}
 
-			$result[] = $this->collectDeliveryOption($state, $calculationResult, $deliveryService);
+			$result[] = $this->collectDeliveryOption($state, $calculationResult, $deliveryService, $providerType);
 		}
 
 		if (!empty($result))
@@ -120,8 +130,8 @@ class OrderDeliveryCollector extends ResponseCollector
 	protected function restrictedDeliveries(State\OrderCalculation $state, bool $skipLocation = false) : array
 	{
 		$result = [];
-		$deliveryService = $state->environment->getDelivery();
-		$compatibleIds = $deliveryService->getRestricted($state->order, $skipLocation);
+		$deliveryEnv = $state->environment->getDelivery();
+		$compatibleIds = $deliveryEnv->getRestricted($state->order, $skipLocation);
 
 		if (empty($compatibleIds)) { return $result; }
 
@@ -147,7 +157,7 @@ class OrderDeliveryCollector extends ResponseCollector
 		$result = [];
 
 		$deliveryOptions = $state->options->getDeliveryOptions();
-		$deliveryService = $state->environment->getDelivery();
+		$deliveryEnv = $state->environment->getDelivery();
 
 		foreach ($deliveryIds as $deliveryId)
 		{
@@ -159,7 +169,7 @@ class OrderDeliveryCollector extends ResponseCollector
 			}
 			else
 			{
-				$typeOption = $deliveryService->suggestDeliveryType($deliveryId);
+				$typeOption = $deliveryEnv->suggestDeliveryType($deliveryId);
 			}
 
 			if ($typeOption !== $type) { continue; }
@@ -173,12 +183,13 @@ class OrderDeliveryCollector extends ResponseCollector
 	protected function collectDeliveryOption(
 		State\OrderCalculation $state,
 		EntityReference\Delivery\CalculationResult $calculationResult,
-		Sale\Delivery\Services\Base $service
+		Sale\Delivery\Services\Base $service,
+		string $providerType = null
 	) : array
 	{
 		return [
 			'courierOptionId' => (string)$calculationResult->getDeliveryId(),
-			'provider' => 'COURIER',
+			'provider' => $providerType ?? 'COURIER',
 			'category' => $calculationResult->getCategory(),
 			'title' => $calculationResult->getServiceName(),
 			'amount' => (float)$calculationResult->getPrice(),
