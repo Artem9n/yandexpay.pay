@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\RussianPost;
 
 use Bitrix\Main;
 use Bitrix\Sale;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery\Factory;
 use YandexPay\Pay\Utils\Encoding;
 use YandexPay\Pay\Data;
 use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
@@ -12,16 +13,11 @@ use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 class Pickup extends Base
 {
 	protected $accountId = 'pickupId';
+	protected $codeService = 'POST';
 
-	public function isMatch(Sale\Delivery\Services\Base $service) : bool
+	public function serviceType() : string
 	{
-		if (!($service instanceof \Sale\Handlers\Delivery\RussianpostProfile)) { return false; }
-
-		$code = $service->getCode();
-
-		$this->title = $service->getNameWithParent();
-
-		return $code === 'POST';
+		return EntitySale\Delivery::PICKUP_TYPE;
 	}
 
 	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
@@ -44,24 +40,7 @@ class Pickup extends Base
 		return $result;
 	}
 
-	protected function getLocationIdsByCodes(array $locationsCodes) : array
-	{
-		$result = [];
-
-		$query = Sale\Location\LocationTable::getList(array(
-			'select' => [ 'ID', 'CODE' ],
-			'filter' => [ '=CODE' => $locationsCodes ],
-		));
-
-		while ($row = $query->fetch())
-		{
-			$result[$row['CODE']] = $row['ID'];
-		}
-
-		return $result;
-	}
-
-	protected function loadStores(array $bounds = null) : array
+	protected function loadStores(array $bounds) : array
 	{
 		$result = [];
 
@@ -96,38 +75,12 @@ class Pickup extends Base
 
 				if (!isset($result[$locationCode])) { $result[$locationCode] = []; }
 
-				$address = array_filter([
-					$pickup['address']['index'],
-					$pickup['address']['region'],
-					$pickup['address']['place'],
-					$pickup['address']['location'],
-					$pickup['address']['street'],
-					$pickup['address']['house'],
-					$pickup['address']['room'],
-					$pickup['address']['hotel'],
-					$pickup['address']['corpus'],
-				]);
-
-				$result[$locationCode][] = [
-					'ID' => $pickup['id'],
-					'REGION' => $pickup['address']['region'],
-					'CITY' => $pickup['address']['place'],
-					'STREET' => $pickup['address']['street'],
-					'ADDRESS' => implode(', ', $address),
-					'TITLE' => $this->title,
-					'GPS_N' => $pickup['geo']['coordinates'][1], //latitude
-					'GPS_S' => $pickup['geo']['coordinates'][0], //longitude
-					'SCHEDULE' => '',
-					'PHONE' => $pickup['PHONE'] ?? '',
-					'DESCRIPTION' => implode(', ', $pickup['workTime']),
-					'PROVIDER' => 'RUSSIAN_POST',
-					'ZIP' => $pickup['address']['index'],
-				];
+				$result[$locationCode][] = $this->collectPickup($pickup);
 			}
 		}
 		catch (Main\SystemException $exception)
 		{
-			trigger_error($exception->getMessage(), E_USER_WARNING);
+			trigger_error('loadStores: ' . $exception->getMessage(), E_USER_WARNING);
 		}
 
 		return $result;
@@ -140,42 +93,25 @@ class Pickup extends Base
 		try
 		{
 			$httpClient = new Main\Web\HttpClient();
-			$point = Main\Web\Json::decode($httpClient->get('https://widget.pochta.ru/api/pvz/' . $storeId));
+			$pickup = Main\Web\Json::decode($httpClient->get('https://widget.pochta.ru/api/pvz/' . $storeId));
 
-			$address = array_filter([
-				$point['address']['index'],
-				$point['address']['region'],
-				$point['address']['place'],
-				$point['address']['location'],
-				$point['address']['street'],
-				$point['address']['house'],
-				$point['address']['room'],
-				$point['address']['hotel'],
-				$point['address']['corpus'],
-			]);
-
-			$result = [
-				'ID' => $storeId,
-				'ADDRESS' => implode(', ', $address),
-				'TITLE' => sprintf('%s (%s)', 'Russian post', $this->title),
-				'GPS_N' => $point['geo']['coordinates'][1],
-				'GPS_S' => $point['geo']['coordinates'][0],
-				'SCHEDULE' => '',
-				'PHONE' => '',
-				'DESCRIPTION' => implode(', ', $point['workTime']),
-				'PROVIDER' => 'Russian post',
-				'ZIP' => $point['address']['index'],
-			];
+			return $this->collectPickup($pickup);
 		}
 		catch (Main\SystemException $exception)
 		{
-			trigger_error($exception->getMessage(), E_USER_WARNING);
+			trigger_error('getDetailPickup: ' . $exception->getMessage(), E_USER_WARNING);
 		}
 
 		return $result;
 	}
 
-	public function prepareCalculatePickup(Sale\OrderBase $order, int $deliveryId, string $storeId, string $locationId, string $zip = null) : void
+	public function prepareCalculatePickup(
+		Sale\Order $order,
+		int $deliveryId,
+		string $pickupId,
+		string $locationId,
+		string $zip = null
+	) : void
 	{
 		$tariff = $this->getTariff($order, $zip);
 
@@ -186,54 +122,47 @@ class Pickup extends Base
 		$_REQUEST['order']['russianpost_delivery_description'] = Encoding::convert($tariff['delivery']['description']);
 	}
 
-	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
+	public function markSelectedPickup(Sale\Order $order, string $storeId, string $address) : void
 	{
-		[$zip, $city] = explode(',', $address, 2);
+		[$zip] = explode(',', $address, 2);
 
 		if (!empty($zip))
 		{
-			$propZip = $this->zipProperty($order);
-
-			if ($propZip !== null)
-			{
-				$propZip->setValue($zip);
-			}
+			$this->fillTariff($order, $zip);
+			$this->fillZip($order, $zip);
 		}
 
-		$tariff = $this->getTariff($order, $zip);
-
-		if ($tariff !== null)
-		{
-			/** @var \Bitrix\Sale\PropertyValue $property */
-			foreach ($order->getPropertyCollection() as $property)
-			{
-				if ($property->getField('CODE') === 'RUSSIANPOST_TYPEDLV')
-				{
-					$property->setValue($tariff['type']);
-					break;
-				}
-			}
-		}
-
-		$propAddress = $this->addressProperty($order);
-
-		if ($propAddress === null) { return; }
-
-		$propAddress->setValue($address);
+		$this->fillAddress($order, $address);
 	}
 
-	protected function getZipCode(Sale\Order $order) : string
+	public function collectPickup(array $pickup) : array
 	{
-		return (string)\Russianpost\Post\Optionpost::get('zip', true, $order->getSiteId());
-	}
+		$address = array_filter([
+			$pickup['address']['index'],
+			$pickup['address']['region'],
+			$pickup['address']['place'],
+			$pickup['address']['location'],
+			$pickup['address']['street'],
+			$pickup['address']['house'],
+			$pickup['address']['room'],
+			$pickup['address']['hotel'],
+			$pickup['address']['corpus'],
+		]);
 
-	protected function getAddressCode(Sale\Order $order) : string
-	{
-		return (string)\Russianpost\Post\Optionpost::get('address', true, $order->getSiteId());
-	}
-
-	public function getServiceType() : string
-	{
-		return EntitySale\Delivery::PICKUP_TYPE;
+		return [
+			'ID' => $pickup['id'],
+			'REGION' => $pickup['address']['region'],
+			'CITY' => $pickup['address']['place'],
+			'STREET' => $pickup['address']['street'],
+			'ADDRESS' => implode(', ', $address),
+			'TITLE' => $this->title,
+			'GPS_N' => $pickup['geo']['coordinates'][1],
+			'GPS_S' => $pickup['geo']['coordinates'][0],
+			'SCHEDULE' => '',
+			'PHONE' => $pickup['PHONE'] ?? '',
+			'DESCRIPTION' => implode(', ', $pickup['workTime']),
+			'PROVIDER' => $this->providerType(),
+			'ZIP' => $pickup['address']['index'],
+		];
 	}
 }
