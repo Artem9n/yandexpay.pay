@@ -127,7 +127,7 @@ class Delivery extends Fieldset
 				'DEPEND' => [
 					'TYPE' => [
 						'RULE' => Utils\Userfield\DependField::RULE_ANY,
-						'VALUE' => Entity\Sale\Delivery::DELIVERY_TYPE,
+						'VALUE' => Entity\Sale\Delivery::COURIER_TYPE,
 					],
 				],
 			],
@@ -153,7 +153,7 @@ class Delivery extends Fieldset
 						'VALUE' => self::getMessage('TYPE_PICKUP'),
 					],
 					[
-						'ID' => Entity\Sale\Delivery::DELIVERY_TYPE,
+						'ID' => Entity\Sale\Delivery::COURIER_TYPE,
 						'VALUE' => self::getMessage('TYPE_DELIVERY'),
 					],
 					[
@@ -354,7 +354,7 @@ class Delivery extends Fieldset
 				'WAREHOUSE',
 				'SHIPMENT_SCHEDULE',
 			],
-			Entity\Sale\Delivery::DELIVERY_TYPE => [
+			Entity\Sale\Delivery::COURIER_TYPE => [
 				'COURIER_OPTIONS',
 			],
 		];
