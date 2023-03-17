@@ -8,10 +8,10 @@ use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 
 class PickupOptionsCollector extends Stage\OrderDeliveryCollector
 {
-	/** @var array|null */
+	/** @var array */
 	protected $bounds;
 
-	public function __construct(Reference\EffectiveResponse $response, string $key = '', array $bounds = null)
+	public function __construct(Reference\EffectiveResponse $response, array $bounds, string $key = '')
 	{
 		parent::__construct($response, $key);
 		$this->bounds = $bounds;
