@@ -45,7 +45,7 @@ class Store extends AbstractAdapter
 
 		if (empty($stores)) { return []; }
 
-		$filterStoresByLocations = $this->filterStoresByLocations($stores, $service->getId());
+		$filterStoresByLocations = $this->filterStoresByLocations($stores);
 
 		if (!empty($filterStoresByLocations)) { return $filterStoresByLocations; }
 
@@ -103,7 +103,7 @@ class Store extends AbstractAdapter
 		return $result;
 	}
 
-	protected function filterStoresByLocations(array $stores, int $deliveryId) : array
+	protected function filterStoresByLocations(array $stores) : array
 	{
 		$result = [];
 
@@ -111,12 +111,9 @@ class Store extends AbstractAdapter
 		$finder = new Data\Location\Bounds($metadata);
 		$storesByLocation = [];
 
-		$locationsRestricts = array_flip($this->getLocationsByRestrict($deliveryId));
-		$locations = $finder->filterCities($locationsRestricts);
-
 		foreach ($stores as $store)
 		{
-			$locationCode = $finder->findClosestCity($store['GPS_N'], $store['GPS_S'], $locations);
+			$locationCode = $finder->findClosestCity($store['GPS_N'], $store['GPS_S']);
 
 			if ($locationCode === null) { continue; }
 
@@ -177,7 +174,7 @@ class Store extends AbstractAdapter
 		return Main\Config\Option::get('sale', 'location', null);
 	}
 
-	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
+	public function markSelectedPickup(Sale\Order $order, string $storeId, string $address) : void
 	{
 		$shipments = $order->getShipmentCollection();
 
@@ -192,7 +189,7 @@ class Store extends AbstractAdapter
 		}
 	}
 
-	public function getServiceType() : string
+	public function serviceType() : string
 	{
 		return EntitySale\Delivery::PICKUP_TYPE;
 	}
@@ -233,5 +230,20 @@ class Store extends AbstractAdapter
 		}
 
 		return $template;
+	}
+
+	public function providerType() : ?string
+	{
+		return 'IN_STORE';
+	}
+
+	protected function addressCode(Sale\Order $order) : string
+	{
+		return '';
+	}
+
+	protected function zipCode(Sale\Order $order) : string
+	{
+		return '';
 	}
 }
