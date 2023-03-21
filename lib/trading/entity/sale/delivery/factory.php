@@ -47,18 +47,18 @@ class Factory
 	protected static function getTypes() : array
 	{
 		return [
-			/*static::SITE_STORE,
+			static::SITE_STORE,
 			static::SDEK_PICKUP,
 			static::SDEK_COURIER,
-			static::SDEK_POSTAMAT,*/
+			static::SDEK_POSTAMAT,
 			static::DPD_PICKUP,
 			static::DPD_COURIER,
 			static::BOXBERRY_PICKUP,
 			static::BOXBERRY_COURIER,
 			static::RUSSIAN_POST,
 			static::RUSSIAN_COURIER,
-			/*static::EDOST_PICKUP,
-			static::EDOST_COURIER,*/
+			static::EDOST_PICKUP,
+			static::EDOST_COURIER,
 		];
 	}
 
