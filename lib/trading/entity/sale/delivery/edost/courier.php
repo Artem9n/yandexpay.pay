@@ -9,18 +9,8 @@ class Courier extends Base
 {
 	protected $format = ['door'];
 
-	public function getServiceType() : string
+	public function serviceType() : string
 	{
-		return  EntitySale\Delivery::DELIVERY_TYPE;
-	}
-
-	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
-	{
-		// do nothing
-	}
-
-	public function markSelectedDelivery(Sale\Order $order, array $address) : void
-	{
-		
+		return  EntitySale\Delivery::COURIER_TYPE;
 	}
 }

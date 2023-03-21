@@ -8,7 +8,7 @@ use Bitrix\Sale;
 use YandexPay\Pay\Reference\Concerns;
 use YandexPay\Pay\Trading\Entity\Sale\Delivery\AbstractAdapter;
 
-abstract class Base extends AbstractAdapter
+class Base extends AbstractAdapter
 {
 	use Concerns\HasMessage;
 
@@ -48,24 +48,40 @@ abstract class Base extends AbstractAdapter
 		return Main\Loader::includeModule('edost.delivery');
 	}
 
-	protected function getProvider() : ?string
+	public function providerType() : ?string
 	{
 		$result = null;
 
 		$providerMap = [
-			'BOXBERRY' => self::getMessage('PART_PROVIDER_BOXBERRY'),
-			'RUSSIAN_POST' => self::getMessage('PART_PROVIDER_RUSSIAN_POST'),
-			'CDEK' => self::getMessage('PART_PROVIDER_CDEK'),
-			'PICKPOINT' => self::getMessage('PART_PROVIDER_PICKPOINT'),
+			'BOXBERRY',
+			'RUSSIAN_POST',
+			'CDEK',
+			'PICKPOINT',
+			//'PEK',
+			//'FIVEPOST',
+			//'OZON_ROCKET',
+			//'DPD',
+			//'YANDEX_DELIVERY',
 		];
 
-		foreach ($providerMap as $providerType => $searchPart)
+		foreach ($providerMap as $providerType)
 		{
+			$searchPart = self::getMessage(sprintf('PART_PROVIDER_%s', $providerType));
 			if (mb_strpos(mb_strtolower($this->title), $searchPart) === false) { continue; }
 			$result = $providerType;
 			break;
 		}
 
 		return $result;
+	}
+
+	protected function addressCode(Sale\Order $order) : string
+	{
+		return '';
+	}
+
+	protected function zipCode(Sale\Order $order) : string
+	{
+		return '';
 	}
 }
