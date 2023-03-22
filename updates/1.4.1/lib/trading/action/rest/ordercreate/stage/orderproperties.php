@@ -70,7 +70,7 @@ class OrderProperties
 
 		if ($scheduleType === 'PLAIN')
 		{
-			$deliveryDate = $deliveryRequest->getPlainToDate();
+			$deliveryDate = $deliveryRequest->getPlainToDate() ?? $deliveryRequest->getPlainFromDate();
 			$deliveryFromTime = $deliveryRequest->getPlainFromTime();
 			$deliveryToTime = $deliveryRequest->getPlainToTime();
 			$valueTime = $deliveryFromTime !== null && $deliveryToTime !== null
