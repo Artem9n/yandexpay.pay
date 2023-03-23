@@ -86,23 +86,6 @@ class Store extends AbstractAdapter
 		return Sale\Delivery\ExtraServices\Manager::getStoresList($service->getId());
 	}
 
-	protected function getLocationIdsByCodes(array $locationsCodes) : array
-	{
-		$result = [];
-
-		$query = Sale\Location\LocationTable::getList(array(
-			'select' => [ 'ID', 'CODE' ],
-			'filter' => [ '=CODE' => $locationsCodes ],
-		));
-
-		while ($row = $query->fetch())
-		{
-			$result[$row['CODE']] = $row['ID'];
-		}
-
-		return $result;
-	}
-
 	protected function filterStoresByLocations(array $stores) : array
 	{
 		$result = [];
