@@ -30,7 +30,7 @@ class Store extends AbstractAdapter
 		return !empty($stores);
 	}
 
-	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds) : array
 	{
 		$storeIds = $this->getUsedStoreIds($service);
 		$stores = $this->loadStores($storeIds, $bounds);
@@ -54,9 +54,9 @@ class Store extends AbstractAdapter
 		return [$locationId => $stores];
 	}
 
-	protected function loadStores(array $storeIds, array $bounds = null) : array
+	protected function loadStores(array $storeIds, array $bounds) : array
 	{
-		if (empty($storeIds) || $bounds === null) { return []; }
+		if (empty($storeIds)) { return []; }
 
 		$filter = [
 			'=ID' => $storeIds,
