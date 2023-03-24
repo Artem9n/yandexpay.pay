@@ -1055,6 +1055,7 @@ class Order extends EntityReference\Order
 		}
 
 		$payment->setField('SUM', $price);
+		$payment->setField('PS_SUM', $price);
 	}
 
 	public function add() : Main\Result
