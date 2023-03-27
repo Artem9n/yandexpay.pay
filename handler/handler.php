@@ -48,7 +48,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 		try
 		{
-			$this->resolvePaymentNumber($payment);
+			$this->resolvePayment($payment);
 	        $this->setExtraParams($this->getParams($payment));
 
 	        $showTemplateResult = $this->showTemplate($payment, 'template');
@@ -78,6 +78,16 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		return $status === EntitySale\Status::PAYMENT_STATUS_AUTHORIZE;
 	}
 
+	protected function resolvePayment(Payment $payment) : void
+	{
+		$this->resolvePaymentNumber($payment);
+		$this->resolvePaymentSum($payment);
+
+		if (!$payment->isChanged()) { return; }
+
+		$payment->getOrder()->save();
+	}
+
 	protected function resolvePaymentNumber(Payment $payment) : void
 	{
 		if ((string)$payment->getField('PS_INVOICE_ID') !== '') { return; }
@@ -94,7 +104,13 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		}
 
 		$payment->setField('PS_INVOICE_ID', $accountNumber);
-		$payment->save();
+	}
+
+	protected function resolvePaymentSum(Payment $payment) : void
+	{
+		if ((string)$payment->getField('PS_SUM') !== '') { return; }
+
+		$payment->setField('PS_SUM', $payment->getSum());
 	}
 
 	protected function setRedirectUrl(Payment $payment) : void
