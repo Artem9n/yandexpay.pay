@@ -22,6 +22,11 @@ if (!Main\Loader::includeModule('yandexpay.pay'))
 
 PayUi\SaleInput\Registry::register();
 
+if (PayUi\SaleInput\AjaxAssetLoader::isLoad())
+{
+	PayUi\SaleInput\AjaxAssetLoader::loadAssets();
+}
+
 // common
 
 $data = [
