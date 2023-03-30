@@ -30,7 +30,7 @@ class Store extends AbstractAdapter
 		return !empty($stores);
 	}
 
-	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds) : array
 	{
 		$storeIds = $this->getUsedStoreIds($service);
 		$stores = $this->loadStores($storeIds, $bounds);
@@ -45,7 +45,7 @@ class Store extends AbstractAdapter
 
 		if (empty($stores)) { return []; }
 
-		$filterStoresByLocations = $this->filterStoresByLocations($stores, $service->getId());
+		$filterStoresByLocations = $this->filterStoresByLocations($stores);
 
 		if (!empty($filterStoresByLocations)) { return $filterStoresByLocations; }
 
@@ -54,9 +54,9 @@ class Store extends AbstractAdapter
 		return [$locationId => $stores];
 	}
 
-	protected function loadStores(array $storeIds, array $bounds = null) : array
+	protected function loadStores(array $storeIds, array $bounds) : array
 	{
-		if (empty($storeIds) || $bounds === null) { return []; }
+		if (empty($storeIds)) { return []; }
 
 		$filter = [
 			'=ID' => $storeIds,
@@ -86,24 +86,7 @@ class Store extends AbstractAdapter
 		return Sale\Delivery\ExtraServices\Manager::getStoresList($service->getId());
 	}
 
-	protected function getLocationIdsByCodes(array $locationsCodes) : array
-	{
-		$result = [];
-
-		$query = Sale\Location\LocationTable::getList(array(
-			'select' => [ 'ID', 'CODE' ],
-			'filter' => [ '=CODE' => $locationsCodes ],
-		));
-
-		while ($row = $query->fetch())
-		{
-			$result[$row['CODE']] = $row['ID'];
-		}
-
-		return $result;
-	}
-
-	protected function filterStoresByLocations(array $stores, int $deliveryId) : array
+	protected function filterStoresByLocations(array $stores) : array
 	{
 		$result = [];
 
@@ -111,12 +94,9 @@ class Store extends AbstractAdapter
 		$finder = new Data\Location\Bounds($metadata);
 		$storesByLocation = [];
 
-		$locationsRestricts = array_flip($this->getLocationsByRestrict($deliveryId));
-		$locations = $finder->filterCities($locationsRestricts);
-
 		foreach ($stores as $store)
 		{
-			$locationCode = $finder->findClosestCity($store['GPS_N'], $store['GPS_S'], $locations);
+			$locationCode = $finder->findClosestCity($store['GPS_N'], $store['GPS_S']);
 
 			if ($locationCode === null) { continue; }
 
@@ -177,7 +157,7 @@ class Store extends AbstractAdapter
 		return Main\Config\Option::get('sale', 'location', null);
 	}
 
-	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
+	public function markSelectedPickup(Sale\Order $order, string $storeId, string $address) : void
 	{
 		$shipments = $order->getShipmentCollection();
 
@@ -192,7 +172,7 @@ class Store extends AbstractAdapter
 		}
 	}
 
-	public function getServiceType() : string
+	public function serviceType() : string
 	{
 		return EntitySale\Delivery::PICKUP_TYPE;
 	}
@@ -233,5 +213,20 @@ class Store extends AbstractAdapter
 		}
 
 		return $template;
+	}
+
+	public function providerType() : ?string
+	{
+		return 'IN_STORE';
+	}
+
+	protected function addressCode(Sale\Order $order) : string
+	{
+		return '';
+	}
+
+	protected function zipCode(Sale\Order $order) : string
+	{
+		return '';
 	}
 }

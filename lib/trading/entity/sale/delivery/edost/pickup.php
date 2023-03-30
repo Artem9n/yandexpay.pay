@@ -13,12 +13,12 @@ class Pickup extends Base
 
 	protected $format = ['office', 'post'];
 
-	public function getServiceType() : string
+	public function serviceType() : string
 	{
 		return EntitySale\Delivery::PICKUP_TYPE;
 	}
 
-	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
+	public function markSelectedPickup(Sale\Order $order, string $storeId, string $address) : void
 	{
 		$propAddress = $this->addressProperty($order);
 
@@ -34,7 +34,7 @@ class Pickup extends Base
 
 		$config = $this->config($order);
 		$config['template'] = 'N3'; //template bitrix
-		$providerType = $this->getProvider();
+		$providerType = $this->providerType();
 		$deliveryId = $service->getId();
 
 		$bitrix_data[$deliveryId] = [
@@ -81,7 +81,7 @@ class Pickup extends Base
 					$pickup['amount'] = $deliveryPrice;
 					$pickup['provider'] = $providerType;
 					$pickup['address'] = \edost_class::GetOfficeAddress($pickup, $tariff);
-					$result[$locationId][] = $this->makePickupInfo($pickup);
+					$result[$locationId][] = $this->collectPickup($pickup);
 				}
 			}
 		}
@@ -157,7 +157,7 @@ class Pickup extends Base
 		return $result;
 	}
 
-	private function makePickupInfo($pickup) : array
+	protected function collectPickup(array $pickup) : array
 	{
 		$coords = explode(',', $pickup['gps']);
 

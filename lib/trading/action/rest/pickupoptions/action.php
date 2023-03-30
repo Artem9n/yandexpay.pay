@@ -24,7 +24,7 @@ class Action extends Rest\Reference\EffectiveAction
 
 		(new Rest\Pipeline())
 			->pipe($this->calculationPipeline())
-			->pipe(new Stage\PickupOptionsCollector($response, 'pickupOptions', $this->request->getBounds()->getFields()))
+			->pipe(new Stage\PickupOptionsCollector($response,  $this->request->getBounds()->getFields(), 'pickupOptions'))
 			->process($state);
 
 		return $this->convertResponseToHttp($response);

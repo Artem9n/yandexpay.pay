@@ -12,7 +12,8 @@ class Factory
 	public const SDEK_PICKUP = 'sdek:pickup';
 	public const SDEK_POSTAMAT = 'sdek:postamat';
 	public const SDEK_COURIER = 'sdek:courier';
-	public const BOXBERRY_PVZ = 'boxberry:pvz';
+	public const BOXBERRY_PICKUP = 'boxberry:pickup';
+	public const BOXBERRY_COURIER = 'boxberry:courier';
 	public const DPD_PICKUP = 'dpd:pickup';
 	public const DPD_COURIER = 'dpd:courier';
 	public const RUSSIAN_POST = 'russianPost:pickup';
@@ -20,17 +21,19 @@ class Factory
 	public const EDOST_PICKUP = 'edost:pickup';
 	public const EDOST_COURIER = 'edost:courier';
 
-	public static function make(Sale\Delivery\Services\Base $service, string $deliveryType = null) : AbstractAdapter
+	public static function make(Sale\Delivery\Services\Base $service, string $deliveryType) : ?AbstractAdapter
 	{
 		$result = null;
 
-		foreach (static::getTypesPickup() as $type)
+		foreach (static::getTypes() as $type)
 		{
 			$adapter = static::getInstance($type);
 
-			if ($adapter->isMatch($service))
+			if (
+				$adapter->serviceType() === $deliveryType
+				&& $adapter->isMatch($service)
+			)
 			{
-				if ($deliveryType !== null && $adapter->getServiceType() !== $deliveryType) { continue; }
 				if (!$adapter->load()) { continue; }
 
 				$result = $adapter;
@@ -38,18 +41,10 @@ class Factory
 			}
 		}
 
-		if ($result === null)
-		{
-			throw new Main\ArgumentException(sprintf(
-				'delivery service %s pickup not implemented',
-				get_class($service)
-			));
-		}
-
 		return $result;
 	}
 
-	protected static function getTypesPickup() : array
+	protected static function getTypes() : array
 	{
 		return [
 			static::SITE_STORE,
@@ -58,7 +53,8 @@ class Factory
 			static::SDEK_POSTAMAT,
 			static::DPD_PICKUP,
 			static::DPD_COURIER,
-			static::BOXBERRY_PVZ,
+			static::BOXBERRY_PICKUP,
+			static::BOXBERRY_COURIER,
 			static::RUSSIAN_POST,
 			static::RUSSIAN_COURIER,
 			static::EDOST_PICKUP,

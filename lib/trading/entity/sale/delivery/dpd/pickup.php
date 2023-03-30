@@ -8,40 +8,35 @@ use Bitrix\Sale;
 use Bitrix\Main;
 use Ipolh\DPD\DB\Terminal;
 use Ipolh\DPD\Delivery\DPD;
-use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery as EntityDelivery;
 
 class Pickup extends Base
 {
-	protected $code = 'ipolh_dpd:PICKUP';
+	protected $codeService = 'ipolh_dpd:PICKUP';
 
-	public function getServiceType() : string
+	public function serviceType() : string
 	{
-		return EntitySale\Delivery::PICKUP_TYPE;
+		return EntityDelivery::PICKUP_TYPE;
 	}
 
-	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
+	public function markSelectedPickup(Sale\Order $order, string $storeId, string $address) : void
 	{
-		$value = sprintf('%s (%s)', $address, $storeId);
-		$propAddress = $this->addressProperty($order);
+		[$zip] = explode(',', $address, 2);
 
-		if ($propAddress !== null)
+		if (!empty($zip))
 		{
-			$propAddress->setValue($value);
+			$this->fillZip($order, $zip);
 		}
 
-		/** @var Sale\Order $order */
+		$this->fillAddress($order, sprintf('%s (%s)', $address, $storeId));
+
 		$this->calculateAndFillSessionValues($order);
 
-		$profile = DPD::getDeliveryProfile($this->code);
+		$profile = DPD::getDeliveryProfile($this->codeService);
 		$_REQUEST['IPOLH_DPD_TERMINAL'][$profile] = $storeId;
 	}
 
-	protected function getAddressCode(Sale\Order $order) : string
-	{
-		return (string)Main\Config\Option::get('ipol.dpd', sprintf('RECEIVER_PVZ_FIELD_%s', $order->getPersonTypeId()));
-	}
-
-	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds = null) : array
+	public function getStores(Sale\Order $order, Sale\Delivery\Services\Base $service, array $bounds) : array
 	{
 		$stores = $this->loadStores($bounds);
 
@@ -51,7 +46,7 @@ class Pickup extends Base
 	}
 
 	/** @noinspection SpellCheckingInspection */
-	protected function loadStores(array $bounds = null) : array
+	protected function loadStores(array $bounds) : array
 	{
 		$result = [];
 
@@ -69,7 +64,7 @@ class Pickup extends Base
 
 		while ($pickup = $query->fetch())
 		{
-			$result[$pickup['LOCATION_ID']][] = $this->makePickupInfo($pickup);
+			$result[$pickup['LOCATION_ID']][] = $this->collectPoint($pickup);
 		}
 
 		return $result;
@@ -79,15 +74,14 @@ class Pickup extends Base
 	{
 		$pickup = Terminal\Table::getByCode($storeId);
 
-		return $this->makePickupInfo($pickup);
+		return $this->collectPoint($pickup);
 	}
 
-	/** @noinspection SpellCheckingInspection */
-	private function makePickupInfo($pickup) : array
+	protected function collectPoint($pickup) : array
 	{
 		$schedule = implode(', ', array_filter($pickup['SCHEDULE_PAYMENTS']));
 
-		$result = [
+		return [
 			'ID' => $pickup['CODE'],
 			'ADDRESS' => $pickup['ADDRESS_FULL'],
 			'TITLE' => sprintf('(%s) %s', $this->title, $pickup['NAME']),
@@ -96,9 +90,12 @@ class Pickup extends Base
 			'SCHEDULE' => $schedule,
 			'PHONE' => $pickup['PHONE'] ?? '',
 			'DESCRIPTION' => $pickup['ADDRESS_DESCR'],
-			//'PROVIDER' => 'DPD',
+			'PROVIDER' => $this->providerType(),
 		];
+	}
 
-		return $result;
+	public function providerType() : ?string
+	{
+		return null;
 	}
 }

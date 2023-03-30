@@ -3,25 +3,33 @@
 namespace YandexPay\Pay\Trading\Entity\Sale\Delivery\Dpd;
 
 use Bitrix\Sale;
-use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery as EntityDelivery;
 
 class Courier extends Base
 {
-	protected $code = 'ipolh_dpd:COURIER';
+	protected $codeService = 'ipolh_dpd:COURIER';
 
-	public function getServiceType() : string
+	public function serviceType() : string
 	{
-		return  EntitySale\Delivery::DELIVERY_TYPE;
+		return  EntityDelivery::COURIER_TYPE;
 	}
 
-	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
+	public function markSelectedCourier(Sale\Order $order, string $address, string $zip) : void
 	{
-		// do nothing
-	}
-
-	public function markSelectedDelivery(Sale\Order $order, array $address) : void
-	{
-		/** @var Sale\Order $order */
+		$this->fillAddress($order, $address);
 		$this->calculateAndFillSessionValues($order);
+	}
+
+	public function prepareCalculateCourier(Sale\Order $order) : void
+	{
+		$paymentCollection = $order->getPaymentCollection();
+
+		/** @var Sale\Payment $payment */
+		foreach ($paymentCollection as $payment)
+		{
+			if ($payment->isInner()) { continue; }
+
+			$_REQUEST['PAY_SYSTEM_ID'] = $payment->getPaymentSystemId();
+		}
 	}
 }

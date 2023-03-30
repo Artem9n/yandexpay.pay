@@ -35,10 +35,14 @@ class PickupDetailCollector extends ResponseCollector
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		$deliveryService = $state->environment->getDelivery()->getDeliveryService($this->deliveryId);
-		$pickup = Delivery\Factory::make($deliveryService, Delivery::PICKUP_TYPE);
+		$deliveryEnv = $state->environment->getDelivery();
+		$deliveryService = $deliveryEnv->getDeliveryService($this->deliveryId);
 
-		$pickup->prepareCalculatePickup(
+		$deliveryIntegration = $deliveryEnv->deliveryIntegration($deliveryService, Delivery::PICKUP_TYPE);
+
+		if ($deliveryIntegration === null) { return; }
+
+		$deliveryIntegration->prepareCalculatePickup(
 			$state->order->getCalculatable(),
 			$this->deliveryId,
 			$this->storeId,
@@ -50,10 +54,10 @@ class PickupDetailCollector extends ResponseCollector
 
 		$state->order->setLocation($this->request->getLocationId());
 
-		$isComatible = $state->environment->getDelivery()->isCompatible($this->deliveryId, $state->order);
+		$isCompatible = $state->environment->getDelivery()->isCompatible($this->deliveryId, $state->order);
 		$deliveryName = $deliveryService->getNameWithParent();
 
-		if (!$isComatible)
+		if (!$isCompatible)
 		{
 			$message = self::getMessage('PICKUP_NOT_COMPATIBLE', [
 				'#STORE_ID#' => $this->storeId,
@@ -78,7 +82,7 @@ class PickupDetailCollector extends ResponseCollector
 			throw new DtoProperty($message);
 		}
 
-		$store = $pickup->getDetailPickup($this->storeId);
+		$store = $deliveryIntegration->getDetailPickup($this->storeId);
 		$result = $this->collectPickupOption($calculationResult, $deliveryService, $store, $this->locationId);
 
 		$this->write($result);

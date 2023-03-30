@@ -12,6 +12,10 @@ class Address extends Incoming\Skeleton
 
 	public function getMeaningfulAddress(array $skipAdditionalTypes = []) : string
 	{
+		$addressLine = $this->getAddressLine();
+
+		if ($addressLine !== null) { return $addressLine; }
+
 		$values = $this->getAddressValues();
 
 		return $this->combineAddress($values, $skipAdditionalTypes);
@@ -168,6 +172,11 @@ class Address extends Incoming\Skeleton
 	public function getComment() : ?string
 	{
 		return $this->getField('comment');
+	}
+
+	public function getAddressLine() : ?string
+	{
+		return $this->getField('addressLine');
 	}
 
 	public function getCoordinates() : ?array

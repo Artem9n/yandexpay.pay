@@ -9,48 +9,22 @@ use YandexPay\Pay\Trading\Entity\Sale as EntitySale;
 /** @property Sale\Delivery\Services\AutomaticProfile $service */
 class Courier extends Base
 {
-	public function isMatch(Sale\Delivery\Services\Base $service) : bool
+	protected $codeService = 'sdek:courier';
+	protected $tariff = 'courier';
+
+	public function serviceType() : string
 	{
-		if (!($service instanceof Sale\Delivery\Services\AutomaticProfile)) { return false; }
-
-		$code = $service->getCode();
-
-		$this->title = $service->getNameWithParent();
-
-		return $code === 'sdek:courier';
+		return EntitySale\Delivery::COURIER_TYPE;
 	}
 
-	protected function getType() : string
+	public function markSelectedCourier(Sale\Order $order, string $address, string $zip) : void
 	{
-		return Factory::SDEK_COURIER;
+		$this->fillTariff($order);
+		$this->fillAddress($order, $address);
 	}
 
-	public function getServiceType() : string
+	protected function addressCode(Sale\Order $order) : string
 	{
-		return EntitySale\Delivery::DELIVERY_TYPE;
-	}
-
-	public function markSelectedDelivery(Sale\Order $order, array $address) : void
-	{
-		/** @var \Bitrix\Sale\ShipmentCollection $shipmentCollection */
-		$shipmentCollection = $order->getShipmentCollection();
-
-		/** @var \Bitrix\Sale\Shipment $shipment */
-		foreach ($shipmentCollection as $shipment)
-		{
-			if ($shipment->isSystem()) { continue; }
-
-			$shipment->calculateDelivery();
-		}
-
-		$tariff = $_SESSION['IPOLSDEK_CHOSEN']['courier'];
-
-		/** @var \Bitrix\Sale\PropertyValue $property */
-		foreach ($order->getPropertyCollection() as $property)
-		{
-			if ($property->getField('CODE') !== 'IPOLSDEK_CNTDTARIF') { continue; }
-
-			$property->setValue($tariff);
-		}
+		return (string)\Ipolh\SDEK\option::get('address');
 	}
 }

@@ -4,6 +4,7 @@ namespace YandexPay\Pay\Trading\Entity\Reference;
 
 use Bitrix\Main;
 use Bitrix\Sale;
+use YandexPay\Pay\Trading\Entity\Sale\Delivery as EntityDelivery;
 use Bitrix\Main\NotImplementedException;
 
 class Delivery
@@ -93,7 +94,7 @@ class Delivery
 	 * @return array
 	 * @throws \Bitrix\Main\NotImplementedException
 	 */
-	public function getPickupStores(int $deliveryId, Order $order, array $bounds = null) : array
+	public function getPickupStores(int $deliveryId, Order $order, array $bounds) : array
 	{
 		throw new NotImplementedException('getPickupStores is missing');
 	}
@@ -134,5 +135,17 @@ class Delivery
 	public function getDeliveryService(int $deliveryId) : Sale\Delivery\Services\Base
 	{
 		throw new NotImplementedException('getDeliveryService is missing');
+	}
+
+	/**
+	 * @param Sale\Delivery\Services\Base $deliveryService
+	 * @param string                      $type
+	 *
+	 * @return EntityDelivery\AbstractAdapter|null
+	 * @throws Main\NotImplementedException
+	 */
+	public function deliveryIntegration(Sale\Delivery\Services\Base $deliveryService, string $type) : ?EntityDelivery\AbstractAdapter
+	{
+		throw new NotImplementedException('getDeliveryIntegration is missing');
 	}
 }

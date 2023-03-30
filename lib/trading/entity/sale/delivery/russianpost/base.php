@@ -14,7 +14,13 @@ class Base extends AbstractAdapter
 
 	public function isMatch(Sale\Delivery\Services\Base $service) : bool
 	{
-		return false;
+		if (!($service instanceof \Sale\Handlers\Delivery\RussianpostProfile)) { return false; }
+
+		$code = $service->getCode();
+
+		$this->title = $service->getNameWithParent();
+
+		return $code === $this->codeService;
 	}
 
 	public function load() : bool
@@ -22,17 +28,7 @@ class Base extends AbstractAdapter
 		return Main\Loader::includeModule('russianpost.post');
 	}
 
-	public function getServiceType() : string
-	{
-		return '';
-	}
-
-	public function markSelected(Sale\Order $order, string $storeId = null, string $address = null) : void
-	{
-
-	}
-
-	protected function getTariff(Sale\OrderBase $order, string $indexTo) : ?array
+	protected function getTariff(Sale\Order $order, string $indexTo) : ?array
 	{
 		$result = null;
 
@@ -40,21 +36,23 @@ class Base extends AbstractAdapter
 
 			$httpClient = new Main\Web\HttpClient();
 			$account = $this->getAccount();
-			$accountId = $account[$this->accountId];
 
-			$data = $httpClient->get(sprintf('https://widget.pochta.ru/api/data/free_tariff_by_settings?id=%s&indexTo=%s&weight=%s&sumoc=%s',
-				$accountId,
-				$indexTo,
-				(int)$order->getBasket()->getWeight(),
-				(int)($order->getPrice() * 100)
-			));
+			$params = [
+				'id' => $account[$this->accountId],
+				'indexTo' => $indexTo,
+				'weight' => (int)$order->getBasket()->getWeight(),
+				'sumoc' => (int)($order->getPrice() * 100),
+			];
+
+			$url = 'https://widget.pochta.ru/api/data/free_tariff_by_settings?' . http_build_query($params);
+			$data = $httpClient->get($url);
 			$data = Main\Web\Json::decode($data);
 			$result = $data;
 
 		}
 		catch (Main\SystemException $exception)
 		{
-			// nothing
+			trigger_error('getTariff: ' . $exception->getMessage(), E_USER_WARNING);
 		}
 
 		return $result;
@@ -80,9 +78,42 @@ class Base extends AbstractAdapter
 		}
 		catch (Main\SystemException $exception)
 		{
-			//nothing
+			trigger_error('getAccount: ' . $exception->getMessage(), E_USER_WARNING);
 		}
 
 		return $result;
+	}
+
+	protected function fillTariff(Sale\Order $order, string $zip)
+	{
+		$tariff = $this->getTariff($order, $zip);
+
+		if ($tariff !== null)
+		{
+			/** @var \Bitrix\Sale\PropertyValue $property */
+			foreach ($order->getPropertyCollection() as $property)
+			{
+				if ($property->getField('CODE') === 'RUSSIANPOST_TYPEDLV')
+				{
+					$property->setValue($tariff['type']);
+					break;
+				}
+			}
+		}
+	}
+
+	public function providerType() : ?string
+	{
+		return 'RUSSIAN_POST';
+	}
+
+	protected function zipCode(Sale\Order $order) : string
+	{
+		return (string)\Russianpost\Post\Optionpost::get('zip', true, $order->getSiteId());
+	}
+
+	protected function addressCode(Sale\Order $order) : string
+	{
+		return (string)\Russianpost\Post\Optionpost::get('address', true, $order->getSiteId());
 	}
 }

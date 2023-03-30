@@ -15,6 +15,9 @@ class PickupProperties
 
 	public function __invoke(State\OrderCalculation $state)
 	{
-		$state->order->fillPropertiesStore($this->pickup->getStoreId(), $this->pickup->getAddress());
+		$state->order->fillPropertiesPickup(
+			$this->pickup->getStoreId(),
+			$this->pickup->getAddress()
+		);
 	}
 }
