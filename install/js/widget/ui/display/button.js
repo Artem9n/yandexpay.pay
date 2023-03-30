@@ -5,9 +5,9 @@ export default class Button extends Display {
 
 	static defaults = {
 		style: `<style>#STYLE#</style>`,
-		styleHeight: `##ID# .ya-pay-button, ##ID# .bx-yapay-skeleton-loading {height:#HEIGHT#px;}`,
+		styleHeight: `##ID# .ya-pay-button, ##ID# .bx-yapay-skeleton {height:#HEIGHT#px;}`,
 		styleBorder: `##ID# .ya-pay-button, ##ID# .bx-yapay-skeleton-loading {border-radius:#BORDER#px;}`,
-		styleWidth: `##ID# .ya-pay-button, ##ID# .bx-yapay-skeleton-loading, ##ID# .bx-yapay-divider{width: #WIDTH#px;}`,
+		styleWidth: `##ID# .ya-pay-button, ##ID# .bx-yapay-skeleton, ##ID# .bx-yapay-divider{width: #WIDTH#px;}`,
 	}
 
 	style() {
