@@ -82,7 +82,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 	{
 		if ((string)$payment->getField('PS_INVOICE_ID') !== '') { return; }
 
-		$accountNumber = (string)$payment->getOrder()->getField('ACCOUNT_NUMBER');
+		$order = $payment->getOrder();
+		$accountNumber = (string)$order->getField('ACCOUNT_NUMBER');
 
 		foreach ($payment->getCollection() as $sibling)
 		{
@@ -94,7 +95,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		}
 
 		$payment->setField('PS_INVOICE_ID', $accountNumber);
-		$payment->save();
+		$order->save();
 	}
 
 	protected function setRedirectUrl(Payment $payment) : void

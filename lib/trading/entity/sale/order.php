@@ -1093,7 +1093,7 @@ class Order extends EntityReference\Order
 	protected function linkPaymentNumber(Sale\Payment $payment, string $paymentNumber) : void
 	{
 		$payment->setField('PS_INVOICE_ID', $paymentNumber);
-		$payment->save();
+		$payment->getOrder()->save();
 	}
 
 	public function setPaymentId(int $paymentId) : void
