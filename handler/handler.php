@@ -116,6 +116,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		$successUrl = $this->getParamValue($payment, 'SUCCESS_URL') ?: null;
 		$failUrl = $this->getParamValue($payment, 'FAIL_URL') ?: null;
 
+		[$displayType, $displayParameters] = $this->makeDisplay($payment);
+
 		return [
 			'requestSign'           => static::REQUEST_SIGN,
 			'order'                 => $isRest ? $this->getOrderRest($payment) : $this->getOrderData($payment),
@@ -124,6 +126,8 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'merchantName'          => $this->getParamValue($payment, 'MERCHANT_NAME'),
 			'buttonTheme'           => $this->getParamValue($payment, 'VARIANT_BUTTON'),
 			'buttonWidth'           => $this->getParamValue($payment, 'WIDTH_BUTTON'),
+			'displayType'           => $displayType,
+			'displayParameters'     => $displayParameters,
 			'gateway'               => $gateway->getGatewayId(),
 			'gatewayMerchantId'     => $gateway->getMerchantId(),
 			'externalId'            => $payment->getId(),
@@ -135,7 +139,16 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			'failUrl'               => $failUrl ?? $curPage,
 			'isRest'                => $isRest,
 			'metadata'              => $this->makeMetadata($payment),
+			'mode'                  => 'payment',
 		];
+	}
+
+	protected function makeDisplay(Payment $payment) : array
+	{
+		$display = $this->getParamValue($payment, 'DISPLAY');
+		$display = ($display === null ?  [] : unserialize($display, [ 'allowed_classes' => false ]));
+
+		return [$display['DISPLAY'], $display];
 	}
 
 	protected function makeMetadata(Payment $payment) : string

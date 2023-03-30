@@ -27,6 +27,7 @@ PayUi\SaleInput\Registry::register();
 $data = [
 	'NAME'        => Loc::getMessage('YANDEX_PAY_TITLE'),
 	'DESCRIPTION' => Loc::getMessage('YANDEX_PAY_DESCRIPTION'),
+	'SET_MAPPING' => '\YandexPay\Pay\Ui\SaleInput\Mapping::saveMapping',
 	'CODES'       => [
 		'YANDEX_PAY_SETTING' => [
 			'NAME'          => ' ',
@@ -63,7 +64,16 @@ $data = [
 				'SIZE' => 40,
 			]
 		],
-		'YANDEX_PAY_VARIANT_BUTTON' => [
+		'YANDEX_PAY_DISPLAY' => [
+			'NAME'          => Loc::getMessage('YANDEX_PAY_DISPLAY_NAME'),
+			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_DISPLAY_DESCRIPTION'),
+			'SORT'          => 250,
+			'INPUT' => [
+				'TYPE' => PayUi\SaleInput\Registry::type(PayUi\SaleInput\Registry::TYPE_DISPLAY),
+				'SIZE' => 40,
+			],
+		],
+		/*'YANDEX_PAY_VARIANT_BUTTON' => [
 			'NAME'          => Loc::getMessage('YANDEX_PAY_VARIANT_BUTTON_NAME'),
 			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_VARIANT_BUTTON_DESCRIPTION'),
 			'SORT'          => 250,
@@ -97,7 +107,7 @@ $data = [
 				'PROVIDER_VALUE'    => 'AUTO',
 				'PROVIDER_KEY'      => 'INPUT'
 			]
-		],
+		],*/
 		'YANDEX_PAY_SUCCESS_URL' => [
 			'NAME' => Loc::getMessage('YANDEX_PAY_SUCCESS_URL'),
 			'DESCRIPTION'   => Loc::getMessage('YANDEX_PAY_SUCCESS_URL_DESCRIPTION'),

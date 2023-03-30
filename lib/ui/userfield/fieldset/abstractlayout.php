@@ -91,6 +91,9 @@ abstract class AbstractLayout
 
 	protected function getPluginAttributes(string $inputName) : array
 	{
+		$userClass = (string)$this->userField['SETTINGS']['CLASS'] !== ''
+			? ' ' . $this->userField['SETTINGS']['CLASS'] : '';
+
 		if ($this->hasParentFieldset())
 		{
 			$selfName = Helper::makeRelativeName($this->userField, $inputName);
@@ -104,7 +107,7 @@ abstract class AbstractLayout
 		else
 		{
 			$result = [
-				'class' => 'js-plugin',
+				'class' => 'js-plugin' . $userClass,
 				'data-base-name' => $inputName,
 			];
 		}
