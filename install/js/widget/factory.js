@@ -15,7 +15,7 @@ export default class Factory {
 			'<div id="#ID#" ' +
 				'class="bx-yapay-drawer-container ' +
 				'yapay-behavior--#MODE# ' +
-				'yapay-display--#DISPLAY# ' +
+				'yapay-display--#DISPLAY# #WIDGET_TYPE# '+
 				'yapay-width--#WIDTH# ' +
 				'yapay-solution--#SOLUTION#">' +
 				'#STYLE#' +
@@ -23,7 +23,6 @@ export default class Factory {
 			'</div>',
 		useDivider: false,
 		containerSelector: '.bx-yapay-drawer',
-		loaderSelector: '.bx-yapay-skeleton-loading',
 		event: null,
 		eventConfig: {},
 		preserve: {
@@ -336,6 +335,12 @@ export default class Factory {
 	renderElement(anchor, position) {
 		const selector = this.containerSelector();
 		const display = this.getDisplay();
+		const displayType = this.getOption('displayType')?.toLowerCase();
+		let widgetType = '';
+
+		if (displayType === 'widget') {
+			widgetType = display.getOption('TYPE_WIDGET')?.toLowerCase();
+		}
 
 		const html = Utils.compile(this.getOption('template'), {
 			style: display != null ? display.style() : '',
@@ -344,6 +349,7 @@ export default class Factory {
 			mode: this.getOption('mode') || 'payment',
 			display: this.getOption('displayType')?.toLowerCase() || 'button',
 			solution: this.getOption('solution')?.toLowerCase(),
+			widget_type: widgetType,
 		});
 
 		let elements = Utils.toElements(html);
