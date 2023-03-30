@@ -5,8 +5,8 @@ export default class Widget extends Display {
 
 	static defaults = {
 		style: `<style>#STYLE#</style>`,
-		styleBorder: `##ID# .bx-yapay-skeleton-loading {border-radius:#BORDER#px !important;}`,
-		styleWidth: `##ID# .ya-pay-widget, ##ID# .bx-yapay-skeleton-loading, ##ID# .bx-yapay-divider{width: #WIDTH#px !important;}`,
+		styleBorder: `##ID# .bx-yapay-skeleton-loading-button, ##ID# .bx-yapay-skeleton-loading-description {border-radius:#BORDER#px !important;}`,
+		styleWidth: `##ID# .ya-pay-widget, ##ID# .bx-yapay-skeleton, ##ID# .bx-yapay-divider{width: #WIDTH#px !important;}`,
 	}
 
 	style() {
@@ -73,5 +73,34 @@ export default class Widget extends Display {
 
 	width() {
 		return 'MAX';
+	}
+
+	setProperty(node) {
+		const typeWidget = this.getOption('TYPE_WIDGET');
+		const splitSelect = this.getOption('SPLIT_SELECT_WIDGET');
+
+		if (typeWidget == null) { return; }
+
+		if (typeWidget === 'BnplOffer') {
+			if (splitSelect === '1') {
+				node.style.setProperty('min-height', '435px');
+			} else {
+				node.style.setProperty('min-height', '301px');
+			}
+		} else if (typeWidget === 'Mini') {
+			node.style.setProperty('min-height', '80px');
+		} else if (typeWidget === 'Compact') {
+			node.style.setProperty('min-height', '166px');
+		} else if (typeWidget === 'Compact') {
+			node.style.setProperty('min-height', '166px');
+		} else if (typeWidget === 'BnplRequired') {
+			node.style.setProperty('min-height', '435px');
+		}
+	}
+
+	removeProperty(node) {
+		setTimeout(() => {
+			node.style.removeProperty('min-height');
+		}, 1200);
 	}
 }

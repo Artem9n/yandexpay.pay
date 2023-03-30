@@ -77,8 +77,10 @@ export default class Rest extends Proxy {
 		})
 			.then((paymentSession) => {
 				this._mounted = true;
+				this.cart.display.setProperty(node);
 				this.widget.removeLoader();
 				this.mount(paymentSession);
+				this.cart.display.removeProperty(node);
 			})
 			.catch((err) => {
 				this._mounted = null;

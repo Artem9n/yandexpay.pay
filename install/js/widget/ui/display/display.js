@@ -26,4 +26,12 @@ export default class Display {
 	getOption(name) {
 		return this.options[name];
 	}
+
+	setProperty () {
+
+	}
+
+	removeProperty() {
+
+	}
 }
