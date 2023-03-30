@@ -1,8 +1,8 @@
 import StepFactory from './step/factory';
-import Loader from './step/loader';
 import Divider from "./step/divider";
 import Page from "../solution/reference/page";
 import NodePreserver from "./ui/nodepreserver";
+import Loader from "./ui/loader/factory";
 
 export default class Widget {
 
@@ -104,9 +104,8 @@ export default class Widget {
 	}
 
 	bootLoader() {
-		if (this.loader == null)
-		{
-			this.loader = new Loader(this);
+		if (this.loader == null) {
+			this.loader = Loader.make(this.getOption('displayType'), this, this.options);
 		}
 
 		this.loader.render(this.el);
