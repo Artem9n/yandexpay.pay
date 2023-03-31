@@ -203,7 +203,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 
 			$result['items'][] = [
 				'label'     => $basketItem->getField('NAME'),
-				'amount'    => number_format($basketItem->getFinalPrice(), 2, '.', '')
+				'amount'    => number_format($basketItem->getFinalPrice(), 2, '.', ''),
 			];
 		}
 
@@ -211,7 +211,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		{
 			$result['items'][] = [
 				'label'     => Main\Localization\Loc::getMessage('ORDER_DELIVERY'),
-				'amount'    => number_format($deliveryPrice, 2, '.', '')
+				'amount'    => number_format($deliveryPrice, 2, '.', ''),
 			];
 		}
 
@@ -238,11 +238,24 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 		{
 			$result['items'][] = [
 				'label'     => $basketItem->getField('NAME'),
-				'amount'    => $basketItem->getFinalPrice(),
+				'total'    => $basketItem->getFinalPrice(),
 				'productId' => (string)$basketItem->getProductId(),
 				'quantity' => [
-					'count' => (float)$basketItem->getQuantity()
-				]
+					'count' => (float)$basketItem->getQuantity(),
+				],
+			];
+		}
+
+		$shipmentCollection = $order->getShipmentCollection();
+
+		/** @var \Bitrix\Sale\Shipment $shipment */
+		foreach ($shipmentCollection as $shipment)
+		{
+			if ($shipment->isSystem()) { continue; }
+
+			$result['items'][] = [
+				'productId' => $shipment->getDeliveryId(),
+				'total' => $shipment->getPrice(),
 			];
 		}
 
@@ -355,7 +368,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 				'params'    => $exception->getParams(),
 				'method'    => $exception->getMethod(),
 				'termUrl'   => $exception->getTermUrl(),
-				'view'      => $exception->getView()
+				'view'      => $exception->getView(),
 			]);
 		}
 		catch (Main\SystemException $exception)
@@ -393,7 +406,7 @@ class YandexPayHandler extends PaySystem\ServiceHandler implements PaySystem\IRe
 			$response = [
 				'state'     => self::STEP_FAILURE,
 				'success'   => false,
-				'message'    => $errors
+				'message'    => $errors,
 			];
 		}
 
