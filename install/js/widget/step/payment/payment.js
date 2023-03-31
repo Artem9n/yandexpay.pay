@@ -1,10 +1,16 @@
 import AbstractStep from '../abstractstep';
 import Rest from "./rest";
 import Site from "./site";
+import Display from "../../ui/display/factory";
 
 export default class Payment extends AbstractStep {
+
+	display;
+
 	render(node, data) {
 		this.element = node;
+		this.display = this.getDisplay();
+
 		this.bootProxy();
 
 		const paymentData = this.getPaymentData(data);
@@ -21,5 +27,12 @@ export default class Payment extends AbstractStep {
 
 	createPayment(node, paymentData) {
 		this.proxy.createPayment(node, paymentData);
+	}
+
+	getDisplay() {
+		const type = this.getOption('displayType');
+		const options = this.getOption('displayParameters');
+
+		return Display.make(type, this, options);
 	}
 }

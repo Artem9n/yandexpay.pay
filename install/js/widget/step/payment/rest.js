@@ -1,4 +1,5 @@
 import Proxy from "./proxy";
+import {EventProxy} from "../../utils/eventproxy";
 
 export default class Rest extends Proxy {
 
@@ -20,8 +21,7 @@ export default class Rest extends Proxy {
 	}
 
 	onPaymentSuccess(event) {
-		this.payment.element.remove();
-
+		this.unmount();
 		this.authorize(event)
 			.then((result) => {
 				if (result.status === 'success') {
@@ -36,7 +36,7 @@ export default class Rest extends Proxy {
 	}
 
 	onPaymentAbort(event) {
-
+		EventProxy.make().fire('bxYapayPaymentAbort', event);
 	}
 
 	onPaymentError(event) {
@@ -46,7 +46,6 @@ export default class Rest extends Proxy {
 	}
 
 	createPayment(node, paymentData) {
-
 		YaPay.createSession(paymentData, {
 			onSuccess: this.onPaymentSuccess.bind(this),
 			onAbort: this.onPaymentAbort.bind(this),
@@ -54,18 +53,23 @@ export default class Rest extends Proxy {
 			agent: { name: 'CMS-Bitrix', version: '1.0' }
 		})
 			.then( (paymentSession) => {
-
 				this.widget.removeLoader();
-
-				paymentSession.mountButton(node, {
-					type: YaPay.ButtonType.Pay,
-					theme: this.getOption('buttonTheme') || YaPay.ButtonTheme.Black,
-					width: this.getOption('buttonWidth') || YaPay.ButtonWidth.Auto,
-				});
+				this.mount(paymentSession);
 			})
 			.catch( (err) => {
 				this.payment.showError('yapayPayment','payment not created', err);
 			});
+	}
+
+	mount(payment) {
+		this.paymentSession = payment;
+		this.payment.display.mount(this.payment.element, payment, YaPay.ButtonType.Pay);
+		EventProxy.make().fire('bxYapayMountButton');
+	}
+
+	unmount() {
+		this.payment.display.unmount(this.payment.element, this.paymentSession);
+		this.widget.removeToolsDisplay();
 	}
 
 	authorize(event) {

@@ -28,7 +28,7 @@ abstract class AbstractBehavior implements BehaviorInterface
 	public function getFields() : array
 	{
 		return $this->getTestFields()
-			+ $this->getDisplayFields()
+			+ static::getDisplayFields()
 			+ $this->getExpertFields();
 	}
 
@@ -77,22 +77,23 @@ abstract class AbstractBehavior implements BehaviorInterface
 					'SIZE' => 25,
 				],
 			],
+		];
+	}
+
+	public static function getDisplayFields() : array
+	{
+		$result = [
 			'DISPLAY' => [
 				'TITLE' => self::getMessage('DISPLAY'),
 				'GROUP' => self::getMessage('GROUP_DECOR'),
 				'TYPE' => 'enumeration',
-				'VALUES' => $this->getDisplayList(),
+				'VALUES' => static::getDisplayList(),
 				'HELP' => self::getMessage('HELP_DISPLAY'),
 				'SETTINGS' => [
 					'DEFAULT_VALUE' => Display\Registry::BUTTON,
 				],
 			],
 		];
-	}
-
-	protected function getDisplayFields() : array
-	{
-		$result = [];
 
 		foreach (Display\Registry::getTypes() as $type)
 		{
@@ -192,7 +193,7 @@ abstract class AbstractBehavior implements BehaviorInterface
 		];
 	}
 
-	protected function getDisplayList() : array
+	protected static function getDisplayList() : array
 	{
 		$result = [];
 
