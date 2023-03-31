@@ -7,13 +7,8 @@ export default class Split extends Loader {
 	static defaults = {
 		template: `
 		<div class="bx-yapay-skeleton">
-			<div class="bx-yapay-skeleton-user">
-				<div class="bx-yapay-skeleton-loading bx-yapay-skeleton-loading-circle"></div>
-				<div class="bx-yapay-skeleton-loading bx-yapay-skeleton-loading-line"></div>
-				<div class="bx-yapay-skeleton-loading bx-yapay-skeleton-loading-circle"></div>
-			</div>
-
-			<div class="bx-yapay-skeleton-divider"></div>
+			
+			#USER_DESCRIPTION#
 
 			<div class="bx-yapay-skeleton-user bx-yapay-skeleton-split">
 				<div class="bx-yapay-skeleton-loading bx-yapay-skeleton-loading-circle"></div>
@@ -58,7 +53,8 @@ export default class Split extends Loader {
 		if (node.querySelector(this.getOption('loaderSelector')) != null) { return; }
 
 		const displayParameters = this.getOption('displayParameters');
-		let compileData = {};
+		const mode = this.getOption('mode');
+		let compileData;
 
 		if (displayParameters?.TYPE_WIDGET === 'BnplRequired') {
 			compileData = {
@@ -80,6 +76,17 @@ export default class Split extends Loader {
 				split_now: '',
 				split_fee: '',
 			};
+		}
+
+		if (mode !== 'payment') {
+			compileData.user_description = `<div class="bx-yapay-skeleton-user">
+					<div class="bx-yapay-skeleton-loading bx-yapay-skeleton-loading-circle"></div>
+					<div class="bx-yapay-skeleton-loading bx-yapay-skeleton-loading-line"></div>
+					<div class="bx-yapay-skeleton-loading bx-yapay-skeleton-loading-circle"></div>
+				</div>
+				<div class="bx-yapay-skeleton-divider"></div>`;
+		} else {
+			compileData.user_description = '';
 		}
 
 		const html = Template.compile(this.getOption('template'), compileData);
