@@ -18,7 +18,7 @@ $MESS['YANDEX_PAY_REST_API_KEY_DESCRIPTION'] = 'Для запросов по новой модели опл
 $MESS['YANDEX_PAY_MERCHANT_NAME_NAME'] = 'Имя продавца';
 $MESS['YANDEX_PAY_MERCHANT_NAME_DESCRIPTION'] = 'Имя, которое продавец указывает при регистрации в Yandex Pay';
 
-$MESS['YANDEX_PAY_DISPLAY_NAME'] = 'Отображение';
+$MESS['YANDEX_PAY_DISPLAY_NAME'] = 'Оформление';
 $MESS['YANDEX_PAY_DISPLAY_DESCRIPTION'] = 'Выберите оформление для классической кнопки, которая будет отображаться после стандартного оформления заказа';
 
 $MESS['YANDEX_PAY_VARIANT_BUTTON_NAME'] = 'Цвет кнопки';
