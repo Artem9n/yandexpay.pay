@@ -19,8 +19,8 @@ class Widget implements IDisplay
 	];
 
 	protected $widgetTheme = [
-		'DARK',
 		'LIGHT',
+		'DARK',
 	];
 
 	public function getType() : string
