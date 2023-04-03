@@ -204,6 +204,20 @@
 	text-align: left;
 }
 
+.yapay-behavior--payment .bx-yapay-skeleton {
+	padding: 16px;
+}
+
+.yapay-behavior--payment .bx-yapay-skeleton-user.bx-yapay-skeleton-split {
+	margin-top: 0;
+}
+
+@media (min-width: 325px) {
+	.yapay-behavior--payment .bx-yapay-skeleton {
+		padding: 20px;
+	}
+}
+
 .yapay-display--widget .bx-yapay-skeleton.bx-yapay-skeleton-type-mini {
 	padding: 0;
 }
