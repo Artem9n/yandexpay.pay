@@ -1,3 +1,3 @@
 <?php
 
-$MESS['YANDEX_PAY_UI_SALE_INPUT_DISPLAY_TYPE_NAME'] = 'Отображение';
+$MESS['YANDEX_PAY_UI_SALE_INPUT_DISPLAY_TYPE_NAME'] = 'Оформление';
