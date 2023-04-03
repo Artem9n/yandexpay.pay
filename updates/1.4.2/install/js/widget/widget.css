@@ -1,0 +1,333 @@
+.bx-yapay-drawer-container{
+	height: auto;
+	margin-bottom: 20px;
+	display: block !important;
+}
+
+.bx-yapay-drawer.alert {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 0;
+    border-radius: 1px;
+    font-size: 14px;
+}
+
+.bx-yapay-drawer .alert.alert-danger {
+    border-color: #ebccd1;
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+.bx-yapay-drawer.alert.alert-success {
+    border-color: #d6e9c6;
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+/*loader*/
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-circle,
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-circle-info {
+	min-height: 32px;
+	min-width: 32px;
+	width: unset;
+	border-radius: 50%;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-circle-info {
+	min-height: 24px;
+	min-width: 24px;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-ellipse,
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-ellipse-selected {
+	height: 24px;
+	min-height: 24px;
+	min-width: 42px;
+	width: unset;
+	border-radius: 12px;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-ellipse:after,
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-ellipse-selected:after {
+	height: 18px;
+	min-height: 18px;
+	min-width: 18px;
+	border-radius: 50%;
+	opacity: .5;
+	content: "";
+	position: absolute;
+	left: 3px;
+	top: 3px;
+	background: white;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-ellipse-selected:after {
+	left: unset;
+	right: 3px;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-line {
+	height: 20px;
+	min-height: 20px;
+	width: 100%;
+	border-radius: 0;
+	margin: 0 16px;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-button,
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-description {
+	width: 100%;
+	min-width: 100px;
+	height: 48px;
+	min-height: 48px;
+	z-index: 2;
+	border-bottom: 1px solid white;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-description {
+	z-index: 1;
+	top: -4px;
+	height: 36px;
+	min-height: 36px;
+	width: -moz-available;          /* WebKit игнор. */
+	width: -webkit-fill-available;  /* Mozilla игнор. */
+	width: fill-available;
+	margin: 0 2px;
+	opacity: .5;
+}
+
+.bx-yapay-skeleton-divider {
+	margin-left: 50px;
+	background: #dcdcdd;
+	height: 1px;
+}
+
+.bx-yapay-skeleton-user.bx-yapay-skeleton-split {
+	margin: 14px 0;
+}
+
+.bx-yapay-skeleton-user.bx-yapay-skeleton-split-plan {
+	margin: 20px 0;
+	padding: 0;
+}
+
+.bx-yapay-skeleton-user {
+	display: flex;
+	align-items: center;
+	margin-bottom: 18px;
+}
+
+.bx-yapay-skeleton-split-plan-list {
+	display: flex;
+	padding: 0;
+	width: 100%;
+}
+
+.bx-yapay-skeleton-user .bx-yapay-skeleton-split-plan-item:first-child {
+	width: 30%;
+	margin: 0 5px 0 0;
+}
+
+.bx-yapay-skeleton-user .bx-yapay-skeleton-split-plan-item:last-child {
+	width: 70%;
+	margin-right: 0;
+}
+
+.bx-yapay-skeleton-split-plan-item-group {
+	display: flex;
+}
+
+.bx-yapay-skeleton-user .bx-yapay-skeleton-split-plan-pay-date {
+	margin-top: 8px;
+	min-height: 18px;
+	height: 18px;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-payline {
+	width: 100%;
+	min-width: auto;
+	height: 6px;
+	min-height: 6px;
+	margin: 0 5px 0 0;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-payline:last-child {
+	margin-right: 0;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-pay {
+	width: 50%;
+	min-width: auto;
+	height: 25px;
+	min-height: 25px;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-plans {
+	height: 36px;
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-plans:after {
+	background-color: white;
+	content: "";
+	border-radius: 8px;
+	bottom: 4px;
+	top: 4px;
+	right: 4px;
+	opacity: .5;
+	position: absolute;
+	width: 33%;
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-pay-now {
+	width: 30%;
+	height: 24px;
+	/*margin-top: 20px;*/
+}
+
+.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-fee {
+	height: 18px;
+	width: 22%;
+	margin-bottom: 20px;
+}
+
+.yapay-display--button .bx-yapay-skeleton {
+	height: 54px;
+	width: 282px;
+}
+
+.yapay-display--widget .bx-yapay-skeleton {
+	width: 100%;
+	min-width: 100px;
+	padding: 20px;
+	text-align: left;
+}
+
+.yapay-behavior--payment .bx-yapay-skeleton {
+	padding: 16px;
+}
+
+.yapay-behavior--payment .bx-yapay-skeleton-user.bx-yapay-skeleton-split {
+	margin-top: 0;
+}
+
+@media (min-width: 325px) {
+	.yapay-behavior--payment .bx-yapay-skeleton {
+		padding: 20px;
+	}
+}
+
+.yapay-display--widget .bx-yapay-skeleton.bx-yapay-skeleton-type-mini {
+	padding: 0;
+}
+
+/*.yapay-display--button .bx-yapay-skeleton-loading {
+	height: 54px;
+
+	min-height: 40px;
+
+	border: 1px solid transparent;
+}*/
+
+.bx-yapay-skeleton-loading {
+	display: inline-block;
+	vertical-align: top;
+	box-sizing: border-box;
+	border-radius: 8px;
+	position: relative;
+	background: #dcdcdd;
+	user-select: none;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+}
+
+.bx-yapay-skeleton-loading:before {
+	content: '';
+	display: block;
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background:  linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+	animation: bx-yapay-skeleton-loading 1.2s linear infinite;
+}
+
+@keyframes bx-yapay-skeleton-loading {
+	0% {
+		transform: translateX(-100%);
+	}
+
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+/*widget width max*/
+.yapay-width--max .bx-yapay-skeleton,
+.yapay-width--max .bx-yapay-divider{
+	width: 100%;
+	min-width: 100px;
+}
+
+/*divider*/
+.bx-yapay-divider {
+	display: inline-flex;
+	align-items: center;
+	min-width: 282px;
+	box-sizing: border-box;
+	margin-bottom: 15px;
+	color: #9397ad;
+	font-size: 16px;
+	line-height: initial;
+	text-align: center;
+	padding-left: 15px;
+	padding-right: 15px;
+	overflow-wrap: anywhere;
+}
+
+.bx-yapay-divider__corner {
+	flex: auto 1 1;
+	height: 1px;
+	position: relative;
+	background: #d0d4e0;
+}
+
+.bx-yapay-divider__corner:after {
+	content: '';
+	width: 5px;
+	height: 5px;
+	border-radius: 100%;
+	position: absolute;
+	left: 0;
+	top: -2px;
+	background: #d0d4e0;
+}
+
+.bx-yapay-divider__corner.at--right:after {
+	left: auto;
+	right: 0;
+}
+
+.bx-yapay-divider__text {
+	flex: auto 0 1;
+	padding: 0 10px;
+}
+
+/*divider for widget type*/
+.yapay-display--widget .bx-yapay-divider {
+	margin-bottom: 0;
+	padding-left: 30px;
+	padding-right: 30px;
+}
+
+.yapay-display--widget.mini .bx-yapay-divider {
+	margin-bottom: 20px;
+}
+
+/*
+.yapay-display--widget .bx-yapay-skeleton-loading {
+	margin-top: 15px;
+}*/
