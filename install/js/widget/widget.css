@@ -25,21 +25,21 @@
 }
 
 /*loader*/
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-circle,
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-circle-info {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-circle,
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-circle-info {
 	min-height: 32px;
 	min-width: 32px;
 	width: unset;
 	border-radius: 50%;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-circle-info {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-circle-info {
 	min-height: 24px;
 	min-width: 24px;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-ellipse,
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-ellipse-selected {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-ellipse,
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-ellipse-selected {
 	height: 24px;
 	min-height: 24px;
 	min-width: 42px;
@@ -47,8 +47,8 @@
 	border-radius: 12px;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-ellipse:after,
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-ellipse-selected:after {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-ellipse:after,
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-ellipse-selected:after {
 	height: 18px;
 	min-height: 18px;
 	min-width: 18px;
@@ -61,12 +61,12 @@
 	background: white;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-ellipse-selected:after {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-ellipse-selected:after {
 	left: unset;
 	right: 3px;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-line {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-line {
 	height: 20px;
 	min-height: 20px;
 	width: 100%;
@@ -74,8 +74,8 @@
 	margin: 0 16px;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-button,
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-description {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-button,
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-description {
 	width: 100%;
 	min-width: 100px;
 	height: 48px;
@@ -84,7 +84,7 @@
 	border-bottom: 1px solid white;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-description {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-description {
 	z-index: 1;
 	top: -4px;
 	height: 36px;
@@ -143,7 +143,7 @@
 	height: 18px;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-payline {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-split-plan-payline {
 	width: 100%;
 	min-width: auto;
 	height: 6px;
@@ -151,24 +151,24 @@
 	margin: 0 5px 0 0;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-payline:last-child {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-split-plan-payline:last-child {
 	margin-right: 0;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-pay {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-split-plan-pay {
 	width: 50%;
 	min-width: auto;
 	height: 25px;
 	min-height: 25px;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-plans {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-split-plan-plans {
 	height: 36px;
 	width: 100%;
 	margin-bottom: 20px;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-plans:after {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-split-plan-plans:after {
 	background-color: white;
 	content: "";
 	border-radius: 8px;
@@ -180,31 +180,31 @@
 	width: 33%;
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-plan-pay-now {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-split-plan-pay-now {
 	width: 30%;
 	height: 24px;
 	/*margin-top: 20px;*/
 }
 
-.bx-yapay-skeleton-loading.bx-yapay-skeleton-loading-split-fee {
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-split-fee {
 	height: 18px;
 	width: 22%;
 	margin-bottom: 20px;
 }
 
-.yapay-display--button .bx-yapay-skeleton {
+.yapay-display--button .bx-yapay-skeleton-loading {
 	height: 54px;
 	width: 282px;
 }
 
-.yapay-display--widget .bx-yapay-skeleton {
+.yapay-display--widget .bx-yapay-skeleton-loading {
 	width: 100%;
 	min-width: 100px;
 	padding: 20px;
 	text-align: left;
 }
 
-.yapay-behavior--payment.yapay-display--widget .bx-yapay-skeleton {
+.yapay-behavior--payment.yapay-display--widget .bx-yapay-skeleton-loading {
 	padding: 16px;
 }
 
@@ -212,11 +212,11 @@
 	margin-top: 0;
 }
 
-.yapay-display--widget .bx-yapay-skeleton.bx-yapay-skeleton-type-mini {
+.yapay-display--widget .bx-yapay-skeleton-loading.bx-yapay-skeleton-type-mini {
 	padding: 0;
 }
 
-.bx-yapay-skeleton-loading {
+.bx-yapay-skeleton-load {
 	display: inline-block;
 	vertical-align: top;
 	box-sizing: border-box;
@@ -229,7 +229,7 @@
 	height: 100%;
 }
 
-.bx-yapay-skeleton-loading:before {
+.bx-yapay-skeleton-load:before {
 	content: '';
 	display: block;
 	height: 100%;
@@ -238,10 +238,10 @@
 	top: 0;
 	left: 0;
 	background:  linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-	animation: bx-yapay-skeleton-loading 1.2s linear infinite;
+	animation: bx-yapay-skeleton-load 1.2s linear infinite;
 }
 
-@keyframes bx-yapay-skeleton-loading {
+@keyframes bx-yapay-skeleton-load {
 	0% {
 		transform: translateX(-100%);
 	}
@@ -252,7 +252,7 @@
 }
 
 /*widget width max*/
-.yapay-width--max .bx-yapay-skeleton,
+.yapay-width--max .bx-yapay-skeleton-loading,
 .yapay-width--max .bx-yapay-divider{
 	width: 100%;
 	min-width: 100px;

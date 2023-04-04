@@ -10,7 +10,7 @@ export default class Loader {
 	constructor(widget, options) {
 		this.widget = widget;
 		this.options = Object.assign({}, this.constructor.defaults, options);
-		this.options.loaderSelector = '.bx-yapay-skeleton';
+		this.options.loaderSelector = '.bx-yapay-skeleton-loading';
 	}
 
 	render(node, data = {}) {

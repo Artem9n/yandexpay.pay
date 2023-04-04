@@ -6,7 +6,7 @@ export default class Widget extends Display {
 	static defaults = {
 		style: `<style>#STYLE#</style>`,
 		styleBorder: `##ID# .bx-yapay-skeleton-loading-button, ##ID# .bx-yapay-skeleton-loading-description {border-radius:#BORDER#px !important;}`,
-		styleWidth: `##ID# .ya-pay-widget, ##ID# .bx-yapay-skeleton, ##ID# .bx-yapay-divider{width: #WIDTH#px !important;}`,
+		styleWidth: `##ID# .ya-pay-widget, ##ID# .bx-yapay-skeleton-loading, ##ID# .bx-yapay-divider{width: #WIDTH#px !important;}`,
 	}
 
 	style() {
