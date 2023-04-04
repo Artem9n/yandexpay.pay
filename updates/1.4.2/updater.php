@@ -73,20 +73,22 @@ if (Main\ModuleManager::isModuleInstalled('yandexpay.pay'))
 
 			while ($option = $queryOptions->fetch())
 			{
-				$result = [];
+				$isChange = false;
 
-				foreach ($option['VALUE'] as $key => $value)
+				foreach ($option['VALUE'] as &$value)
 				{
 					if ($value['TYPE'] !== 'delivery') { continue; }
 
-					$result[$key] = [
-						'ID' => $value['ID'],
-						'TYPE' => 'courier',
-					];
+					$isChange = true;
+
+					$value['TYPE'] = 'courier';
 				}
+				unset($value);
+
+				if (!$isChange) { continue; }
 
 				Pay\Trading\Settings\RepositoryTable::update(['ID' => $option['ID'], 'NAME' => $option['NAME']], [
-					'VALUE' => $result,
+					'VALUE' => $option['VALUE'],
 				]);
 			}
 		}
