@@ -5,23 +5,23 @@
 }
 
 .bx-yapay-drawer.alert {
-    margin-bottom: 20px;
-    padding: 15px;
-    border: 0;
-    border-radius: 1px;
-    font-size: 14px;
+	margin-bottom: 20px;
+	padding: 15px;
+	border: 0;
+	border-radius: 1px;
+	font-size: 14px;
 }
 
 .bx-yapay-drawer .alert.alert-danger {
-    border-color: #ebccd1;
-    background-color: #f2dede;
-    color: #a94442;
+	border-color: #ebccd1;
+	background-color: #f2dede;
+	color: #a94442;
 }
 
 .bx-yapay-drawer.alert.alert-success {
-    border-color: #d6e9c6;
-    background-color: #dff0d8;
-    color: #3c763d;
+	border-color: #d6e9c6;
+	background-color: #dff0d8;
+	color: #3c763d;
 }
 
 /*loader*/
@@ -204,7 +204,7 @@
 	text-align: left;
 }
 
-.yapay-behavior--payment .bx-yapay-skeleton {
+.yapay-behavior--payment.yapay-display--widget .bx-yapay-skeleton {
 	padding: 16px;
 }
 
@@ -212,23 +212,9 @@
 	margin-top: 0;
 }
 
-@media (min-width: 325px) {
-	.yapay-behavior--payment .bx-yapay-skeleton {
-		padding: 20px;
-	}
-}
-
 .yapay-display--widget .bx-yapay-skeleton.bx-yapay-skeleton-type-mini {
 	padding: 0;
 }
-
-/*.yapay-display--button .bx-yapay-skeleton-loading {
-	height: 54px;
-
-	min-height: 40px;
-
-	border: 1px solid transparent;
-}*/
 
 .bx-yapay-skeleton-loading {
 	display: inline-block;
@@ -326,8 +312,3 @@
 .yapay-display--widget.mini .bx-yapay-divider {
 	margin-bottom: 20px;
 }
-
-/*
-.yapay-display--widget .bx-yapay-skeleton-loading {
-	margin-top: 15px;
-}*/
