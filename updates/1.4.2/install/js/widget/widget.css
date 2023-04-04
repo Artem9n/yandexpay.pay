@@ -195,6 +195,7 @@
 .yapay-display--button .bx-yapay-skeleton-loading {
 	height: 54px;
 	width: 282px;
+	display: inline-block;
 }
 
 .yapay-display--widget .bx-yapay-skeleton-loading {
