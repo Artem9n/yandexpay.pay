@@ -13,7 +13,9 @@ if (Main\ModuleManager::isModuleInstalled('yandexpay.pay'))
 
 	AddEventHandler('main', 'OnModuleUpdate', static function($readyModules)
 	{
-		if (!Main\Loader::includeModule('yandexpay.pay') && !Main\Loader::includeModule('sale')) { return; }
+		if (!Main\Loader::includeModule('main')) { return; }
+		if (!Main\Loader::includeModule('sale')) { return; }
+		if (!Main\Loader::includeModule('yandexpay.pay')) { return; }
 
 		try
 		{
