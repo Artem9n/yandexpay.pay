@@ -31,6 +31,7 @@ export default class Basket extends Page {
 
 	handleBasketChange(dir: boolean) {
 		this[dir ? 'onEvent' : 'offEvent']('OnBasketChange', this.onBasketChange, this.eventConfig);
+		this[dir ? 'onEvent' : 'offEvent']('OnCouponApply', this.onBasketChange, this.eventConfig);
 	}
 
 	onBasketChange = () => {
