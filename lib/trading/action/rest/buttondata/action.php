@@ -42,6 +42,7 @@ class Action extends Rest\Reference\EffectiveAction
 	{
 		return (new Rest\Pipeline())
 			->pipe(new Rest\Stage\OrderTotalCollector($response, 'total'))
-			->pipe(new Rest\Stage\OrderItemsCollector($response, 'items'));
+			->pipe(new Rest\Stage\OrderItemsCollector($response, 'items'))
+			->pipe(new Rest\ButtonData\Stage\CouponsCollector($response, 'coupons'));
 	}
 }
