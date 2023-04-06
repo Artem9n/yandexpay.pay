@@ -146,13 +146,14 @@ export default class Rest extends Proxy {
 	}
 
 	changeOffer(newProductId) {
+		const isValidate = this.getOption('checkValidate');
 		let productId = this.getOption('productId');
 
 		if (productId === newProductId) { return; }
 
 		this.widget.setOptions({productId: newProductId});
 
-		if (!this.validateProduct(newProductId)) { return; }
+		if (isValidate && !this.validateProduct(newProductId)) { return; }
 
 		if (this._mounted == null) {
 			this.bootstrap();
