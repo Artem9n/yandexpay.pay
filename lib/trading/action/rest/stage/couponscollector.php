@@ -8,11 +8,16 @@ class CouponsCollector extends ResponseCollector
 {
 	public function __invoke(State\OrderCalculation $state) : void
 	{
+		$this->write($this->coupons());
+	}
+
+	protected function coupons() : array
+	{
 		$result = [];
 
 		$coupons = Sale\DiscountCouponsManager::get(true, [], true, true);
 
-		if (empty($coupons)) { return; }
+		if (empty($coupons)) { return []; }
 
 		foreach ($coupons as $coupon)
 		{
@@ -51,7 +56,7 @@ class CouponsCollector extends ResponseCollector
 			];
 		}
 
-		$this->write($result);
+		return $result;
 	}
 }
 
