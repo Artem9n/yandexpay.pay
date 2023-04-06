@@ -1,6 +1,6 @@
-import Loader from '../loader';
+import Loader from '../../loader';
 
-export default class Compact extends Loader {
+export default class CartMini extends Loader {
 
 	static defaults = {
 		template: `

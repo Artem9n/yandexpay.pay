@@ -95,6 +95,8 @@ export default class Widget extends Display {
 			node.style.setProperty('min-height', '166px');
 		} else if (typeWidget === 'BnplRequired') {
 			node.style.setProperty('min-height', '435px');
+		} else if (typeWidget === 'BnplPreview') {
+			node.style.setProperty('min-height', '288px');
 		}
 	}
 

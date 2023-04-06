@@ -26,6 +26,7 @@
 
 /*loader*/
 .bx-yapay-skeleton-load.bx-yapay-skeleton-loading-circle,
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-circle-right,
 .bx-yapay-skeleton-load.bx-yapay-skeleton-loading-circle-info {
 	min-height: 32px;
 	min-width: 32px;
@@ -36,6 +37,18 @@
 .bx-yapay-skeleton-load.bx-yapay-skeleton-loading-circle-info {
 	min-height: 24px;
 	min-width: 24px;
+}
+
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-circle-right {
+	margin-left: auto;
+}
+
+.bx-yapay-skeleton-load.bx-yapay-skeleton-loading-ellipse-preview {
+	margin-right: auto;
+	min-height: 30px;
+	width: unset;
+	min-width: 95px;
+	border-radius: 22px;
 }
 
 .bx-yapay-skeleton-load.bx-yapay-skeleton-loading-ellipse,
@@ -160,6 +173,7 @@
 	min-width: auto;
 	height: 25px;
 	min-height: 25px;
+	margin-top: 8px;
 }
 
 .bx-yapay-skeleton-load.bx-yapay-skeleton-loading-split-plan-plans {
@@ -218,7 +232,7 @@
 }
 
 .bx-yapay-skeleton-load {
-	display: inline-block;
+	display: block;
 	vertical-align: top;
 	box-sizing: border-box;
 	border-radius: 8px;
