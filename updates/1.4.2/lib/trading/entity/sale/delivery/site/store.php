@@ -109,13 +109,13 @@ class Store extends AbstractAdapter
 
 		$locationsIdsMap = $this->getLocationIdsByCodes(array_keys($storesByLocation));
 
-		foreach ($storesByLocation as $locationsCode => $stores)
+		foreach ($storesByLocation as $locationsCode => $locationStores)
 		{
 			$locationsId = $locationsIdsMap[$locationsCode];
 
 			if (!isset($locationsId)) { continue; }
 
-			$result[$locationsId] = $stores;
+			$result[$locationsId] = $locationStores;
 		}
 
 		return $result;

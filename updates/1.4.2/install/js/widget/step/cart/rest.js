@@ -69,6 +69,11 @@ export default class Rest extends Proxy {
 
 		this._mounted = false;
 
+		if (this.payment != null) {
+			this.payment.destroy();
+			this.payment = null;
+		}
+
 		YaPay.createSession(paymentData, {
 			onSuccess: this.onPaymentSuccess.bind(this),
 			onAbort: this.onPaymentAbort.bind(this),
@@ -138,6 +143,7 @@ export default class Rest extends Proxy {
 				total: {
 					amount: data.total.amount,
 				},
+				coupons: data.coupons,
 			},
 			metadata: data.metadata
 		};
@@ -146,13 +152,14 @@ export default class Rest extends Proxy {
 	}
 
 	changeOffer(newProductId) {
+		const isValidate = this.getOption('checkValidate');
 		let productId = this.getOption('productId');
 
 		if (productId === newProductId) { return; }
 
 		this.widget.setOptions({productId: newProductId});
 
-		if (!this.validateProduct(newProductId)) { return; }
+		if (isValidate && !this.validateProduct(newProductId)) { return; }
 
 		if (this._mounted == null) {
 			this.bootstrap();
@@ -182,7 +189,8 @@ export default class Rest extends Proxy {
 
 			return {
 				cart: {
-					items: result.data.items
+					items: result.data.items,
+					coupons: result.data.coupons,
 				},
 				total: {
 					amount: result.data.total.amount,

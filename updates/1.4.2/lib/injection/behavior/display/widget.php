@@ -16,6 +16,7 @@ class Widget implements IDisplay
 		'Compact',
 		'BnplOffer',
 		'BnplRequired',
+		'BnplPreview',
 	];
 
 	protected $widgetTheme = [
