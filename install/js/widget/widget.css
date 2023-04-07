@@ -102,8 +102,8 @@
 	top: -4px;
 	height: 36px;
 	min-height: 36px;
-	width: -moz-available;          /* WebKit игнор. */
-	width: -webkit-fill-available;  /* Mozilla игнор. */
+	width: -moz-available;          /* WebKit ignore */
+	width: -webkit-fill-available;  /* Mozilla ignore */
 	width: fill-available;
 	opacity: .5;
 }
