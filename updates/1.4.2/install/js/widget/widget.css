@@ -105,7 +105,6 @@
 	width: -moz-available;          /* WebKit игнор. */
 	width: -webkit-fill-available;  /* Mozilla игнор. */
 	width: fill-available;
-	margin: 0 2px;
 	opacity: .5;
 }
 
