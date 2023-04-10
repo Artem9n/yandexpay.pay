@@ -28,6 +28,7 @@ class DisplayType extends Internals\Input\StringInput
 
 			unset($fields['GROUP']);
 		}
+		unset($fields);
 
 		$userFields = [
 			'NAME' => self::getMessage('NAME'),
