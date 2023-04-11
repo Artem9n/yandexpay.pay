@@ -25,14 +25,16 @@ class CouponsCollector extends ResponseCollector
 
 			$status = 'VALID';
 
-			if ($coupon['STATUS'] === Sale\DiscountCouponsManager::STATUS_FREEZE)
+			if ($coupon['STATUS'] === Sale\DiscountCouponsManagerBase::STATUS_FREEZE)
 			{
 				$status = 'EXPIRED';
 			}
 			else if (
-				$coupon['STATUS'] === Sale\DiscountCouponsManager::STATUS_NOT_FOUND
-				|| $coupon['STATUS'] === Sale\DiscountCouponsManager::STATUS_NOT_APPLYED
-				|| $coupon['STATUS'] === Sale\DiscountCouponsManager::STATUS_ENTERED
+				in_array($coupon['STATUS'], [
+					Sale\DiscountCouponsManagerBase::STATUS_NOT_FOUND,
+					Sale\DiscountCouponsManagerBase::STATUS_NOT_APPLYED,
+					Sale\DiscountCouponsManagerBase::STATUS_ENTERED,
+				], true)
 			)
 			{
 				$status = 'INVALID';
