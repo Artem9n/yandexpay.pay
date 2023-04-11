@@ -13,8 +13,7 @@ class OrderItemsCollector extends ResponseCollector
 
 		foreach ($state->order->getOrderableItems() as $basketCode)
 		{
-			$basketResult = $state->order->getBasketItemData($basketCode);
-			$basketData = $basketResult->getData();
+			$basketData = $state->order->getBasketItemData($basketCode)->getData();
 
 			$product = [
 				(string)$basketData['PRODUCT_ID'],
@@ -25,9 +24,9 @@ class OrderItemsCollector extends ResponseCollector
 				'type' => 'PHYSICAL',//enum<PHYSICAL|DIGITAL|UNSPECIFIED>, todo type item
 				'productId' => implode(':', $product),
 				'unitPrice' => (float)$basketData['BASE_PRICE'],
-				'discountedUnitPrice' => (float)$basketData['PRICE'],
+				'discountedUnitPrice' => (float)$basketData['BASE_PRICE'],
 				'subtotal' => (float)$basketData['TOTAL_BASE_PRICE'],
-				'total' => (float)$basketData['TOTAL_PRICE'],
+				'total' => (float)$basketData['TOTAL_BASE_PRICE'],
 				'title' => (string)$basketData['NAME'],
 				'quantity' => [
 					'count' => (float)$basketData['QUANTITY'],
