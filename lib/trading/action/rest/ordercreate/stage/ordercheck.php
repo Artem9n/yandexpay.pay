@@ -43,7 +43,7 @@ class OrderCheck
 			Assert::notNull($basketData['QUANTITY'], '$basketData[QUANTITY]');
 			Assert::notNull($basketData['PRICE'], '$basketData[PRICE]');
 
-			$productPrice = $basketData['PRICE'] * $basketData['QUANTITY'];
+			$productPrice = $basketData['BASE_PRICE'] * $basketData['QUANTITY'];
 
 			if (Pay\Data\Price::round($productPrice) !== Pay\Data\Price::round($item->getAmount()))
 			{
