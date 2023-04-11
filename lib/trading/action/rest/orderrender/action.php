@@ -104,6 +104,7 @@ class Action extends Rest\Reference\EffectiveAction
 			->pipe(new Rest\Stage\OptionsCollector($response))
 			->pipe(new Rest\Stage\OrderItemsCollector($response, 'cart.items'))
 			->pipe(new Rest\Stage\CouponsCollector($response,  'cart.coupons'))
+			->pipe(new Rest\Stage\DiscountsCollector($response, 'cart.discounts'))
 			->pipe(new Rest\Stage\OrderTotalCollector($response, 'cart.total'));
 	}
 
