@@ -31,10 +31,5 @@ class DiscountsCollector extends ResponseCollector
 
 		$this->write($result);
 	}
-
-	protected function isCouponDiscount(array $discountItem) : bool
-	{
-		return trim($discountItem['COUPON_ID']) !== '';
-	}
 }
 
