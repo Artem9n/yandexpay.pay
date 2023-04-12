@@ -205,6 +205,10 @@
 	margin-bottom: 20px;
 }
 
+.bx-yapay-skeleton-loading {
+	box-sizing: border-box;
+}
+
 .yapay-display--button .bx-yapay-skeleton-loading {
 	height: 54px;
 	width: 282px;
