@@ -23,13 +23,15 @@ class DiscountsCollector extends ResponseCollector
 			$discountAmount += $basketItem->getDiscountPrice() * $basketItem->getQuantity();
 		}
 
+		if ($discountAmount <= 0) { return; }
+
 		$result[] = [
 			'amount' => (string)$discountAmount,
 			'description' => self::getMessage('DISCOUNT_DESCRIPTION'),
 			'discountId' => implode(':', $discountIds),
 		];
 
-		$this->write($result);
+		$this->write($result, 'cart.discounts');
 	}
 }
 
