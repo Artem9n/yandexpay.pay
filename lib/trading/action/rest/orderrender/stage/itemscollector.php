@@ -34,9 +34,9 @@ class ItemsCollector extends ResponseCollector
 			$this->items[] = [
 				'productId' => implode(':', $product),
 				'unitPrice' => (float)$basketItem->getBasePriceWithVat(),
-				'discountedUnitPrice' => (float)$basketItem->getPriceWithVat(),
+				'discountedUnitPrice' => (float)$basketItem->getBasePriceWithVat(),
 				'subtotal' => (float)$basketItem->getBasePriceWithVat() * $basketItem->getQuantity(),
-				'total' => (float)$basketItem->getFinalPrice(),
+				'total' => (float)$basketItem->getBasePriceWithVat() * $basketItem->getQuantity(),
 				'title' => (string)$basketItem->getField('NAME'),
 				'quantity' => [
 					'count' => (float)$basketItem->getQuantity(),

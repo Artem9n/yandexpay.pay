@@ -65,6 +65,7 @@ class Action extends Rest\Reference\EffectiveAction
 		(new Rest\Pipeline())
 			->pipe(new Rest\OrderRender\Stage\OptionsCollector($response))
 			->pipe(new Rest\OrderRender\Stage\ItemsCollector($response, 'cart.items'))
+			->pipe(new Rest\OrderRender\Stage\DiscountsCollector($response))
 			->pipe(new Rest\OrderRender\Stage\TotalCollector($response, 'cart.total'))
 			->process($this->stateOrder);
 	}
