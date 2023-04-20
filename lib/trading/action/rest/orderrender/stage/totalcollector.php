@@ -11,8 +11,11 @@ class TotalCollector extends ResponseCollector
 
 	public function __invoke(State\Order $state)
 	{
+		$paymentCollection = $state->order->getPaymentCollection();
+		$amount = $paymentCollection->getSum() - $paymentCollection->getPaidSum();
+
 		$this->write([
-			'amount' => $state->order->getPrice(),
+			'amount' => $amount,
 			'label' => null, // todo
 		]);
 	}

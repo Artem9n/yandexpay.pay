@@ -16,7 +16,7 @@ class DiscountsCollector extends ResponseCollector
 
 		$discountList = $state->order->getDiscount()->getApplyResult();
 		$discountIds = array_column($discountList['DISCOUNT_LIST'], 'REAL_DISCOUNT_ID');
-		$discountAmount = 0;
+		$discountAmount = $state->order->getPaymentCollection()->getPaidSum();
 
 		/** @var \Bitrix\Sale\BasketItem $basketItem */
 		foreach ($state->order->getBasket() as $basketItem)
