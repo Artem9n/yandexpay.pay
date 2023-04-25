@@ -78,7 +78,7 @@ class PaySystem extends EntityReference\PaySystem
 		$query = Sale\PaySystem\Manager::getList([
 			'filter' => [
 				'=ID' => $paySystemId,
-				'=ACTION_FILE' => 'yandexpay',
+				//'=ACTION_FILE' => 'yandexpay',
 				'ACTIVE' => 'Y'
 			],
 			'select' => ['*']
