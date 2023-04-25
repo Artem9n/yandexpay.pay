@@ -1,7 +1,6 @@
 <?php
 namespace YandexPay\Pay\Trading\Action\Rest\Stage;
 
-use Bitrix\Sale;
 use YandexPay\Pay\Trading\Action\Rest\State;
 use YandexPay\Pay\Reference\Concerns;
 
@@ -12,9 +11,6 @@ class DiscountsCollector extends ResponseCollector
 	public function __invoke(State\OrderCalculation $state) : void
 	{
 		$result = [];
-
-		$discountList = $state->order->getOrder()->getDiscount()->getApplyResult();
-		$discountIds = array_column($discountList['DISCOUNT_LIST'], 'REAL_DISCOUNT_ID');
 		$discountAmount = 0;
 
 		/** @var \Bitrix\Sale\BasketItem $basketItem */
@@ -24,6 +20,9 @@ class DiscountsCollector extends ResponseCollector
 		}
 
 		if ($discountAmount <= 0) { return; }
+
+		$discountList = $state->order->getOrder()->getDiscount()->getApplyResult();
+		$discountIds = array_column($discountList['DISCOUNT_LIST'], 'REAL_DISCOUNT_ID');
 
 		$result[] = [
 			'amount' => (string)$discountAmount,
